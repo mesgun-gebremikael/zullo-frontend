@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'services/auth_service.dart';
 import 'register_page.dart';
+import 'home_page.dart';
 
 
 class LoginPage extends StatefulWidget {
@@ -15,6 +16,9 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController passwordController = TextEditingController();
 
   final AuthService _authService = AuthService();
+
+  bool _isLoading = false;
+  String? _errorMessage;
 
   @override
   void dispose() {
@@ -47,6 +51,16 @@ class _LoginPageState extends State<LoginPage> {
               'Log in to continue',
               textAlign: TextAlign.center,
             ),
+
+            if (_errorMessage != null) ...[
+              const SizedBox(height: 12),
+              Text(
+                _errorMessage!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Colors.red),
+              ),
+            ],
+
             const SizedBox(height: 32),
 
             TextField(
@@ -70,43 +84,80 @@ class _LoginPageState extends State<LoginPage> {
             SizedBox(
               height: 48,
               child: ElevatedButton(
-                onPressed: () async {
-                  final email = emailController.text.trim();
-                  final password = passwordController.text.trim();
+                onPressed: _isLoading
+                    ? null
+                    : () async {
+                        final email = emailController.text.trim();
+                        final password = passwordController.text.trim();
 
-                  if (email.isEmpty || password.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Please fill in all fields'),
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
-                    return;
-                  }
+                        if (email.isEmpty || password.isEmpty) {
+                          setState(() {
+                            _errorMessage = 'Please fill in all fields';
+                          });
+                          return;
+                        }
 
-                  await _authService.login(
-                    email: email,
-                    password: password,
-                  );
-                },
-                child: const Text('Log in'),
+                        setState(() {
+                          _isLoading = true;
+                          _errorMessage = null;
+                        });
+
+                        try {
+ await _authService.login(
+  email: email,
+  password: password,
+);
+
+if (!mounted) return;
+
+Navigator.pushReplacement(
+  context,
+  MaterialPageRoute(
+    builder: (_) => const HomePage(),
+  ),
+);
+
+
+  // TEMP: visar att login lyckades
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(content: Text('Login successful')),
+  );
+} catch (e) {
+  setState(() {
+    _errorMessage = 'Login failed';
+  });
+}
+
+                        setState(() {
+                          _isLoading = false;
+                        });
+                      },
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Text('Log in'),
               ),
             ),
+
             const SizedBox(height: 16),
 
-TextButton(
-  onPressed: () {
-    Navigator.push(
-      context,
-      
-      MaterialPageRoute(
-        builder: (context) => const RegisterPage(),
-      ),
-    );
-  },
-  child: const Text('Create account'),
-),
-
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const RegisterPage(),
+                  ),
+                );
+              },
+              child: const Text('Create account'),
+            ),
           ],
         ),
       ),
