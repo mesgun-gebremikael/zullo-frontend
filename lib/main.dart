@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'register_page.dart';
 import 'login_page.dart';
 import 'welcome_page.dart'; 
+import 'splash_page.dart';
+
 
 
 
@@ -35,7 +37,9 @@ class ZulloApp extends StatelessWidget {
       ),
     ),
   ),
-  home: const WelcomePage(),
+  //home: const WelcomePage(),
+  home: const SplashPage(),
+
 );
 
   }

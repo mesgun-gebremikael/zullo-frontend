@@ -3,7 +3,6 @@ import 'services/auth_service.dart';
 import 'register_page.dart';
 import 'home_page.dart';
 
-
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -84,54 +83,48 @@ class _LoginPageState extends State<LoginPage> {
             SizedBox(
               height: 48,
               child: ElevatedButton(
-                onPressed: _isLoading
-                    ? null
-                    : () async {
-                        final email = emailController.text.trim();
-                        final password = passwordController.text.trim();
+                onPressed: _isLoading ? null : () async {
+                  final email = emailController.text.trim();
+                  final password = passwordController.text.trim();
 
-                        if (email.isEmpty || password.isEmpty) {
-                          setState(() {
-                            _errorMessage = 'Please fill in all fields';
-                          });
-                          return;
-                        }
+                  if (email.isEmpty || password.isEmpty) {
+                    setState(() {
+                      _errorMessage = 'Please fill in all fields';
+                    });
+                    return;
+                  }
 
-                        setState(() {
-                          _isLoading = true;
-                          _errorMessage = null;
-                        });
+                  setState(() {
+                    _isLoading = true;
+                    _errorMessage = null;
+                  });
 
-                        try {
- await _authService.login(
-  email: email,
-  password: password,
-);
+                  try {
+                    await _authService.login(
+                      email: email,
+                      password: password,
+                    );
 
-if (!mounted) return;
+                    if (!mounted) return;
 
-Navigator.pushReplacement(
-  context,
-  MaterialPageRoute(
-    builder: (_) => const HomePage(),
-  ),
-);
-
-
-  // TEMP: visar att login lyckades
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(content: Text('Login successful')),
-  );
-} catch (e) {
-  setState(() {
-    _errorMessage = 'Login failed';
-  });
-}
-
-                        setState(() {
-                          _isLoading = false;
-                        });
-                      },
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const HomePage(),
+                      ),
+                    );
+                  } catch (e) {
+                    setState(() {
+                      _errorMessage = 'Login failed';
+                    });
+                  } finally {
+                    if (mounted) {
+                      setState(() {
+                        _isLoading = false;
+                      });
+                    }
+                  }
+                },
                 child: _isLoading
                     ? const SizedBox(
                         height: 24,
@@ -152,7 +145,7 @@ Navigator.pushReplacement(
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const RegisterPage(),
+                    builder: (_) => const RegisterPage(),
                   ),
                 );
               },

@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'auth_storage.dart';
 
 class AuthService {
-static const String baseUrl = 'https://localhost:7015/api/auth';
+  static const String baseUrl = 'https://localhost:7015/api/auth';
+  final AuthStorage _storage = AuthStorage();
 
   Future<void> login({
     required String email,
@@ -10,43 +12,51 @@ static const String baseUrl = 'https://localhost:7015/api/auth';
   }) async {
     final url = Uri.parse('$baseUrl/login');
 
+    // DEBUG – bra att behålla nu
+    print('➡️ LOGIN request skickas');
+    print('Email: $email');
+    print('Password: $password');
+
     final response = await http.post(
       url,
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'email': email,
         'password': password,
       }),
     );
 
+    print('⬅️ Status code: ${response.statusCode}');
+    print('⬅️ Body: ${response.body}');
+
     if (response.statusCode == 200) {
-      print('Login success');
-      print(response.body);
+      final data = jsonDecode(response.body);
+      await _storage.saveToken(data['token']);
+
+
+      // 🔑 SPARA TOKEN (viktigt steg)
+      await _storage.saveToken(data['token']);
+
+      print('✅ Login success – token sparad');
     } else {
-      print('Login failed');
-      print(response.body);
       throw Exception('Login failed');
     }
   }
 
- Future<void> register({
-  required String name,
-  required String email,
-  required String password,
-}) async {
-  try {
+  Future<void> register({
+    required String name,
+    required String email,
+    required String password,
+  }) async {
     final url = Uri.parse('$baseUrl/register');
 
-    print('➡️ Register request skickas');
-    print('URL: $url');
+    print('➡️ REGISTER request skickas');
+    print('Name: $name');
+    print('Email: $email');
 
     final response = await http.post(
       url,
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'name': name,
         'email': email,
@@ -62,11 +72,5 @@ static const String baseUrl = 'https://localhost:7015/api/auth';
     } else {
       throw Exception('Register failed');
     }
-  } catch (e) {
-    print('❌ Register error: $e');
-    rethrow;
   }
 }
-
-}
-
