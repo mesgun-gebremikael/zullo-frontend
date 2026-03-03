@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'services/auth_service.dart';
 import 'register_page.dart';
 import 'home_page.dart';
+import 'create_profile_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -11,8 +12,8 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
 
   final AuthService _authService = AuthService();
 
@@ -26,12 +27,48 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
+  Future<void> _doLogin() async {
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      setState(() => _errorMessage = 'Please fill in all fields');
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      await _authService.login(email: email, password: password);
+
+      if (!mounted) return;
+
+      final hasProfile = await _authService.hasProfile();
+
+      if (!mounted) return;
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => hasProfile ? const HomePage() : const CreateProfilePage(),
+        ),
+      );
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Login failed: $e';
+      });
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Log in'),
-      ),
+      appBar: AppBar(title: const Text('Log in')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -40,16 +77,10 @@ class _LoginPageState extends State<LoginPage> {
             const Text(
               'Welcome back',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Log in to continue',
-              textAlign: TextAlign.center,
-            ),
+            const Text('Log in to continue', textAlign: TextAlign.center),
 
             if (_errorMessage != null) ...[
               const SizedBox(height: 12),
@@ -65,66 +96,24 @@ class _LoginPageState extends State<LoginPage> {
             TextField(
               controller: emailController,
               textInputAction: TextInputAction.next,
-              decoration: const InputDecoration(
-                labelText: 'Email',
-              ),
+              keyboardType: TextInputType.emailAddress,
+              decoration: const InputDecoration(labelText: 'Email'),
             ),
             const SizedBox(height: 12),
 
             TextField(
               controller: passwordController,
               obscureText: true,
-              decoration: const InputDecoration(
-                labelText: 'Password',
-              ),
+              textInputAction: TextInputAction.done,
+              onSubmitted: (_) => _isLoading ? null : _doLogin(),
+              decoration: const InputDecoration(labelText: 'Password'),
             ),
             const SizedBox(height: 24),
 
             SizedBox(
               height: 48,
               child: ElevatedButton(
-                onPressed: _isLoading ? null : () async {
-                  final email = emailController.text.trim();
-                  final password = passwordController.text.trim();
-
-                  if (email.isEmpty || password.isEmpty) {
-                    setState(() {
-                      _errorMessage = 'Please fill in all fields';
-                    });
-                    return;
-                  }
-
-                  setState(() {
-                    _isLoading = true;
-                    _errorMessage = null;
-                  });
-
-                  try {
-                    await _authService.login(
-                      email: email,
-                      password: password,
-                    );
-
-                    if (!mounted) return;
-
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const HomePage(),
-                      ),
-                    );
-                  } catch (e) {
-                    setState(() {
-                      _errorMessage = 'Login failed';
-                    });
-                  } finally {
-                    if (mounted) {
-                      setState(() {
-                        _isLoading = false;
-                      });
-                    }
-                  }
-                },
+                onPressed: _isLoading ? null : _doLogin,
                 child: _isLoading
                     ? const SizedBox(
                         height: 24,
@@ -144,9 +133,7 @@ class _LoginPageState extends State<LoginPage> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) => const RegisterPage(),
-                  ),
+                  MaterialPageRoute(builder: (_) => const RegisterPage()),
                 );
               },
               child: const Text('Create account'),

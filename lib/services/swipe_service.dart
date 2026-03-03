@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../config.dart';
+
 
 class SwipeService {
   static const String baseUrl = 'https://localhost:7015/swipe';
