@@ -129,26 +129,35 @@ if (shouldRefresh == true) {
                         padding: const EdgeInsets.fromLTRB(14, 12, 14, 16),
                         children: [
                           // ✅ LIKES (Premium-lås i MVP)
-Container(
-  margin: const EdgeInsets.only(bottom: 14),
-  padding: const EdgeInsets.all(14),
-  decoration: BoxDecoration(
-    borderRadius: BorderRadius.circular(16),
-    color: cs.surfaceContainerHighest.withOpacity(0.55),
-  ),
-  child: Row(
-    children: [
-      const Icon(Icons.lock),
-      const SizedBox(width: 10),
-      Expanded(
-        child: Text(
-          likesReceived.isEmpty
-              ? "Inga nya likes än"
-              : "${likesReceived.length} personer har gillat dig — Premium för att se vem",
-          style: const TextStyle(fontWeight: FontWeight.w700),
+InkWell(
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const PremiumPage()),
+    );
+  },
+  borderRadius: BorderRadius.circular(16),
+  child: Container(
+    margin: const EdgeInsets.only(bottom: 14),
+    padding: const EdgeInsets.all(14),
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(16),
+      color: cs.surfaceContainerHighest.withOpacity(0.55),
+    ),
+    child: Row(
+      children: [
+        const Icon(Icons.lock),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            likesReceived.isEmpty
+                ? "Inga nya likes än"
+                : "${likesReceived.length} personer har gillat dig — Premium för att se vem",
+            style: const TextStyle(fontWeight: FontWeight.w700),
+          ),
         ),
-      ),
-    ],
+      ],
+    ),
   ),
 ),
                           Row(
