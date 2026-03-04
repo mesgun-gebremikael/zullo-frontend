@@ -8,6 +8,7 @@ import 'models/swipe_profile.dart';
 import 'welcome_page.dart';
 import 'matches_page.dart';
 import 'profile_page.dart';
+import 'chat_page.dart';
 
 enum SwipeDir { left, right, up }
 
@@ -70,7 +71,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     error = data.isEmpty ? "Inga profiler just nu" : null;
   });
 
-  _precacheNextImage(); // D HÄR
+  //_precacheNextImage(); // D HÄR
 } catch (_) {
   setState(() {
     error = "Kunde inte ladda feed";
@@ -85,7 +86,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
     if (currentIndex < profiles.length - 1) {
   setState(() => currentIndex++);
-  _precacheNextImage(); //  
+  //_precacheNextImage(); //  
 } else {
   loadFeed();
 }
@@ -163,14 +164,22 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                   width: double.infinity,
                   height: 48,
                   child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(ctx);
-                      // Du har redan chatten klar i Matches -> ChatPage 👍
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const MatchesPage()),
-                      );
-                    },
+                   onPressed: () async {
+  Navigator.pop(ctx);
+
+  final otherPhoto = other.photoUrls.isNotEmpty ? other.photoUrls.first : "";
+
+  await Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => ChatPage(
+        userId: other.userId,
+        displayName: other.displayName,
+        photoUrl: otherPhoto,
+      ),
+    ),
+  );
+},
                     child: const Text("Säg hej"),
                   ),
                 ),
