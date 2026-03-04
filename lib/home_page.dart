@@ -118,7 +118,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     if (!mounted) return;
 
     final otherPhoto = other.photoUrls.isNotEmpty ? other.photoUrls.first : "";
-
+     
     await showDialog(
       context: context,
       barrierDismissible: true,
@@ -158,7 +158,10 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                   style: TextStyle(color: Colors.white70),
                 ),
                 const SizedBox(height: 20),
-                _matchAvatar(photoUrl: otherPhoto),
+                _matchAvatarsRow(
+  otherPhotoUrl: otherPhoto,
+  myPhotoUrl: "",
+),
                 const SizedBox(height: 20),
                 SizedBox(
                   width: double.infinity,
@@ -180,6 +183,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     ),
   );
 },
+
+
                     child: const Text("Säg hej"),
                   ),
                 ),
@@ -203,22 +208,34 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       },
     );
   }
+   
 
-  Widget _matchAvatar({required String photoUrl}) {
+ Widget _matchAvatarsRow({required String otherPhotoUrl, required String myPhotoUrl}) {
+  Widget avatar(String url) {
     return Container(
-      width: 110,
-      height: 110,
+      width: 96,
+      height: 96,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(color: Colors.white24, width: 2),
       ),
       child: ClipOval(
-        child: photoUrl.isNotEmpty
-            ? Image.network(photoUrl, fit: BoxFit.cover)
-            : const Icon(Icons.favorite, color: Colors.white, size: 40),
+        child: url.isNotEmpty
+            ? Image.network(url, fit: BoxFit.cover)
+            : const Icon(Icons.person, color: Colors.white, size: 40),
       ),
     );
   }
+
+  return Row(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      avatar(myPhotoUrl),
+      const SizedBox(width: 14),
+      avatar(otherPhotoUrl),
+    ],
+  );
+}
 
   // ================= Tinder Buttons =================
   Widget tinderCircleButton({
@@ -541,7 +558,18 @@ class _TinderCard extends StatelessWidget {
           children: [
             // Photo
             if (photoUrl.isNotEmpty)
-              Image.network(photoUrl, fit: BoxFit.cover)
+              Image.network(
+  photoUrl,
+  fit: BoxFit.cover,
+  errorBuilder: (_, __, ___) {
+    return Container(
+      color: Colors.grey.shade400,
+      child: const Center(
+        child: Icon(Icons.person, size: 120, color: Colors.white),
+      ),
+    );
+  },
+)
             else
               Container(
                 color: Colors.grey.shade400,
