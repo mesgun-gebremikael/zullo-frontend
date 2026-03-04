@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'services/auth_service.dart';
 import 'chat_page.dart';
+import 'premium_page.dart';
 
 class MatchesPage extends StatefulWidget {
   const MatchesPage({super.key});
