@@ -62,19 +62,21 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     });
 
     try {
-      final data = await _authService.getSwipeFeed();
-      setState(() {
-        profiles = data;
-        currentIndex = 0;
-        isLoading = false;
-        error = data.isEmpty ? "Inga profiler just nu" : null;
-      });
-    } catch (_) {
-      setState(() {
-        error = "Kunde inte ladda feed";
-        isLoading = false;
-      });
-    }
+  final data = await _authService.getSwipeFeed();
+  setState(() {
+    profiles = data;
+    currentIndex = 0;
+    isLoading = false;
+    error = data.isEmpty ? "Inga profiler just nu" : null;
+  });
+
+  _precacheNextImage(); // D HÄR
+} catch (_) {
+  setState(() {
+    error = "Kunde inte ladda feed";
+    isLoading = false;
+  });
+}
   }
 
   void nextProfile() {
@@ -82,10 +84,11 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     if (profiles.isEmpty) return;
 
     if (currentIndex < profiles.length - 1) {
-      setState(() => currentIndex++);
-    } else {
-      loadFeed();
-    }
+  setState(() => currentIndex++);
+  _precacheNextImage(); //  
+} else {
+  loadFeed();
+}
   }
 
   void showToast(String text) {
@@ -94,6 +97,20 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       SnackBar(content: Text(text), duration: const Duration(milliseconds: 900)),
     );
   }
+  void _precacheNextImage() {
+  if (!mounted) return;
+  if (profiles.isEmpty) return;
+
+  final nextIndex = currentIndex + 1;
+  if (nextIndex >= profiles.length) return;
+
+  final next = profiles[nextIndex];
+  final url = next.photoUrls.isNotEmpty ? next.photoUrls.first : "";
+
+  if (url.startsWith("http://") || url.startsWith("https://")) {
+    precacheImage(NetworkImage(url), context);
+  }
+}
 
   // ================= MATCH POPUP =================
   Future<void> showMatchPopup({required SwipeProfile other}) async {
