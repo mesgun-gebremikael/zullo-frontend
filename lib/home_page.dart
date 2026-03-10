@@ -221,8 +221,18 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       ),
       child: ClipOval(
         child: url.isNotEmpty
-            ? Image.network(url, fit: BoxFit.cover)
-            : const Icon(Icons.person, color: Colors.white, size: 40),
+    ? Image.network(
+        url,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) {
+          return const Center(
+            child: Icon(Icons.person, color: Colors.white, size: 40),
+          );
+        },
+      )
+    : const Center(
+        child: Icon(Icons.person, color: Colors.white, size: 40),
+      ),
       ),
     );
   }
@@ -557,26 +567,27 @@ class _TinderCard extends StatelessWidget {
           fit: StackFit.expand,
           children: [
             // Photo
-            if (photoUrl.isNotEmpty)
-              Image.network(
-  photoUrl,
-  fit: BoxFit.cover,
-  errorBuilder: (_, __, ___) {
-    return Container(
-      color: Colors.grey.shade400,
-      child: const Center(
-        child: Icon(Icons.person, size: 120, color: Colors.white),
-      ),
-    );
-  },
-)
-            else
-              Container(
-                color: Colors.grey.shade400,
-                child: const Center(
-                  child: Icon(Icons.person, size: 120, color: Colors.white),
-                ),
-              ),
+            // Photo
+if (photoUrl.isNotEmpty)
+  Image.network(
+    photoUrl,
+    fit: BoxFit.cover,
+    errorBuilder: (_, __, ___) {
+      return Container(
+        color: Colors.grey.shade400,
+        child: const Center(
+          child: Icon(Icons.person, size: 120, color: Colors.white),
+        ),
+      );
+    },
+  )
+else
+  Container(
+    color: Colors.grey.shade400,
+    child: const Center(
+      child: Icon(Icons.person, size: 120, color: Colors.white),
+    ),
+  ),
 
             // Gradient bottom like Tinder
             Positioned(
