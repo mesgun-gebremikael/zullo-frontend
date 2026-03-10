@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'auth_storage.dart';
 import '../models/swipe_profile.dart';
+import '../services/auth_service.dart';
 
 class AuthService {
   static const String baseAuthUrl = 'http://localhost:5125/api/auth';
@@ -240,4 +241,29 @@ Future<void> saveProfile({
 
   throw Exception('Save profile failed: ${res.statusCode} ${res.body}');
 }
+
+
+Future<void> reportUser({
+  required String reportedUserId,
+  required String reason,
+}) async {
+  final token = await _storage.getToken();
+
+  final res = await http.post(
+    Uri.parse('$baseApiUrl/reports'),
+    headers: {
+      'Content-Type': 'application/json',
+      if (token != null) 'Authorization': 'Bearer $token',
+    },
+    body: jsonEncode({
+      'reportedUserId': reportedUserId,
+      'reason': reason,
+    }),
+  );
+
+  if (res.statusCode != 200) {
+    throw Exception('Report failed: ${res.statusCode} ${res.body}');
+  }
+}
+
 }

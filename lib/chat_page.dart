@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../services/messages_service.dart';
 import '../services/auth_storage.dart';
+import '../services/auth_service.dart';
 
 class ChatPage extends StatefulWidget {
   final String userId; // other user id
@@ -25,9 +26,11 @@ class _ChatPageState extends State<ChatPage> {
   static const String _baseApiUrl = 'http://localhost:5125';
 
   late final MessagesService _messagesService;
+  final AuthService _authService = AuthService();
 
   final _controller = TextEditingController();
   final _scroll = ScrollController();
+  
 
   Timer? _pollTimer;
   DateTime? _lastLoadedAt; // debug/insyn
@@ -248,6 +251,74 @@ class _ChatPageState extends State<ChatPage> {
       }
     }
   }
+Future<void> _showReportDialog() async {
+  final reasons = [
+    "Spam",
+    "Otrevlig",
+    "Fejkprofil",
+    "Nakenbild",
+    "Annat",
+  ];
+
+  String selectedReason = reasons.first;
+
+  final result = await showDialog<String>(
+    context: context,
+    builder: (ctx) {
+      return AlertDialog(
+        title: const Text("Rapportera användare"),
+        content: StatefulBuilder(
+          builder: (context, setLocalState) {
+            return DropdownButton<String>(
+              value: selectedReason,
+              isExpanded: true,
+              items: reasons.map((r) {
+                return DropdownMenuItem(
+                  value: r,
+                  child: Text(r),
+                );
+              }).toList(),
+              onChanged: (value) {
+                if (value == null) return;
+                setLocalState(() => selectedReason = value);
+              },
+            );
+          },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("Avbryt"),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, selectedReason),
+            child: const Text("Rapportera"),
+          ),
+        ],
+      );
+    },
+  );
+
+  if (result == null || result.isEmpty) return;
+
+  try {
+    await _authService.reportUser(
+      reportedUserId: widget.userId,
+      reason: result,
+    );
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Användaren har rapporterats.")),
+    );
+  } catch (e) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Kunde inte rapportera: $e")),
+    );
+  }
+}
+  //----
 
   bool _isSameDay(DateTime a, DateTime b) =>
       a.year == b.year && a.month == b.month && a.day == b.day;
@@ -283,6 +354,12 @@ class _ChatPageState extends State<ChatPage> {
         icon: const Icon(Icons.arrow_back),
         onPressed: () => Navigator.pop(context, true),
       ),
+      actions: [
+    IconButton(
+      icon: const Icon(Icons.flag_outlined),
+      onPressed: _showReportDialog,
+    ),
+  ],
       titleSpacing: 0,
       title: Row(
         children: [
