@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../services/messages_service.dart';
 import '../services/auth_storage.dart';
 import '../services/auth_service.dart';
+import '../services/block_service.dart';
 
 class ChatPage extends StatefulWidget {
   final String userId; // other user id
@@ -27,6 +28,7 @@ class _ChatPageState extends State<ChatPage> {
 
   late final MessagesService _messagesService;
   final AuthService _authService = AuthService();
+  final BlockService _blockService = BlockService();
 
   final _controller = TextEditingController();
   final _scroll = ScrollController();
@@ -251,6 +253,27 @@ class _ChatPageState extends State<ChatPage> {
       }
     }
   }
+
+Future<void> _blockUser() async {
+  try {
+    await _blockService.blockUser(widget.userId);
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Användaren blockerades.")),
+    );
+
+    Navigator.pop(context, true);
+  } catch (e) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Kunde inte blockera: $e")),
+    );
+  }
+}
+
 Future<void> _showReportDialog() async {
   final reasons = [
     "Spam",
@@ -354,12 +377,29 @@ Future<void> _showReportDialog() async {
         icon: const Icon(Icons.arrow_back),
         onPressed: () => Navigator.pop(context, true),
       ),
-      actions: [
-    IconButton(
-      icon: const Icon(Icons.flag_outlined),
-      onPressed: _showReportDialog,
-    ),
-  ],
+     actions: [
+  PopupMenuButton<String>(
+    onSelected: (value) {
+      if (value == "report") {
+        _showReportDialog();
+      }
+
+      if (value == "block") {
+        _blockUser();
+      }
+    },
+    itemBuilder: (context) => const [
+      PopupMenuItem(
+        value: "report",
+        child: Text("Rapportera"),
+      ),
+      PopupMenuItem(
+        value: "block",
+        child: Text("Blockera"),
+      ),
+    ],
+  ),
+],
       titleSpacing: 0,
       title: Row(
         children: [
