@@ -27,6 +27,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   bool isLoading = true;
   String? error;
   int currentIndex = 0;
+  bool hasUnreadMessages = false;
 
   // ===== Drag state (Tinder swipe) =====
   Offset _drag = Offset.zero; // px
@@ -48,6 +49,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       duration: const Duration(milliseconds: 220),
     );
     loadFeed();
+    loadUnreadStatus();
   }
 
   @override
@@ -79,6 +81,23 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   });
 }
   }
+
+  Future<void> loadUnreadStatus() async {
+  try {
+    final matchesData = await _authService.getMatches();
+    final matchesList = List<dynamic>.from(matchesData);
+
+    final hasUnread = matchesList.any((m) => m["hasUnread"] == true);
+
+    if (!mounted) return;
+
+    setState(() {
+      hasUnreadMessages = hasUnread;
+    });
+  } catch (_) {
+    // ignorera i MVP
+  }
+}
 
   void nextProfile() {
     if (!mounted) return;
@@ -395,14 +414,36 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         title: const Text("Zullo"),
         actions: [
           IconButton(
-            icon: const Icon(Icons.chat_bubble_outline),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const MatchesPage()),
-              );
-            },
+  icon: Stack(
+    clipBehavior: Clip.none,
+    children: [
+      const Icon(Icons.chat_bubble_outline),
+      if (hasUnreadMessages)
+        Positioned(
+          right: -1,
+          top: -1,
+          child: Container(
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(
+              color: Colors.red,
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 1.5),
+            ),
           ),
+        ),
+    ],
+  ),
+  onPressed: () async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const MatchesPage()),
+    );
+
+    if (!mounted) return;
+    await loadUnreadStatus();
+  },
+),
          IconButton(
   icon: const Icon(Icons.logout),
   onPressed: () async {
