@@ -19,7 +19,8 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
+class _HomePageState extends State<HomePage> 
+    with SingleTickerProviderStateMixin,WidgetsBindingObserver {
   final AuthService _authService = AuthService();
   final AuthStorage _storage = AuthStorage();
 
@@ -44,6 +45,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _anim = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 220),
@@ -54,9 +56,17 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
   @override
   void dispose() {
+     WidgetsBinding.instance.removeObserver(this);
     _anim.dispose();
     super.dispose();
   }
+
+  @override
+   void didChangeAppLifecycleState(AppLifecycleState state) {
+   if (state == AppLifecycleState.resumed) {
+    loadUnreadStatus();
+  }
+}
 
   Future<void> loadFeed() async {
     setState(() {
