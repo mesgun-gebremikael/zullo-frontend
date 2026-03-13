@@ -1,0 +1,214 @@
+import 'package:flutter/material.dart';
+import 'services/auth_service.dart';
+
+class EditProfilePage extends StatefulWidget {
+  const EditProfilePage({super.key});
+
+  @override
+  State<EditProfilePage> createState() => _EditProfilePageState();
+}
+
+class _EditProfilePageState extends State<EditProfilePage> {
+  final AuthService _authService = AuthService();
+
+  final _displayName = TextEditingController();
+  final _age = TextEditingController();
+  final _gender = TextEditingController();
+  final _bio = TextEditingController();
+
+  bool _isLoading = true;
+  bool _isSaving = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMyProfile();
+  }
+
+  @override
+  void dispose() {
+    _displayName.dispose();
+    _age.dispose();
+    _gender.dispose();
+    _bio.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadMyProfile() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      final profile = await _authService.getMyProfile();
+
+      _displayName.text = (profile["displayName"] ?? "").toString();
+      _age.text = (profile["age"] ?? "").toString();
+      _gender.text = (profile["gender"] ?? "").toString();
+      _bio.text = (profile["bio"] ?? "").toString();
+
+      if (!mounted) return;
+
+      setState(() {
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _error = "Kunde inte ladda profil: $e";
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _saveProfile() async {
+    final name = _displayName.text.trim();
+    final age = int.tryParse(_age.text.trim()) ?? 0;
+    final gender = _gender.text.trim();
+    final bio = _bio.text.trim();
+
+    if (name.isEmpty || age < 18 || gender.isEmpty) {
+      setState(() {
+        _error = "Fyll i namn, kön och ålder (18+).";
+      });
+      return;
+    }
+
+    setState(() {
+      _isSaving = true;
+      _error = null;
+    });
+
+    try {
+      final current = await _authService.getMyProfile();
+
+      final photoUrls = ((current["photoUrls"] as List?) ?? [])
+          .map((e) => e.toString())
+          .toList();
+
+      final interests = ((current["interests"] as List?) ?? [])
+          .map((e) => e.toString())
+          .toList();
+
+      await _authService.saveProfile(
+        displayName: name,
+        age: age,
+        gender: gender,
+        bio: bio,
+        photoUrls: photoUrls,
+        interests: interests,
+      );
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Profilen sparades.")),
+      );
+
+      Navigator.pop(context, true);
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _error = "Kunde inte spara profil: $e";
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Redigera profil"),
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _error != null && _displayName.text.isEmpty
+              ? Center(child: Text(_error!))
+              : SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Text(
+                        "Min profil",
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      TextField(
+                        controller: _displayName,
+                        decoration: const InputDecoration(
+                          labelText: "Namn (display)",
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      TextField(
+                        controller: _age,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          labelText: "Ålder",
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      TextField(
+                        controller: _gender,
+                        decoration: const InputDecoration(
+                          labelText: "Kön",
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      TextField(
+                        controller: _bio,
+                        maxLines: 3,
+                        decoration: const InputDecoration(
+                          labelText: "Om mig",
+                        ),
+                      ),
+
+                      if (_error != null) ...[
+                        const SizedBox(height: 12),
+                        Text(
+                          _error!,
+                          style: const TextStyle(color: Colors.red),
+                        ),
+                      ],
+
+                      const SizedBox(height: 20),
+
+                      SizedBox(
+                        height: 48,
+                        child: ElevatedButton(
+                          onPressed: _isSaving ? null : _saveProfile,
+                          child: _isSaving
+                              ? const SizedBox(
+                                  height: 22,
+                                  width: 22,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Text("Spara ändringar"),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+    );
+  }
+}

@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'auth_storage.dart';
 import '../models/swipe_profile.dart';
-import '../services/auth_service.dart';
+
 
 class AuthService {
   static const String baseAuthUrl = 'http://localhost:5125/api/auth';
@@ -81,6 +81,28 @@ class AuthService {
 
     return res.statusCode == 200;
   }
+
+  Future<Map<String, dynamic>> getMyProfile() async {
+  final token = await _storage.getToken();
+
+  final res = await http.get(
+    Uri.parse('$baseApiUrl/me/profile'),
+    headers: {
+      'Content-Type': 'application/json',
+      if (token != null) 'Authorization': 'Bearer $token',
+    },
+  );
+
+  print("MY PROFILE status: ${res.statusCode}");
+  print("MY PROFILE body: ${res.body}");
+
+  if (res.statusCode == 200) {
+    final decoded = jsonDecode(res.body) as Map<String, dynamic>;
+    return decoded;
+  }
+
+  throw Exception('Get my profile failed: ${res.statusCode} ${res.body}');
+}
 
   // ---------- SWIPE FEED ----------
 

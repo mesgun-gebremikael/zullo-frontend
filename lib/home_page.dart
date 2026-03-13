@@ -9,6 +9,7 @@ import 'welcome_page.dart';
 import 'matches_page.dart';
 import 'profile_page.dart';
 import 'chat_page.dart';
+import 'edit_profile_page.dart';
 
 enum SwipeDir { left, right, up }
 
@@ -127,6 +128,20 @@ class _HomePageState extends State<HomePage>
       SnackBar(content: Text(text), duration: const Duration(milliseconds: 900)),
     );
   }
+Future<void> _openEditProfile() async {
+  final changed = await Navigator.push<bool>(
+    context,
+    MaterialPageRoute(
+      builder: (_) => const EditProfilePage(),
+    ),
+  );
+
+  if (changed == true) {
+    await loadFeed();
+    await loadUnreadStatus();
+  }
+}
+
   void _precacheNextImage() {
   if (!mounted) return;
   if (profiles.isEmpty) return;
@@ -423,6 +438,10 @@ class _HomePageState extends State<HomePage>
       appBar: AppBar(
         title: const Text("Zullo"),
         actions: [
+          IconButton(
+  icon: const Icon(Icons.edit_outlined),
+  onPressed: _openEditProfile,
+),
           IconButton(
   icon: Stack(
     clipBehavior: Clip.none,
