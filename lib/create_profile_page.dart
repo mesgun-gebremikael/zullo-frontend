@@ -68,9 +68,14 @@ bool _isUploadingImage = false;
     final bio = _bio.text.trim();
 
     if (name.isEmpty || age < 18 || gender.isEmpty) {
-      setState(() => _error = "Fyll i namn, kön och ålder (18+).");
-      return;
-    }
+  setState(() => _error = "Fyll i namn, kön och ålder (18+).");
+  return;
+}
+
+if (_photoUrls.length < 2) {
+  setState(() => _error = "Lägg till minst 2 bilder.");
+  return;
+}
 
     setState(() {
       _isLoading = true;
@@ -156,23 +161,61 @@ bool _isUploadingImage = false;
             const SizedBox(height: 12),
             TextField(controller: _gender, decoration: const InputDecoration(labelText: "Kön (t.ex. Man/Kvinna)")),
             const SizedBox(height: 12),
-            TextField(controller: _bio, maxLines: 3, decoration: const InputDecoration(labelText: "Om mig")),
 
-            if (_error != null) ...[
-              const SizedBox(height: 12),
-              Text(_error!, style: const TextStyle(color: Colors.red)),
-            ],
+          
+           TextField(controller: _bio, maxLines: 3, decoration: const InputDecoration(labelText: "Om mig")),
 
-            const SizedBox(height: 20),
-            SizedBox(
-              height: 48,
-              child: ElevatedButton(
-                onPressed: _isLoading ? null : _saveProfile,
-                child: _isLoading
-                    ? const SizedBox(height: 22, width: 22, child: CircularProgressIndicator(strokeWidth: 2))
-                    : const Text("Spara och fortsätt"),
-              ),
-            ),
+const SizedBox(height: 16),
+
+SizedBox(
+  height: 48,
+  child: OutlinedButton(
+    onPressed: _isUploadingImage ? null : _pickAndUploadImage,
+    child: _isUploadingImage
+        ? const SizedBox(
+            height: 22,
+            width: 22,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          )
+        : const Text("Lägg till bild från galleri"),
+  ),
+),
+
+const SizedBox(height: 12),
+
+if (_photoUrls.isNotEmpty)
+  Wrap(
+    spacing: 8,
+    runSpacing: 8,
+    children: _photoUrls.map((url) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Image.network(
+          url,
+          width: 90,
+          height: 120,
+          fit: BoxFit.cover,
+        ),
+      );
+    }).toList(),
+  ),
+
+if (_error != null) ...[
+  const SizedBox(height: 12),
+  Text(_error!, style: const TextStyle(color: Colors.red)),
+],
+
+const SizedBox(height: 20),
+
+SizedBox(
+  height: 48,
+  child: ElevatedButton(
+    onPressed: _isLoading ? null : _saveProfile,
+    child: _isLoading
+        ? const SizedBox(height: 22, width: 22, child: CircularProgressIndicator(strokeWidth: 2))
+        : const Text("Spara och fortsätt"),
+  ),
+),
           ],
         ),
       ),
