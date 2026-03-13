@@ -4,6 +4,9 @@ import 'package:http/http.dart' as http;
 import '../services/auth_storage.dart';
 
 import 'home_page.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import '../services/cloudinary_service.dart';
 
 class CreateProfilePage extends StatefulWidget {
   const CreateProfilePage({super.key});
@@ -18,6 +21,10 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
   final _gender = TextEditingController(text: "Man");
   final _bio = TextEditingController(text: "Hej! Jag söker en seriös relation.");
 
+  final ImagePicker _picker = ImagePicker();
+List<String> _photoUrls = [];
+bool _isUploadingImage = false;
+
   bool _isLoading = false;
   String? _error;
 
@@ -29,6 +36,30 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
     _bio.dispose();
     super.dispose();
   }
+
+  Future<void> _pickAndUploadImage() async {
+  final picked = await _picker.pickImage(source: ImageSource.gallery);
+
+  if (picked == null) return;
+
+  setState(() {
+    _isUploadingImage = true;
+  });
+
+  final file = File(picked.path);
+
+  final url = await CloudinaryService.uploadImage(file);
+
+  if (url != null) {
+    setState(() {
+      _photoUrls.add(url);
+    });
+  }
+
+  setState(() {
+    _isUploadingImage = false;
+  });
+}
 
   Future<void> _saveProfile() async {
     final name = _displayName.text.trim();
@@ -65,10 +96,7 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
       "pets": "Want",
 
       "interests": ["Musik", "Resor"],
-      "photoUrls": [
-        "https://picsum.photos/seed/zullo1/600/800",
-        "https://picsum.photos/seed/zullo2/600/800"
-      ],
+     "photoUrls": _photoUrls,
 
       "lat": lat,
       "lng": lng,
