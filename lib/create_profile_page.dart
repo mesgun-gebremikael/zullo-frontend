@@ -44,6 +44,7 @@ bool _isUploadingImage = false;
 
   setState(() {
     _isUploadingImage = true;
+    _error = null;
   });
 
   final file = File(picked.path);
@@ -53,12 +54,14 @@ bool _isUploadingImage = false;
   if (url != null) {
     setState(() {
       _photoUrls.add(url);
+      _isUploadingImage = false;
+    });
+  } else {
+    setState(() {
+      _isUploadingImage = false;
+      _error = "Bild-upload misslyckades.";
     });
   }
-
-  setState(() {
-    _isUploadingImage = false;
-  });
 }
 
   Future<void> _saveProfile() async {

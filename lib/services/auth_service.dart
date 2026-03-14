@@ -5,7 +5,8 @@ import '../models/swipe_profile.dart';
 
 
 class AuthService {
-  static const String baseAuthUrl = 'http://localhost:5125/api/auth';
+  //static const String baseAuthUrl = 'http://localhost:5125/api/auth';
+  static const String baseAuthUrl = 'http://10.0.2.2:5125/api/auth';
   static const String baseApiUrl = 'http://10.0.2.2:5125';
  // static const String baseApiUrl = 'http://localhost:5125';
 
