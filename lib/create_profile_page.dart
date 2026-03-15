@@ -121,13 +121,13 @@ if (_photoUrls.length < 2) {
 
   // 2) Skicka POST med Bearer token
   final res = await http.post(
-    Uri.parse("http://localhost:5125/me/profile"),
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer $token",
-    },
-    body: jsonEncode(body),
-  );
+  Uri.parse("http://10.0.2.2:5125/me/profile"),
+  headers: {
+    "Content-Type": "application/json",
+    "Authorization": "Bearer $token",
+  },
+  body: jsonEncode(body),
+);
 
   // 3) Acceptera både 200 och 201 (backend kan returnera 201)
   if (res.statusCode == 200 || res.statusCode == 201) {

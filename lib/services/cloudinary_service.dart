@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 
 class CloudinaryService {
-  static const String cloudName = "dzdgugvbbr";
+  static const String cloudName = "dzdugvbbr";
   static const String uploadPreset = "zullo_upload";
 
   static Future<String?> uploadImage(File imageFile) async {
@@ -14,6 +14,8 @@ class CloudinaryService {
 
       final request = http.MultipartRequest("POST", url);
       request.fields["upload_preset"] = uploadPreset;
+      //request.fields["cloud_name"] = cloudName;
+      request.fields["folder"] = "zullo_profiles";
 
       request.files.add(
         await http.MultipartFile.fromPath("file", imageFile.path),
