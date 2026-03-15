@@ -24,7 +24,7 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> {
   // ✅ Endast HTTP (inte https:7015)
-  static const String _baseApiUrl = 'http://localhost:5125';
+  static const String _baseApiUrl = 'http://10.0.2.2:5125';
 
   late final MessagesService _messagesService;
   final AuthService _authService = AuthService();
