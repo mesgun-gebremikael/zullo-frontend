@@ -718,6 +718,28 @@ class _TinderCardState extends State<_TinderCard> {
   int imageIndex = 0;
 
   @override
+void initState() {
+  super.initState();
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    _precacheNextPhoto();
+  });
+}
+
+void _precacheNextPhoto() {
+  final profile = widget.profile;
+
+  if (profile.photoUrls.isEmpty) return;
+
+  final nextIndex = imageIndex + 1;
+  if (nextIndex >= profile.photoUrls.length) return;
+
+  precacheImage(
+    NetworkImage(profile.photoUrls[nextIndex]),
+    context,
+  );
+}
+
+  @override
   Widget build(BuildContext context) {
     final profile = widget.profile;
     final width = widget.width;
@@ -755,16 +777,18 @@ GestureDetector(
     final tapX = details.localPosition.dx;
 
     setState(() {
-      if (tapX > cardWidth / 2) {
-        if (imageIndex < profile.photoUrls.length - 1) {
-          imageIndex++;
-        }
-      } else {
-        if (imageIndex > 0) {
-          imageIndex--;
-        }
-      }
-    });
+  if (tapX > cardWidth / 2) {
+    if (imageIndex < profile.photoUrls.length - 1) {
+      imageIndex++;
+    }
+  } else {
+    if (imageIndex > 0) {
+      imageIndex--;
+    }
+  }
+});
+
+_precacheNextPhoto();
   },
   child: profile.photoUrls.isNotEmpty
       ? Image.network(
