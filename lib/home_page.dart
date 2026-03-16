@@ -202,96 +202,112 @@ Future<void> _openEditProfile() async {
       ),
     ],
   ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-  Text(
-    "Det är en match!",
-    textAlign: TextAlign.center,
-    style: TextStyle(
-      fontSize: 30,
-      fontWeight: FontWeight.w900,
-      color: Colors.pink.shade200,
-      letterSpacing: 0.5,
+          child: Stack(
+  children: [
+    Positioned(
+      top: 0,
+      right: 0,
+      child: IconButton(
+        onPressed: () => Navigator.pop(ctx),
+        icon: const Icon(
+          Icons.close,
+          color: Colors.white70,
+        ),
+      ),
     ),
-  ),
-  const SizedBox(height: 12),
-  Text(
-    "Du och ${other.displayName} gillar varandra.\nSäg hej eller fortsätt swipa.",
-    textAlign: TextAlign.center,
-    style: const TextStyle(
-      color: Colors.white70,
-      fontSize: 15,
-      height: 1.45,
-    ),
-  ),
-  const SizedBox(height: 28),
-  _matchAvatarsRow(
-    otherPhotoUrl: otherPhoto,
-    myPhotoUrl: myPhotoUrl,
-  ),
-  const SizedBox(height: 28),
-                SizedBox(
-  width: double.infinity,
-  height: 52,
-  child: ElevatedButton(
-    onPressed: () async {
-      Navigator.pop(ctx);
+    Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          "Det är en match!",
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 30,
+            fontWeight: FontWeight.w900,
+            color: Colors.pink.shade200,
+            letterSpacing: 0.5,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          "Du och ${other.displayName} gillar varandra.\nSäg hej eller fortsätt swipa.",
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: Colors.white70,
+            fontSize: 15,
+            height: 1.45,
+          ),
+        ),
+        const SizedBox(height: 28),
+        _matchAvatarsRow(
+          otherPhotoUrl: otherPhoto,
+          myPhotoUrl: myPhotoUrl,
+        ),
+        const SizedBox(height: 28),
+        SizedBox(
+          width: double.infinity,
+          height: 52,
+          child: ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
 
-      final otherPhoto = other.photoUrls.isNotEmpty ? other.photoUrls.first : "";
+              final otherPhoto =
+                  other.photoUrls.isNotEmpty ? other.photoUrls.first : "";
 
-      await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ChatPage(
-            userId: other.userId,
-            displayName: other.displayName,
-            photoUrl: otherPhoto,
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ChatPage(
+                    userId: other.userId,
+                    displayName: other.displayName,
+                    photoUrl: otherPhoto,
+                  ),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: Colors.black,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(999),
+              ),
+              textStyle: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            child: const Text("Säg hej"),
+          ),
+        ),
+        const SizedBox(height: 10),
+        SizedBox(
+          width: double.infinity,
+          height: 50,
+          child: OutlinedButton(
+            onPressed: () => Navigator.pop(ctx),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.white,
+              side: const BorderSide(color: Colors.white30, width: 1.2),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(999),
+              ),
+              textStyle: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            child: const Text("Fortsätt swipa"),
+          ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       );
     },
-    style: ElevatedButton.styleFrom(
-      backgroundColor: Colors.white,
-      foregroundColor: Colors.black,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(999),
-      ),
-      textStyle: const TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.w700,
-      ),
-    ),
-    child: const Text("Säg hej"),
-  ),
-),
-                const SizedBox(height: 10),
-                SizedBox(
-  width: double.infinity,
-  height: 50,
-  child: OutlinedButton(
-    onPressed: () => Navigator.pop(ctx),
-    style: OutlinedButton.styleFrom(
-      foregroundColor: Colors.white,
-      side: const BorderSide(color: Colors.white30, width: 1.2),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(999),
-      ),
-      textStyle: const TextStyle(
-        fontSize: 15,
-        fontWeight: FontWeight.w600,
-      ),
-    ),
-    child: const Text("Fortsätt swipa"),
-  ),
-),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
+  );
+}
    
 
  Widget _matchAvatarsRow({
@@ -683,7 +699,7 @@ Future<void> _openEditProfile() async {
   }
 }
 
-class _TinderCard extends StatelessWidget {
+class _TinderCard extends StatefulWidget {
   final SwipeProfile profile;
   final double width;
   final double height;
@@ -695,11 +711,21 @@ class _TinderCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    // lämna plats för knappar
-    final cardHeight = height - 110;
+  State<_TinderCard> createState() => _TinderCardState();
+}
 
-    final photoUrl = profile.photoUrls.isNotEmpty ? profile.photoUrls.first : "";
+class _TinderCardState extends State<_TinderCard> {
+  int imageIndex = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final profile = widget.profile;
+    final width = widget.width;
+    final height = widget.height;
+
+    final cardHeight = height - 110;
+    final photoUrl =
+        profile.photoUrls.isNotEmpty ? profile.photoUrls[imageIndex] : "";
 
     return Container(
       width: math.min(420, width * 0.96),
@@ -708,9 +734,9 @@ class _TinderCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(26),
         boxShadow: [
           BoxShadow(
-            blurRadius: 28,
+            blurRadius: 18,
+            offset: const Offset(0, 8),
             color: Colors.black.withOpacity(0.18),
-            offset: const Offset(0, 16),
           ),
         ],
       ),
@@ -721,26 +747,45 @@ class _TinderCard extends StatelessWidget {
           children: [
             // Photo
             // Photo
-if (photoUrl.isNotEmpty)
-  Image.network(
-    photoUrl,
-    fit: BoxFit.cover,
-    errorBuilder: (_, __, ___) {
-      return Container(
-        color: Colors.grey.shade400,
-        child: const Center(
-          child: Icon(Icons.person, size: 120, color: Colors.white),
+GestureDetector(
+  onTapUp: (details) {
+    if (profile.photoUrls.length <= 1) return;
+
+    final screenWidth = MediaQuery.of(context).size.width;
+    final tapX = details.localPosition.dx;
+
+    setState(() {
+      if (tapX > screenWidth / 2) {
+        if (imageIndex < profile.photoUrls.length - 1) {
+          imageIndex++;
+        }
+      } else {
+        if (imageIndex > 0) {
+          imageIndex--;
+        }
+      }
+    });
+  },
+  child: profile.photoUrls.isNotEmpty
+      ? Image.network(
+          profile.photoUrls[imageIndex],
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) {
+            return Container(
+              color: Colors.grey.shade400,
+              child: const Center(
+                child: Icon(Icons.person, size: 120, color: Colors.white),
+              ),
+            );
+          },
+        )
+      : Container(
+          color: Colors.grey.shade400,
+          child: const Center(
+            child: Icon(Icons.person, size: 120, color: Colors.white),
+          ),
         ),
-      );
-    },
-  )
-else
-  Container(
-    color: Colors.grey.shade400,
-    child: const Center(
-      child: Icon(Icons.person, size: 120, color: Colors.white),
-    ),
-  ),
+),
 
             // Gradient bottom like Tinder
             Positioned(
