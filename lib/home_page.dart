@@ -787,6 +787,30 @@ GestureDetector(
         ),
 ),
 
+    Positioned(
+  top: 12,
+  left: 12,
+  right: 12,
+  child: Row(
+    children: List.generate(profile.photoUrls.length, (index) {
+      final isActive = index == imageIndex;
+
+      return Expanded(
+        child: Container(
+          height: 4,
+          margin: EdgeInsets.only(
+            right: index == profile.photoUrls.length - 1 ? 0 : 4,
+          ),
+          decoration: BoxDecoration(
+            color: isActive ? Colors.white : Colors.white38,
+            borderRadius: BorderRadius.circular(999),
+          ),
+        ),
+      );
+    }),
+  ),
+),
+
             // Gradient bottom like Tinder
             Positioned(
               left: 0,
