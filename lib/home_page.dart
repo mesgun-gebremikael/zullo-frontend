@@ -30,6 +30,7 @@ class _HomePageState extends State<HomePage>
   String? error;
   int currentIndex = 0;
   bool hasUnreadMessages = false;
+  String myPhotoUrl = "";
 
   // ===== Drag state (Tinder swipe) =====
   Offset _drag = Offset.zero; // px
@@ -44,16 +45,17 @@ class _HomePageState extends State<HomePage>
   bool _isAnimating = false;
 
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-    _anim = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 220),
-    );
-    loadFeed();
-    loadUnreadStatus();
-  }
+void initState() {
+  super.initState();
+  WidgetsBinding.instance.addObserver(this);
+  _anim = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 220),
+  );
+  loadFeed();
+  loadUnreadStatus();
+  loadMyPhoto();
+}
 
   @override
   void dispose() {
@@ -108,6 +110,18 @@ class _HomePageState extends State<HomePage>
   } catch (_) {
     // ignorera i MVP
   }
+}
+
+Future<void> loadMyPhoto() async {
+  try {
+    final me = await _authService.getMyProfile();
+    final photos = (me["photoUrls"] ?? []) as List;
+    if (photos.isNotEmpty && mounted) {
+      setState(() {
+        myPhotoUrl = photos.first.toString();
+      });
+    }
+  } catch (_) {}
 }
 
   void nextProfile() {
@@ -213,9 +227,9 @@ Future<void> _openEditProfile() async {
                   style: TextStyle(color: Colors.white70),
                 ),
                 const SizedBox(height: 20),
-               _matchAvatarsRow(
+              _matchAvatarsRow(
   otherPhotoUrl: otherPhoto,
-  myPhotoUrl: myPhoto,
+  myPhotoUrl: myPhotoUrl,
 ),
                 const SizedBox(height: 20),
                 SizedBox(
