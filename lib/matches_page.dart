@@ -99,6 +99,16 @@ class _MatchesPageState extends State<MatchesPage> {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
+    final newMatches = matches.where((m) {
+                        final lastText = (m['lastMessageText'] ?? '').toString().trim();
+                        return lastText.isEmpty;
+                       }).toList();
+
+                      final messageMatches = matches.where((m) {
+                         final lastText = (m['lastMessageText'] ?? '').toString().trim();
+                         return lastText.isNotEmpty;
+                       }).toList();
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Matches"),
@@ -155,105 +165,99 @@ class _MatchesPageState extends State<MatchesPage> {
                           ),
                         ),
                       ),
+                      
 
-                      if (matches.isEmpty) ...[
+                      if (newMatches.isEmpty && messageMatches.isEmpty) ...[
                         const SizedBox(height: 140),
                         const Center(child: Text("Inga matches än")),
                       ] else ...[
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: const [
-                            Text(
-                              "New Matches",
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        SizedBox(
-                          height: 112,
-                          child: ListView.separated(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: matches.length,
-                            separatorBuilder: (_, __) =>
-                                const SizedBox(width: 12),
-                            itemBuilder: (context, i) {
-                              final m = matches[i];
-                              final name =
-                                  (m["displayName"] ?? "").toString();
-                              final photoUrl =
-                                  (m["photoUrl"] ?? "").toString();
-                              final hasUnread = (m["hasUnread"] == true);
+                       if (newMatches.isNotEmpty) ...[
+  Row(
+    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    children: const [
+      Text(
+        "New Matches",
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    ],
+  ),
+  const SizedBox(height: 10),
+  SizedBox(
+    height: 112,
+    child: ListView.separated(
+      scrollDirection: Axis.horizontal,
+      itemCount: newMatches.length,
+      separatorBuilder: (_, __) => const SizedBox(width: 12),
+      itemBuilder: (context, i) {
+        final m = newMatches[i];
+        final name = (m["displayName"] ?? "").toString();
+        final photoUrl = (m["photoUrl"] ?? "").toString();
+        final hasUnread = (m["hasUnread"] == true);
 
-                              return InkWell(
-                                onTap: () => _openChat(m),
-                                borderRadius: BorderRadius.circular(18),
-                                child: SizedBox(
-                                  width: 82,
-                                  child: Column(
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.all(2.5),
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: hasUnread
-                                                ? cs.primary
-                                                : cs.primary.withValues(
-                                                    alpha: 0.55,
-                                                  ),
-                                            width: 2,
-                                          ),
-                                        ),
-                                        child: CircleAvatar(
-                                          radius: 30,
-                                          backgroundColor:
-                                              cs.surfaceContainerHighest,
-                                          backgroundImage:
-                                              photoUrl.isNotEmpty
-                                                  ? NetworkImage(photoUrl)
-                                                  : null,
-                                          child: photoUrl.isEmpty
-                                              ? Icon(
-                                                  Icons.person,
-                                                  color: cs.onSurface
-                                                      .withValues(alpha: 0.7),
-                                                )
-                                              : null,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        name,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        textAlign: TextAlign.center,
-                                        style: const TextStyle(
-                                          fontSize: 12.5,
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                        const SizedBox(height: 18),
-                        const Text(
-                          "Messages",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        ...List.generate(matches.length, (i) {
-                          final m = matches[i];
+        return InkWell(
+          onTap: () => _openChat(m),
+          borderRadius: BorderRadius.circular(18),
+          child: SizedBox(
+            width: 82,
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(2.5),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: hasUnread
+                          ? cs.primary
+                          : cs.primary.withValues(alpha: 0.55),
+                      width: 2,
+                    ),
+                  ),
+                  child: CircleAvatar(
+                    radius: 30,
+                    backgroundColor: cs.surfaceContainerHighest,
+                    backgroundImage:
+                        photoUrl.isNotEmpty ? NetworkImage(photoUrl) : null,
+                    child: photoUrl.isEmpty
+                        ? Icon(
+                            Icons.person,
+                            color: cs.onSurface.withValues(alpha: 0.7),
+                          )
+                        : null,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    ),
+  ),
+  const SizedBox(height: 18),
+],
+                       const Text(
+  "Messages",
+  style: TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.w800,
+  ),
+),
+const SizedBox(height: 10),
+...List.generate(messageMatches.length, (i) {
+  final m = messageMatches[i];
                           final name = (m["displayName"] ?? "").toString();
                           final age = (m["age"] ?? 0).toString();
                           final photoUrl =
