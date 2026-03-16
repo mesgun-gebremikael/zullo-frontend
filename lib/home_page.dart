@@ -751,11 +751,11 @@ GestureDetector(
   onTapUp: (details) {
     if (profile.photoUrls.length <= 1) return;
 
-    final screenWidth = MediaQuery.of(context).size.width;
+    final cardWidth = widget.width;
     final tapX = details.localPosition.dx;
 
     setState(() {
-      if (tapX > screenWidth / 2) {
+      if (tapX > cardWidth / 2) {
         if (imageIndex < profile.photoUrls.length - 1) {
           imageIndex++;
         }
