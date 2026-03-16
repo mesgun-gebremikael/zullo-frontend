@@ -177,16 +177,6 @@ Future<void> _openEditProfile() async {
 
     final otherPhoto = other.photoUrls.isNotEmpty ? other.photoUrls.first : "";
 
-    final auth = AuthService();
-     String myPhoto = "";
-
-   try {
-     final me = await auth.getMyProfile();
-     final photos = (me["photoUrls"] ?? []) as List;
-     if (photos.isNotEmpty) {
-     myPhoto = photos.first;
-   }
-} catch (_) {}
      
     await showDialog(
       context: context,
@@ -211,21 +201,26 @@ Future<void> _openEditProfile() async {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
-                  "Det är en match!",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  "Säg hej och lär känna varandra.",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.white70),
-                ),
+               Text(
+  "Det är en match!",
+  textAlign: TextAlign.center,
+  style: TextStyle(
+    fontSize: 30,
+    fontWeight: FontWeight.w900,
+    color: Colors.pink.shade200,
+    letterSpacing: 0.5,
+  ),
+),
+const SizedBox(height: 10),
+Text(
+  "Du och ${other.displayName} gillar varandra.\nSäg hej eller fortsätt swipa.",
+  textAlign: TextAlign.center,
+  style: const TextStyle(
+    color: Colors.white70,
+    fontSize: 15,
+    height: 1.4,
+  ),
+),
                 const SizedBox(height: 20),
               _matchAvatarsRow(
   otherPhotoUrl: otherPhoto,
