@@ -205,32 +205,32 @@ Future<void> _openEditProfile() async {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-               Text(
-  "Det är en match!",
-  textAlign: TextAlign.center,
-  style: TextStyle(
-    fontSize: 30,
-    fontWeight: FontWeight.w900,
-    color: Colors.pink.shade200,
-    letterSpacing: 0.5,
+  Text(
+    "Det är en match!",
+    textAlign: TextAlign.center,
+    style: TextStyle(
+      fontSize: 30,
+      fontWeight: FontWeight.w900,
+      color: Colors.pink.shade200,
+      letterSpacing: 0.5,
+    ),
   ),
-),
-const SizedBox(height: 10),
-Text(
-  "Du och ${other.displayName} gillar varandra.\nSäg hej eller fortsätt swipa.",
-  textAlign: TextAlign.center,
-  style: const TextStyle(
-    color: Colors.white70,
-    fontSize: 15,
-    height: 1.4,
+  const SizedBox(height: 12),
+  Text(
+    "Du och ${other.displayName} gillar varandra.\nSäg hej eller fortsätt swipa.",
+    textAlign: TextAlign.center,
+    style: const TextStyle(
+      color: Colors.white70,
+      fontSize: 15,
+      height: 1.45,
+    ),
   ),
-),
-                const SizedBox(height: 20),
-              _matchAvatarsRow(
-  otherPhotoUrl: otherPhoto,
-  myPhotoUrl: myPhotoUrl,
-),
-                const SizedBox(height: 20),
+  const SizedBox(height: 28),
+  _matchAvatarsRow(
+    otherPhotoUrl: otherPhoto,
+    myPhotoUrl: myPhotoUrl,
+  ),
+  const SizedBox(height: 28),
                 SizedBox(
   width: double.infinity,
   height: 52,
