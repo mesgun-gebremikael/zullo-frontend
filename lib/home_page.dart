@@ -85,7 +85,7 @@ void initState() {
     isLoading = false;
     error = data.isEmpty ? "Inga profiler just nu" : null;
   });
-
+      _precacheNextProfile();
   //_precacheNextImage(); // D HÄR
 } catch (_) {
   setState(() {
@@ -130,6 +130,7 @@ Future<void> loadMyPhoto() async {
 
     if (currentIndex < profiles.length - 1) {
   setState(() => currentIndex++);
+  _precacheNextProfile();
   //_precacheNextImage(); //  
 } else {
   loadFeed();
@@ -527,6 +528,22 @@ Future<void> _openEditProfile() async {
   Future<void> _snapBack() async {
     await _animateTo(Offset.zero, rotateEnd: 0.0, fadeEnd: 1.0);
   }
+
+  void _precacheNextProfile() {
+  if (profiles.isEmpty) return;
+
+  final nextIndex = currentIndex + 1;
+  if (nextIndex >= profiles.length) return;
+
+  final nextProfile = profiles[nextIndex];
+
+  if (nextProfile.photoUrls.isEmpty) return;
+
+  precacheImage(
+    NetworkImage(nextProfile.photoUrls.first),
+    context,
+  );
+}
 
   // ================= UI =================
   @override
