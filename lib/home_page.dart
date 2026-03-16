@@ -186,18 +186,22 @@ Future<void> _openEditProfile() async {
           backgroundColor: Colors.transparent,
           insetPadding: const EdgeInsets.all(16),
           child: Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.90),
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  blurRadius: 30,
-                  color: Colors.black.withOpacity(0.35),
-                  offset: const Offset(0, 14),
-                ),
-              ],
-            ),
+  padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+  decoration: BoxDecoration(
+    color: const Color(0xFF111111),
+    borderRadius: BorderRadius.circular(28),
+    border: Border.all(
+      color: Colors.white.withOpacity(0.08),
+      width: 1,
+    ),
+    boxShadow: [
+      BoxShadow(
+        blurRadius: 36,
+        color: Colors.black.withOpacity(0.45),
+        offset: const Offset(0, 18),
+      ),
+    ],
+  ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
