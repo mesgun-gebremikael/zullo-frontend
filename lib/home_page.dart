@@ -162,6 +162,17 @@ Future<void> _openEditProfile() async {
     if (!mounted) return;
 
     final otherPhoto = other.photoUrls.isNotEmpty ? other.photoUrls.first : "";
+
+    final auth = AuthService();
+     String myPhoto = "";
+
+   try {
+     final me = await auth.getMyProfile();
+     final photos = (me["photoUrls"] ?? []) as List;
+     if (photos.isNotEmpty) {
+     myPhoto = photos.first;
+   }
+} catch (_) {}
      
     await showDialog(
       context: context,
@@ -202,9 +213,9 @@ Future<void> _openEditProfile() async {
                   style: TextStyle(color: Colors.white70),
                 ),
                 const SizedBox(height: 20),
-                _matchAvatarsRow(
+               _matchAvatarsRow(
   otherPhotoUrl: otherPhoto,
-  myPhotoUrl: "",
+  myPhotoUrl: myPhoto,
 ),
                 const SizedBox(height: 20),
                 SizedBox(
@@ -254,40 +265,83 @@ Future<void> _openEditProfile() async {
   }
    
 
- Widget _matchAvatarsRow({required String otherPhotoUrl, required String myPhotoUrl}) {
+ Widget _matchAvatarsRow({
+  required String otherPhotoUrl,
+  required String myPhotoUrl,
+}) {
   Widget avatar(String url) {
     return Container(
-      width: 96,
-      height: 96,
+      width: 112,
+      height: 112,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.white24, width: 2),
+        border: Border.all(color: Colors.white, width: 3),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.25),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: ClipOval(
         child: url.isNotEmpty
-    ? Image.network(
-        url,
-        fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) {
-          return const Center(
-            child: Icon(Icons.person, color: Colors.white, size: 40),
-          );
-        },
-      )
-    : const Center(
-        child: Icon(Icons.person, color: Colors.white, size: 40),
-      ),
+            ? Image.network(
+                url,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) {
+                  return Container(
+                    color: Colors.white10,
+                    child: const Center(
+                      child: Icon(Icons.person, color: Colors.white, size: 44),
+                    ),
+                  );
+                },
+              )
+            : Container(
+                color: Colors.white10,
+                child: const Center(
+                  child: Icon(Icons.person, color: Colors.white, size: 44),
+                ),
+              ),
       ),
     );
   }
 
-  return Row(
-    mainAxisAlignment: MainAxisAlignment.center,
-    children: [
-      avatar(myPhotoUrl),
-      const SizedBox(width: 14),
-      avatar(otherPhotoUrl),
-    ],
+  return SizedBox(
+    height: 124,
+    child: Stack(
+      alignment: Alignment.center,
+      children: [
+        Positioned(
+          left: 8,
+          child: Transform.rotate(
+            angle: -0.10,
+            child: avatar(myPhotoUrl),
+          ),
+        ),
+        Positioned(
+          right: 8,
+          child: Transform.rotate(
+            angle: 0.10,
+            child: avatar(otherPhotoUrl),
+          ),
+        ),
+        Container(
+          width: 42,
+          height: 42,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.favorite,
+            color: Colors.red,
+            size: 24,
+          ),
+        ),
+      ],
+    ),
   );
 }
 
