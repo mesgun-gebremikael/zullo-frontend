@@ -228,43 +228,59 @@ Text(
 ),
                 const SizedBox(height: 20),
                 SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: ElevatedButton(
-                   onPressed: () async {
-  Navigator.pop(ctx);
+  width: double.infinity,
+  height: 52,
+  child: ElevatedButton(
+    onPressed: () async {
+      Navigator.pop(ctx);
 
-  final otherPhoto = other.photoUrls.isNotEmpty ? other.photoUrls.first : "";
+      final otherPhoto = other.photoUrls.isNotEmpty ? other.photoUrls.first : "";
 
-  await Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (_) => ChatPage(
-        userId: other.userId,
-        displayName: other.displayName,
-        photoUrl: otherPhoto,
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ChatPage(
+            userId: other.userId,
+            displayName: other.displayName,
+            photoUrl: otherPhoto,
+          ),
+        ),
+      );
+    },
+    style: ElevatedButton.styleFrom(
+      backgroundColor: Colors.white,
+      foregroundColor: Colors.black,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(999),
+      ),
+      textStyle: const TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.w700,
       ),
     ),
-  );
-},
-
-
-                    child: const Text("Säg hej"),
-                  ),
-                ),
+    child: const Text("Säg hej"),
+  ),
+),
                 const SizedBox(height: 10),
                 SizedBox(
-                  width: double.infinity,
-                  height: 46,
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      side: const BorderSide(color: Colors.white24),
-                    ),
-                    child: const Text("Fortsätt swipa"),
-                  ),
-                ),
+  width: double.infinity,
+  height: 50,
+  child: OutlinedButton(
+    onPressed: () => Navigator.pop(ctx),
+    style: OutlinedButton.styleFrom(
+      foregroundColor: Colors.white,
+      side: const BorderSide(color: Colors.white30, width: 1.2),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(999),
+      ),
+      textStyle: const TextStyle(
+        fontSize: 15,
+        fontWeight: FontWeight.w600,
+      ),
+    ),
+    child: const Text("Fortsätt swipa"),
+  ),
+),
               ],
             ),
           ),
