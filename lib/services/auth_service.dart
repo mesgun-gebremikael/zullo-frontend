@@ -152,12 +152,17 @@ class AuthService {
       body: jsonEncode({'targetUserId': targetUserId}),
     );
 
-    if (res.statusCode == 200) {
-      final decoded = jsonDecode(res.body);
-      return decoded['matched'] == true;
-    }
+   if (res.statusCode == 200) {
+  final decoded = jsonDecode(res.body);
+  return decoded['matched'] == true;
+}
 
-    throw Exception('Like failed: ${res.statusCode} ${res.body}');
+if (res.statusCode == 429) {
+  final decoded = jsonDecode(res.body);
+  throw Exception(decoded['message'] ?? 'Like limit reached');
+}
+
+throw Exception('Like failed: ${res.statusCode} ${res.body}');
   }
 
   Future<void> skip(String targetUserId) async {
