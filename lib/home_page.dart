@@ -31,6 +31,7 @@ class _HomePageState extends State<HomePage>
   int currentIndex = 0;
   bool hasUnreadMessages = false;
   String myPhotoUrl = "";
+  double _radiusKm = 50;
 
   // ===== Drag state (Tinder swipe) =====
   Offset _drag = Offset.zero; // px
@@ -563,6 +564,85 @@ Future<void> _openEditProfile() async {
   );
 }
 
+Future<void> _openRadiusSheet() async {
+  double tempRadius = _radiusKm;
+
+  await showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    ),
+    builder: (context) {
+      return StatefulBuilder(
+        builder: (context, setModalState) {
+          return Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Avstånd',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '${tempRadius.round()} km',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                Slider(
+                  value: tempRadius,
+                  min: 1,
+                  max: 200,
+                  divisions: 199,
+                  label: '${tempRadius.round()} km',
+                  onChanged: (value) {
+                    setModalState(() {
+                      tempRadius = value;
+                    });
+                  },
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      Navigator.pop(context);
+
+                      try {
+                        final savedKm =
+                            await _authService.updateRadius(tempRadius.round());
+
+                        setState(() {
+                          _radiusKm = savedKm.toDouble();
+                          currentIndex = 0;
+                        });
+
+                        await loadFeed();
+                        showToast('Avstånd uppdaterat till ${savedKm} km');
+                      } catch (e) {
+                        showToast('Kunde inte uppdatera avstånd');
+                      }
+                    },
+                    child: const Text('Spara'),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+    },
+  );
+}
+
   // ================= UI =================
   @override
   Widget build(BuildContext context) {
@@ -576,6 +656,12 @@ Future<void> _openEditProfile() async {
   icon: const Icon(Icons.edit_outlined),
   onPressed: _openEditProfile,
 ),
+
+ IconButton(
+    icon: const Icon(Icons.tune),
+    onPressed: _openRadiusSheet,
+  ),
+   
           IconButton(
   icon: Stack(
     clipBehavior: Clip.none,

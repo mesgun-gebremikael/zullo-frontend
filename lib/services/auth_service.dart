@@ -295,4 +295,26 @@ Future<void> reportUser({
   }
 }
 
+ Future<int> updateRadius(int km) async {
+  final token = await _storage.getToken();
+
+  final res = await http.post(
+    Uri.parse('$baseApiUrl/me/radius'),
+    headers: {
+      'Content-Type': 'application/json',
+      if (token != null) 'Authorization': 'Bearer $token',
+    },
+    body: jsonEncode({
+      'matchRadiusKm': km,
+    }),
+  );
+
+  if (res.statusCode == 200) {
+    final decoded = jsonDecode(res.body);
+    return (decoded['matchRadiusKm'] ?? km) as int;
+  }
+
+  throw Exception('Update radius failed: ${res.statusCode} ${res.body}');
+}
+
 }
