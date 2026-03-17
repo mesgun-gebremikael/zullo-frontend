@@ -125,17 +125,21 @@ Future<void> loadMyPhoto() async {
 }
 
   void nextProfile() {
-    if (!mounted) return;
-    if (profiles.isEmpty) return;
+  if (!mounted) return;
+  if (profiles.isEmpty) return;
 
-    if (currentIndex < profiles.length - 1) {
-  setState(() => currentIndex++);
-  _precacheNextProfile();
-  //_precacheNextImage(); //  
-} else {
-  loadFeed();
-}
+  if (currentIndex < profiles.length - 1) {
+    setState(() => currentIndex++);
+    _precacheNextProfile();
+
+    if (currentIndex >= profiles.length - 3) {
+      loadFeed();
+    }
+
+  } else {
+    loadFeed();
   }
+}
 
   void showToast(String text) {
     if (!mounted) return;
