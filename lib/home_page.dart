@@ -32,6 +32,9 @@ class _HomePageState extends State<HomePage>
   bool hasUnreadMessages = false;
   String myPhotoUrl = "";
   double _radiusKm = 50;
+  
+  String _selectedIntention = 'Relationship';
+  String _selectedReligion = 'Private';
 
   // ===== Drag state (Tinder swipe) =====
   Offset _drag = Offset.zero; // px
@@ -56,6 +59,7 @@ void initState() {
   loadFeed();
   loadUnreadStatus();
   loadMyPhoto();
+  _loadMyFilterValues();
 }
 
   @override
@@ -568,8 +572,21 @@ Future<void> _openEditProfile() async {
   );
 }
 
+Future<void> _loadMyFilterValues() async {
+  try {
+    final me = await _authService.getMyProfile();
+
+    setState(() {
+      _selectedIntention = (me["intention"] ?? "Relationship").toString();
+      _selectedReligion = (me["religion"] ?? "Private").toString();
+    });
+  } catch (_) {}
+}
+
 Future<void> _openRadiusSheet() async {
   double tempRadius = _radiusKm;
+  String tempIntention = _selectedIntention;
+  String tempReligion = _selectedReligion;
 
   await showModalBottomSheet(
     context: context,
@@ -582,63 +599,122 @@ Future<void> _openRadiusSheet() async {
         builder: (context, setModalState) {
           return Padding(
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Avstånd',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Filter',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '${tempRadius.round()} km',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
+                  const SizedBox(height: 20),
+
+                  const Text(
+                    'Avstånd',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                   ),
-                ),
-                Slider(
-                  value: tempRadius,
-                  min: 1,
-                  max: 200,
-                  divisions: 199,
-                  label: '${tempRadius.round()} km',
-                  onChanged: (value) {
-                    setModalState(() {
-                      tempRadius = value;
-                    });
-                  },
-                ),
-                const SizedBox(height: 8),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      Navigator.pop(context);
-
-                      try {
-                        final savedKm =
-                            await _authService.updateRadius(tempRadius.round());
-
-                        setState(() {
-                          _radiusKm = savedKm.toDouble();
-                          currentIndex = 0;
-                        });
-
-                        await loadFeed();
-                        showToast('Avstånd uppdaterat till ${savedKm} km');
-                      } catch (e) {
-                        showToast('Kunde inte uppdatera avstånd');
-                      }
+                  const SizedBox(height: 6),
+                  Text(
+                    '${tempRadius.round()} km',
+                    style: const TextStyle(fontSize: 15),
+                  ),
+                  Slider(
+                    value: tempRadius,
+                    min: 1,
+                    max: 200,
+                    divisions: 199,
+                    label: '${tempRadius.round()} km',
+                    onChanged: (value) {
+                      setModalState(() {
+                        tempRadius = value;
+                      });
                     },
-                    child: const Text('Spara'),
                   ),
-                ),
-              ],
+
+                  const SizedBox(height: 12),
+
+                  const Text(
+                    'Intention',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(height: 8),
+                  DropdownButtonFormField<String>(
+                    value: tempIntention,
+                    items: const [
+                      DropdownMenuItem(value: 'Date', child: Text('Date')),
+                      DropdownMenuItem(value: 'Relationship', child: Text('Relationship')),
+                      DropdownMenuItem(value: 'Marriage', child: Text('Marriage')),
+                    ],
+                    onChanged: (value) {
+                      if (value == null) return;
+                      setModalState(() {
+                        tempIntention = value;
+                      });
+                    },
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  const Text(
+                    'Religion',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(height: 8),
+                  DropdownButtonFormField<String>(
+                    value: tempReligion,
+                    items: const [
+                      DropdownMenuItem(value: 'Christian', child: Text('Christian')),
+                      DropdownMenuItem(value: 'Muslim', child: Text('Muslim')),
+                      DropdownMenuItem(value: 'Atheist', child: Text('Atheist')),
+                      DropdownMenuItem(value: 'Private', child: Text('Private')),
+                    ],
+                    onChanged: (value) {
+                      if (value == null) return;
+                      setModalState(() {
+                        tempReligion = value;
+                      });
+                    },
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        Navigator.pop(context);
+
+                        try {
+                          final savedKm =
+                              await _authService.updateRadius(tempRadius.round());
+
+                          await _authService.updateFilterProfile(
+                            intention: tempIntention,
+                            religion: tempReligion,
+                          );
+
+                          setState(() {
+                            _radiusKm = savedKm.toDouble();
+                            _selectedIntention = tempIntention;
+                            _selectedReligion = tempReligion;
+                            currentIndex = 0;
+                          });
+
+                          await loadFeed();
+                          showToast('Filter uppdaterade');
+                        } catch (_) {
+                          showToast('Kunde inte uppdatera filter');
+                        }
+                      },
+                      child: const Text('Spara'),
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         },

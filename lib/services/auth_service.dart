@@ -330,4 +330,43 @@ Future<void> reportUser({
   throw Exception('Update radius failed: ${res.statusCode} ${res.body}');
 }
 
+Future<void> updateFilterProfile({
+  required String intention,
+  required String religion,
+}) async {
+  final token = await _storage.getToken();
+
+  final me = await getMyProfile();
+
+  final body = {
+    "displayName": me["displayName"] ?? "",
+    "age": me["age"] ?? 18,
+    "gender": me["gender"] ?? "",
+    "bio": me["bio"] ?? "",
+    "intention": intention,
+    "religion": religion,
+    "workout": me["workout"] ?? "Sometimes",
+    "smoking": me["smoking"] ?? "No",
+    "pets": me["pets"] ?? "Want",
+    "interests": me["interests"] ?? [],
+    "photoUrls": me["photoUrls"] ?? [],
+    "lat": me["lat"] ?? 0,
+    "lng": me["lng"] ?? 0,
+    "countryCode": me["countryCode"] ?? ""
+  };
+
+  final res = await http.post(
+    Uri.parse('$baseApiUrl/me/profile'),
+    headers: {
+      'Content-Type': 'application/json',
+      if (token != null) 'Authorization': 'Bearer $token',
+    },
+    body: jsonEncode(body),
+  );
+
+  if (res.statusCode != 200 && res.statusCode != 201) {
+    throw Exception('Update filter profile failed: ${res.statusCode} ${res.body}');
+  }
+}
+
 }
