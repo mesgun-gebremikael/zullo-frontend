@@ -79,13 +79,17 @@ void initState() {
     });
 
     try {
-  final data = await _authService.getSwipeFeed();
-  setState(() {
-    profiles = data;
-    currentIndex = 0;
-    isLoading = false;
-    error = data.isEmpty ? "Inga profiler just nu" : null;
-  });
+ final data = await _authService.getSwipeFeed();
+final loadedProfiles = data['profiles'] as List<SwipeProfile>;
+final loadedRadius = data['radiusKm'] as double;
+
+setState(() {
+  profiles = loadedProfiles;
+  _radiusKm = loadedRadius;
+  currentIndex = 0;
+  isLoading = false;
+  error = loadedProfiles.isEmpty ? "Inga profiler just nu" : null;
+});
       _precacheNextProfile();
   //_precacheNextImage(); // D HÄR
 } catch (_) {

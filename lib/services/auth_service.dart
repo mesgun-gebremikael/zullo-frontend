@@ -108,7 +108,7 @@ class AuthService {
 
   // ---------- SWIPE FEED ----------
 
- Future<List<SwipeProfile>> getSwipeFeed() async {
+Future<Map<String, dynamic>> getSwipeFeed() async {
   final token = await _storage.getToken();
 
   final response = await http.get(
@@ -125,17 +125,30 @@ class AuthService {
   if (response.statusCode == 200) {
     final decoded = jsonDecode(response.body);
 
-    // ✅ Stöd både: {profiles:[...]} och: [...]
-    final List profilesJson = (decoded is List)
-        ? decoded
-        : (decoded['profiles'] ?? []) as List;
+    final radiusKm = (decoded['radiusKm'] ?? 50) as num;
 
-    return profilesJson.map((j) => SwipeProfile.fromJson(j)).toList();
+    final List profilesJson = (decoded['profiles'] ?? []) as List;
+
+    final profiles = profilesJson
+        .map((j) => SwipeProfile.fromJson(j))
+        .toList();
+
+    return {
+      'radiusKm': radiusKm.toDouble(),
+      'profiles': profiles,
+    };
   }
 
-  if (response.statusCode == 204) return [];
+  if (response.statusCode == 204) {
+    return {
+      'radiusKm': 50.0,
+      'profiles': <SwipeProfile>[],
+    };
+  }
 
-  throw Exception('Failed to load swipe feed: ${response.statusCode} ${response.body}');
+  throw Exception(
+    'Failed to load swipe feed: ${response.statusCode} ${response.body}',
+  );
 }
 
   // ---------- LIKE / SKIP ----------
