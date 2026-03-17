@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'services/auth_service.dart';
 import 'services/auth_storage.dart';
 import 'models/swipe_profile.dart';
-
+import 'premium_page.dart';
 import 'welcome_page.dart';
 import 'matches_page.dart';
 import 'profile_page.dart';
@@ -499,11 +499,25 @@ Future<void> _openEditProfile() async {
           showToast("Super Like skickad ⭐");
         }
       } catch (e) {
-        final msg = e.toString().contains("429")
-            ? "Du har nått like-gränsen 💔"
-            : (dir == SwipeDir.up ? "Super Like misslyckades" : "Like misslyckades");
-        showToast(msg);
-      }
+  if (e.toString().contains("429")) {
+    showToast("Du har nått like-gränsen ❤️");
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const PremiumPage(),
+      ),
+    );
+
+    return;
+  }
+
+  final msg = dir == SwipeDir.up
+      ? "Super Like misslyckades"
+      : "Like misslyckades";
+
+  showToast(msg);
+}
     }
 
     // 2) Animate off screen
