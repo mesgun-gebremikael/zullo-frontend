@@ -34,9 +34,9 @@ class _MatchesPageState extends State<MatchesPage> {
 
   void _sortMatchesInUi(List<dynamic> list) {
     list.sort((a, b) {
-      final aUnread = (a['hasUnread'] == true);
-      final bUnread = (b['hasUnread'] == true);
-      if (aUnread != bUnread) return aUnread ? -1 : 1;
+      // final aUnread = (a['hasUnread'] == true);
+      //final bUnread = (b['hasUnread'] == true);
+      //if (aUnread != bUnread) return aUnread ? -1 : 1;
 
       final aDt = _tryParseUtc(a['lastMessageAtUtc']) ??
           DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
