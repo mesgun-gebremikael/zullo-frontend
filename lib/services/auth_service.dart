@@ -108,19 +108,21 @@ class AuthService {
 
   // ---------- SWIPE FEED ----------
 
-Future<Map<String, dynamic>> getSwipeFeed() async {
+Future<Map<String, dynamic>> getSwipeFeed({
+  int minAge = 18,
+  int maxAge = 99,
+}) async {
   final token = await _storage.getToken();
 
   final response = await http.get(
-    Uri.parse('$baseApiUrl/swipe/feed'),
+    Uri.parse(
+      '$baseApiUrl/swipe/feed?minAge=$minAge&maxAge=$maxAge',
+    ),
     headers: {
       'Content-Type': 'application/json',
       if (token != null) 'Authorization': 'Bearer $token',
     },
   );
-
-  print("FEED status: ${response.statusCode}");
-  print("FEED body: ${response.body}");
 
   if (response.statusCode == 200) {
     final decoded = jsonDecode(response.body);
@@ -147,8 +149,7 @@ Future<Map<String, dynamic>> getSwipeFeed() async {
   }
 
   throw Exception(
-    'Failed to load swipe feed: ${response.statusCode} ${response.body}',
-  );
+      'Failed to load swipe feed: ${response.statusCode} ${response.body}');
 }
 
   // ---------- LIKE / SKIP ----------

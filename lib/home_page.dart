@@ -35,6 +35,8 @@ class _HomePageState extends State<HomePage>
   
   String _selectedIntention = 'Relationship';
   String _selectedReligion = 'Private';
+  int _minAge = 18;
+  int _maxAge = 99;
 
   // ===== Drag state (Tinder swipe) =====
   Offset _drag = Offset.zero; // px
@@ -83,7 +85,10 @@ void initState() {
     });
 
     try {
- final data = await _authService.getSwipeFeed();
+ final data = await _authService.getSwipeFeed(
+    minAge: _maxAge,
+    maxAge: _maxAge,
+ );
 final loadedProfiles = data['profiles'] as List<SwipeProfile>;
 final loadedRadius = data['radiusKm'] as double;
 
@@ -587,6 +592,8 @@ Future<void> _openRadiusSheet() async {
   double tempRadius = _radiusKm;
   String tempIntention = _selectedIntention;
   String tempReligion = _selectedReligion;
+  int tempMinAge = _maxAge;
+   int tempMaxAge = _maxAge;
 
   await showModalBottomSheet(
     context: context,
@@ -634,6 +641,50 @@ Future<void> _openRadiusSheet() async {
                       });
                     },
                   ),
+
+                  const SizedBox(height: 12),
+
+const Text(
+  'Ålder',
+  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+),
+const SizedBox(height: 6),
+Text(
+  '$tempMinAge - $tempMaxAge år',
+  style: const TextStyle(fontSize: 15),
+),
+
+Slider(
+  value: tempMinAge.toDouble(),
+  min: 18,
+  max: 100,
+  divisions: 82,
+  label: '$tempMinAge',
+  onChanged: (value) {
+    setModalState(() {
+      final newMin = value.toInt();
+      if (newMin <= tempMaxAge) {
+        tempMinAge = newMin;
+      }
+    });
+  },
+),
+
+Slider(
+  value: tempMaxAge.toDouble(),
+  min: 18,
+  max: 100,
+  divisions: 82,
+  label: '$tempMaxAge',
+  onChanged: (value) {
+    setModalState(() {
+      final newMax = value.toInt();
+      if (newMax >= tempMinAge) {
+        tempMaxAge = newMax;
+      }
+    });
+  },
+),
 
                   const SizedBox(height: 12),
 
@@ -701,6 +752,8 @@ Future<void> _openRadiusSheet() async {
                             _radiusKm = savedKm.toDouble();
                             _selectedIntention = tempIntention;
                             _selectedReligion = tempReligion;
+                             _minAge = tempMinAge;
+                             _maxAge = tempMaxAge;
                             currentIndex = 0;
                           });
 
