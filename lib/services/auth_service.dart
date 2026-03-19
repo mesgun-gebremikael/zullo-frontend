@@ -123,6 +123,8 @@ Future<Map<String, dynamic>> getSwipeFeed({
       if (token != null) 'Authorization': 'Bearer $token',
     },
   );
+    print("Feed status: ${response.statusCode}");
+    print("Feed body: ${response.body}");
 
   if (response.statusCode == 200) {
     final decoded = jsonDecode(response.body);

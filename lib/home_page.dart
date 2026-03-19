@@ -86,10 +86,12 @@ void initState() {
 
     try {
  final data = await _authService.getSwipeFeed(
-    minAge: _maxAge,
+    minAge: _minAge,
     maxAge: _maxAge,
  );
-final loadedProfiles = data['profiles'] as List<SwipeProfile>;
+final loadedProfiles = (data['profiles'] as List)
+       .map((e) => SwipeProfile.fromJson(e))
+       .toList();
 final loadedRadius = data['radiusKm'] as double;
 
 setState(() {
