@@ -20,6 +20,8 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
   final _age = TextEditingController(text: "24");
   final _gender = TextEditingController(text: "Man");
   final _bio = TextEditingController(text: "Hej! Jag söker en seriös relation.");
+  String _selectedIntention = "Relationship";
+   String _selectedReligion = "Private";
 
   final ImagePicker _picker = ImagePicker();
 List<String> _photoUrls = [];
@@ -97,8 +99,8 @@ if (_photoUrls.length < 2) {
       "bio": bio,
 
       // enums i backend skickas som string (du har JsonStringEnumConverter)
-      "intention": "Relationship",
-      "religion": "Private",
+     "intention": _selectedIntention,
+      "religion": _selectedReligion,
       "workout": "Sometimes",
       "smoking": "No",
       "pets": "Want",
@@ -164,6 +166,45 @@ if (_photoUrls.length < 2) {
             const SizedBox(height: 12),
             TextField(controller: _gender, decoration: const InputDecoration(labelText: "Kön (t.ex. Man/Kvinna)")),
             const SizedBox(height: 12),
+
+            DropdownButtonFormField<String>(
+  value: _selectedIntention,
+  decoration: const InputDecoration(
+    labelText: "Vad söker du?",
+  ),
+  items: const [
+    DropdownMenuItem(value: "Date", child: Text("Date")),
+    DropdownMenuItem(value: "Relationship", child: Text("Relationship")),
+    DropdownMenuItem(value: "Marriage", child: Text("Marriage")),
+  ],
+  onChanged: (value) {
+    if (value == null) return;
+    setState(() {
+      _selectedIntention = value;
+    });
+  },
+),
+const SizedBox(height: 12),
+
+DropdownButtonFormField<String>(
+  value: _selectedReligion,
+  decoration: const InputDecoration(
+    labelText: "Religion",
+  ),
+  items: const [
+    DropdownMenuItem(value: "Christian", child: Text("Christian")),
+    DropdownMenuItem(value: "Muslim", child: Text("Muslim")),
+    DropdownMenuItem(value: "Atheist", child: Text("Atheist")),
+    DropdownMenuItem(value: "Private", child: Text("Private")),
+  ],
+  onChanged: (value) {
+    if (value == null) return;
+    setState(() {
+      _selectedReligion = value;
+    });
+  },
+),
+const SizedBox(height: 12),
 
           
            TextField(controller: _bio, maxLines: 3, decoration: const InputDecoration(labelText: "Om mig")),

@@ -453,7 +453,7 @@ Future<void> _openEditProfile() async {
   // ================= Swipe helpers =================
   SwipeDir? _decideDir(Size screen) {
     // Trösklar i px (känns Tinder-ish)
-    const dxThreshold = 120.0;
+    const dxThreshold = 100.0;
     const upThreshold = 140.0;
 
     if (_drag.dx > dxThreshold) return SwipeDir.right;
@@ -488,7 +488,7 @@ Future<void> _openEditProfile() async {
 
   double _rotationForDrag() {
     // Lite rotation som Tinder: max ca 10 grader
-    final rot = (_drag.dx / 320.0).clamp(-0.18, 0.18);
+    final rot = (_drag.dx / 280.0).clamp(-0.22, 0.22);
     return rot;
   }
 
@@ -592,8 +592,8 @@ Future<void> _openRadiusSheet() async {
   double tempRadius = _radiusKm;
   String tempIntention = _selectedIntention;
   String tempReligion = _selectedReligion;
-  int tempMinAge = _maxAge;
-   int tempMaxAge = _maxAge;
+  int tempMinAge = _minAge;
+  int tempMaxAge = _maxAge;
 
   await showModalBottomSheet(
     context: context,
@@ -1152,8 +1152,8 @@ class _SwipeHint extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dirText = () {
-      if (drag.dx > 120) return "LIKE";
-      if (drag.dx < -120) return "NOPE";
+      if (drag.dx > 20) return "LIKE";
+      if (drag.dx < -20) return "NOPE";
       if (drag.dy < -140) return "SUPER LIKE";
       return "";
     }();
@@ -1163,6 +1163,7 @@ class _SwipeHint extends StatelessWidget {
     final color = dirText == "NOPE"
         ? Colors.red
         : (dirText == "LIKE" ? Colors.green : Colors.blue);
+    final opacity = ((drag.dx.abs() + drag.dy.abs()) / 140).clamp(0.0, 1.0);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -1171,7 +1172,9 @@ class _SwipeHint extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         color: Colors.transparent,
       ),
-      child: Text(
+      child: Opacity(
+        opacity: opacity,
+        child: Text(
         dirText,
         style: TextStyle(
           color: color,
@@ -1179,6 +1182,7 @@ class _SwipeHint extends StatelessWidget {
           fontWeight: FontWeight.w900,
           letterSpacing: 1.2,
         ),
+      ),
       ),
     );
   }

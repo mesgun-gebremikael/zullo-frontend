@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'services/auth_service.dart';
+import 'create_profile_page.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -94,11 +95,34 @@ class _RegisterPageState extends State<RegisterPage> {
                     return;
                   }
 
-                  await _authService.register(
-                    name: name,
-                    email: email,
-                    password: password,
-                  );
+                  try {
+  await _authService.register(
+    name: name,
+    email: email,
+    password: password,
+  );
+
+  await _authService.login(
+    email: email,
+    password: password,
+  );
+
+  if (!mounted) return;
+
+  Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(builder: (_) => const CreateProfilePage()),
+  );
+} catch (e) {
+  if (!mounted) return;
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(e.toString()),
+      behavior: SnackBarBehavior.floating,
+    ),
+  );
+}
                 },
                 child: const Text('Create account'),
               ),
