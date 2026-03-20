@@ -20,8 +20,8 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> 
-    with SingleTickerProviderStateMixin,WidgetsBindingObserver {
+class _HomePageState extends State<HomePage>
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   final AuthService _authService = AuthService();
   final AuthStorage _storage = AuthStorage();
 
@@ -32,174 +32,171 @@ class _HomePageState extends State<HomePage>
   bool hasUnreadMessages = false;
   String myPhotoUrl = "";
   double _radiusKm = 50;
-  
+
   String _selectedIntention = 'Relationship';
   String _selectedReligion = 'Private';
   int _minAge = 18;
   int _maxAge = 99;
 
-  // ===== Drag state (Tinder swipe) =====
-  Offset _drag = Offset.zero; // px
+  Offset _drag = Offset.zero;
   bool _isDragging = false;
 
-  // ===== Animation (swipe out / snap back) =====
   late final AnimationController _anim;
   Animation<Offset>? _animOffset;
-  Animation<double>? _animRotate; // radians factor
+  Animation<double>? _animRotate;
   Animation<double>? _animFade;
 
   bool _isAnimating = false;
 
   @override
-void initState() {
-  super.initState();
-  WidgetsBinding.instance.addObserver(this);
-  _anim = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 220),
-  );
-  loadFeed();
-  loadUnreadStatus();
-  loadMyPhoto();
-  _loadMyFilterValues();
-}
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _anim = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 220),
+    );
+    loadFeed();
+    loadUnreadStatus();
+    loadMyPhoto();
+    _loadMyFilterValues();
+  }
 
   @override
   void dispose() {
-     WidgetsBinding.instance.removeObserver(this);
+    WidgetsBinding.instance.removeObserver(this);
     _anim.dispose();
     super.dispose();
   }
 
   @override
-   void didChangeAppLifecycleState(AppLifecycleState state) {
-   if (state == AppLifecycleState.resumed) {
-    loadUnreadStatus();
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      loadUnreadStatus();
+    }
   }
-}
 
- Future<void> loadFeed() async {
-  setState(() {
-    isLoading = true;
-    error = null;
-  });
-
-  try {
-    final data = await _authService.getSwipeFeed(
-      minAge: _minAge,
-      maxAge: _maxAge,
-    );
-
-    final loadedProfiles = List<SwipeProfile>.from(data['profiles']);
-    final loadedRadius = (data['radiusKm'] as num).toDouble();
-
+  Future<void> loadFeed() async {
     setState(() {
-      profiles = loadedProfiles;
-      _radiusKm = loadedRadius;
-      currentIndex = 0;
-      isLoading = false;
-      error = loadedProfiles.isEmpty ? "Inga profiler just nu" : null;
+      isLoading = true;
+      error = null;
     });
 
-    _precacheNextProfile();
-  } catch (e) {
-    print('LOAD FEED ERROR: $e');
+    try {
+      final data = await _authService.getSwipeFeed(
+        minAge: _minAge,
+        maxAge: _maxAge,
+      );
 
-    setState(() {
-      error = "Kunde inte ladda feed";
-      isLoading = false;
-    });
-  }
-}
+      final loadedProfiles = List<SwipeProfile>.from(data['profiles']);
+      final loadedRadius = (data['radiusKm'] as num).toDouble();
 
-  Future<void> loadUnreadStatus() async {
-  try {
-    final matchesData = await _authService.getMatches();
-    final matchesList = List<dynamic>.from(matchesData);
-
-    final hasUnread = matchesList.any((m) => m["hasUnread"] == true);
-
-    if (!mounted) return;
-
-    setState(() {
-      hasUnreadMessages = hasUnread;
-    });
-  } catch (_) {
-    // ignorera i MVP
-  }
-}
-
-Future<void> loadMyPhoto() async {
-  try {
-    final me = await _authService.getMyProfile();
-    final photos = (me["photoUrls"] ?? []) as List;
-    if (photos.isNotEmpty && mounted) {
       setState(() {
-        myPhotoUrl = photos.first.toString();
+        profiles = loadedProfiles;
+        _radiusKm = loadedRadius;
+        currentIndex = 0;
+        isLoading = false;
+        error = loadedProfiles.isEmpty ? "Inga profiler just nu" : null;
+      });
+
+      _precacheNextProfile();
+    } catch (e) {
+      print('LOAD FEED ERROR: $e');
+
+      setState(() {
+        error = "Kunde inte ladda feed";
+        isLoading = false;
       });
     }
-  } catch (_) {}
-}
+  }
+
+  Future<void> loadUnreadStatus() async {
+    try {
+      final matchesData = await _authService.getMatches();
+      final matchesList = List<dynamic>.from(matchesData);
+
+      final hasUnread = matchesList.any((m) => m["hasUnread"] == true);
+
+      if (!mounted) return;
+
+      setState(() {
+        hasUnreadMessages = hasUnread;
+      });
+    } catch (_) {}
+  }
+
+  Future<void> loadMyPhoto() async {
+    try {
+      final me = await _authService.getMyProfile();
+      final photos = (me["photoUrls"] ?? []) as List;
+      if (photos.isNotEmpty && mounted) {
+        setState(() {
+          myPhotoUrl = photos.first.toString();
+        });
+      }
+    } catch (_) {}
+  }
 
   void nextProfile() {
-  if (!mounted) return;
-  if (profiles.isEmpty) return;
+    if (!mounted) return;
+    if (profiles.isEmpty) return;
 
-  if (currentIndex < profiles.length - 1) {
-    setState(() => currentIndex++);
-    _precacheNextProfile();
+    if (currentIndex < profiles.length - 1) {
+      setState(() => currentIndex++);
+      _precacheNextProfile();
 
-    if (currentIndex >= profiles.length - 3) {
+      if (currentIndex >= profiles.length - 3) {
+        loadFeed();
+      }
+    } else {
       loadFeed();
     }
-
-  } else {
-    loadFeed();
   }
-}
 
   void showToast(String text) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(text), duration: const Duration(milliseconds: 900)),
+      SnackBar(
+        content: Text(text),
+        duration: const Duration(milliseconds: 900),
+      ),
     );
   }
-Future<void> _openEditProfile() async {
-  final changed = await Navigator.push<bool>(
-    context,
-    MaterialPageRoute(
-      builder: (_) => const EditProfilePage(),
-    ),
-  );
 
-  if (changed == true) {
-    await loadFeed();
-    await loadUnreadStatus();
+  Future<void> _openEditProfile() async {
+    final changed = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const EditProfilePage(),
+      ),
+    );
+
+    if (changed == true) {
+      await loadFeed();
+      await loadUnreadStatus();
+    }
   }
-}
 
   void _precacheNextImage() {
-  if (!mounted) return;
-  if (profiles.isEmpty) return;
+    if (!mounted) return;
+    if (profiles.isEmpty) return;
 
-  final nextIndex = currentIndex + 1;
-  if (nextIndex >= profiles.length) return;
+    final nextIndex = currentIndex + 1;
+    if (nextIndex >= profiles.length) return;
 
-  final next = profiles[nextIndex];
-  final url = next.photoUrls.isNotEmpty ? next.photoUrls.first : "";
+    final next = profiles[nextIndex];
+    final url = next.photoUrls.isNotEmpty ? next.photoUrls.first : "";
 
-  if (url.startsWith("http://") || url.startsWith("https://")) {
-    precacheImage(NetworkImage(url), context);
+    if (url.startsWith("http://") || url.startsWith("https://")) {
+      precacheImage(NetworkImage(url), context);
+    }
   }
-}
 
-  // ================= MATCH POPUP =================
   Future<void> showMatchPopup({required SwipeProfile other}) async {
     if (!mounted) return;
 
     final otherPhoto = other.photoUrls.isNotEmpty ? other.photoUrls.first : "";
 
-     
     await showDialog(
       context: context,
       barrierDismissible: true,
@@ -208,211 +205,209 @@ Future<void> _openEditProfile() async {
           backgroundColor: Colors.transparent,
           insetPadding: const EdgeInsets.all(16),
           child: Container(
-  padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
-  decoration: BoxDecoration(
-    color: const Color(0xFF111111),
-    borderRadius: BorderRadius.circular(28),
-    border: Border.all(
-      color: Colors.white.withOpacity(0.08),
-      width: 1,
-    ),
-    boxShadow: [
-      BoxShadow(
-        blurRadius: 36,
-        color: Colors.black.withOpacity(0.45),
-        offset: const Offset(0, 18),
-      ),
-    ],
-  ),
-          child: Stack(
-  children: [
-    Positioned(
-      top: 0,
-      right: 0,
-      child: IconButton(
-        onPressed: () => Navigator.pop(ctx),
-        icon: const Icon(
-          Icons.close,
-          color: Colors.white70,
-        ),
-      ),
-    ),
-    Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          "Det är en match!",
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 30,
-            fontWeight: FontWeight.w900,
-            color: Colors.pink.shade200,
-            letterSpacing: 0.5,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Text(
-          "Du och ${other.displayName} gillar varandra.\nSäg hej eller fortsätt swipa.",
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            color: Colors.white70,
-            fontSize: 15,
-            height: 1.45,
-          ),
-        ),
-        const SizedBox(height: 28),
-        _matchAvatarsRow(
-          otherPhotoUrl: otherPhoto,
-          myPhotoUrl: myPhotoUrl,
-        ),
-        const SizedBox(height: 28),
-        SizedBox(
-          width: double.infinity,
-          height: 52,
-          child: ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(ctx);
-
-              final otherPhoto =
-                  other.photoUrls.isNotEmpty ? other.photoUrls.first : "";
-
-              await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => ChatPage(
-                    userId: other.userId,
-                    displayName: other.displayName,
-                    photoUrl: otherPhoto,
+            padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+            decoration: BoxDecoration(
+              color: const Color(0xFF111111),
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.08),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  blurRadius: 36,
+                  color: Colors.black.withOpacity(0.45),
+                  offset: const Offset(0, 18),
+                ),
+              ],
+            ),
+            child: Stack(
+              children: [
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: IconButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    icon: const Icon(
+                      Icons.close,
+                      color: Colors.white70,
+                    ),
                   ),
                 ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.black,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(999),
-              ),
-              textStyle: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-              ),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      "Det är en match!",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.pink.shade200,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      "Du och ${other.displayName} gillar varandra.\nSäg hej eller fortsätt swipa.",
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 15,
+                        height: 1.45,
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+                    _matchAvatarsRow(
+                      otherPhotoUrl: otherPhoto,
+                      myPhotoUrl: myPhotoUrl,
+                    ),
+                    const SizedBox(height: 28),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          Navigator.pop(ctx);
+
+                          final otherPhoto =
+                              other.photoUrls.isNotEmpty ? other.photoUrls.first : "";
+
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ChatPage(
+                                userId: other.userId,
+                                displayName: other.displayName,
+                                photoUrl: otherPhoto,
+                              ),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: Colors.black,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          textStyle: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        child: const Text("Säg hej"),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          side: const BorderSide(color: Colors.white30, width: 1.2),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          textStyle: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        child: const Text("Fortsätt swipa"),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-            child: const Text("Säg hej"),
           ),
+        );
+      },
+    );
+  }
+
+  Widget _matchAvatarsRow({
+    required String otherPhotoUrl,
+    required String myPhotoUrl,
+  }) {
+    Widget avatar(String url) {
+      return Container(
+        width: 112,
+        height: 112,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.white, width: 3),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.25),
+              blurRadius: 16,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
-        const SizedBox(height: 10),
-        SizedBox(
-          width: double.infinity,
-          height: 50,
-          child: OutlinedButton(
-            onPressed: () => Navigator.pop(ctx),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: Colors.white,
-              side: const BorderSide(color: Colors.white30, width: 1.2),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(999),
-              ),
-              textStyle: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            child: const Text("Fortsätt swipa"),
-          ),
+        child: ClipOval(
+          child: url.isNotEmpty
+              ? Image.network(
+                  url,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) {
+                    return Container(
+                      color: Colors.white10,
+                      child: const Center(
+                        child: Icon(Icons.person, color: Colors.white, size: 44),
+                      ),
+                    );
+                  },
+                )
+              : Container(
+                  color: Colors.white10,
+                  child: const Center(
+                    child: Icon(Icons.person, color: Colors.white, size: 44),
                   ),
-                ],
-              ),
-            ],
-          ),
+                ),
         ),
       );
-    },
-  );
-}
-   
+    }
 
- Widget _matchAvatarsRow({
-  required String otherPhotoUrl,
-  required String myPhotoUrl,
-}) {
-  Widget avatar(String url) {
-    return Container(
-      width: 112,
-      height: 112,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(color: Colors.white, width: 3),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.25),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
+    return SizedBox(
+      height: 124,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Positioned(
+            left: 8,
+            child: Transform.rotate(
+              angle: -0.10,
+              child: avatar(myPhotoUrl),
+            ),
+          ),
+          Positioned(
+            right: 8,
+            child: Transform.rotate(
+              angle: 0.10,
+              child: avatar(otherPhotoUrl),
+            ),
+          ),
+          Container(
+            width: 42,
+            height: 42,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.favorite,
+              color: Colors.red,
+              size: 24,
+            ),
           ),
         ],
-      ),
-      child: ClipOval(
-        child: url.isNotEmpty
-            ? Image.network(
-                url,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) {
-                  return Container(
-                    color: Colors.white10,
-                    child: const Center(
-                      child: Icon(Icons.person, color: Colors.white, size: 44),
-                    ),
-                  );
-                },
-              )
-            : Container(
-                color: Colors.white10,
-                child: const Center(
-                  child: Icon(Icons.person, color: Colors.white, size: 44),
-                ),
-              ),
       ),
     );
   }
 
-  return SizedBox(
-    height: 124,
-    child: Stack(
-      alignment: Alignment.center,
-      children: [
-        Positioned(
-          left: 8,
-          child: Transform.rotate(
-            angle: -0.10,
-            child: avatar(myPhotoUrl),
-          ),
-        ),
-        Positioned(
-          right: 8,
-          child: Transform.rotate(
-            angle: 0.10,
-            child: avatar(otherPhotoUrl),
-          ),
-        ),
-        Container(
-          width: 42,
-          height: 42,
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(
-            Icons.favorite,
-            color: Colors.red,
-            size: 24,
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-  // ================= Tinder Buttons =================
   Widget tinderCircleButton({
     required Widget child,
     required VoidCallback onTap,
@@ -424,13 +419,13 @@ Future<void> _openEditProfile() async {
         width: size,
         height: size,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: const Color(0xFF151515),
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
               blurRadius: 18,
-              spreadRadius: 2,
-              color: Colors.black.withOpacity(0.12),
+              spreadRadius: 1,
+              color: Colors.black.withOpacity(0.30),
               offset: const Offset(0, 8),
             ),
           ],
@@ -453,9 +448,7 @@ Future<void> _openEditProfile() async {
     );
   }
 
-  // ================= Swipe helpers =================
   SwipeDir? _decideDir(Size screen) {
-    // Trösklar i px (känns Tinder-ish)
     const dxThreshold = 100.0;
     const upThreshold = 140.0;
 
@@ -465,7 +458,11 @@ Future<void> _openEditProfile() async {
     return null;
   }
 
-  Future<void> _animateTo(Offset end, {required double rotateEnd, required double fadeEnd}) async {
+  Future<void> _animateTo(
+    Offset end, {
+    required double rotateEnd,
+    required double fadeEnd,
+  }) async {
     _anim.stop();
     _anim.reset();
 
@@ -490,7 +487,6 @@ Future<void> _openEditProfile() async {
   }
 
   double _rotationForDrag() {
-    // Lite rotation som Tinder: max ca 10 grader
     final rot = (_drag.dx / 280.0).clamp(-0.22, 0.22);
     return rot;
   }
@@ -501,13 +497,11 @@ Future<void> _openEditProfile() async {
 
     final p = profiles[currentIndex];
 
-    // 1) Backend action
     if (dir == SwipeDir.left) {
       try {
         await _authService.skip(p.userId);
       } catch (_) {}
     } else {
-      // right or up => like (SuperLike = like i MVP)
       try {
         final matched = await _authService.like(p.userId);
         if (matched) {
@@ -516,28 +510,27 @@ Future<void> _openEditProfile() async {
           showToast("Super Like skickad ⭐");
         }
       } catch (e) {
-  if (e.toString().contains("429")) {
-    showToast("Du har nått like-gränsen ❤️");
+        if (e.toString().contains("429")) {
+          showToast("Du har nått like-gränsen ❤️");
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const PremiumPage(),
-      ),
-    );
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const PremiumPage(),
+            ),
+          );
 
-    return;
-  }
+          return;
+        }
 
-  final msg = dir == SwipeDir.up
-      ? "Super Like misslyckades"
-      : "Like misslyckades";
+        final msg = dir == SwipeDir.up
+            ? "Super Like misslyckades"
+            : "Like misslyckades";
 
-  showToast(msg);
-}
+        showToast(msg);
+      }
     }
 
-    // 2) Animate off screen
     final size = MediaQuery.of(context).size;
     final offX = size.width * 1.2;
     final offY = size.height * 0.35;
@@ -556,7 +549,6 @@ Future<void> _openEditProfile() async {
 
     await _animateTo(end, rotateEnd: rotEnd, fadeEnd: 0.0);
 
-    // 3) Next card
     nextProfile();
   }
 
@@ -565,261 +557,418 @@ Future<void> _openEditProfile() async {
   }
 
   void _precacheNextProfile() {
-  if (profiles.isEmpty) return;
+    if (profiles.isEmpty) return;
 
-  final nextIndex = currentIndex + 1;
-  if (nextIndex >= profiles.length) return;
+    final nextIndex = currentIndex + 1;
+    if (nextIndex >= profiles.length) return;
 
-  final nextProfile = profiles[nextIndex];
+    final nextProfile = profiles[nextIndex];
 
-  if (nextProfile.photoUrls.isEmpty) return;
+    if (nextProfile.photoUrls.isEmpty) return;
 
-  precacheImage(
-    NetworkImage(nextProfile.photoUrls.first),
-    context,
-  );
-}
+    precacheImage(
+      NetworkImage(nextProfile.photoUrls.first),
+      context,
+    );
+  }
 
-Future<void> _loadMyFilterValues() async {
-  try {
-    final me = await _authService.getMyProfile();
+  Future<void> _loadMyFilterValues() async {
+    try {
+      final me = await _authService.getMyProfile();
 
-    setState(() {
-      _selectedIntention = (me["intention"] ?? "Relationship").toString();
-      _selectedReligion = (me["religion"] ?? "Private").toString();
-    });
-  } catch (_) {}
-}
+      setState(() {
+        _selectedIntention = (me["intention"] ?? "Relationship").toString();
+        _selectedReligion = (me["religion"] ?? "Private").toString();
+      });
+    } catch (_) {}
+  }
 
-Future<void> _openRadiusSheet() async {
-  double tempRadius = _radiusKm;
-  String tempIntention = _selectedIntention;
-  String tempReligion = _selectedReligion;
-  int tempMinAge = _minAge;
-  int tempMaxAge = _maxAge;
+  Future<void> _openRadiusSheet() async {
+    double tempRadius = _radiusKm;
+    String tempIntention = _selectedIntention;
+    String tempReligion = _selectedReligion;
+    int tempMinAge = _minAge;
+    int tempMaxAge = _maxAge;
 
-  await showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-    ),
-    builder: (context) {
-      return StatefulBuilder(
-        builder: (context, setModalState) {
-          return Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Filter',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFFF4F4F5),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(18, 12, 18, 28),
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 42,
+                          height: 5,
+                          decoration: BoxDecoration(
+                            color: Colors.black12,
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+                      Row(
+                        children: [
+                          const Expanded(
+                            child: Text(
+                              'Inställningar',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF1D1D1F),
+                              ),
+                            ),
+                          ),
+                          Container(
+                            width: 54,
+                            height: 54,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF101826),
+                              shape: BoxShape.circle,
+                            ),
+                            child: IconButton(
+                              onPressed: () async {
+                                Navigator.pop(context);
 
-                  const Text(
-                    'Avstånd',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    '${tempRadius.round()} km',
-                    style: const TextStyle(fontSize: 15),
-                  ),
-                  Slider(
-                    value: tempRadius,
-                    min: 1,
-                    max: 200,
-                    divisions: 199,
-                    label: '${tempRadius.round()} km',
-                    onChanged: (value) {
-                      setModalState(() {
-                        tempRadius = value;
-                      });
-                    },
-                  ),
+                                try {
+                                  final savedKm =
+                                      await _authService.updateRadius(tempRadius.round());
 
-                  const SizedBox(height: 12),
+                                  await _authService.updateFilterProfile(
+                                    intention: tempIntention,
+                                    religion: tempReligion,
+                                  );
 
-const Text(
-  'Ålder',
-  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-),
-const SizedBox(height: 6),
-Text(
-  '$tempMinAge - $tempMaxAge år',
-  style: const TextStyle(fontSize: 15),
-),
+                                  setState(() {
+                                    _radiusKm = savedKm.toDouble();
+                                    _selectedIntention = tempIntention;
+                                    _selectedReligion = tempReligion;
+                                    _minAge = tempMinAge;
+                                    _maxAge = tempMaxAge;
+                                    currentIndex = 0;
+                                  });
 
-Slider(
-  value: tempMinAge.toDouble(),
-  min: 18,
-  max: 100,
-  divisions: 82,
-  label: '$tempMinAge',
-  onChanged: (value) {
-    setModalState(() {
-      final newMin = value.toInt();
-      if (newMin <= tempMaxAge) {
-        tempMinAge = newMin;
-      }
-    });
-  },
-),
-
-Slider(
-  value: tempMaxAge.toDouble(),
-  min: 18,
-  max: 100,
-  divisions: 82,
-  label: '$tempMaxAge',
-  onChanged: (value) {
-    setModalState(() {
-      final newMax = value.toInt();
-      if (newMax >= tempMinAge) {
-        tempMaxAge = newMax;
-      }
-    });
-  },
-),
-
-                  const SizedBox(height: 12),
-
-                  const Text(
-                    'Intention',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-                  ),
-                  const SizedBox(height: 8),
-                  DropdownButtonFormField<String>(
-                    value: tempIntention,
-                    items: const [
-                      DropdownMenuItem(value: 'Date', child: Text('Date')),
-                      DropdownMenuItem(value: 'Relationship', child: Text('Relationship')),
-                      DropdownMenuItem(value: 'Marriage', child: Text('Marriage')),
+                                  await loadFeed();
+                                  showToast('Filter uppdaterade');
+                                } catch (_) {
+                                  showToast('Kunde inte uppdatera filter');
+                                }
+                              },
+                              icon: const Icon(
+                                Icons.check,
+                                color: Colors.white,
+                                size: 30,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      const Text(
+                        'DISCOVERY',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFF66707F),
+                          letterSpacing: 0.6,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(28),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Plats',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w500,
+                                color: Color(0xFF22252B),
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+                            const Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    'Din plats här senare',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      color: Color(0xFF596170),
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                                Icon(
+                                  Icons.chevron_right_rounded,
+                                  size: 34,
+                                  color: Color(0xFF8E96A3),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            const Text(
+                              'Ändra plats för att swipa någon annanstans.',
+                              style: TextStyle(
+                                fontSize: 16,
+                                height: 1.3,
+                                color: Color(0xFF596170),
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            Divider(color: Colors.black.withOpacity(0.08), height: 1),
+                            const SizedBox(height: 18),
+                            Row(
+                              children: [
+                                const Expanded(
+                                  child: Text(
+                                    'Maxavstånd',
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w500,
+                                      color: Color(0xFF22252B),
+                                    ),
+                                  ),
+                                ),
+                                Text(
+                                  '${tempRadius.round()} km',
+                                  style: const TextStyle(
+                                    fontSize: 22,
+                                    color: Color(0xFF596170),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SliderTheme(
+                              data: SliderTheme.of(context).copyWith(
+                                trackHeight: 3,
+                                activeTrackColor: const Color(0xFFFF2D75),
+                                inactiveTrackColor: const Color(0xFF8F97A3),
+                                thumbColor: Colors.white,
+                                overlayColor: Colors.transparent,
+                                thumbShape:
+                                    const RoundSliderThumbShape(enabledThumbRadius: 18),
+                              ),
+                              child: Slider(
+                                value: tempRadius,
+                                min: 1,
+                                max: 200,
+                                divisions: 199,
+                                onChanged: (value) {
+                                  setModalState(() {
+                                    tempRadius = value;
+                                  });
+                                },
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Expanded(
+                                  child: Text(
+                                    'Visa personer längre bort om det inte finns fler profiler att se.',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      height: 1.3,
+                                      color: Color(0xFF596170),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 14),
+                                Transform.scale(
+                                  scale: 1.15,
+                                  child: Switch(
+                                    value: true,
+                                    onChanged: (_) {},
+                                    activeColor: Colors.white,
+                                    activeTrackColor: const Color(0xFFFF2D75),
+                                    inactiveThumbColor: Colors.white,
+                                    inactiveTrackColor: const Color(0xFFD1D1D6),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Divider(color: Colors.black.withOpacity(0.08), height: 1),
+                            const SizedBox(height: 18),
+                            const Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    'Intresserad av',
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w500,
+                                      color: Color(0xFF22252B),
+                                    ),
+                                  ),
+                                ),
+                                Text(
+                                  'Kvinnor',
+                                  style: TextStyle(
+                                    fontSize: 22,
+                                    color: Color(0xFF596170),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                SizedBox(width: 4),
+                                Icon(
+                                  Icons.chevron_right_rounded,
+                                  size: 30,
+                                  color: Color(0xFF8E96A3),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 18),
+                            Divider(color: Colors.black.withOpacity(0.08), height: 1),
+                            const SizedBox(height: 18),
+                            Row(
+                              children: [
+                                const Expanded(
+                                  child: Text(
+                                    'Åldersspann',
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w500,
+                                      color: Color(0xFF22252B),
+                                    ),
+                                  ),
+                                ),
+                                Text(
+                                  '$tempMinAge-$tempMaxAge',
+                                  style: const TextStyle(
+                                    fontSize: 22,
+                                    color: Color(0xFF596170),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            RangeSliderTheme(
+                              data: RangeSliderTheme.of(context).copyWith(
+                                activeTrackColor: const Color(0xFFFF2D75),
+                                inactiveTrackColor: const Color(0xFF8F97A3),
+                                thumbColor: Colors.white,
+                                overlayColor: Colors.transparent,
+                                trackHeight: 3,
+                                rangeThumbShape:
+                                    const RoundRangeSliderThumbShape(enabledThumbRadius: 18),
+                              ),
+                              child: RangeSlider(
+                                values: RangeValues(
+                                  tempMinAge.toDouble(),
+                                  tempMaxAge.toDouble(),
+                                ),
+                                min: 18,
+                                max: 100,
+                                divisions: 82,
+                                onChanged: (values) {
+                                  setModalState(() {
+                                    tempMinAge = values.start.round();
+                                    tempMaxAge = values.end.round();
+                                  });
+                                },
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Expanded(
+                                  child: Text(
+                                    'Visa personer lite utanför det intervall jag föredrar om det inte finns fler profiler att se',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      height: 1.3,
+                                      color: Color(0xFF596170),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 14),
+                                Transform.scale(
+                                  scale: 1.15,
+                                  child: Switch(
+                                    value: true,
+                                    onChanged: (_) {},
+                                    activeColor: Colors.white,
+                                    activeTrackColor: const Color(0xFFFF2D75),
+                                    inactiveThumbColor: Colors.white,
+                                    inactiveTrackColor: const Color(0xFFD1D1D6),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 18),
+                            Divider(color: Colors.black.withOpacity(0.08), height: 1),
+                            const SizedBox(height: 18),
+                            const Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    'Globalt läge',
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w500,
+                                      color: Color(0xFF22252B),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: 52,
+                                  child: Switch(
+                                    value: false,
+                                    onChanged: null,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 22),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 4),
+                        child: Text(
+                          'Med Globalt läge får du upp människor i närheten och över hela världen.',
+                          style: TextStyle(
+                            fontSize: 16,
+                            height: 1.35,
+                            color: Color(0xFF596170),
+                          ),
+                        ),
+                      ),
                     ],
-                    onChanged: (value) {
-                      if (value == null) return;
-                      setModalState(() {
-                        tempIntention = value;
-                      });
-                    },
                   ),
-
-                  const SizedBox(height: 16),
-
-                  const Text(
-                    'Religion',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-                  ),
-                  const SizedBox(height: 8),
-                  DropdownButtonFormField<String>(
-                    value: tempReligion,
-                    items: const [
-                      DropdownMenuItem(value: 'Christian', child: Text('Christian')),
-                      DropdownMenuItem(value: 'Muslim', child: Text('Muslim')),
-                      DropdownMenuItem(value: 'Atheist', child: Text('Atheist')),
-                      DropdownMenuItem(value: 'Private', child: Text('Private')),
-                    ],
-                    onChanged: (value) {
-                      if (value == null) return;
-                      setModalState(() {
-                        tempReligion = value;
-                      });
-                    },
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        Navigator.pop(context);
-
-                        try {
-                          final savedKm =
-                              await _authService.updateRadius(tempRadius.round());
-
-                          await _authService.updateFilterProfile(
-                            intention: tempIntention,
-                            religion: tempReligion,
-                          );
-
-                          setState(() {
-                            _radiusKm = savedKm.toDouble();
-                            _selectedIntention = tempIntention;
-                            _selectedReligion = tempReligion;
-                             _minAge = tempMinAge;
-                             _maxAge = tempMaxAge;
-                            currentIndex = 0;
-                          });
-
-                          await loadFeed();
-                          showToast('Filter uppdaterade');
-                        } catch (_) {
-                          showToast('Kunde inte uppdatera filter');
-                        }
-                      },
-                      child: const Text('Spara'),
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
-          );
-        },
-      );
-    },
-  );
-}
+            );
+          },
+        );
+      },
+    );
+  }
 
-  // ================= UI =================
-  @override
-  Widget build(BuildContext context) {
-    final hasProfile = profiles.isNotEmpty && currentIndex < profiles.length;
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Zullo"),
-        actions: [
-          IconButton(
-  icon: const Icon(Icons.edit_outlined),
-  onPressed: _openEditProfile,
-),
-
- IconButton(
-    icon: const Icon(Icons.tune),
-    onPressed: _openRadiusSheet,
-  ),
-   
-          IconButton(
-  icon: Stack(
-    clipBehavior: Clip.none,
-    children: [
-      const Icon(Icons.chat_bubble_outline),
-      if (hasUnreadMessages)
-        Positioned(
-          right: -1,
-          top: -1,
-          child: Container(
-            width: 10,
-            height: 10,
-            decoration: BoxDecoration(
-              color: Colors.red,
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 1.5),
-            ),
-          ),
-        ),
-    ],
-  ),
-  onPressed: () async {
+  Future<void> _openMatchesPage() async {
     await Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const MatchesPage()),
@@ -827,31 +976,41 @@ Slider(
 
     if (!mounted) return;
     await loadUnreadStatus();
-  },
-),
-         IconButton(
-  icon: const Icon(Icons.logout),
-  onPressed: () async {
-    await _storage.clearAuth(); // ✅ rensar token + userId
+  }
+
+  Future<void> _logout() async {
+    await _storage.clearAuth();
     if (!context.mounted) return;
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (_) => const WelcomePage()),
       (_) => false,
     );
-  },
-),
-        ],
-      ),
-      body: SafeArea(
-        child: isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : error != null
-                ? Center(child: Text(error!))
-                : !hasProfile
-                    ? const Center(child: Text("Inga profiler just nu"))
-                    : _buildTinderLayout(profiles[currentIndex]),
-      ),
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final hasProfile = profiles.isNotEmpty && currentIndex < profiles.length;
+
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : error != null
+              ? Center(
+                  child: Text(
+                    error!,
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                )
+              : !hasProfile
+                  ? const Center(
+                      child: Text(
+                        "Inga profiler just nu",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    )
+                  : _buildTinderLayout(profiles[currentIndex]),
     );
   }
 
@@ -867,7 +1026,10 @@ Slider(
 
         return Stack(
           children: [
-            // Card (draggable)
+            Positioned.fill(
+              child: Container(color: Colors.black),
+            ),
+
             Center(
               child: GestureDetector(
                 onPanStart: (_) {
@@ -897,55 +1059,149 @@ Slider(
                     offset: activeOffset,
                     child: Transform.rotate(
                       angle: activeRot,
-                     child: GestureDetector(
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => ProfilePage(profile: p)),
-    );
-  },
-  child: _TinderCard(profile: p, width: cardWidth, height: cardHeight),
-),
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ProfilePage(profile: p),
+                            ),
+                          );
+                        },
+                        child: _TinderCard(
+                          profile: p,
+                          width: cardWidth,
+                          height: cardHeight,
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
 
-            // Bottom action bar (Tinder style)
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: SafeArea(
+                bottom: false,
+                child: Container(
+                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black.withOpacity(0.50),
+                        Colors.black.withOpacity(0.22),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      _TopIconButton(
+                        icon: Icons.tune_rounded,
+                        onTap: _openRadiusSheet,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Center(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: const [
+                              _TopTabChip(label: 'För dig', selected: true),
+                              SizedBox(width: 10),
+                              _TopTextTab(label: 'Zullo Duos'),
+                              SizedBox(width: 10),
+                              _TopTextTab(label: 'Astrologi'),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      _TopIconButton(
+                        icon: Icons.chat_bubble_outline,
+                        onTap: _openMatchesPage,
+                        showDot: hasUnreadMessages,
+                      ),
+                      const SizedBox(width: 10),
+                      _TopIconButton(
+                        icon: Icons.logout,
+                        onTap: _logout,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
             Positioned(
               left: 0,
               right: 0,
-              bottom: 0,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(18, 10, 18, 14),
+              bottom: 18,
+              child: SafeArea(
+                top: false,
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     tinderCircleButton(
-                      size: 74,
-                      onTap: () => _performSwipe(SwipeDir.left),
-                      child: thickXIcon(color: Colors.red, size: 36),
+                      size: 52,
+                      onTap: () {},
+                      child: const Icon(
+                        Icons.refresh_rounded,
+                        size: 26,
+                        color: Colors.orange,
+                      ),
                     ),
+                    const SizedBox(width: 14),
                     tinderCircleButton(
                       size: 62,
-                      onTap: () => _performSwipe(SwipeDir.up), // SuperLike (MVP like)
-                      child: const Icon(Icons.star, size: 30, color: Colors.blue),
+                      onTap: () => _performSwipe(SwipeDir.left),
+                      child: thickXIcon(
+                        color: const Color(0xFFFF2D75),
+                        size: 34,
+                      ),
                     ),
+                    const SizedBox(width: 14),
                     tinderCircleButton(
-                      size: 74,
+                      size: 54,
+                      onTap: () => _performSwipe(SwipeDir.up),
+                      child: const Icon(
+                        Icons.star_rounded,
+                        size: 28,
+                        color: Colors.blue,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    tinderCircleButton(
+                      size: 62,
                       onTap: () => _performSwipe(SwipeDir.right),
-                      child: const Icon(Icons.favorite, size: 36, color: Colors.green),
+                      child: const Icon(
+                        Icons.favorite,
+                        size: 34,
+                        color: Color(0xFF7BEA3A),
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    tinderCircleButton(
+                      size: 52,
+                      onTap: _openEditProfile,
+                      child: const Icon(
+                        Icons.send_rounded,
+                        size: 24,
+                        color: Colors.lightBlue,
+                      ),
                     ),
                   ],
                 ),
               ),
             ),
 
-            // Tiny hint overlay (bara när man drar)
             if (_isDragging && !_isAnimating)
               Positioned(
-                top: 18,
+                top: 118,
                 left: 18,
                 child: _SwipeHint(drag: _drag),
               ),
@@ -975,26 +1231,26 @@ class _TinderCardState extends State<_TinderCard> {
   int imageIndex = 0;
 
   @override
-void initState() {
-  super.initState();
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    _precacheNextPhoto();
-  });
-}
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _precacheNextPhoto();
+    });
+  }
 
-void _precacheNextPhoto() {
-  final profile = widget.profile;
+  void _precacheNextPhoto() {
+    final profile = widget.profile;
 
-  if (profile.photoUrls.isEmpty) return;
+    if (profile.photoUrls.isEmpty) return;
 
-  final nextIndex = imageIndex + 1;
-  if (nextIndex >= profile.photoUrls.length) return;
+    final nextIndex = imageIndex + 1;
+    if (nextIndex >= profile.photoUrls.length) return;
 
-  precacheImage(
-    NetworkImage(profile.photoUrls[nextIndex]),
-    context,
-  );
-}
+    precacheImage(
+      NetworkImage(profile.photoUrls[nextIndex]),
+      context,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1002,102 +1258,116 @@ void _precacheNextPhoto() {
     final width = widget.width;
     final height = widget.height;
 
-    final cardHeight = height - 110;
-    final photoUrl =
-        profile.photoUrls.isNotEmpty ? profile.photoUrls[imageIndex] : "";
+    final cardHeight = height - 8;
 
     return Container(
-      width: math.min(420, width * 0.96),
+      width: width,
       height: cardHeight,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(26),
+        borderRadius: BorderRadius.circular(34),
         boxShadow: [
           BoxShadow(
             blurRadius: 18,
             offset: const Offset(0, 8),
-            color: Colors.black.withOpacity(0.18),
+            color: Colors.black.withOpacity(0.22),
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(26),
+        borderRadius: BorderRadius.circular(34),
         child: Stack(
           fit: StackFit.expand,
           children: [
-            // Photo
-            // Photo
-GestureDetector(
-  onTapUp: (details) {
-    if (profile.photoUrls.length <= 1) return;
+            GestureDetector(
+              onTapUp: (details) {
+                if (profile.photoUrls.length <= 1) return;
 
-    final cardWidth = widget.width;
-    final tapX = details.localPosition.dx;
+                final tapX = details.localPosition.dx;
 
-    setState(() {
-  if (tapX > cardWidth / 2) {
-    if (imageIndex < profile.photoUrls.length - 1) {
-      imageIndex++;
-    }
-  } else {
-    if (imageIndex > 0) {
-      imageIndex--;
-    }
-  }
-});
+                setState(() {
+                  if (tapX > width / 2) {
+                    if (imageIndex < profile.photoUrls.length - 1) {
+                      imageIndex++;
+                    }
+                  } else {
+                    if (imageIndex > 0) {
+                      imageIndex--;
+                    }
+                  }
+                });
 
-_precacheNextPhoto();
-  },
-  child: profile.photoUrls.isNotEmpty
-      ? Image.network(
-          profile.photoUrls[imageIndex],
-          fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) {
-            return Container(
-              color: Colors.grey.shade400,
-              child: const Center(
-                child: Icon(Icons.person, size: 120, color: Colors.white),
+                _precacheNextPhoto();
+              },
+              child: profile.photoUrls.isNotEmpty
+                  ? Image.network(
+                      profile.photoUrls[imageIndex],
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) {
+                        return Container(
+                          color: Colors.grey.shade400,
+                          child: const Center(
+                            child: Icon(Icons.person, size: 120, color: Colors.white),
+                          ),
+                        );
+                      },
+                    )
+                  : Container(
+                      color: Colors.grey.shade400,
+                      child: const Center(
+                        child: Icon(Icons.person, size: 120, color: Colors.white),
+                      ),
+                    ),
+            ),
+
+            Positioned(
+              top: 16,
+              left: 14,
+              right: 14,
+              child: Row(
+                children: List.generate(profile.photoUrls.length, (index) {
+                  final isActive = index == imageIndex;
+
+                  return Expanded(
+                    child: Container(
+                      height: 4,
+                      margin: EdgeInsets.only(
+                        right: index == profile.photoUrls.length - 1 ? 0 : 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isActive ? Colors.white : Colors.white38,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
+                  );
+                }),
               ),
-            );
-          },
-        )
-      : Container(
-          color: Colors.grey.shade400,
-          child: const Center(
-            child: Icon(Icons.person, size: 120, color: Colors.white),
-          ),
-        ),
-),
+            ),
 
-    Positioned(
-  top: 12,
-  left: 12,
-  right: 12,
-  child: Row(
-    children: List.generate(profile.photoUrls.length, (index) {
-      final isActive = index == imageIndex;
+            Positioned(
+              left: 0,
+              right: 0,
+              top: 0,
+              height: 150,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withOpacity(0.20),
+                      Colors.black.withOpacity(0.06),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
+            ),
 
-      return Expanded(
-        child: Container(
-          height: 4,
-          margin: EdgeInsets.only(
-            right: index == profile.photoUrls.length - 1 ? 0 : 4,
-          ),
-          decoration: BoxDecoration(
-            color: isActive ? Colors.white : Colors.white38,
-            borderRadius: BorderRadius.circular(999),
-          ),
-        ),
-      );
-    }),
-  ),
-),
-
-            // Gradient bottom like Tinder
             Positioned(
               left: 0,
               right: 0,
               bottom: 0,
-              height: 170,
+              height: 220,
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -1105,37 +1375,70 @@ _precacheNextPhoto();
                     end: Alignment.bottomCenter,
                     colors: [
                       Colors.black.withOpacity(0.0),
-                      Colors.black.withOpacity(0.65),
+                      Colors.black.withOpacity(0.20),
+                      Colors.black.withOpacity(0.78),
                     ],
                   ),
                 ),
               ),
             ),
 
-            // Text overlay
             Positioned(
               left: 18,
               right: 18,
-              bottom: 18,
+              bottom: 120,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      "${profile.displayName} ${profile.age}",
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
+                        height: 1.0,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.45),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white24),
+                    ),
+                    child: const Icon(
+                      Icons.arrow_upward_rounded,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            Positioned(
+              left: 18,
+              right: 18,
+              bottom: 68,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "${profile.displayName}, ${profile.age}",
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 28,
-                      fontWeight: FontWeight.w800,
-                      height: 1.0,
+                    "Bor i ${profile.countryCode}",
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.96),
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    "${profile.intention} • ${profile.countryCode}",
+                    "${_formatIntention(profile.intention)}",
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.88),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
+                      color: Colors.white.withOpacity(0.92),
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
@@ -1145,6 +1448,19 @@ _precacheNextPhoto();
         ),
       ),
     );
+  }
+
+  String _formatIntention(String value) {
+    switch (value) {
+      case 'Relationship':
+        return 'Söker Relationship';
+      case 'Marriage':
+        return 'Söker Marriage';
+      case 'Date':
+        return 'Söker Date';
+      default:
+        return value;
+    }
   }
 }
 
@@ -1178,14 +1494,108 @@ class _SwipeHint extends StatelessWidget {
       child: Opacity(
         opacity: opacity,
         child: Text(
-        dirText,
-        style: TextStyle(
-          color: color,
-          fontSize: 20,
-          fontWeight: FontWeight.w900,
-          letterSpacing: 1.2,
+          dirText,
+          style: TextStyle(
+            color: color,
+            fontSize: 20,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 1.2,
+          ),
         ),
       ),
+    );
+  }
+}
+
+class _TopIconButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+  final bool showDot;
+
+  const _TopIconButton({
+    required this.icon,
+    required this.onTap,
+    this.showDot = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.28),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: Colors.white, size: 22),
+          ),
+          if (showDot)
+            Positioned(
+              right: 2,
+              top: 2,
+              child: Container(
+                width: 9,
+                height: 9,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFF2D75),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.black, width: 1.5),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TopTabChip extends StatelessWidget {
+  final String label;
+  final bool selected;
+
+  const _TopTabChip({
+    required this.label,
+    required this.selected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        color: selected ? Colors.white.withOpacity(0.18) : Colors.transparent,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 15,
+          fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+        ),
+      ),
+    );
+  }
+}
+
+class _TopTextTab extends StatelessWidget {
+  final String label;
+
+  const _TopTextTab({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      label,
+      style: TextStyle(
+        color: Colors.white.withOpacity(0.92),
+        fontSize: 15,
+        fontWeight: FontWeight.w500,
       ),
     );
   }
