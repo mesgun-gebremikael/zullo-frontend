@@ -92,7 +92,7 @@ void initState() {
 final loadedProfiles = (data['profiles'] as List)
        .map((e) => SwipeProfile.fromJson(e))
        .toList();
-final loadedRadius = data['radiusKm'] as double;
+final loadedRadius = (data['radiusKm'] as num) .toDouble();
 
 setState(() {
   profiles = loadedProfiles;
