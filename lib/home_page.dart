@@ -91,15 +91,22 @@ class _HomePageState extends State<HomePage>
       final loadedProfiles = List<SwipeProfile>.from(data['profiles']);
       final loadedRadius = (data['radiusKm'] as num).toDouble();
 
-      setState(() {
-        profiles = loadedProfiles;
-        _radiusKm = loadedRadius;
-        currentIndex = 0;
-        isLoading = false;
-        error = loadedProfiles.isEmpty ? "Inga profiler just nu" : null;
-      });
+     setState(() {
+  profiles = loadedProfiles;
+  _radiusKm = loadedRadius;
+  currentIndex = 0;
+  isLoading = false;
+  error = loadedProfiles.isEmpty ? "Inga profiler just nu" : null;
+});
 
-      _precacheNextProfile();
+if (loadedProfiles.isNotEmpty && loadedProfiles.first.photoUrls.isNotEmpty) {
+  precacheImage(
+    NetworkImage(loadedProfiles.first.photoUrls.first),
+    context,
+  ).catchError((_) {});
+}
+
+_precacheNextProfile();
     } catch (e) {
       print('LOAD FEED ERROR: $e');
 
@@ -557,20 +564,19 @@ class _HomePageState extends State<HomePage>
   }
 
   void _precacheNextProfile() {
-    if (profiles.isEmpty) return;
+  if (!mounted) return;
+  if (profiles.isEmpty) return;
 
-    final nextIndex = currentIndex + 1;
-    if (nextIndex >= profiles.length) return;
+  final nextIndex = currentIndex + 1;
+  if (nextIndex >= profiles.length) return;
 
-    final nextProfile = profiles[nextIndex];
+  final nextProfile = profiles[nextIndex];
+  if (nextProfile.photoUrls.isEmpty) return;
 
-    if (nextProfile.photoUrls.isEmpty) return;
+  final image = NetworkImage(nextProfile.photoUrls.first);
 
-    precacheImage(
-      NetworkImage(nextProfile.photoUrls.first),
-      context,
-    );
-  }
+  precacheImage(image, context).catchError((_) {});
+}
 
   Future<void> _loadMyFilterValues() async {
     try {
@@ -1354,30 +1360,38 @@ class _TinderCardState extends State<_TinderCard> {
               },
               child: profile.photoUrls.isNotEmpty
     ? Image.network(
-        profile.photoUrls[imageIndex],
-        fit: BoxFit.cover,
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) return child;
+    profile.photoUrls[imageIndex],
+    fit: BoxFit.cover,
+    cacheWidth: (MediaQuery.of(context).size.width * 2).round(),
+    filterQuality: FilterQuality.medium,
+    loadingBuilder: (context, child, loadingProgress) {
+      if (loadingProgress == null) return child;
 
-          return Container(
-            color: const Color(0xFF1A1A1A),
-            child: const Center(
-              child: CircularProgressIndicator(
-                color: Colors.white70,
-                strokeWidth: 2.2,
-              ),
-            ),
-          );
-        },
-        errorBuilder: (_, __, ___) {
-          return Container(
-            color: const Color(0xFF2A2A2A),
-            child: const Center(
-              child: Icon(Icons.person, size: 120, color: Colors.white),
-            ),
-          );
-        },
-      )
+      return Container(
+        color: const Color(0xFF1A1A1A),
+        child: const Center(
+  child: SizedBox(
+    width: 26,
+    height: 26,
+    child: CircularProgressIndicator(
+      color: Colors.white70,
+      strokeWidth: 2.0,
+    ),
+  ),
+),
+      );
+    },
+    errorBuilder: (_, __, ___) {
+      return Container(
+        color: const Color(0xFF2A2A2A),
+        child: const Center(
+          child: Icon(Icons.person, size: 120, color: Colors.white),
+        ),
+      );
+    },
+  )
+       
+      
                   : Container(
                       color: Colors.grey.shade400,
                       child: const Center(
