@@ -7,36 +7,45 @@ class CloudinaryService {
   static const String uploadPreset = "zullo_upload";
 
   static Future<String?> uploadImage(File imageFile) async {
-    try {
-      final url = Uri.parse(
-        "https://api.cloudinary.com/v1_1/$cloudName/image/upload",
-      );
+  try {
+    final url = Uri.parse(
+      "https://api.cloudinary.com/v1_1/$cloudName/image/upload",
+    );
 
-      final request = http.MultipartRequest("POST", url);
-      request.fields["upload_preset"] = uploadPreset;
-      //request.fields["cloud_name"] = cloudName;
-      request.fields["folder"] = "zullo_profiles";
+    final request = http.MultipartRequest("POST", url);
+    request.fields["upload_preset"] = uploadPreset;
+    request.fields["folder"] = "zullo_profiles";
 
-      request.files.add(
-        await http.MultipartFile.fromPath("file", imageFile.path),
-      );
+    request.files.add(
+      await http.MultipartFile.fromPath("file", imageFile.path),
+    );
 
-      final response = await request.send();
-      final responseData = await response.stream.bytesToString();
+    final response = await request.send();
+    final responseData = await response.stream.bytesToString();
 
-      print("CLOUDINARY STATUS: ${response.statusCode}");
-      print("CLOUDINARY BODY: $responseData");
+    print("CLOUDINARY STATUS: ${response.statusCode}");
+    print("CLOUDINARY BODY: $responseData");
 
-      final decoded = jsonDecode(responseData);
+    final decoded = jsonDecode(responseData);
 
-      if (response.statusCode == 200) {
-        return decoded["secure_url"];
-      }
+    if (response.statusCode == 200) {
+      final secureUrl = decoded["secure_url"]?.toString();
+      if (secureUrl == null || secureUrl.isEmpty) return null;
 
-      return null;
-    } catch (e) {
-      print("CLOUDINARY ERROR: $e");
-      return null;
+      return _optimizedImageUrl(secureUrl);
     }
+
+    return null;
+  } catch (e) {
+    print("CLOUDINARY ERROR: $e");
+    return null;
   }
+}
+
+static String _optimizedImageUrl(String url) {
+  return url.replaceFirst(
+    '/upload/',
+    '/upload/f_auto,q_auto,w_1080,c_limit/',
+  );
+}
 }

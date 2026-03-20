@@ -40,7 +40,12 @@ bool _isUploadingImage = false;
   }
 
   Future<void> _pickAndUploadImage() async {
-  final picked = await _picker.pickImage(source: ImageSource.gallery);
+ final picked = await _picker.pickImage(
+  source: ImageSource.gallery,
+  imageQuality: 82,
+  maxWidth: 1440,
+  maxHeight: 1440,
+);
 
   if (picked == null) return;
 
