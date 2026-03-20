@@ -78,38 +78,39 @@ void initState() {
   }
 }
 
-  Future<void> loadFeed() async {
+ Future<void> loadFeed() async {
+  setState(() {
+    isLoading = true;
+    error = null;
+  });
+
+  try {
+    final data = await _authService.getSwipeFeed(
+      minAge: _minAge,
+      maxAge: _maxAge,
+    );
+
+    final loadedProfiles = List<SwipeProfile>.from(data['profiles']);
+    final loadedRadius = (data['radiusKm'] as num).toDouble();
+
     setState(() {
-      isLoading = true;
-      error = null;
+      profiles = loadedProfiles;
+      _radiusKm = loadedRadius;
+      currentIndex = 0;
+      isLoading = false;
+      error = loadedProfiles.isEmpty ? "Inga profiler just nu" : null;
     });
 
-    try {
- final data = await _authService.getSwipeFeed(
-    minAge: _minAge,
-    maxAge: _maxAge,
- );
-final loadedProfiles = (data['profiles'] as List)
-       .map((e) => SwipeProfile.fromJson(e))
-       .toList();
-final loadedRadius = (data['radiusKm'] as num) .toDouble();
+    _precacheNextProfile();
+  } catch (e) {
+    print('LOAD FEED ERROR: $e');
 
-setState(() {
-  profiles = loadedProfiles;
-  _radiusKm = loadedRadius;
-  currentIndex = 0;
-  isLoading = false;
-  error = loadedProfiles.isEmpty ? "Inga profiler just nu" : null;
-});
-      _precacheNextProfile();
-  //_precacheNextImage(); // D HÄR
-} catch (_) {
-  setState(() {
-    error = "Kunde inte ladda feed";
-    isLoading = false;
-  });
-}
+    setState(() {
+      error = "Kunde inte ladda feed";
+      isLoading = false;
+    });
   }
+}
 
   Future<void> loadUnreadStatus() async {
   try {
