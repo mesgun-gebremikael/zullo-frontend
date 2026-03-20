@@ -864,32 +864,32 @@ class _HomePageState extends State<HomePage>
                                 ),
                               ],
                             ),
-                            RangeSliderTheme(
-                              data: RangeSliderTheme.of(context).copyWith(
-                                activeTrackColor: const Color(0xFFFF2D75),
-                                inactiveTrackColor: const Color(0xFF8F97A3),
-                                thumbColor: Colors.white,
-                                overlayColor: Colors.transparent,
-                                trackHeight: 3,
-                                rangeThumbShape:
-                                    const RoundRangeSliderThumbShape(enabledThumbRadius: 18),
-                              ),
-                              child: RangeSlider(
-                                values: RangeValues(
-                                  tempMinAge.toDouble(),
-                                  tempMaxAge.toDouble(),
-                                ),
-                                min: 18,
-                                max: 100,
-                                divisions: 82,
-                                onChanged: (values) {
-                                  setModalState(() {
-                                    tempMinAge = values.start.round();
-                                    tempMaxAge = values.end.round();
-                                  });
-                                },
-                              ),
-                            ),
+                            SliderTheme(
+  data: SliderTheme.of(context).copyWith(
+    activeTrackColor: const Color(0xFFFF2D75),
+    inactiveTrackColor: const Color(0xFF8F97A3),
+    thumbColor: Colors.white,
+    overlayColor: Colors.transparent,
+    trackHeight: 3,
+    rangeThumbShape:
+        const RoundRangeSliderThumbShape(enabledThumbRadius: 18),
+  ),
+  child: RangeSlider(
+    values: RangeValues(
+      tempMinAge.toDouble(),
+      tempMaxAge.toDouble(),
+    ),
+    min: 18,
+    max: 100,
+    divisions: 82,
+    onChanged: (values) {
+      setModalState(() {
+        tempMinAge = values.start.round();
+        tempMaxAge = values.end.round();
+      });
+    },
+  ),
+),
                             const SizedBox(height: 4),
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1068,11 +1068,13 @@ class _HomePageState extends State<HomePage>
                             ),
                           );
                         },
-                        child: _TinderCard(
-                          profile: p,
-                          width: cardWidth,
-                          height: cardHeight,
-                        ),
+                       child: RepaintBoundary(
+  child: _TinderCard(
+    profile: p,
+    width: cardWidth,
+    height: cardHeight,
+  ),
+),
                       ),
                     ),
                   ),
@@ -1087,7 +1089,7 @@ class _HomePageState extends State<HomePage>
               child: SafeArea(
                 bottom: false,
                 child: Container(
-                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+                  padding: const EdgeInsets.fromLTRB(12, 10, 12, 0),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
@@ -1110,13 +1112,13 @@ class _HomePageState extends State<HomePage>
                         child: Center(
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
-                              _TopTabChip(label: 'För dig', selected: true),
-                              SizedBox(width: 10),
-                              _TopTextTab(label: 'Zullo Duos'),
-                              SizedBox(width: 10),
-                              _TopTextTab(label: 'Astrologi'),
-                            ],
+                           children: const [
+  _TopTabChip(label: 'För dig', selected: true),
+  SizedBox(width: 8),
+  _TopTextTab(label: 'Duos'),
+  SizedBox(width: 8),
+  _TopTextTab(label: 'Astro'),
+],
                           ),
                         ),
                       ),
@@ -1299,18 +1301,31 @@ class _TinderCardState extends State<_TinderCard> {
                 _precacheNextPhoto();
               },
               child: profile.photoUrls.isNotEmpty
-                  ? Image.network(
-                      profile.photoUrls[imageIndex],
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) {
-                        return Container(
-                          color: Colors.grey.shade400,
-                          child: const Center(
-                            child: Icon(Icons.person, size: 120, color: Colors.white),
-                          ),
-                        );
-                      },
-                    )
+    ? Image.network(
+        profile.photoUrls[imageIndex],
+        fit: BoxFit.cover,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+
+          return Container(
+            color: const Color(0xFF1A1A1A),
+            child: const Center(
+              child: CircularProgressIndicator(
+                color: Colors.white70,
+                strokeWidth: 2.2,
+              ),
+            ),
+          );
+        },
+        errorBuilder: (_, __, ___) {
+          return Container(
+            color: const Color(0xFF2A2A2A),
+            child: const Center(
+              child: Icon(Icons.person, size: 120, color: Colors.white),
+            ),
+          );
+        },
+      )
                   : Container(
                       color: Colors.grey.shade400,
                       child: const Center(
