@@ -987,34 +987,84 @@ class _HomePageState extends State<HomePage>
       (_) => false,
     );
   }
-
+    Widget _buildEmptyFeedState() {
+  return Padding(
+    padding: const EdgeInsets.fromLTRB(20, 120, 20, 40),
+    child: Center(
+      child: Container(
+        width: double.infinity,
+        constraints: const BoxConstraints(maxWidth: 420),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+        decoration: BoxDecoration(
+          color: const Color(0xFF111111),
+          borderRadius: BorderRadius.circular(28),
+          border: Border.all(color: Colors.white10),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.travel_explore_rounded,
+              color: Colors.white,
+              size: 54,
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              "Inga profiler just nu",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              "Testa att öka avståndet eller ändra åldersspannet i filtret.",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.72),
+                fontSize: 15,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 22),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _openRadiusSheet,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFF2D75),
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size.fromHeight(52),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+                child: const Text("Öppna filter"),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
   @override
   Widget build(BuildContext context) {
     final hasProfile = profiles.isNotEmpty && currentIndex < profiles.length;
 
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : error != null
-              ? Center(
-                  child: Text(
-                    error!,
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                )
-              : !hasProfile
-                  ? const Center(
-                      child: Text(
-                        "Inga profiler just nu",
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    )
-                  : _buildTinderLayout(profiles[currentIndex]),
-    );
+   return Scaffold(
+  backgroundColor: Colors.black,
+  body: isLoading
+      ? const Center(child: CircularProgressIndicator())
+      : _buildTinderLayout(
+          hasProfile ? profiles[currentIndex] : null,
+        ),
+);
   }
 
-  Widget _buildTinderLayout(SwipeProfile p) {
+ Widget _buildTinderLayout(SwipeProfile? p) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final cardWidth = constraints.maxWidth;
@@ -1023,6 +1073,7 @@ class _HomePageState extends State<HomePage>
         final activeOffset = _animOffset?.value ?? _drag;
         final activeRot = _animRotate?.value ?? _rotationForDrag();
         final activeFade = _animFade?.value ?? 1.0;
+        final hasActiveProfile = p != null;
 
         return Stack(
           children: [
@@ -1030,58 +1081,59 @@ class _HomePageState extends State<HomePage>
               child: Container(color: Colors.black),
             ),
 
-            Center(
-              child: GestureDetector(
-                onPanStart: (_) {
-                  if (_isAnimating) return;
-                  setState(() => _isDragging = true);
-                },
-                onPanUpdate: (d) {
-                  if (_isAnimating) return;
-                  setState(() {
-                    _drag += d.delta;
-                  });
-                },
-                onPanEnd: (_) async {
-                  if (_isAnimating) return;
-                  setState(() => _isDragging = false);
+           Center(
+  child: hasActiveProfile
+      ? GestureDetector(
+          onPanStart: (_) {
+            if (_isAnimating) return;
+            setState(() => _isDragging = true);
+          },
+          onPanUpdate: (d) {
+            if (_isAnimating) return;
+            setState(() {
+              _drag += d.delta;
+            });
+          },
+          onPanEnd: (_) async {
+            if (_isAnimating) return;
+            setState(() => _isDragging = false);
 
-                  final dir = _decideDir(MediaQuery.of(context).size);
-                  if (dir == null) {
-                    await _snapBack();
-                  } else {
-                    await _performSwipe(dir);
-                  }
-                },
-                child: Opacity(
-                  opacity: activeFade,
-                  child: Transform.translate(
-                    offset: activeOffset,
-                    child: Transform.rotate(
-                      angle: activeRot,
-                      child: GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => ProfilePage(profile: p),
-                            ),
-                          );
-                        },
-                       child: RepaintBoundary(
-  child: _TinderCard(
-    profile: p,
-    width: cardWidth,
-    height: cardHeight,
-  ),
-),
+            final dir = _decideDir(MediaQuery.of(context).size);
+            if (dir == null) {
+              await _snapBack();
+            } else {
+              await _performSwipe(dir);
+            }
+          },
+          child: Opacity(
+            opacity: activeFade,
+            child: Transform.translate(
+              offset: activeOffset,
+              child: Transform.rotate(
+                angle: activeRot,
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ProfilePage(profile: p),
                       ),
+                    );
+                  },
+                  child: RepaintBoundary(
+                    child: _TinderCard(
+                      profile: p,
+                      width: cardWidth,
+                      height: cardHeight,
                     ),
                   ),
                 ),
               ),
             ),
-
+          ),
+        )
+      : _buildEmptyFeedState(),
+),
             Positioned(
               top: 0,
               left: 0,
@@ -1139,68 +1191,68 @@ class _HomePageState extends State<HomePage>
               ),
             ),
 
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 18,
-              child: SafeArea(
-                top: false,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    tinderCircleButton(
-                      size: 52,
-                      onTap: () {},
-                      child: const Icon(
-                        Icons.refresh_rounded,
-                        size: 26,
-                        color: Colors.orange,
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    tinderCircleButton(
-                      size: 62,
-                      onTap: () => _performSwipe(SwipeDir.left),
-                      child: thickXIcon(
-                        color: const Color(0xFFFF2D75),
-                        size: 34,
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    tinderCircleButton(
-                      size: 54,
-                      onTap: () => _performSwipe(SwipeDir.up),
-                      child: const Icon(
-                        Icons.star_rounded,
-                        size: 28,
-                        color: Colors.blue,
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    tinderCircleButton(
-                      size: 62,
-                      onTap: () => _performSwipe(SwipeDir.right),
-                      child: const Icon(
-                        Icons.favorite,
-                        size: 34,
-                        color: Color(0xFF7BEA3A),
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    tinderCircleButton(
-                      size: 52,
-                      onTap: _openEditProfile,
-                      child: const Icon(
-                        Icons.send_rounded,
-                        size: 24,
-                        color: Colors.lightBlue,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+           if (hasActiveProfile)
+  Positioned(
+    left: 0,
+    right: 0,
+    bottom: 18,
+    child: SafeArea(
+      top: false,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          tinderCircleButton(
+            size: 52,
+            onTap: () {},
+            child: const Icon(
+              Icons.refresh_rounded,
+              size: 26,
+              color: Colors.orange,
             ),
-
+          ),
+          const SizedBox(width: 14),
+          tinderCircleButton(
+            size: 62,
+            onTap: () => _performSwipe(SwipeDir.left),
+            child: thickXIcon(
+              color: const Color(0xFFFF2D75),
+              size: 34,
+            ),
+          ),
+          const SizedBox(width: 14),
+          tinderCircleButton(
+            size: 54,
+            onTap: () => _performSwipe(SwipeDir.up),
+            child: const Icon(
+              Icons.star_rounded,
+              size: 28,
+              color: Colors.blue,
+            ),
+          ),
+          const SizedBox(width: 14),
+          tinderCircleButton(
+            size: 62,
+            onTap: () => _performSwipe(SwipeDir.right),
+            child: const Icon(
+              Icons.favorite,
+              size: 34,
+              color: Color(0xFF7BEA3A),
+            ),
+          ),
+          const SizedBox(width: 14),
+          tinderCircleButton(
+            size: 52,
+            onTap: _openEditProfile,
+            child: const Icon(
+              Icons.send_rounded,
+              size: 24,
+              color: Colors.lightBlue,
+            ),
+          ),
+        ],
+      ),
+    ),
+  ),
             if (_isDragging && !_isAnimating)
               Positioned(
                 top: 118,
@@ -1253,7 +1305,7 @@ class _TinderCardState extends State<_TinderCard> {
       context,
     );
   }
-
+    
   @override
   Widget build(BuildContext context) {
     final profile = widget.profile;
