@@ -99,14 +99,15 @@ class _HomePageState extends State<HomePage>
   error = loadedProfiles.isEmpty ? "Inga profiler just nu" : null;
 });
 
-if (loadedProfiles.isNotEmpty && loadedProfiles.first.photoUrls.isNotEmpty) {
-  precacheImage(
-    NetworkImage(loadedProfiles.first.photoUrls.first),
-    context,
-  ).catchError((_) {});
-}
+//if (loadedProfiles.isNotEmpty && loadedProfiles.first.photoUrls.isNotEmpty) {
+ /// precacheImage(
+ //   NetworkImage(loadedProfiles.first.photoUrls.first),
+ //   context,
+ // ).catchError((_) {});
+//}
 
 _precacheNextProfile();
+
     } catch (e) {
       print('LOAD FEED ERROR: $e');
 
@@ -563,19 +564,20 @@ _precacheNextProfile();
     await _animateTo(Offset.zero, rotateEnd: 0.0, fadeEnd: 1.0);
   }
 
-  void _precacheNextProfile() {
-  if (!mounted) return;
+ void _precacheNextProfile() {
   if (profiles.isEmpty) return;
 
   final nextIndex = currentIndex + 1;
   if (nextIndex >= profiles.length) return;
 
   final nextProfile = profiles[nextIndex];
+
   if (nextProfile.photoUrls.isEmpty) return;
 
-  final image = NetworkImage(nextProfile.photoUrls.first);
-
-  precacheImage(image, context).catchError((_) {});
+  precacheImage(
+    NetworkImage(nextProfile.photoUrls.first),
+    context,
+  );
 }
 
   Future<void> _loadMyFilterValues() async {
@@ -1362,23 +1364,21 @@ class _TinderCardState extends State<_TinderCard> {
     ? Image.network(
     profile.photoUrls[imageIndex],
     fit: BoxFit.cover,
-    cacheWidth: (MediaQuery.of(context).size.width * 2).round(),
-    filterQuality: FilterQuality.medium,
     loadingBuilder: (context, child, loadingProgress) {
       if (loadingProgress == null) return child;
 
       return Container(
         color: const Color(0xFF1A1A1A),
         child: const Center(
-  child: SizedBox(
-    width: 26,
-    height: 26,
-    child: CircularProgressIndicator(
-      color: Colors.white70,
-      strokeWidth: 2.0,
-    ),
-  ),
-),
+          child: SizedBox(
+            width: 26,
+            height: 26,
+            child: CircularProgressIndicator(
+              color: Colors.white70,
+              strokeWidth: 2.0,
+            ),
+          ),
+        ),
       );
     },
     errorBuilder: (_, __, ___) {
