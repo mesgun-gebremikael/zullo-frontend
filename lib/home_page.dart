@@ -52,10 +52,10 @@ class _HomePageState extends State<HomePage>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _anim = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 220),
-    );
+   _anim = AnimationController(
+  vsync: this,
+  duration: const Duration(milliseconds: 280),
+);
     loadFeed();
     loadUnreadStatus();
     loadMyPhoto();
@@ -474,7 +474,7 @@ _precacheNextProfile();
     _anim.stop();
     _anim.reset();
 
-    final curve = CurvedAnimation(parent: _anim, curve: Curves.easeOutCubic);
+   final curve = CurvedAnimation(parent: _anim, curve: Curves.easeOutQuart);
 
     _animOffset = Tween<Offset>(begin: _drag, end: end).animate(curve);
     _animRotate = Tween<double>(begin: _rotationForDrag(), end: rotateEnd).animate(curve);
@@ -494,8 +494,8 @@ _precacheNextProfile();
     });
   }
 
- double _rotationForDrag() {
-  final rot = (_drag.dx / 420.0).clamp(-0.14, 0.14);
+double _rotationForDrag() {
+  final rot = (_drag.dx / 520.0).clamp(-0.11, 0.11);
   return rot;
 }
 
@@ -1155,11 +1155,10 @@ if (hasActiveProfile && currentIndex + 1 < profiles.length) {
             setState(() => _isDragging = true);
           },
           onPanUpdate: (d) {
-            if (_isAnimating) return;
-            setState(() {
-              _drag += d.delta;
-            });
-          },
+  if (_isAnimating) return;
+  _drag += Offset(d.delta.dx * 0.92, d.delta.dy * 0.88);
+  setState(() {});
+},
           onPanEnd: (_) async {
             if (_isAnimating) return;
             setState(() => _isDragging = false);
