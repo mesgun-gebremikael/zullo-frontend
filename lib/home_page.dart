@@ -1110,11 +1110,11 @@ if (hasActiveProfile && currentIndex + 1 < profiles.length) {
    if (nextProfile != null)
   Center(
     child: Transform.translate(
-      offset: const Offset(0, 26),
+      offset: const Offset(0, 34),
       child: Transform.scale(
-        scale: 0.94,
+        scale: 0.935,
         child: Opacity(
-          opacity: 0.82,
+          opacity: 0.80,
           child: IgnorePointer(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(34),
@@ -1147,7 +1147,7 @@ if (hasActiveProfile && currentIndex + 1 < profiles.length) {
 
    Center(
   child: Transform.translate(
-    offset: const Offset(0, -4),
+    offset: const Offset(0, -18),
     child: hasActiveProfile
         ? GestureDetector(
           onPanStart: (_) {
@@ -1716,15 +1716,15 @@ class _CardSwipeStamp extends StatelessWidget {
       children: [
         if (likeOpacity > 0)
           Positioned(
-            top: 108,
-            left: 26,
+            top: 142,
+            left: 34,
             child: Opacity(
               opacity: likeOpacity,
               child: Transform.rotate(
                 angle: -0.18,
                 child: const Icon(
                   Icons.favorite,
-                  size: 118,
+                  size: 104,
                   color: Color(0xFF8BE63F),
                 ),
               ),
@@ -1733,32 +1733,32 @@ class _CardSwipeStamp extends StatelessWidget {
 
         if (nopeOpacity > 0)
           Positioned(
-            top: 108,
-            right: 26,
+            top: 142,
+            right: 34,
             child: Opacity(
               opacity: nopeOpacity,
               child: Transform.rotate(
                 angle: 0.18,
                 child: Icon(
                   Icons.close_rounded,
-                  size: 124,
+                  size: 110,
                   color: const Color(0xFFFF2D75),
                 ),
               ),
             ),
           ),
 
-        if (superOpacity > 0 && likeOpacity < 0.15 && nopeOpacity < 0.15)
-          Positioned(
-            top: 105,
-            left: 0,
-            right: 0,
+       if (superOpacity > 0 && likeOpacity < 0.15 && nopeOpacity < 0.15)
+  Positioned(
+    top: 138,
+    left: 0,
+    right: 0,
             child: Center(
               child: Opacity(
                 opacity: superOpacity,
                 child: const Icon(
                   Icons.star_rounded,
-                  size: 112,
+                  size: 98,
                   color: Colors.blue,
                 ),
               ),
