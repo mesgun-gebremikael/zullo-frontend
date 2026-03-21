@@ -1075,22 +1075,56 @@ _precacheNextProfile();
  Widget _buildTinderLayout(SwipeProfile? p) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final cardWidth = constraints.maxWidth;
-        final cardHeight = constraints.maxHeight;
+       final cardWidth = constraints.maxWidth;
+      final cardHeight = constraints.maxHeight;
 
-        final activeOffset = _animOffset?.value ?? _drag;
-        final activeRot = _animRotate?.value ?? _rotationForDrag();
-        final activeFade = _animFade?.value ?? 1.0;
-        final hasActiveProfile = p != null;
+      final activeOffset = _animOffset?.value ?? _drag;
+      final activeRot = _animRotate?.value ?? _rotationForDrag();
+      final activeFade = _animFade?.value ?? 1.0;
 
-        return Stack(
-          children: [
-            Positioned.fill(
-              child: Container(color: Colors.black),
-            ),
+      final hasActiveProfile = p != null;
 
-           Center(
-  child: hasActiveProfile
+SwipeProfile? nextProfile;
+if (hasActiveProfile && currentIndex + 1 < profiles.length) {
+  nextProfile = profiles[currentIndex + 1];
+}
+
+       return Stack(
+  children: [
+    Positioned.fill(
+      child: Container(color: Colors.black),
+    ),
+
+    if (nextProfile != null)
+      Center(
+        child: Transform.translate(
+          offset: const Offset(0, 12),
+          child: Transform.scale(
+            scale: 0.965,
+            child: Opacity(
+  opacity: 0.72,
+  child: IgnorePointer(
+    child: ColorFiltered(
+      colorFilter: ColorFilter.mode(
+        Colors.black.withOpacity(0.18),
+        BlendMode.darken,
+      ),
+      child: RepaintBoundary(
+        child: _TinderCard(
+          profile: nextProfile,
+          width: cardWidth,
+          height: cardHeight,
+        ),
+      ),
+    ),
+  ),
+),
+          ),
+        ),
+      ),
+
+    Center(
+      child: hasActiveProfile
       ? GestureDetector(
           onPanStart: (_) {
             if (_isAnimating) return;
