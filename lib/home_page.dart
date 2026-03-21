@@ -1133,6 +1133,7 @@ if (hasActiveProfile && currentIndex + 1 < profiles.length) {
                         profile: nextProfile,
                         width: cardWidth,
                         height: cardHeight,
+                        photBarsTop: 64,
                       ),
                     ),
                   ),
@@ -1194,6 +1195,7 @@ if (hasActiveProfile && currentIndex + 1 < profiles.length) {
           profile: p,
           width: cardWidth,
           height: cardHeight,
+          photBarsTop: 92,
         ),
         if (_isDragging && !_isAnimating)
   _CardSwipeStamp(drag: _drag),
@@ -1385,11 +1387,13 @@ class _TinderCard extends StatefulWidget {
   final SwipeProfile profile;
   final double width;
   final double height;
+  final double photBarsTop;
 
   const _TinderCard({
     required this.profile,
     required this.width,
     required this.height,
+    this.photBarsTop = 64,
   });
 
   @override
@@ -1508,28 +1512,30 @@ class _TinderCardState extends State<_TinderCard> {
             ),
 
             Positioned(
-              top: 16,
-              left: 14,
-              right: 14,
-              child: Row(
-                children: List.generate(profile.photoUrls.length, (index) {
-                  final isActive = index == imageIndex;
+  top: widget.photBarsTop,
+  left: 16,
+  right: 16,
+  child: Row(
+    children: List.generate(profile.photoUrls.length, (index) {
+      final isActive = index == imageIndex;
 
-                  return Expanded(
-                    child: Container(
-                      height: 4,
-                      margin: EdgeInsets.only(
-                        right: index == profile.photoUrls.length - 1 ? 0 : 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isActive ? Colors.white : Colors.white38,
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                    ),
-                  );
-                }),
-              ),
-            ),
+      return Expanded(
+        child: Container(
+          height: 2,
+         margin: EdgeInsets.only(
+  right: index == profile.photoUrls.length - 1 ? 0 : 3,
+),
+          decoration: BoxDecoration(
+            color: isActive
+                ? Colors.white
+                : Colors.white.withOpacity(0.35),
+            borderRadius: BorderRadius.circular(999),
+          ),
+        ),
+      );
+    }),
+  ),
+),
 
             Positioned(
               left: 0,
@@ -1571,11 +1577,13 @@ class _TinderCardState extends State<_TinderCard> {
               ),
             ),
 
-           Positioned(
+          Positioned(
   left: 20,
   right: 20,
   bottom: 126,
-  child: Row(
+ 
+    child: Row(
+      
     crossAxisAlignment: CrossAxisAlignment.center,
     children: [
       Expanded(
@@ -1611,11 +1619,13 @@ class _TinderCardState extends State<_TinderCard> {
   ),
 ),
 
-            Positioned(
+           Positioned(
   left: 20,
   right: 20,
   bottom: 64,
-  child: Column(
+  
+    child: Column(
+     
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Row(
