@@ -1095,37 +1095,49 @@ if (hasActiveProfile && currentIndex + 1 < profiles.length) {
       child: Container(color: Colors.black),
     ),
 
-    if (nextProfile != null)
-      Center(
-        child: Transform.translate(
-          offset: const Offset(0, 12),
-          child: Transform.scale(
-            scale: 0.965,
-            child: Opacity(
-  opacity: 0.72,
-  child: IgnorePointer(
-    child: ColorFiltered(
-      colorFilter: ColorFilter.mode(
-        Colors.black.withOpacity(0.18),
-        BlendMode.darken,
-      ),
-      child: RepaintBoundary(
-        child: _TinderCard(
-          profile: nextProfile,
-          width: cardWidth,
-          height: cardHeight,
+   if (nextProfile != null)
+  Center(
+    child: Transform.translate(
+      offset: const Offset(0, 26),
+      child: Transform.scale(
+        scale: 0.94,
+        child: Opacity(
+          opacity: 0.82,
+          child: IgnorePointer(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(34),
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: SizedBox(
+                  width: cardWidth,
+                  height: cardHeight - 18,
+                  child: ColorFiltered(
+                    colorFilter: ColorFilter.mode(
+                      Colors.black.withOpacity(0.12),
+                      BlendMode.darken,
+                    ),
+                    child: RepaintBoundary(
+                      child: _TinderCard(
+                        profile: nextProfile,
+                        width: cardWidth,
+                        height: cardHeight,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     ),
   ),
-),
-          ),
-        ),
-      ),
 
-    Center(
-      child: hasActiveProfile
-      ? GestureDetector(
+   Center(
+  child: Transform.translate(
+    offset: const Offset(0, -4),
+    child: hasActiveProfile
+        ? GestureDetector(
           onPanStart: (_) {
             if (_isAnimating) return;
             setState(() => _isDragging = true);
@@ -1175,6 +1187,7 @@ if (hasActiveProfile && currentIndex + 1 < profiles.length) {
           ),
         )
       : _buildEmptyFeedState(),
+  ),
 ),
             Positioned(
               top: 0,
@@ -1296,11 +1309,12 @@ if (hasActiveProfile && currentIndex + 1 < profiles.length) {
     ),
   ),
             if (_isDragging && !_isAnimating)
-              Positioned(
-                top: 118,
-                left: 18,
-                child: _SwipeHint(drag: _drag),
-              ),
+  Positioned(
+    top: 190,
+    left: _drag.dx > 20 ? null : 36,
+    right: _drag.dx > 20 ? 36 : null,
+    child: _SwipeHint(drag: _drag),
+  ),
           ],
         );
       },
@@ -1585,38 +1599,44 @@ class _SwipeHint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dirText = () {
-      if (drag.dx > 20) return "LIKE";
-      if (drag.dx < -20) return "NOPE";
-      if (drag.dy < -140) return "SUPER LIKE";
-      return "";
-    }();
+    final isLike = drag.dx > 20;
+    final isNope = drag.dx < -20;
+    final isSuper = drag.dy < -140;
 
-    if (dirText.isEmpty) return const SizedBox.shrink();
+    if (!isLike && !isNope && !isSuper) {
+      return const SizedBox.shrink();
+    }
 
-    final color = dirText == "NOPE"
-        ? Colors.red
-        : (dirText == "LIKE" ? Colors.green : Colors.blue);
     final opacity = ((drag.dx.abs() + drag.dy.abs()) / 140).clamp(0.0, 1.0);
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        border: Border.all(color: color, width: 3),
-        borderRadius: BorderRadius.circular(10),
-        color: Colors.transparent,
-      ),
-      child: Opacity(
+    if (isNope) {
+      return Opacity(
         opacity: opacity,
-        child: Text(
-          dirText,
-          style: TextStyle(
-            color: color,
-            fontSize: 20,
-            fontWeight: FontWeight.w900,
-            letterSpacing: 1.2,
-          ),
+        child: const Icon(
+          Icons.close_rounded,
+          size: 120,
+          color: Color(0xFFFF2D75),
         ),
+      );
+    }
+
+    if (isLike) {
+      return Opacity(
+        opacity: opacity,
+        child: const Icon(
+          Icons.favorite,
+          size: 120,
+          color: Color(0xFF7BEA3A),
+        ),
+      );
+    }
+
+    return Opacity(
+      opacity: opacity,
+      child: const Icon(
+        Icons.star_rounded,
+        size: 110,
+        color: Colors.blue,
       ),
     );
   }
