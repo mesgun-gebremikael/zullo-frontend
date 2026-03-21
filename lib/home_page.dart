@@ -556,14 +556,14 @@ double _superProgress() {
     final offY = size.height * 0.35;
 
     final end = switch (dir) {
-      SwipeDir.left => Offset(-offX, 0),
-      SwipeDir.right => Offset(offX, 0),
-      SwipeDir.up => Offset(0, -offY),
-    };
+  SwipeDir.left => Offset(-offX, -offY * 0.35),
+  SwipeDir.right => Offset(offX, -offY * 0.35),
+  SwipeDir.up => Offset(0, -offY),
+};
 
     final rotEnd = switch (dir) {
-      SwipeDir.left => -0.18,
-      SwipeDir.right => 0.18,
+      SwipeDir.left => -0.22,
+      SwipeDir.right => 0.22,
       SwipeDir.up => 0.0,
     };
 
@@ -1110,11 +1110,11 @@ if (hasActiveProfile && currentIndex + 1 < profiles.length) {
    if (nextProfile != null)
   Center(
     child: Transform.translate(
-      offset: const Offset(0, 34),
+      offset: const Offset(0, 42),
       child: Transform.scale(
-        scale: 0.935,
+        scale: 0.928,
         child: Opacity(
-          opacity: 0.80,
+          opacity: 0.78,
           child: IgnorePointer(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(34),
@@ -1122,7 +1122,7 @@ if (hasActiveProfile && currentIndex + 1 < profiles.length) {
                 alignment: Alignment.topCenter,
                 child: SizedBox(
                   width: cardWidth,
-                  height: cardHeight - 18,
+                  height: cardHeight - 34,
                   child: ColorFiltered(
                     colorFilter: ColorFilter.mode(
                       Colors.black.withOpacity(0.12),
@@ -1147,7 +1147,7 @@ if (hasActiveProfile && currentIndex + 1 < profiles.length) {
 
    Center(
   child: Transform.translate(
-    offset: const Offset(0, -18),
+    offset: const Offset(0, -28),
     child: hasActiveProfile
         ? GestureDetector(
           onPanStart: (_) {
@@ -1535,15 +1535,15 @@ class _TinderCardState extends State<_TinderCard> {
               left: 0,
               right: 0,
               top: 0,
-              height: 150,
+              height: 175,
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Colors.black.withOpacity(0.20),
-                      Colors.black.withOpacity(0.06),
+                      Colors.black.withOpacity(0.28),
+                      Colors.black.withOpacity(0.10),
                       Colors.transparent,
                     ],
                   ),
@@ -1555,7 +1555,7 @@ class _TinderCardState extends State<_TinderCard> {
               left: 0,
               right: 0,
               bottom: 0,
-              height: 220,
+              height: 205,
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
