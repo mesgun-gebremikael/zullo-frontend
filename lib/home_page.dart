@@ -458,7 +458,7 @@ _precacheNextProfile();
 
   SwipeDir? _decideDir(Size screen) {
     const dxThreshold = 100.0;
-    const upThreshold = 140.0;
+    const upThreshold = 170.0;
 
     if (_drag.dx > dxThreshold) return SwipeDir.right;
     if (_drag.dx < -dxThreshold) return SwipeDir.left;
@@ -494,10 +494,22 @@ _precacheNextProfile();
     });
   }
 
-  double _rotationForDrag() {
-    final rot = (_drag.dx / 280.0).clamp(-0.22, 0.22);
-    return rot;
-  }
+ double _rotationForDrag() {
+  final rot = (_drag.dx / 420.0).clamp(-0.14, 0.14);
+  return rot;
+}
+
+double _likeProgress() {
+  return (_drag.dx / 140).clamp(0.0, 1.0).toDouble();
+}
+
+double _nopeProgress() {
+  return (-_drag.dx / 140).clamp(0.0, 1.0).toDouble();
+}
+
+double _superProgress() {
+  return (-_drag.dy / 170).clamp(0.0, 1.0).toDouble();
+}
 
   Future<void> _performSwipe(SwipeDir dir) async {
     if (profiles.isEmpty || currentIndex >= profiles.length) return;
@@ -1163,25 +1175,33 @@ if (hasActiveProfile && currentIndex + 1 < profiles.length) {
             opacity: activeFade,
             child: Transform.translate(
               offset: activeOffset,
-              child: Transform.rotate(
-                angle: activeRot,
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ProfilePage(profile: p),
-                      ),
-                    );
-                  },
-                  child: RepaintBoundary(
-                    child: _TinderCard(
-                      profile: p,
-                      width: cardWidth,
-                      height: cardHeight,
-                    ),
-                  ),
-                ),
+             child: Transform.rotate(
+  alignment: Alignment.topCenter,
+  angle: activeRot,
+  child: GestureDetector(
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ProfilePage(profile: p),
+      ),
+    );
+  },
+  child: RepaintBoundary(
+    child: Stack(
+      clipBehavior: Clip.none,
+      children: [
+        _TinderCard(
+          profile: p,
+          width: cardWidth,
+          height: cardHeight,
+        ),
+        if (_isDragging && !_isAnimating)
+  _CardSwipeStamp(drag: _drag),
+      ],
+    ),
+  ),
+),
               ),
             ),
           ),
@@ -1256,72 +1276,108 @@ if (hasActiveProfile && currentIndex + 1 < profiles.length) {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          tinderCircleButton(
-            size: 52,
-            onTap: () {},
-            child: const Icon(
-              Icons.refresh_rounded,
-              size: 26,
-              color: Colors.orange,
-            ),
-          ),
-          const SizedBox(width: 14),
-          tinderCircleButton(
-            size: 62,
-            onTap: () => _performSwipe(SwipeDir.left),
-            child: thickXIcon(
-              color: const Color(0xFFFF2D75),
-              size: 34,
-            ),
-          ),
-          const SizedBox(width: 14),
-          tinderCircleButton(
-            size: 54,
-            onTap: () => _performSwipe(SwipeDir.up),
-            child: const Icon(
-              Icons.star_rounded,
-              size: 28,
-              color: Colors.blue,
-            ),
-          ),
-          const SizedBox(width: 14),
-          tinderCircleButton(
-            size: 62,
-            onTap: () => _performSwipe(SwipeDir.right),
-            child: const Icon(
-              Icons.favorite,
-              size: 34,
-              color: Color(0xFF7BEA3A),
-            ),
-          ),
-          const SizedBox(width: 14),
-          tinderCircleButton(
-            size: 52,
-            onTap: _openEditProfile,
-            child: const Icon(
-              Icons.send_rounded,
-              size: 24,
-              color: Colors.lightBlue,
-            ),
-          ),
-        ],
+  AnimatedOpacity(
+    duration: const Duration(milliseconds: 80),
+    opacity: (_likeProgress() > 0 || _nopeProgress() > 0 || _superProgress() > 0) ? 0.18 : 1.0,
+    child: tinderCircleButton(
+      size: 52,
+      onTap: () {},
+      child: const Icon(
+        Icons.refresh_rounded,
+        size: 26,
+        color: Colors.orange,
       ),
     ),
   ),
-            if (_isDragging && !_isAnimating)
-  Positioned(
-    top: 190,
-    left: _drag.dx > 20 ? null : 36,
-    right: _drag.dx > 20 ? 36 : null,
-    child: _SwipeHint(drag: _drag),
+  const SizedBox(width: 14),
+
+  AnimatedScale(
+    duration: const Duration(milliseconds: 80),
+    scale: _nopeProgress() > 0 ? 1.16 : 1.0,
+    child: AnimatedOpacity(
+      duration: const Duration(milliseconds: 80),
+      opacity: (_likeProgress() > 0 || _superProgress() > 0) ? 0.18 : 1.0,
+      child: tinderCircleButton(
+        size: 62,
+        onTap: () => _performSwipe(SwipeDir.left),
+        child: thickXIcon(
+          color: const Color(0xFFFF2D75),
+          size: 34,
+        ),
+      ),
+    ),
   ),
+  const SizedBox(width: 14),
+
+  AnimatedScale(
+    duration: const Duration(milliseconds: 80),
+    scale: _superProgress() > 0 ? 1.16 : 1.0,
+    child: AnimatedOpacity(
+      duration: const Duration(milliseconds: 80),
+      opacity: (_likeProgress() > 0 || _nopeProgress() > 0) ? 0.18 : 1.0,
+      child: tinderCircleButton(
+        size: 54,
+        onTap: () => _performSwipe(SwipeDir.up),
+        child: const Icon(
+          Icons.star_rounded,
+          size: 28,
+          color: Colors.blue,
+        ),
+      ),
+    ),
+  ),
+  const SizedBox(width: 14),
+
+  AnimatedScale(
+    duration: const Duration(milliseconds: 80),
+    scale: _likeProgress() > 0 ? 1.16 : 1.0,
+    child: AnimatedOpacity(
+      duration: const Duration(milliseconds: 80),
+      opacity: (_nopeProgress() > 0 || _superProgress() > 0) ? 0.18 : 1.0,
+      child: tinderCircleButton(
+        size: 62,
+        onTap: () => _performSwipe(SwipeDir.right),
+        child: const Icon(
+          Icons.favorite,
+          size: 34,
+          color: Color(0xFF7BEA3A),
+        ),
+      ),
+    ),
+  ),
+  const SizedBox(width: 14),
+
+  AnimatedOpacity(
+    duration: const Duration(milliseconds: 80),
+    opacity: (_likeProgress() > 0 || _nopeProgress() > 0 || _superProgress() > 0) ? 0.18 : 1.0,
+    child: tinderCircleButton(
+      size: 52,
+      onTap: _openEditProfile,
+      child: const Icon(
+        Icons.send_rounded,
+        size: 24,
+        color: Colors.lightBlue,
+      ),
+    ),
+  ),
+],
+      ),
+    ),
+  ),
+  //         if (_isDragging && !_isAnimating)
+ // Positioned(
+   // top: 190,
+   // left: _drag.dx > 20 ? null : 36,
+   // right: _drag.dx > 20 ? 36 : null,
+ //   child: _SwipeHint(drag: _drag),
+//  ),
           ],
         );
       },
     );
   }
 }
-
+//------------------------------------------
 class _TinderCard extends StatefulWidget {
   final SwipeProfile profile;
   final double width;
@@ -1638,6 +1694,78 @@ class _SwipeHint extends StatelessWidget {
         size: 110,
         color: Colors.blue,
       ),
+    );
+  }
+}
+
+class _CardSwipeStamp extends StatelessWidget {
+  final Offset drag;
+
+  const _CardSwipeStamp({required this.drag});
+
+  @override
+  Widget build(BuildContext context) {
+    final likeOpacity = (drag.dx / 140).clamp(0.0, 1.0).toDouble();
+    final nopeOpacity = (-drag.dx / 140).clamp(0.0, 1.0).toDouble();
+    final superOpacity = (-drag.dy / 170).clamp(0.0, 1.0).toDouble();
+
+    if (likeOpacity <= 0 && nopeOpacity <= 0 && superOpacity <= 0) {
+      return const SizedBox.shrink();
+    }
+
+    return Stack(
+      children: [
+        if (likeOpacity > 0)
+          Positioned(
+            top: 108,
+            left: 26,
+            child: Opacity(
+              opacity: likeOpacity,
+              child: Transform.rotate(
+                angle: -0.18,
+                child: const Icon(
+                  Icons.favorite,
+                  size: 118,
+                  color: Color(0xFF8BE63F),
+                ),
+              ),
+            ),
+          ),
+
+        if (nopeOpacity > 0)
+          Positioned(
+            top: 108,
+            right: 26,
+            child: Opacity(
+              opacity: nopeOpacity,
+              child: Transform.rotate(
+                angle: 0.18,
+                child: Icon(
+                  Icons.close_rounded,
+                  size: 124,
+                  color: const Color(0xFFFF2D75),
+                ),
+              ),
+            ),
+          ),
+
+        if (superOpacity > 0 && likeOpacity < 0.15 && nopeOpacity < 0.15)
+          Positioned(
+            top: 105,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Opacity(
+                opacity: superOpacity,
+                child: const Icon(
+                  Icons.star_rounded,
+                  size: 112,
+                  color: Colors.blue,
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }
