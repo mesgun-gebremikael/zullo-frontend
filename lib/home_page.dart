@@ -1555,7 +1555,7 @@ class _TinderCardState extends State<_TinderCard> {
               left: 0,
               right: 0,
               bottom: 0,
-              height: 205,
+              height: 218,
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -1571,85 +1571,121 @@ class _TinderCardState extends State<_TinderCard> {
               ),
             ),
 
-            Positioned(
-              left: 18,
-              right: 18,
-              bottom: 120,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      "${profile.displayName} ${profile.age}",
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.w800,
-                        height: 1.0,
-                      ),
-                    ),
-                  ),
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.45),
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white24),
-                    ),
-                    child: const Icon(
-                      Icons.arrow_upward_rounded,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+           Positioned(
+  left: 20,
+  right: 20,
+  bottom: 126,
+  child: Row(
+    crossAxisAlignment: CrossAxisAlignment.center,
+    children: [
+      Expanded(
+        child: Text(
+          "${profile.displayName} ${profile.age}",
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 28,
+            fontWeight: FontWeight.w800,
+            height: 1.0,
+            letterSpacing: -0.4,
+          ),
+        ),
+      ),
+      const SizedBox(width: 12),
+      Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.42),
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.white24),
+        ),
+        child: const Icon(
+          Icons.arrow_upward_rounded,
+          color: Colors.white,
+          size: 22,
+        ),
+      ),
+    ],
+  ),
+),
 
             Positioned(
-              left: 18,
-              right: 18,
-              bottom: 68,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Bor i ${profile.countryCode}",
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.96),
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    "${_formatIntention(profile.intention)}",
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.92),
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
+  left: 20,
+  right: 20,
+  bottom: 64,
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Row(
+        children: [
+          Icon(
+            Icons.location_on_outlined,
+            size: 18,
+            color: Colors.white.withOpacity(0.96),
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+             "Bor i ${profile.countryCode}",
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.96),
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                height: 1.15,
               ),
             ),
+          ),
+        ],
+      ),
+      const SizedBox(height: 8),
+      Row(
+        children: [
+          Icon(
+            Icons.search_rounded,
+            size: 18,
+            color: Colors.white.withOpacity(0.92),
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              _formatIntention(profile.intention),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.92),
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                height: 1.15,
+              ),
+            ),
+          ),
+        ],
+      ),
+    ],
+  ),
+),
           ],
         ),
       ),
     );
   }
 
-  String _formatIntention(String value) {
-    switch (value) {
-      case 'Relationship':
-        return 'Söker Relationship';
-      case 'Marriage':
-        return 'Söker Marriage';
-      case 'Date':
-        return 'Söker Date';
-      default:
-        return value;
-    }
+ String _formatIntention(String value) {
+  switch (value) {
+    case 'Relationship':
+      return 'Söker seriöst';
+    case 'Marriage':
+      return 'Öppen för äktenskap';
+    case 'Date':
+      return 'Öppen för att dejta';
+    default:
+      return value;
   }
+}
 }
 
 class _SwipeHint extends StatelessWidget {
