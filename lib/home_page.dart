@@ -1276,8 +1276,10 @@ if (hasActiveProfile && currentIndex + 1 < profiles.length) {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
   AnimatedOpacity(
-    duration: const Duration(milliseconds: 80),
-    opacity: (_likeProgress() > 0 || _nopeProgress() > 0 || _superProgress() > 0) ? 0.18 : 1.0,
+    duration: const Duration(milliseconds: 90),
+    opacity: (_likeProgress() > 0 || _nopeProgress() > 0 || _superProgress() > 0)
+        ? 0.10
+        : 1.0,
     child: tinderCircleButton(
       size: 52,
       onTap: () {},
@@ -1291,11 +1293,11 @@ if (hasActiveProfile && currentIndex + 1 < profiles.length) {
   const SizedBox(width: 14),
 
   AnimatedScale(
-    duration: const Duration(milliseconds: 80),
-    scale: _nopeProgress() > 0 ? 1.16 : 1.0,
+    duration: const Duration(milliseconds: 90),
+    scale: _nopeProgress() > 0 ? 1.22 : 1.0,
     child: AnimatedOpacity(
-      duration: const Duration(milliseconds: 80),
-      opacity: (_likeProgress() > 0 || _superProgress() > 0) ? 0.18 : 1.0,
+      duration: const Duration(milliseconds: 90),
+      opacity: _likeProgress() > 0 || _superProgress() > 0 ? 0.10 : 1.0,
       child: tinderCircleButton(
         size: 62,
         onTap: () => _performSwipe(SwipeDir.left),
@@ -1309,11 +1311,11 @@ if (hasActiveProfile && currentIndex + 1 < profiles.length) {
   const SizedBox(width: 14),
 
   AnimatedScale(
-    duration: const Duration(milliseconds: 80),
-    scale: _superProgress() > 0 ? 1.16 : 1.0,
+    duration: const Duration(milliseconds: 90),
+    scale: _superProgress() > 0 ? 1.22 : 1.0,
     child: AnimatedOpacity(
-      duration: const Duration(milliseconds: 80),
-      opacity: (_likeProgress() > 0 || _nopeProgress() > 0) ? 0.18 : 1.0,
+      duration: const Duration(milliseconds: 90),
+      opacity: _likeProgress() > 0 || _nopeProgress() > 0 ? 0.10 : 1.0,
       child: tinderCircleButton(
         size: 54,
         onTap: () => _performSwipe(SwipeDir.up),
@@ -1328,11 +1330,11 @@ if (hasActiveProfile && currentIndex + 1 < profiles.length) {
   const SizedBox(width: 14),
 
   AnimatedScale(
-    duration: const Duration(milliseconds: 80),
-    scale: _likeProgress() > 0 ? 1.16 : 1.0,
+    duration: const Duration(milliseconds: 90),
+    scale: _likeProgress() > 0 ? 1.22 : 1.0,
     child: AnimatedOpacity(
-      duration: const Duration(milliseconds: 80),
-      opacity: (_nopeProgress() > 0 || _superProgress() > 0) ? 0.18 : 1.0,
+      duration: const Duration(milliseconds: 90),
+      opacity: _nopeProgress() > 0 || _superProgress() > 0 ? 0.10 : 1.0,
       child: tinderCircleButton(
         size: 62,
         onTap: () => _performSwipe(SwipeDir.right),
@@ -1347,8 +1349,10 @@ if (hasActiveProfile && currentIndex + 1 < profiles.length) {
   const SizedBox(width: 14),
 
   AnimatedOpacity(
-    duration: const Duration(milliseconds: 80),
-    opacity: (_likeProgress() > 0 || _nopeProgress() > 0 || _superProgress() > 0) ? 0.18 : 1.0,
+    duration: const Duration(milliseconds: 90),
+    opacity: (_likeProgress() > 0 || _nopeProgress() > 0 || _superProgress() > 0)
+        ? 0.10
+        : 1.0,
     child: tinderCircleButton(
       size: 52,
       onTap: _openEditProfile,
