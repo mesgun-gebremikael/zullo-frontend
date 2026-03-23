@@ -48,7 +48,8 @@ class _HomePageState extends State<HomePage>
   Animation<Offset>? _animOffset;
   Animation<double>? _animRotate;
   Animation<double>? _animFade;
-
+  Widget? _cachedNextCard;
+  String? _cachedNextCardUserId;
   bool _isAnimating = false;
 
   @override
@@ -1062,14 +1063,14 @@ class _HomePageState extends State<HomePage>
           _performSwipe(SwipeDir.right);
         }
       },
-      nextCard: nextProfile != null ? _buildNextCard(nextProfile) : null,
+      nextCard: _getNextCard(nextProfile),
       activeCard: currentProfile != null
           ? _buildActiveCard(currentProfile)
           : const SizedBox.shrink(),
       emptyState: _buildEmptyFeedState(),
     );
   }
-
+  
      Widget _buildNextCard(SwipeProfile nextProfile) {
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -1114,6 +1115,22 @@ class _HomePageState extends State<HomePage>
       },
     );
   }
+
+  Widget? _getNextCard(SwipeProfile? nextProfile) {
+  if (nextProfile == null) {
+    _cachedNextCard = null;
+    _cachedNextCardUserId = null;
+    return null;
+  }
+
+  if (_cachedNextCardUserId == nextProfile.userId && _cachedNextCard != null) {
+    return _cachedNextCard;
+  }
+
+  _cachedNextCardUserId = nextProfile.userId;
+  _cachedNextCard = _buildNextCard(nextProfile);
+  return _cachedNextCard;
+}
 
    Widget _buildActiveCard(SwipeProfile p) {
     return LayoutBuilder(
