@@ -57,7 +57,7 @@ class _HomePageState extends State<HomePage>
     WidgetsBinding.instance.addObserver(this);
     _anim = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 280),
+      duration: const Duration(milliseconds: 200),
     );
     loadFeed();
     loadUnreadStatus();
@@ -418,7 +418,7 @@ class _HomePageState extends State<HomePage>
     _anim.stop();
     _anim.reset();
 
-    final curve = CurvedAnimation(parent: _anim, curve: Curves.easeOutQuart);
+    final curve = CurvedAnimation(parent: _anim, curve: Curves.fastOutSlowIn);
 
     _animOffset = Tween<Offset>(begin: _drag, end: end).animate(curve);
     _animRotate = Tween<double>(begin: _rotationForDrag(), end: rotateEnd).animate(curve);
@@ -502,7 +502,7 @@ class _HomePageState extends State<HomePage>
     }
 
     final size = MediaQuery.of(context).size;
-    final offX = size.width * 1.15;
+    final offX = size.width * 1.35;
     final offY = size.height * 0.34;
 
     final end = switch (dir) {
