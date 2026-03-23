@@ -1,4 +1,3 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import 'services/auth_service.dart';
@@ -10,6 +9,7 @@ import 'matches_page.dart';
 import 'profile_page.dart';
 import 'chat_page.dart';
 import 'edit_profile_page.dart';
+import 'swipe_page.dart';
 
 enum SwipeDir { left, right, up }
 
@@ -52,10 +52,10 @@ class _HomePageState extends State<HomePage>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-   _anim = AnimationController(
-  vsync: this,
-  duration: const Duration(milliseconds: 280),
-);
+    _anim = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 280),
+    );
     loadFeed();
     loadUnreadStatus();
     loadMyPhoto();
@@ -91,25 +91,17 @@ class _HomePageState extends State<HomePage>
       final loadedProfiles = List<SwipeProfile>.from(data['profiles']);
       final loadedRadius = (data['radiusKm'] as num).toDouble();
 
-     setState(() {
-  profiles = loadedProfiles;
-  _radiusKm = loadedRadius;
-  currentIndex = 0;
-  isLoading = false;
-  error = loadedProfiles.isEmpty ? "Inga profiler just nu" : null;
-});
+      setState(() {
+        profiles = loadedProfiles;
+        _radiusKm = loadedRadius;
+        currentIndex = 0;
+        isLoading = false;
+        error = loadedProfiles.isEmpty ? "Inga profiler just nu" : null;
+      });
 
-//if (loadedProfiles.isNotEmpty && loadedProfiles.first.photoUrls.isNotEmpty) {
- /// precacheImage(
- //   NetworkImage(loadedProfiles.first.photoUrls.first),
- //   context,
- // ).catchError((_) {});
-//}
-
-_precacheNextProfile();
-
+      _precacheNextProfile();
     } catch (e) {
-      print('LOAD FEED ERROR: $e');
+      debugPrint('LOAD FEED ERROR: $e');
 
       setState(() {
         error = "Kunde inte ladda feed";
@@ -182,21 +174,6 @@ _precacheNextProfile();
     if (changed == true) {
       await loadFeed();
       await loadUnreadStatus();
-    }
-  }
-
-  void _precacheNextImage() {
-    if (!mounted) return;
-    if (profiles.isEmpty) return;
-
-    final nextIndex = currentIndex + 1;
-    if (nextIndex >= profiles.length) return;
-
-    final next = profiles[nextIndex];
-    final url = next.photoUrls.isNotEmpty ? next.photoUrls.first : "";
-
-    if (url.startsWith("http://") || url.startsWith("https://")) {
-      precacheImage(NetworkImage(url), context);
     }
   }
 
@@ -414,55 +391,17 @@ _precacheNextProfile();
         ],
       ),
     );
-  }
-
-  Widget tinderCircleButton({
-    required Widget child,
-    required VoidCallback onTap,
-    double size = 64,
-  }) {
-    return GestureDetector(
-      onTap: (_isAnimating || isLoading) ? null : onTap,
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          color: const Color(0xFF151515),
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              blurRadius: 18,
-              spreadRadius: 1,
-              color: Colors.black.withOpacity(0.30),
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: Center(child: child),
-      ),
-    );
-  }
-
-  Widget thickXIcon({required Color color, double size = 34}) {
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        Icon(Icons.close, size: size, color: color),
-        Transform.translate(
-          offset: const Offset(0.7, 0.7),
-          child: Icon(Icons.close, size: size, color: color.withOpacity(0.9)),
-        ),
-      ],
-    );
-  }
+  } 
 
   SwipeDir? _decideDir(Size screen) {
     const dxThreshold = 100.0;
-    const upThreshold = 170.0;
+    const upThreshold = 150.0;
 
     if (_drag.dx > dxThreshold) return SwipeDir.right;
     if (_drag.dx < -dxThreshold) return SwipeDir.left;
-    if (_drag.dy < -upThreshold) return SwipeDir.up;
+    if (_drag.dy < -upThreshold && _drag.dy.abs() > _drag.dx.abs() * 0.9) {
+      return SwipeDir.up;
+    }
     return null;
   }
 
@@ -474,7 +413,7 @@ _precacheNextProfile();
     _anim.stop();
     _anim.reset();
 
-   final curve = CurvedAnimation(parent: _anim, curve: Curves.easeOutQuart);
+    final curve = CurvedAnimation(parent: _anim, curve: Curves.easeOutQuart);
 
     _animOffset = Tween<Offset>(begin: _drag, end: end).animate(curve);
     _animRotate = Tween<double>(begin: _rotationForDrag(), end: rotateEnd).animate(curve);
@@ -494,22 +433,25 @@ _precacheNextProfile();
     });
   }
 
-double _rotationForDrag() {
-  final rot = (_drag.dx / 520.0).clamp(-0.11, 0.11);
-  return rot;
-}
+  double _rotationForDrag() {
+    final rot = (_drag.dx / 520.0).clamp(-0.11, 0.11);
+    return rot;
+  }
 
-double _likeProgress() {
-  return (_drag.dx / 140).clamp(0.0, 1.0).toDouble();
-}
+  double _likeProgress() {
+    return (_drag.dx / 140).clamp(0.0, 1.0).toDouble();
+  }
 
-double _nopeProgress() {
-  return (-_drag.dx / 140).clamp(0.0, 1.0).toDouble();
-}
+  double _nopeProgress() {
+    return (-_drag.dx / 140).clamp(0.0, 1.0).toDouble();
+  }
 
-double _superProgress() {
-  return (-_drag.dy / 170).clamp(0.0, 1.0).toDouble();
-}
+  double _superProgress() {
+    final raw = (-_drag.dy / 170).clamp(0.0, 1.0).toDouble();
+    if (_drag.dy >= 0) return 0.0;
+    if (_drag.dy.abs() < _drag.dx.abs() * 0.55) return 0.0;
+    return raw;
+  }
 
   Future<void> _performSwipe(SwipeDir dir) async {
     if (profiles.isEmpty || currentIndex >= profiles.length) return;
@@ -552,18 +494,18 @@ double _superProgress() {
     }
 
     final size = MediaQuery.of(context).size;
-    final offX = size.width * 1.2;
-    final offY = size.height * 0.35;
+    final offX = size.width * 1.15;
+    final offY = size.height * 0.34;
 
     final end = switch (dir) {
-  SwipeDir.left => Offset(-offX, -offY * 0.35),
-  SwipeDir.right => Offset(offX, -offY * 0.35),
-  SwipeDir.up => Offset(0, -offY),
-};
+      SwipeDir.left => Offset(-offX, -offY * 0.35),
+      SwipeDir.right => Offset(offX, -offY * 0.35),
+      SwipeDir.up => Offset(0, -offY * 1.08),
+    };
 
     final rotEnd = switch (dir) {
-      SwipeDir.left => -0.22,
-      SwipeDir.right => 0.22,
+      SwipeDir.left => -0.17,
+      SwipeDir.right => 0.17,
       SwipeDir.up => 0.0,
     };
 
@@ -576,21 +518,20 @@ double _superProgress() {
     await _animateTo(Offset.zero, rotateEnd: 0.0, fadeEnd: 1.0);
   }
 
- void _precacheNextProfile() {
-  if (profiles.isEmpty) return;
+  void _precacheNextProfile() {
+    if (!mounted || profiles.isEmpty) return;
 
-  final nextIndex = currentIndex + 1;
-  if (nextIndex >= profiles.length) return;
+    final nextIndex = currentIndex + 1;
+    if (nextIndex >= profiles.length) return;
 
-  final nextProfile = profiles[nextIndex];
+    final nextProfile = profiles[nextIndex];
+    if (nextProfile.photoUrls.isEmpty) return;
 
-  if (nextProfile.photoUrls.isEmpty) return;
-
-  precacheImage(
-    NetworkImage(nextProfile.photoUrls.first),
-    context,
-  );
-}
+    precacheImage(
+      NetworkImage(nextProfile.photoUrls.first),
+      context,
+    );
+  }
 
   Future<void> _loadMyFilterValues() async {
     try {
@@ -885,31 +826,32 @@ double _superProgress() {
                               ],
                             ),
                             SliderTheme(
-  data: SliderTheme.of(context).copyWith(
-    activeTrackColor: const Color(0xFFFF2D75),
-    inactiveTrackColor: const Color(0xFF8F97A3),
-    thumbColor: Colors.white,
-    overlayColor: Colors.transparent,
-    trackHeight: 3,
-    rangeThumbShape:
-        const RoundRangeSliderThumbShape(enabledThumbRadius: 18),
-  ),
-  child: RangeSlider(
-    values: RangeValues(
-      tempMinAge.toDouble(),
-      tempMaxAge.toDouble(),
-    ),
-    min: 18,
-    max: 100,
-    divisions: 82,
-    onChanged: (values) {
-      setModalState(() {
-        tempMinAge = values.start.round();
-        tempMaxAge = values.end.round();
-      });
-    },
-  ),
-),
+                              data: SliderTheme.of(context).copyWith(
+                                activeTrackColor: const Color(0xFFFF2D75),
+                                inactiveTrackColor: const Color(0xFF8F97A3),
+                                thumbColor: Colors.white,
+                                overlayColor: Colors.transparent,
+                                trackHeight: 3,
+                                rangeThumbShape: const RoundRangeSliderThumbShape(
+                                  enabledThumbRadius: 18,
+                                ),
+                              ),
+                              child: RangeSlider(
+                                values: RangeValues(
+                                  tempMinAge.toDouble(),
+                                  tempMaxAge.toDouble(),
+                                ),
+                                min: 18,
+                                max: 100,
+                                divisions: 82,
+                                onChanged: (values) {
+                                  setModalState(() {
+                                    tempMinAge = values.start.round();
+                                    tempMaxAge = values.end.round();
+                                  });
+                                },
+                              ),
+                            ),
                             const SizedBox(height: 4),
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1007,133 +949,148 @@ double _superProgress() {
       (_) => false,
     );
   }
-    Widget _buildEmptyFeedState() {
-  return Padding(
-    padding: const EdgeInsets.fromLTRB(20, 120, 20, 40),
-    child: Center(
-      child: Container(
-        width: double.infinity,
-        constraints: const BoxConstraints(maxWidth: 420),
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
-        decoration: BoxDecoration(
-          color: const Color(0xFF111111),
-          borderRadius: BorderRadius.circular(28),
-          border: Border.all(color: Colors.white10),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.travel_explore_rounded,
-              color: Colors.white,
-              size: 54,
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              "Inga profiler just nu",
-              textAlign: TextAlign.center,
-              style: TextStyle(
+
+  Widget _buildEmptyFeedState() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 120, 20, 40),
+      child: Center(
+        child: Container(
+          width: double.infinity,
+          constraints: const BoxConstraints(maxWidth: 420),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+          decoration: BoxDecoration(
+            color: const Color(0xFF111111),
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(color: Colors.white10),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.travel_explore_rounded,
                 color: Colors.white,
-                fontSize: 24,
-                fontWeight: FontWeight.w800,
+                size: 54,
               ),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              "Testa att öka avståndet eller ändra åldersspannet i filtret.",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.72),
-                fontSize: 15,
-                height: 1.4,
-              ),
-            ),
-            const SizedBox(height: 22),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _openRadiusSheet,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFF2D75),
-                  foregroundColor: Colors.white,
-                  minimumSize: const Size.fromHeight(52),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(999),
-                  ),
+              const SizedBox(height: 16),
+              const Text(
+                "Inga profiler just nu",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
                 ),
-                child: const Text("Öppna filter"),
               ),
-            ),
-          ],
+              const SizedBox(height: 10),
+              Text(
+                "Testa att öka avståndet eller ändra åldersspannet i filtret.",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.72),
+                  fontSize: 15,
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 22),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _openRadiusSheet,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFF2D75),
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size.fromHeight(52),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
+                  child: const Text("Öppna filter"),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
-  @override
-  Widget build(BuildContext context) {
-    final hasProfile = profiles.isNotEmpty && currentIndex < profiles.length;
-
-   return Scaffold(
-  backgroundColor: Colors.black,
-  body: isLoading
-      ? const Center(child: CircularProgressIndicator())
-      : _buildTinderLayout(
-          hasProfile ? profiles[currentIndex] : null,
-        ),
-);
+    );
   }
 
- Widget _buildTinderLayout(SwipeProfile? p) {
+    @override
+  Widget build(BuildContext context) {
+    final hasProfile = profiles.isNotEmpty && currentIndex < profiles.length;
+    final currentProfile = hasProfile ? profiles[currentIndex] : null;
+
+    SwipeProfile? nextProfile;
+    if (hasProfile && currentIndex + 1 < profiles.length) {
+      nextProfile = profiles[currentIndex + 1];
+    }
+
+    return SwipePage(
+      isLoading: isLoading,
+      hasActiveProfile: currentProfile != null,
+      hasUnreadMessages: hasUnreadMessages,
+      likeProgress: _likeProgress(),
+      nopeProgress: _nopeProgress(),
+      superProgress: _superProgress(),
+      onOpenRadiusSheet: _openRadiusSheet,
+      onOpenMatchesPage: _openMatchesPage,
+      onLogout: _logout,
+      onOpenEditProfile: _openEditProfile,
+      onSwipeLeft: () {
+        if (!_isAnimating && !isLoading) {
+          _performSwipe(SwipeDir.left);
+        }
+      },
+      onSwipeUp: () {
+        if (!_isAnimating && !isLoading) {
+          _performSwipe(SwipeDir.up);
+        }
+      },
+      onSwipeRight: () {
+        if (!_isAnimating && !isLoading) {
+          _performSwipe(SwipeDir.right);
+        }
+      },
+      nextCard: nextProfile != null ? _buildNextCard(nextProfile) : null,
+      activeCard: currentProfile != null
+          ? _buildActiveCard(currentProfile)
+          : const SizedBox.shrink(),
+      emptyState: _buildEmptyFeedState(),
+    );
+  }
+
+     Widget _buildNextCard(SwipeProfile nextProfile) {
     return LayoutBuilder(
       builder: (context, constraints) {
-       final cardWidth = constraints.maxWidth;
-      final cardHeight = constraints.maxHeight;
+        final cardWidth = constraints.maxWidth;
+        final cardHeight = constraints.maxHeight;
 
-      final activeOffset = _animOffset?.value ?? _drag;
-      final activeRot = _animRotate?.value ?? _rotationForDrag();
-      final activeFade = _animFade?.value ?? 1.0;
-
-      final hasActiveProfile = p != null;
-
-SwipeProfile? nextProfile;
-if (hasActiveProfile && currentIndex + 1 < profiles.length) {
-  nextProfile = profiles[currentIndex + 1];
-}
-
-       return Stack(
-  children: [
-    Positioned.fill(
-      child: Container(color: Colors.black),
-    ),
-
-   if (nextProfile != null)
-  Center(
-    child: Transform.translate(
-      offset: const Offset(0, 42),
-      child: Transform.scale(
-        scale: 0.928,
-        child: Opacity(
-          opacity: 0.78,
-          child: IgnorePointer(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(34),
-              child: Align(
-                alignment: Alignment.topCenter,
-                child: SizedBox(
-                  width: cardWidth,
-                  height: cardHeight - 34,
-                  child: ColorFiltered(
-                    colorFilter: ColorFilter.mode(
-                      Colors.black.withOpacity(0.12),
-                      BlendMode.darken,
-                    ),
-                    child: RepaintBoundary(
-                      child: _TinderCard(
-                        profile: nextProfile,
-                        width: cardWidth,
-                        height: cardHeight,
-                        photBarsTop: 64,
+        return Center(
+          child: Transform.translate(
+            offset: const Offset(0, 40),
+            child: Transform.scale(
+              scale: 0.93,
+              child: Opacity(
+                opacity: 0.82,
+                child: IgnorePointer(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(34),
+                    child: SizedBox(
+                      width: cardWidth,
+                      height: cardHeight - 28,
+                      child: ColorFiltered(
+                        colorFilter: ColorFilter.mode(
+                          Colors.black.withOpacity(0.12),
+                          BlendMode.darken,
+                        ),
+                        child: RepaintBoundary(
+                          child: _TinderCard(
+                            profile: nextProfile,
+                            width: cardWidth,
+                            height: cardHeight,
+                            photoBarsTop: 66,
+                            distanceFallbackKm: _radiusKm,
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -1141,25 +1098,31 @@ if (hasActiveProfile && currentIndex + 1 < profiles.length) {
               ),
             ),
           ),
-        ),
-      ),
-    ),
-  ),
+        );
+      },
+    );
+  }
 
-   Center(
-  child: Transform.translate(
-    offset: const Offset(0, -28),
-    child: hasActiveProfile
-        ? GestureDetector(
+  Widget _buildActiveCard(SwipeProfile p) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final cardWidth = constraints.maxWidth;
+        final cardHeight = constraints.maxHeight;
+
+        final activeOffset = _animOffset?.value ?? _drag;
+        final activeRot = _animRotate?.value ?? _rotationForDrag();
+        final activeFade = _animFade?.value ?? 1.0;
+
+        return GestureDetector(
           onPanStart: (_) {
             if (_isAnimating) return;
             setState(() => _isDragging = true);
           },
           onPanUpdate: (d) {
-  if (_isAnimating) return;
-  _drag += Offset(d.delta.dx * 0.92, d.delta.dy * 0.88);
-  setState(() {});
-},
+            if (_isAnimating) return;
+            _drag += Offset(d.delta.dx * 0.92, d.delta.dy * 0.88);
+            setState(() {});
+          },
           onPanEnd: (_) async {
             if (_isAnimating) return;
             setState(() => _isDragging = false);
@@ -1175,225 +1138,58 @@ if (hasActiveProfile && currentIndex + 1 < profiles.length) {
             opacity: activeFade,
             child: Transform.translate(
               offset: activeOffset,
-             child: Transform.rotate(
-  alignment: Alignment.topCenter,
-  angle: activeRot,
-  child: GestureDetector(
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => ProfilePage(profile: p),
-      ),
-    );
-  },
-  child: RepaintBoundary(
-    child: Stack(
-      clipBehavior: Clip.none,
-      children: [
-        _TinderCard(
-          profile: p,
-          width: cardWidth,
-          height: cardHeight,
-          photBarsTop: 92,
-        ),
-        if (_isDragging && !_isAnimating)
-  _CardSwipeStamp(drag: _drag),
-      ],
-    ),
-  ),
-),
-              ),
-            ),
-          ),
-        )
-      : _buildEmptyFeedState(),
-  ),
-),
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: SafeArea(
-                bottom: false,
-                child: Container(
-                  padding: const EdgeInsets.fromLTRB(12, 10, 12, 0),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.black.withOpacity(0.50),
-                        Colors.black.withOpacity(0.22),
-                        Colors.transparent,
+              child: Transform.rotate(
+                alignment: Alignment.topCenter,
+                angle: activeRot,
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ProfilePage(profile: p),
+                      ),
+                    );
+                  },
+                  child: RepaintBoundary(
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        _TinderCard(
+                          profile: p,
+                          width: cardWidth,
+                          height: cardHeight,
+                          photoBarsTop: 66,
+                          distanceFallbackKm: _radiusKm,
+                        ),
+                        if (_isDragging && !_isAnimating)
+                          _CardSwipeStamp(drag: _drag),
                       ],
                     ),
-                  ),
-                  child: Row(
-                    children: [
-                      _TopIconButton(
-                        icon: Icons.tune_rounded,
-                        onTap: _openRadiusSheet,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Center(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                           children: const [
-  _TopTabChip(label: 'För dig', selected: true),
-  SizedBox(width: 8),
-  _TopTextTab(label: 'Duos'),
-  SizedBox(width: 8),
-  _TopTextTab(label: 'Astro'),
-],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      _TopIconButton(
-                        icon: Icons.chat_bubble_outline,
-                        onTap: _openMatchesPage,
-                        showDot: hasUnreadMessages,
-                      ),
-                      const SizedBox(width: 10),
-                      _TopIconButton(
-                        icon: Icons.logout,
-                        onTap: _logout,
-                      ),
-                    ],
                   ),
                 ),
               ),
             ),
-
-           if (hasActiveProfile)
-  Positioned(
-    left: 0,
-    right: 0,
-    bottom: 18,
-    child: SafeArea(
-      top: false,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-  AnimatedOpacity(
-    duration: const Duration(milliseconds: 90),
-    opacity: (_likeProgress() > 0 || _nopeProgress() > 0 || _superProgress() > 0)
-        ? 0.10
-        : 1.0,
-    child: tinderCircleButton(
-      size: 52,
-      onTap: () {},
-      child: const Icon(
-        Icons.refresh_rounded,
-        size: 26,
-        color: Colors.orange,
-      ),
-    ),
-  ),
-  const SizedBox(width: 14),
-
-  AnimatedScale(
-    duration: const Duration(milliseconds: 90),
-    scale: _nopeProgress() > 0 ? 1.22 : 1.0,
-    child: AnimatedOpacity(
-      duration: const Duration(milliseconds: 90),
-      opacity: _likeProgress() > 0 || _superProgress() > 0 ? 0.10 : 1.0,
-      child: tinderCircleButton(
-        size: 62,
-        onTap: () => _performSwipe(SwipeDir.left),
-        child: thickXIcon(
-          color: const Color(0xFFFF2D75),
-          size: 34,
-        ),
-      ),
-    ),
-  ),
-  const SizedBox(width: 14),
-
-  AnimatedScale(
-    duration: const Duration(milliseconds: 90),
-    scale: _superProgress() > 0 ? 1.22 : 1.0,
-    child: AnimatedOpacity(
-      duration: const Duration(milliseconds: 90),
-      opacity: _likeProgress() > 0 || _nopeProgress() > 0 ? 0.10 : 1.0,
-      child: tinderCircleButton(
-        size: 54,
-        onTap: () => _performSwipe(SwipeDir.up),
-        child: const Icon(
-          Icons.star_rounded,
-          size: 28,
-          color: Colors.blue,
-        ),
-      ),
-    ),
-  ),
-  const SizedBox(width: 14),
-
-  AnimatedScale(
-    duration: const Duration(milliseconds: 90),
-    scale: _likeProgress() > 0 ? 1.22 : 1.0,
-    child: AnimatedOpacity(
-      duration: const Duration(milliseconds: 90),
-      opacity: _nopeProgress() > 0 || _superProgress() > 0 ? 0.10 : 1.0,
-      child: tinderCircleButton(
-        size: 62,
-        onTap: () => _performSwipe(SwipeDir.right),
-        child: const Icon(
-          Icons.favorite,
-          size: 34,
-          color: Color(0xFF7BEA3A),
-        ),
-      ),
-    ),
-  ),
-  const SizedBox(width: 14),
-
-  AnimatedOpacity(
-    duration: const Duration(milliseconds: 90),
-    opacity: (_likeProgress() > 0 || _nopeProgress() > 0 || _superProgress() > 0)
-        ? 0.10
-        : 1.0,
-    child: tinderCircleButton(
-      size: 52,
-      onTap: _openEditProfile,
-      child: const Icon(
-        Icons.send_rounded,
-        size: 24,
-        color: Colors.lightBlue,
-      ),
-    ),
-  ),
-],
-      ),
-    ),
-  ),
-  //         if (_isDragging && !_isAnimating)
- // Positioned(
-   // top: 190,
-   // left: _drag.dx > 20 ? null : 36,
-   // right: _drag.dx > 20 ? 36 : null,
- //   child: _SwipeHint(drag: _drag),
-//  ),
-          ],
+          ),
         );
       },
     );
   }
+
 }
-//------------------------------------------
+
 class _TinderCard extends StatefulWidget {
   final SwipeProfile profile;
   final double width;
   final double height;
-  final double photBarsTop;
+  final double photoBarsTop;
+  final double distanceFallbackKm;
 
   const _TinderCard({
     required this.profile,
     required this.width,
     required this.height,
-    this.photBarsTop = 64,
+    this.photoBarsTop = 66,
+    this.distanceFallbackKm = 50,
   });
 
   @override
@@ -1424,13 +1220,12 @@ class _TinderCardState extends State<_TinderCard> {
       context,
     );
   }
-    
+
   @override
   Widget build(BuildContext context) {
     final profile = widget.profile;
     final width = widget.width;
     final height = widget.height;
-
     final cardHeight = height - 8;
 
     return Container(
@@ -1472,37 +1267,35 @@ class _TinderCardState extends State<_TinderCard> {
                 _precacheNextPhoto();
               },
               child: profile.photoUrls.isNotEmpty
-    ? Image.network(
-    profile.photoUrls[imageIndex],
-    fit: BoxFit.cover,
-    loadingBuilder: (context, child, loadingProgress) {
-      if (loadingProgress == null) return child;
+                  ? Image.network(
+                      profile.photoUrls[imageIndex],
+                      fit: BoxFit.cover,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
 
-      return Container(
-        color: const Color(0xFF1A1A1A),
-        child: const Center(
-          child: SizedBox(
-            width: 26,
-            height: 26,
-            child: CircularProgressIndicator(
-              color: Colors.white70,
-              strokeWidth: 2.0,
-            ),
-          ),
-        ),
-      );
-    },
-    errorBuilder: (_, __, ___) {
-      return Container(
-        color: const Color(0xFF2A2A2A),
-        child: const Center(
-          child: Icon(Icons.person, size: 120, color: Colors.white),
-        ),
-      );
-    },
-  )
-       
-      
+                        return Container(
+                          color: const Color(0xFF1A1A1A),
+                          child: const Center(
+                            child: SizedBox(
+                              width: 26,
+                              height: 26,
+                              child: CircularProgressIndicator(
+                                color: Colors.white70,
+                                strokeWidth: 2.0,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                      errorBuilder: (_, __, ___) {
+                        return Container(
+                          color: const Color(0xFF2A2A2A),
+                          child: const Center(
+                            child: Icon(Icons.person, size: 120, color: Colors.white),
+                          ),
+                        );
+                      },
+                    )
                   : Container(
                       color: Colors.grey.shade400,
                       child: const Center(
@@ -1512,36 +1305,34 @@ class _TinderCardState extends State<_TinderCard> {
             ),
 
             Positioned(
-  top: widget.photBarsTop,
-  left: 16,
-  right: 16,
-  child: Row(
-    children: List.generate(profile.photoUrls.length, (index) {
-      final isActive = index == imageIndex;
+              top: widget.photoBarsTop,
+              left: 16,
+              right: 16,
+              child: Row(
+                children: List.generate(profile.photoUrls.length, (index) {
+                  final isActive = index == imageIndex;
 
-      return Expanded(
-        child: Container(
-          height: 2,
-         margin: EdgeInsets.only(
-  right: index == profile.photoUrls.length - 1 ? 0 : 3,
-),
-          decoration: BoxDecoration(
-            color: isActive
-                ? Colors.white
-                : Colors.white.withOpacity(0.35),
-            borderRadius: BorderRadius.circular(999),
-          ),
-        ),
-      );
-    }),
-  ),
-),
+                  return Expanded(
+                    child: Container(
+                      height: 2.4,
+                      margin: EdgeInsets.only(
+                        right: index == profile.photoUrls.length - 1 ? 0 : 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isActive ? Colors.white : Colors.white.withOpacity(0.28),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
+                  );
+                }),
+              ),
+            ),
 
             Positioned(
               left: 0,
               right: 0,
               top: 0,
-              height: 175,
+              height: 170,
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -1561,7 +1352,7 @@ class _TinderCardState extends State<_TinderCard> {
               left: 0,
               right: 0,
               bottom: 0,
-              height: 218,
+              height: 250,
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -1569,181 +1360,401 @@ class _TinderCardState extends State<_TinderCard> {
                     end: Alignment.bottomCenter,
                     colors: [
                       Colors.black.withOpacity(0.0),
-                      Colors.black.withOpacity(0.20),
-                      Colors.black.withOpacity(0.78),
+                      Colors.black.withOpacity(0.18),
+                      Colors.black.withOpacity(0.82),
                     ],
                   ),
                 ),
               ),
             ),
 
-          Positioned(
-  left: 20,
-  right: 20,
-  bottom: 126,
- 
-    child: Row(
-      
-    crossAxisAlignment: CrossAxisAlignment.center,
-    children: [
-      Expanded(
-        child: Text(
-          "${profile.displayName} ${profile.age}",
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 28,
-            fontWeight: FontWeight.w800,
-            height: 1.0,
-            letterSpacing: -0.4,
-          ),
-        ),
-      ),
-      const SizedBox(width: 12),
-      Container(
-        width: 44,
-        height: 44,
-        decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.42),
-          shape: BoxShape.circle,
-          border: Border.all(color: Colors.white24),
-        ),
-        child: const Icon(
-          Icons.arrow_upward_rounded,
-          color: Colors.white,
-          size: 22,
-        ),
-      ),
-    ],
-  ),
-),
-
-           Positioned(
-  left: 20,
-  right: 20,
-  bottom: 64,
-  
-    child: Column(
-     
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Row(
-        children: [
-          Icon(
-            Icons.location_on_outlined,
-            size: 18,
-            color: Colors.white.withOpacity(0.96),
-          ),
-          const SizedBox(width: 6),
-          Expanded(
-            child: Text(
-             "Bor i ${profile.countryCode}",
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.96),
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                height: 1.15,
-              ),
-            ),
-          ),
-        ],
-      ),
-      const SizedBox(height: 8),
-      Row(
-        children: [
-          Icon(
-            Icons.search_rounded,
-            size: 18,
-            color: Colors.white.withOpacity(0.92),
-          ),
-          const SizedBox(width: 6),
-          Expanded(
-            child: Text(
-              _formatIntention(profile.intention),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.92),
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                height: 1.15,
-              ),
-            ),
-          ),
-        ],
-      ),
-    ],
-  ),
-),
+            _buildBottomContent(profile),
           ],
         ),
       ),
     );
   }
 
- String _formatIntention(String value) {
-  switch (value) {
-    case 'Relationship':
-      return 'Söker seriöst';
-    case 'Marriage':
-      return 'Öppen för äktenskap';
-    case 'Date':
-      return 'Öppen för att dejta';
-    default:
-      return value;
+  Widget _buildBottomContent(SwipeProfile profile) {
+    switch (imageIndex) {
+      case 0:
+        return _buildImage0(profile);
+      case 1:
+        return _buildImage1(profile);
+      case 2:
+        return _buildImage2(profile);
+      case 3:
+        return _buildImage3(profile);
+      default:
+        return _buildImage0(profile);
+    }
   }
-}
-}
 
-class _SwipeHint extends StatelessWidget {
-  final Offset drag;
-  const _SwipeHint({required this.drag});
-
-  @override
-  Widget build(BuildContext context) {
-    final isLike = drag.dx > 20;
-    final isNope = drag.dx < -20;
-    final isSuper = drag.dy < -140;
-
-    if (!isLike && !isNope && !isSuper) {
-      return const SizedBox.shrink();
-    }
-
-    final opacity = ((drag.dx.abs() + drag.dy.abs()) / 140).clamp(0.0, 1.0);
-
-    if (isNope) {
-      return Opacity(
-        opacity: opacity,
-        child: const Icon(
-          Icons.close_rounded,
-          size: 120,
-          color: Color(0xFFFF2D75),
+  Widget _buildImage0(SwipeProfile profile) {
+    return Stack(
+      children: [
+        Positioned(
+          left: 20,
+          right: 20,
+          bottom: 126,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Text(
+                  "${profile.displayName} ${profile.age}",
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 28,
+                    fontWeight: FontWeight.w800,
+                    height: 1.0,
+                    letterSpacing: -0.4,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.42),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white24),
+                ),
+                child: const Icon(
+                  Icons.arrow_upward_rounded,
+                  color: Colors.white,
+                  size: 22,
+                ),
+              ),
+            ],
+          ),
         ),
-      );
-    }
-
-    if (isLike) {
-      return Opacity(
-        opacity: opacity,
-        child: const Icon(
-          Icons.favorite,
-          size: 120,
-          color: Color(0xFF7BEA3A),
+        Positioned(
+          left: 20,
+          right: 20,
+          bottom: 66,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _infoRow(
+                icon: Icons.location_on_outlined,
+                text: "${profile.distanceKm.round()} km bort",
+              ),
+            ],
+          ),
         ),
-      );
-    }
-
-    return Opacity(
-      opacity: opacity,
-      child: const Icon(
-        Icons.star_rounded,
-        size: 110,
-        color: Colors.blue,
-      ),
+      ],
     );
+  }
+
+  Widget _buildImage1(SwipeProfile profile) {
+    return Stack(
+      children: [
+        Positioned(
+          left: 20,
+          right: 20,
+          bottom: 154,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Text(
+                  "${profile.displayName} ${profile.age}",
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 28,
+                    fontWeight: FontWeight.w800,
+                    height: 1.0,
+                    letterSpacing: -0.4,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.42),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white24),
+                ),
+                child: const Icon(
+                  Icons.arrow_upward_rounded,
+                  color: Colors.white,
+                  size: 22,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Positioned(
+          left: 20,
+          right: 20,
+          bottom: 84,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _sectionTitle(
+                icon: Icons.interests_outlined,
+                title: "Intressen",
+              ),
+              const SizedBox(height: 10),
+              _chipWrap(
+                profile.interests.isNotEmpty ? profile.interests : ["Musik", "Resor"],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildImage2(SwipeProfile profile) {
+    final lifeChips = <String>[
+      if (profile.pets.isNotEmpty) profile.pets,
+      if (profile.smoking.isNotEmpty) profile.smoking,
+      if (profile.workout.isNotEmpty) profile.workout,
+      if (profile.religion.isNotEmpty) profile.religion,
+    ];
+
+    return Stack(
+      children: [
+        Positioned(
+          left: 20,
+          right: 20,
+          bottom: 162,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Text(
+                  "${profile.displayName} ${profile.age}",
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 28,
+                    fontWeight: FontWeight.w800,
+                    height: 1.0,
+                    letterSpacing: -0.4,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.42),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white24),
+                ),
+                child: const Icon(
+                  Icons.arrow_upward_rounded,
+                  color: Colors.white,
+                  size: 22,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Positioned(
+          left: 20,
+          right: 20,
+          bottom: 88,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _sectionTitle(
+                icon: Icons.local_offer_outlined,
+                title: "Om mig & Livsstil",
+              ),
+              const SizedBox(height: 10),
+              _chipWrap(lifeChips.isNotEmpty ? lifeChips : ["Private", "No", "Sometimes"]),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildImage3(SwipeProfile profile) {
+    return Stack(
+      children: [
+        Positioned(
+          left: 20,
+          right: 20,
+          bottom: 170,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Text(
+                  "${profile.displayName} ${profile.age}",
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 28,
+                    fontWeight: FontWeight.w800,
+                    height: 1.0,
+                    letterSpacing: -0.4,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.42),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white24),
+                ),
+                child: const Icon(
+                  Icons.arrow_upward_rounded,
+                  color: Colors.white,
+                  size: 22,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Positioned(
+          left: 20,
+          right: 20,
+          bottom: 88,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _sectionTitle(
+                icon: Icons.search_rounded,
+                title: "Söker efter",
+              ),
+              const SizedBox(height: 8),
+              Text(
+                _formatIntention(profile.intention),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  height: 1.2,
+                ),
+              ),
+              if (profile.bio.trim().isNotEmpty) ...[
+                const SizedBox(height: 10),
+                Text(
+                  profile.bio,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.92),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    height: 1.3,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _sectionTitle({required IconData icon, required String title}) {
+    return Row(
+      children: [
+        Icon(
+          icon,
+          size: 18,
+          color: Colors.white.withOpacity(0.96),
+        ),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Text(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.96),
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              height: 1.1,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _infoRow({required IconData icon, required String text}) {
+    return Row(
+      children: [
+        Icon(
+          icon,
+          size: 19,
+          color: Colors.white.withOpacity(0.96),
+        ),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Text(
+            text,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.96),
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              height: 1.15,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _chipWrap(List<String> items) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: items.take(6).map((item) {
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.68),
+            borderRadius: BorderRadius.circular(999),
+          ),
+          child: Text(
+            item,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              height: 1.0,
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  String _formatIntention(String value) {
+    switch (value) {
+      case 'Relationship':
+        return 'Seriöst förhållande';
+      case 'Marriage':
+        return 'Öppen för äktenskap';
+      case 'Date':
+        return 'Öppen för att dejta';
+      default:
+        return value.isEmpty ? 'Seriöst förhållande' : value;
+    }
   }
 }
 
@@ -1756,107 +1767,67 @@ class _CardSwipeStamp extends StatelessWidget {
   Widget build(BuildContext context) {
     final likeOpacity = (drag.dx / 140).clamp(0.0, 1.0).toDouble();
     final nopeOpacity = (-drag.dx / 140).clamp(0.0, 1.0).toDouble();
-    final superOpacity = (-drag.dy / 170).clamp(0.0, 1.0).toDouble();
+
+    double superOpacity = (-drag.dy / 170).clamp(0.0, 1.0).toDouble();
+    if (drag.dy >= 0) superOpacity = 0.0;
+    if (drag.dy.abs() < drag.dx.abs() * 0.55) superOpacity = 0.0;
 
     if (likeOpacity <= 0 && nopeOpacity <= 0 && superOpacity <= 0) {
       return const SizedBox.shrink();
     }
 
-    return Stack(
-      children: [
-        if (likeOpacity > 0)
-          Positioned(
-            top: 142,
-            left: 34,
-            child: Opacity(
-              opacity: likeOpacity,
-              child: Transform.rotate(
-                angle: -0.18,
-                child: const Icon(
-                  Icons.favorite,
-                  size: 104,
-                  color: Color(0xFF8BE63F),
-                ),
-              ),
-            ),
-          ),
+    final showSuper = superOpacity > likeOpacity && superOpacity > nopeOpacity;
 
-        if (nopeOpacity > 0)
-          Positioned(
-            top: 142,
-            right: 34,
-            child: Opacity(
-              opacity: nopeOpacity,
-              child: Transform.rotate(
-                angle: 0.18,
-                child: Icon(
-                  Icons.close_rounded,
-                  size: 110,
-                  color: const Color(0xFFFF2D75),
-                ),
-              ),
-            ),
-          ),
-
-       if (superOpacity > 0 && likeOpacity < 0.15 && nopeOpacity < 0.15)
-  Positioned(
-    top: 138,
-    left: 0,
-    right: 0,
-            child: Center(
-              child: Opacity(
-                opacity: superOpacity,
-                child: const Icon(
-                  Icons.star_rounded,
-                  size: 98,
-                  color: Colors.blue,
-                ),
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-}
-
-class _TopIconButton extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback onTap;
-  final bool showDot;
-
-  const _TopIconButton({
-    required this.icon,
-    required this.onTap,
-    this.showDot = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
+    return IgnorePointer(
       child: Stack(
-        clipBehavior: Clip.none,
         children: [
-          Container(
-            width: 42,
-            height: 42,
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.28),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: Colors.white, size: 22),
-          ),
-          if (showDot)
+          if (likeOpacity > 0 && !showSuper)
             Positioned(
-              right: 2,
-              top: 2,
-              child: Container(
-                width: 9,
-                height: 9,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFF2D75),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.black, width: 1.5),
+              top: 118,
+              left: 28,
+              child: Opacity(
+                opacity: likeOpacity,
+                child: Transform.rotate(
+                  angle: -0.18,
+                  child: const Icon(
+                    Icons.favorite,
+                    size: 108,
+                    color: Color(0xFF8BE63F),
+                  ),
+                ),
+              ),
+            ),
+
+          if (nopeOpacity > 0 && !showSuper)
+            Positioned(
+              top: 118,
+              right: 28,
+              child: Opacity(
+                opacity: nopeOpacity,
+                child: Transform.rotate(
+                  angle: 0.18,
+                  child: const Icon(
+                    Icons.close_rounded,
+                    size: 114,
+                    color: Color(0xFFFF2D75),
+                  ),
+                ),
+              ),
+            ),
+
+          if (showSuper)
+            Positioned(
+              top: 108,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Opacity(
+                  opacity: superOpacity,
+                  child: const Icon(
+                    Icons.star_rounded,
+                    size: 102,
+                    color: Colors.blue,
+                  ),
                 ),
               ),
             ),
@@ -1866,49 +1837,3 @@ class _TopIconButton extends StatelessWidget {
   }
 }
 
-class _TopTabChip extends StatelessWidget {
-  final String label;
-  final bool selected;
-
-  const _TopTabChip({
-    required this.label,
-    required this.selected,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      decoration: BoxDecoration(
-        color: selected ? Colors.white.withOpacity(0.18) : Colors.transparent,
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 15,
-          fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-        ),
-      ),
-    );
-  }
-}
-
-class _TopTextTab extends StatelessWidget {
-  final String label;
-
-  const _TopTextTab({required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      label,
-      style: TextStyle(
-        color: Colors.white.withOpacity(0.92),
-        fontSize: 15,
-        fontWeight: FontWeight.w500,
-      ),
-    );
-  }
-}
