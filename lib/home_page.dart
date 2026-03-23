@@ -518,19 +518,25 @@ class _HomePageState extends State<HomePage>
     await _animateTo(Offset.zero, rotateEnd: 0.0, fadeEnd: 1.0);
   }
 
-  void _precacheNextProfile() {
+    void _precacheNextProfile() {
     if (!mounted || profiles.isEmpty) return;
 
-    final nextIndex = currentIndex + 1;
-    if (nextIndex >= profiles.length) return;
+    final startIndex = currentIndex + 1;
+    final endIndex = (currentIndex + 3 < profiles.length)
+        ? currentIndex + 3
+        : profiles.length - 1;
 
-    final nextProfile = profiles[nextIndex];
-    if (nextProfile.photoUrls.isEmpty) return;
+    for (int i = startIndex; i <= endIndex; i++) {
+      final profile = profiles[i];
+      if (profile.photoUrls.isEmpty) continue;
 
-    precacheImage(
-      NetworkImage(nextProfile.photoUrls.first),
-      context,
-    );
+      for (final url in profile.photoUrls.take(2)) {
+        precacheImage(
+          NetworkImage(url),
+          context,
+        );
+      }
+    }
   }
 
   Future<void> _loadMyFilterValues() async {
@@ -1199,12 +1205,139 @@ class _TinderCard extends StatefulWidget {
 class _TinderCardState extends State<_TinderCard> {
   int imageIndex = 0;
 
+  late String _visibleImageUrl;
+  bool _isImageReady = false;
+
+  ImageStream? _imageStream;
+  ImageStreamListener? _imageListener;
+
   @override
   void initState() {
     super.initState();
+
+    _visibleImageUrl = _currentPhotoUrl();
+    _resolveVisibleImage(_visibleImageUrl);
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _precacheAllPhotos();
       _precacheNextPhoto();
     });
+  }
+
+  @override
+  void didUpdateWidget(covariant _TinderCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.profile.userId != widget.profile.userId) {
+      imageIndex = 0;
+
+      final newUrl = _currentPhotoUrl();
+      _resolveVisibleImage(newUrl);
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _precacheAllPhotos();
+        _precacheNextPhoto();
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _removeImageListener();
+    super.dispose();
+  }
+
+  String _currentPhotoUrl() {
+    final photos = widget.profile.photoUrls;
+    if (photos.isEmpty) return '';
+
+    if (imageIndex < 0 || imageIndex >= photos.length) {
+      return photos.first;
+    }
+
+    return photos[imageIndex];
+  }
+
+  void _removeImageListener() {
+    if (_imageStream != null && _imageListener != null) {
+      _imageStream!.removeListener(_imageListener!);
+    }
+
+    _imageStream = null;
+    _imageListener = null;
+  }
+
+  void _resolveVisibleImage(String url) {
+    if (url.isEmpty) {
+      setState(() {
+        _visibleImageUrl = '';
+        _isImageReady = true;
+      });
+      return;
+    }
+
+    final provider = NetworkImage(url);
+    final stream = provider.resolve(const ImageConfiguration());
+
+    _removeImageListener();
+
+    _imageStream = stream;
+    _imageListener = ImageStreamListener(
+      (ImageInfo _, bool __) {
+        if (!mounted) return;
+
+        setState(() {
+          _visibleImageUrl = url;
+          _isImageReady = true;
+        });
+
+        _removeImageListener();
+      },
+      onError: (dynamic _, StackTrace? __) {
+        if (!mounted) return;
+
+        setState(() {
+          _visibleImageUrl = url;
+          _isImageReady = true;
+        });
+
+        _removeImageListener();
+      },
+    );
+
+    setState(() {
+      _isImageReady = false;
+    });
+
+    stream.addListener(_imageListener!);
+  }
+
+  void _changeImage(int newIndex) {
+    final photos = widget.profile.photoUrls;
+
+    if (photos.isEmpty) return;
+    if (newIndex < 0 || newIndex >= photos.length) return;
+    if (newIndex == imageIndex) return;
+
+    setState(() {
+      imageIndex = newIndex;
+    });
+
+    _resolveVisibleImage(photos[newIndex]);
+    _precacheNextPhoto();
+  }
+
+  void _precacheAllPhotos() {
+    final profile = widget.profile;
+
+    if (profile.photoUrls.isEmpty) return;
+
+    for (final url in profile.photoUrls.take(4)) {
+      precacheImage(
+        NetworkImage(url),
+        context,
+      );
+    }
   }
 
   void _precacheNextPhoto() {
@@ -1252,49 +1385,54 @@ class _TinderCardState extends State<_TinderCard> {
 
                 final tapX = details.localPosition.dx;
 
-                setState(() {
-                  if (tapX > width / 2) {
-                    if (imageIndex < profile.photoUrls.length - 1) {
-                      imageIndex++;
-                    }
-                  } else {
-                    if (imageIndex > 0) {
-                      imageIndex--;
-                    }
+                if (tapX > width / 2) {
+                  if (imageIndex < profile.photoUrls.length - 1) {
+                    _changeImage(imageIndex + 1);
                   }
-                });
-
-                _precacheNextPhoto();
+                } else {
+                  if (imageIndex > 0) {
+                    _changeImage(imageIndex - 1);
+                  }
+                }
               },
               child: profile.photoUrls.isNotEmpty
-                  ? Image.network(
-                      profile.photoUrls[imageIndex],
-                      fit: BoxFit.cover,
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-
-                        return Container(
-                          color: const Color(0xFF1A1A1A),
-                          child: const Center(
-                            child: SizedBox(
-                              width: 26,
-                              height: 26,
-                              child: CircularProgressIndicator(
-                                color: Colors.white70,
-                                strokeWidth: 2.0,
+                  ? Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        if (_visibleImageUrl.isNotEmpty)
+                          Image.network(
+                            _visibleImageUrl,
+                            fit: BoxFit.cover,
+                            gaplessPlayback: true,
+                            errorBuilder: (_, __, ___) {
+                              return Container(
+                                color: const Color(0xFF2A2A2A),
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.person,
+                                    size: 120,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              );
+                            },
+                          )
+                        else
+                          Container(
+                            color: Colors.grey.shade400,
+                            child: const Center(
+                              child: Icon(
+                                Icons.person,
+                                size: 120,
+                                color: Colors.white,
                               ),
                             ),
                           ),
-                        );
-                      },
-                      errorBuilder: (_, __, ___) {
-                        return Container(
-                          color: const Color(0xFF2A2A2A),
-                          child: const Center(
-                            child: Icon(Icons.person, size: 120, color: Colors.white),
+                        if (!_isImageReady)
+                          Container(
+                            color: Colors.transparent,
                           ),
-                        );
-                      },
+                      ],
                     )
                   : Container(
                       color: Colors.grey.shade400,
