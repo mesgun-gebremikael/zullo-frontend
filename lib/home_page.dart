@@ -38,8 +38,11 @@ class _HomePageState extends State<HomePage>
   int _minAge = 18;
   int _maxAge = 99;
 
-  Offset _drag = Offset.zero;
+    Offset _drag = Offset.zero;
   bool _isDragging = false;
+
+  final ValueNotifier<Offset> _dragNotifier = ValueNotifier(Offset.zero);
+  final ValueNotifier<bool> _isDraggingNotifier = ValueNotifier(false);
 
   late final AnimationController _anim;
   Animation<Offset>? _animOffset;
@@ -65,6 +68,8 @@ class _HomePageState extends State<HomePage>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _dragNotifier.dispose();
+    _isDraggingNotifier.dispose();
     _anim.dispose();
     super.dispose();
   }
@@ -431,6 +436,9 @@ class _HomePageState extends State<HomePage>
       _animRotate = null;
       _animFade = null;
     });
+
+    _dragNotifier.value = Offset.zero;
+    _isDraggingNotifier.value = false;
   }
 
   double _rotationForDrag() {
@@ -1030,13 +1038,11 @@ class _HomePageState extends State<HomePage>
       nextProfile = profiles[currentIndex + 1];
     }
 
-    return SwipePage(
+       return SwipePage(
       isLoading: isLoading,
       hasActiveProfile: currentProfile != null,
       hasUnreadMessages: hasUnreadMessages,
-      likeProgress: _likeProgress(),
-      nopeProgress: _nopeProgress(),
-      superProgress: _superProgress(),
+      dragListenable: _dragNotifier,
       onOpenRadiusSheet: _openRadiusSheet,
       onOpenMatchesPage: _openMatchesPage,
       onLogout: _logout,
@@ -1109,73 +1115,88 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  Widget _buildActiveCard(SwipeProfile p) {
+   Widget _buildActiveCard(SwipeProfile p) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final cardWidth = constraints.maxWidth;
         final cardHeight = constraints.maxHeight;
 
-        final activeOffset = _animOffset?.value ?? _drag;
-        final activeRot = _animRotate?.value ?? _rotationForDrag();
-        final activeFade = _animFade?.value ?? 1.0;
+        return ValueListenableBuilder<Offset>(
+          valueListenable: _dragNotifier,
+          builder: (context, dragValue, _) {
+            return ValueListenableBuilder<bool>(
+              valueListenable: _isDraggingNotifier,
+              builder: (context, draggingValue, __) {
+                final activeOffset = _animOffset?.value ?? dragValue;
+                final activeRot = _animRotate?.value ?? (dragValue.dx / 520.0).clamp(-0.11, 0.11);
+                final activeFade = _animFade?.value ?? 1.0;
 
-        return GestureDetector(
-          onPanStart: (_) {
-            if (_isAnimating) return;
-            setState(() => _isDragging = true);
-          },
-          onPanUpdate: (d) {
-            if (_isAnimating) return;
-            _drag += Offset(d.delta.dx * 0.92, d.delta.dy * 0.88);
-            setState(() {});
-          },
-          onPanEnd: (_) async {
-            if (_isAnimating) return;
-            setState(() => _isDragging = false);
+                return GestureDetector(
+                  onPanStart: (_) {
+                    if (_isAnimating) return;
 
-            final dir = _decideDir(MediaQuery.of(context).size);
-            if (dir == null) {
-              await _snapBack();
-            } else {
-              await _performSwipe(dir);
-            }
-          },
-          child: Opacity(
-            opacity: activeFade,
-            child: Transform.translate(
-              offset: activeOffset,
-              child: Transform.rotate(
-                alignment: Alignment.topCenter,
-                angle: activeRot,
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ProfilePage(profile: p),
-                      ),
-                    );
+                    _isDragging = true;
+                    _isDraggingNotifier.value = true;
                   },
-                  child: RepaintBoundary(
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        _TinderCard(
-                          profile: p,
-                          width: cardWidth,
-                          height: cardHeight,
-                          photoBarsTop: 66,
-                          distanceFallbackKm: _radiusKm,
+                  onPanUpdate: (d) {
+                    if (_isAnimating) return;
+
+                    _drag += Offset(d.delta.dx * 0.92, d.delta.dy * 0.88);
+                    _dragNotifier.value = _drag;
+                  },
+                  onPanEnd: (_) async {
+                    if (_isAnimating) return;
+
+                    _isDragging = false;
+                    _isDraggingNotifier.value = false;
+
+                    final dir = _decideDir(MediaQuery.of(context).size);
+                    if (dir == null) {
+                      await _snapBack();
+                    } else {
+                      await _performSwipe(dir);
+                    }
+                  },
+                  child: Opacity(
+                    opacity: activeFade,
+                    child: Transform.translate(
+                      offset: activeOffset,
+                      child: Transform.rotate(
+                        alignment: Alignment.topCenter,
+                        angle: activeRot.toDouble(),
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ProfilePage(profile: p),
+                              ),
+                            );
+                          },
+                          child: RepaintBoundary(
+                            child: Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                _TinderCard(
+                                  profile: p,
+                                  width: cardWidth,
+                                  height: cardHeight,
+                                  photoBarsTop: 66,
+                                  distanceFallbackKm: _radiusKm,
+                                ),
+                                if (draggingValue && !_isAnimating)
+                                  _CardSwipeStamp(drag: dragValue),
+                              ],
+                            ),
+                          ),
                         ),
-                        if (_isDragging && !_isAnimating)
-                          _CardSwipeStamp(drag: _drag),
-                      ],
+                      ),
                     ),
                   ),
-                ),
-              ),
-            ),
-          ),
+                );
+              },
+            );
+          },
         );
       },
     );

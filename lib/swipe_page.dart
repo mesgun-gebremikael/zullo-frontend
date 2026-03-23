@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 
 class SwipePage extends StatelessWidget {
   final bool isLoading;
   final bool hasActiveProfile;
   final bool hasUnreadMessages;
 
-  final double likeProgress;
-  final double nopeProgress;
-  final double superProgress;
+  final ValueListenable<Offset> dragListenable;
 
   final Widget? nextCard;
   final Widget activeCard;
@@ -26,9 +26,7 @@ class SwipePage extends StatelessWidget {
     required this.isLoading,
     required this.hasActiveProfile,
     required this.hasUnreadMessages,
-    required this.likeProgress,
-    required this.nopeProgress,
-    required this.superProgress,
+    required this.dragListenable,
     required this.nextCard,
     required this.activeCard,
     required this.emptyState,
@@ -39,6 +37,7 @@ class SwipePage extends StatelessWidget {
     required this.onSwipeLeft,
     required this.onSwipeUp,
     required this.onSwipeRight,
+    
   });
 
   @override
@@ -66,10 +65,8 @@ class SwipePage extends StatelessWidget {
                   onLogout: onLogout,
                 ),
                 if (hasActiveProfile)
-                  _BottomActionBar(
-                    likeProgress: likeProgress,
-                    nopeProgress: nopeProgress,
-                    superProgress: superProgress,
+                   _BottomActionBar(
+                    dragListenable: dragListenable,
                     onOpenEditProfile: onOpenEditProfile,
                     onSwipeLeft: onSwipeLeft,
                     onSwipeUp: onSwipeUp,
@@ -156,120 +153,140 @@ class _TopOverlayBar extends StatelessWidget {
 }
 
 class _BottomActionBar extends StatelessWidget {
-  final double likeProgress;
-  final double nopeProgress;
-  final double superProgress;
+  final ValueListenable<Offset> dragListenable;
   final VoidCallback onOpenEditProfile;
   final VoidCallback onSwipeLeft;
   final VoidCallback onSwipeUp;
   final VoidCallback onSwipeRight;
 
   const _BottomActionBar({
-    required this.likeProgress,
-    required this.nopeProgress,
-    required this.superProgress,
+    required this.dragListenable,
     required this.onOpenEditProfile,
     required this.onSwipeLeft,
     required this.onSwipeUp,
     required this.onSwipeRight,
   });
 
+  double _likeProgress(Offset drag) {
+    return (drag.dx / 140).clamp(0.0, 1.0).toDouble();
+  }
+
+  double _nopeProgress(Offset drag) {
+    return (-drag.dx / 140).clamp(0.0, 1.0).toDouble();
+  }
+
+  double _superProgress(Offset drag) {
+    final raw = (-drag.dy / 170).clamp(0.0, 1.0).toDouble();
+    if (drag.dy >= 0) return 0.0;
+    if (drag.dy.abs() < drag.dx.abs() * 0.55) return 0.0;
+    return raw;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final isDraggingAny = likeProgress > 0 || nopeProgress > 0 || superProgress > 0;
+    return ValueListenableBuilder<Offset>(
+      valueListenable: dragListenable,
+      builder: (context, drag, _) {
+        final likeProgress = _likeProgress(drag);
+        final nopeProgress = _nopeProgress(drag);
+        final superProgress = _superProgress(drag);
 
-    return Positioned(
-      left: 0,
-      right: 0,
-      bottom: 18,
-      child: SafeArea(
-        top: false,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            AnimatedOpacity(
-              duration: const Duration(milliseconds: 90),
-              opacity: isDraggingAny ? 0.10 : 1.0,
-              child: _TinderCircleButton(
-                size: 52,
-                onTap: () {},
-                child: const Icon(
-                  Icons.refresh_rounded,
-                  size: 26,
-                  color: Colors.orange,
-                ),
-              ),
-            ),
-            const SizedBox(width: 14),
-            AnimatedScale(
-              duration: const Duration(milliseconds: 90),
-              scale: nopeProgress > 0 ? 1.22 : 1.0,
-              child: AnimatedOpacity(
-                duration: const Duration(milliseconds: 90),
-                opacity: likeProgress > 0 || superProgress > 0 ? 0.10 : 1.0,
-                child: _TinderCircleButton(
-                  size: 62,
-                  onTap: onSwipeLeft,
-                  child: const _ThickXIcon(
-                    color: Color(0xFFFF2D75),
-                    size: 34,
+        final isDraggingAny = likeProgress > 0 || nopeProgress > 0 || superProgress > 0;
+
+        return Positioned(
+          left: 0,
+          right: 0,
+          bottom: 18,
+          child: SafeArea(
+            top: false,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                AnimatedOpacity(
+                  duration: const Duration(milliseconds: 90),
+                  opacity: isDraggingAny ? 0.10 : 1.0,
+                  child: _TinderCircleButton(
+                    size: 52,
+                    onTap: () {},
+                    child: const Icon(
+                      Icons.refresh_rounded,
+                      size: 26,
+                      color: Colors.orange,
+                    ),
                   ),
                 ),
-              ),
-            ),
-            const SizedBox(width: 14),
-            AnimatedScale(
-              duration: const Duration(milliseconds: 90),
-              scale: superProgress > 0 ? 1.22 : 1.0,
-              child: AnimatedOpacity(
-                duration: const Duration(milliseconds: 90),
-                opacity: likeProgress > 0 || nopeProgress > 0 ? 0.10 : 1.0,
-                child: _TinderCircleButton(
-                  size: 54,
-                  onTap: onSwipeUp,
-                  child: const Icon(
-                    Icons.star_rounded,
-                    size: 28,
-                    color: Colors.blue,
+                const SizedBox(width: 14),
+                AnimatedScale(
+                  duration: const Duration(milliseconds: 90),
+                  scale: nopeProgress > 0 ? 1.22 : 1.0,
+                  child: AnimatedOpacity(
+                    duration: const Duration(milliseconds: 90),
+                    opacity: likeProgress > 0 || superProgress > 0 ? 0.10 : 1.0,
+                    child: _TinderCircleButton(
+                      size: 62,
+                      onTap: onSwipeLeft,
+                      child: const _ThickXIcon(
+                        color: Color(0xFFFF2D75),
+                        size: 34,
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ),
-            const SizedBox(width: 14),
-            AnimatedScale(
-              duration: const Duration(milliseconds: 90),
-              scale: likeProgress > 0 ? 1.22 : 1.0,
-              child: AnimatedOpacity(
-                duration: const Duration(milliseconds: 90),
-                opacity: nopeProgress > 0 || superProgress > 0 ? 0.10 : 1.0,
-                child: _TinderCircleButton(
-                  size: 62,
-                  onTap: onSwipeRight,
-                  child: const Icon(
-                    Icons.favorite,
-                    size: 34,
-                    color: Color(0xFF7BEA3A),
+                const SizedBox(width: 14),
+                AnimatedScale(
+                  duration: const Duration(milliseconds: 90),
+                  scale: superProgress > 0 ? 1.22 : 1.0,
+                  child: AnimatedOpacity(
+                    duration: const Duration(milliseconds: 90),
+                    opacity: likeProgress > 0 || nopeProgress > 0 ? 0.10 : 1.0,
+                    child: _TinderCircleButton(
+                      size: 54,
+                      onTap: onSwipeUp,
+                      child: const Icon(
+                        Icons.star_rounded,
+                        size: 28,
+                        color: Colors.blue,
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ),
-            const SizedBox(width: 14),
-            AnimatedOpacity(
-              duration: const Duration(milliseconds: 90),
-              opacity: isDraggingAny ? 0.10 : 1.0,
-              child: _TinderCircleButton(
-                size: 52,
-                onTap: onOpenEditProfile,
-                child: const Icon(
-                  Icons.send_rounded,
-                  size: 24,
-                  color: Colors.lightBlue,
+                const SizedBox(width: 14),
+                AnimatedScale(
+                  duration: const Duration(milliseconds: 90),
+                  scale: likeProgress > 0 ? 1.22 : 1.0,
+                  child: AnimatedOpacity(
+                    duration: const Duration(milliseconds: 90),
+                    opacity: nopeProgress > 0 || superProgress > 0 ? 0.10 : 1.0,
+                    child: _TinderCircleButton(
+                      size: 62,
+                      onTap: onSwipeRight,
+                      child: const Icon(
+                        Icons.favorite,
+                        size: 34,
+                        color: Color(0xFF7BEA3A),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+                const SizedBox(width: 14),
+                AnimatedOpacity(
+                  duration: const Duration(milliseconds: 90),
+                  opacity: isDraggingAny ? 0.10 : 1.0,
+                  child: _TinderCircleButton(
+                    size: 52,
+                    onTap: onOpenEditProfile,
+                    child: const Icon(
+                      Icons.send_rounded,
+                      size: 24,
+                      color: Colors.lightBlue,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
