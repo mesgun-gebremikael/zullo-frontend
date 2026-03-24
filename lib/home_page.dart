@@ -23,12 +23,14 @@ class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   final AuthService _authService = AuthService();
   final AuthStorage _storage = AuthStorage();
-   static const double _cardCornerRadius = 34;
-static const double _nextCardScale = 0.97;
-static const double _nextCardOffsetY = 10;
-static const double _nextCardOpacity = 0.78;
-static const double _activeCardLift = 0;
+  
   List<SwipeProfile> profiles = [];
+
+  static const double _cardCornerRadius = 34;
+static const double _nextCardScale = 1.0;
+static const double _nextCardOffsetY = 0;
+static const double _nextCardOpacity = 0.55;
+static const double _activeCardLift = 0;
   bool isLoading = true;
   String? error;
   int currentIndex = 0;
@@ -1086,7 +1088,7 @@ static const double _activeCardLift = 0;
               scale: _nextCardScale,
               alignment: Alignment.center,
               child: Opacity(
-                opacity: _nextCardOpacity,
+                opacity: 0.88,
                 child: IgnorePointer(
                   child: RepaintBoundary(
                     child: SizedBox(
@@ -1096,7 +1098,7 @@ static const double _activeCardLift = 0;
                         borderRadius: BorderRadius.circular(_cardCornerRadius),
                         child: ColorFiltered(
                           colorFilter: ColorFilter.mode(
-                            Colors.black.withOpacity(0.10),
+                            Colors.black.withOpacity(0.03),
                             BlendMode.darken,
                           ),
                           child: _TinderCard(
