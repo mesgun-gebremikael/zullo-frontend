@@ -53,11 +53,8 @@ class SwipePage extends StatelessWidget {
                 ),
                 if (nextCard != null) nextCard!,
                 Center(
-                  child: Transform.translate(
-                    offset: const Offset(0, -22),
-                    child: hasActiveProfile ? activeCard : emptyState,
-                  ),
-                ),
+  child: hasActiveProfile ? activeCard : emptyState,
+),
                 _TopOverlayBar(
                   hasUnreadMessages: hasUnreadMessages,
                   onOpenRadiusSheet: onOpenRadiusSheet,

@@ -19,12 +19,15 @@ class HomePage extends StatefulWidget {
   @override
   State<HomePage> createState() => _HomePageState();
 }
-
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   final AuthService _authService = AuthService();
   final AuthStorage _storage = AuthStorage();
-
+   static const double _cardCornerRadius = 34;
+static const double _nextCardScale = 0.97;
+static const double _nextCardOffsetY = 10;
+static const double _nextCardOpacity = 0.78;
+static const double _activeCardLift = 0;
   List<SwipeProfile> profiles = [];
   bool isLoading = true;
   String? error;
@@ -32,7 +35,6 @@ class _HomePageState extends State<HomePage>
   bool hasUnreadMessages = false;
   String myPhotoUrl = "";
   double _radiusKm = 50;
-
   String _selectedIntention = 'Relationship';
   String _selectedReligion = 'Private';
   int _minAge = 18;
@@ -1071,7 +1073,7 @@ class _HomePageState extends State<HomePage>
     );
   }
   
-     Widget _buildNextCard(SwipeProfile nextProfile) {
+  Widget _buildNextCard(SwipeProfile nextProfile) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final cardWidth = constraints.maxWidth;
@@ -1079,23 +1081,24 @@ class _HomePageState extends State<HomePage>
 
         return Center(
           child: Transform.translate(
-            offset: const Offset(0, 40),
+            offset: const Offset(0, _nextCardOffsetY),
             child: Transform.scale(
-              scale: 0.93,
+              scale: _nextCardScale,
+              alignment: Alignment.center,
               child: Opacity(
-                opacity: 0.82,
+                opacity: _nextCardOpacity,
                 child: IgnorePointer(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(34),
+                  child: RepaintBoundary(
                     child: SizedBox(
                       width: cardWidth,
-                      height: cardHeight - 28,
-                      child: ColorFiltered(
-                        colorFilter: ColorFilter.mode(
-                          Colors.black.withOpacity(0.12),
-                          BlendMode.darken,
-                        ),
-                        child: RepaintBoundary(
+                      height: cardHeight,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(_cardCornerRadius),
+                        child: ColorFiltered(
+                          colorFilter: ColorFilter.mode(
+                            Colors.black.withOpacity(0.10),
+                            BlendMode.darken,
+                          ),
                           child: _TinderCard(
                             profile: nextProfile,
                             width: cardWidth,
@@ -1132,7 +1135,7 @@ class _HomePageState extends State<HomePage>
   return _cachedNextCard;
 }
 
-   Widget _buildActiveCard(SwipeProfile p) {
+    Widget _buildActiveCard(SwipeProfile p) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final cardWidth = constraints.maxWidth;
@@ -1145,65 +1148,75 @@ class _HomePageState extends State<HomePage>
               valueListenable: _isDraggingNotifier,
               builder: (context, draggingValue, __) {
                 final activeOffset = _animOffset?.value ?? dragValue;
-                final activeRot = _animRotate?.value ?? (dragValue.dx / 520.0).clamp(-0.11, 0.11);
+                final activeRot =
+                    _animRotate?.value ?? (dragValue.dx / 520.0).clamp(-0.11, 0.11);
                 final activeFade = _animFade?.value ?? 1.0;
 
-                return GestureDetector(
-                  onPanStart: (_) {
-                    if (_isAnimating) return;
+                return Center(
+                  child: Transform.translate(
+                    offset: const Offset(0, _activeCardLift),
+                    child: GestureDetector(
+                      onPanStart: (_) {
+                        if (_isAnimating) return;
 
-                    _isDragging = true;
-                    _isDraggingNotifier.value = true;
-                  },
-                  onPanUpdate: (d) {
-                    if (_isAnimating) return;
+                        _isDragging = true;
+                        _isDraggingNotifier.value = true;
+                      },
+                      onPanUpdate: (d) {
+                        if (_isAnimating) return;
 
-                    _drag += Offset(d.delta.dx * 0.92, d.delta.dy * 0.88);
-                    _dragNotifier.value = _drag;
-                  },
-                  onPanEnd: (_) async {
-                    if (_isAnimating) return;
+                        _drag += Offset(d.delta.dx * 0.92, d.delta.dy * 0.88);
+                        _dragNotifier.value = _drag;
+                      },
+                      onPanEnd: (_) async {
+                        if (_isAnimating) return;
 
-                    _isDragging = false;
-                    _isDraggingNotifier.value = false;
+                        _isDragging = false;
+                        _isDraggingNotifier.value = false;
 
-                    final dir = _decideDir(MediaQuery.of(context).size);
-                    if (dir == null) {
-                      await _snapBack();
-                    } else {
-                      await _performSwipe(dir);
-                    }
-                  },
-                  child: Opacity(
-                    opacity: activeFade,
-                    child: Transform.translate(
-                      offset: activeOffset,
-                      child: Transform.rotate(
-                        alignment: Alignment.topCenter,
-                        angle: activeRot.toDouble(),
-                        child: GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => ProfilePage(profile: p),
-                              ),
-                            );
-                          },
-                          child: RepaintBoundary(
-                            child: Stack(
-                              clipBehavior: Clip.none,
-                              children: [
-                                _TinderCard(
-                                  profile: p,
+                        final dir = _decideDir(MediaQuery.of(context).size);
+                        if (dir == null) {
+                          await _snapBack();
+                        } else {
+                          await _performSwipe(dir);
+                        }
+                      },
+                      child: Opacity(
+                        opacity: activeFade,
+                        child: Transform.translate(
+                          offset: activeOffset,
+                          child: Transform.rotate(
+                            alignment: Alignment.topCenter,
+                            angle: activeRot.toDouble(),
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => ProfilePage(profile: p),
+                                  ),
+                                );
+                              },
+                              child: RepaintBoundary(
+                                child: SizedBox(
                                   width: cardWidth,
                                   height: cardHeight,
-                                  photoBarsTop: 66,
-                                  distanceFallbackKm: _radiusKm,
+                                  child: Stack(
+                                    clipBehavior: Clip.none,
+                                    children: [
+                                      _TinderCard(
+                                        profile: p,
+                                        width: cardWidth,
+                                        height: cardHeight,
+                                        photoBarsTop: 66,
+                                        distanceFallbackKm: _radiusKm,
+                                      ),
+                                      if (draggingValue && !_isAnimating)
+                                        _CardSwipeStamp(drag: dragValue),
+                                    ],
+                                  ),
                                 ),
-                                if (draggingValue && !_isAnimating)
-                                  _CardSwipeStamp(drag: dragValue),
-                              ],
+                              ),
                             ),
                           ),
                         ),
@@ -1437,24 +1450,23 @@ class _TinderCardState extends State<_TinderCard> {
                       fit: StackFit.expand,
                       children: [
                        if (_visibleImageUrl.isNotEmpty)
-  Image(
-    image: CachedNetworkImageProvider(_visibleImageUrl),
-    fit: BoxFit.cover,
-    gaplessPlayback: true,
-    filterQuality: FilterQuality.medium,
-    errorBuilder: (_, __, ___) {
-      return Container(
-        color: const Color(0xFF2A2A2A),
-        child: const Center(
-          child: Icon(
-            Icons.person,
-            size: 120,
-            color: Colors.white,
-          ),
+ Image.network(
+  _visibleImageUrl,
+  fit: BoxFit.cover,
+  gaplessPlayback: true,
+  errorBuilder: (_, __, ___) {
+    return Container(
+      color: const Color(0xFF2A2A2A),
+      child: const Center(
+        child: Icon(
+          Icons.person,
+          size: 120,
+          color: Colors.white,
         ),
-      );
-    },
-  )
+      ),
+    );
+  },
+)
                         else
                           Container(
                             color: Colors.grey.shade400,
