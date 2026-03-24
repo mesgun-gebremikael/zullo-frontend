@@ -25,6 +25,8 @@ class _HomePageState extends State<HomePage>
   final AuthStorage _storage = AuthStorage();
   
   List<SwipeProfile> profiles = [];
+ List<SwipeProfile> _prefetchedProfiles = [];
+bool _isPrefetching = false;
 
   static const double _cardCornerRadius = 34;
 static const double _nextCardScale = 1.0;
@@ -110,6 +112,7 @@ static const double _activeCardLift = 0;
       });
 
       _precacheNextProfile();
+      _prefetchMoreProfiles();
     } catch (e) {
       debugPrint('LOAD FEED ERROR: $e');
 
@@ -118,6 +121,7 @@ static const double _activeCardLift = 0;
         isLoading = false;
       });
     }
+         
   }
 
   Future<void> loadUnreadStatus() async {
@@ -147,19 +151,88 @@ static const double _activeCardLift = 0;
     } catch (_) {}
   }
 
-  void nextProfile() {
+    void nextProfile() {
     if (!mounted) return;
     if (profiles.isEmpty) return;
 
     if (currentIndex < profiles.length - 1) {
-      setState(() => currentIndex++);
+      setState(() {
+        currentIndex++;
+      });
+
       _precacheNextProfile();
 
-      if (currentIndex >= profiles.length - 3) {
-        loadFeed();
+      final remaining = profiles.length - currentIndex - 1;
+
+      if (remaining <= 2) {
+        if (_prefetchedProfiles.isNotEmpty) {
+          setState(() {
+            profiles.addAll(_prefetchedProfiles);
+            _prefetchedProfiles = [];
+          });
+
+          _precacheNextProfile();
+          _prefetchMoreProfiles();
+        } else {
+          _prefetchMoreProfiles();
+        }
       }
     } else {
-      loadFeed();
+      if (_prefetchedProfiles.isNotEmpty) {
+        setState(() {
+          profiles.addAll(_prefetchedProfiles);
+          _prefetchedProfiles = [];
+          currentIndex++;
+        });
+
+        _precacheNextProfile();
+        _prefetchMoreProfiles();
+      } else {
+        loadFeed();
+      }
+    }
+  }
+
+    Future<void> _prefetchMoreProfiles() async {
+    if (_isPrefetching) return;
+    if (_prefetchedProfiles.isNotEmpty) return;
+
+    _isPrefetching = true;
+
+    try {
+      final data = await _authService.getSwipeFeed(
+        minAge: _minAge,
+        maxAge: _maxAge,
+      );
+
+      final fetchedProfiles = List<SwipeProfile>.from(data['profiles']);
+      final loadedRadius = (data['radiusKm'] as num).toDouble();
+
+      if (!mounted) return;
+
+      final existingIds = profiles.map((p) => p.userId).toSet();
+      final filteredProfiles = fetchedProfiles
+          .where((p) => !existingIds.contains(p.userId))
+          .toList();
+
+      _prefetchedProfiles = filteredProfiles;
+
+      setState(() {
+        _radiusKm = loadedRadius;
+      });
+
+      for (final profile in _prefetchedProfiles.take(2)) {
+        if (profile.photoUrls.isNotEmpty) {
+          precacheImage(
+            NetworkImage(profile.photoUrls.first),
+            context,
+          );
+        }
+      }
+    } catch (_) {
+      // tyst i bakgrunden
+    } finally {
+      _isPrefetching = false;
     }
   }
 
