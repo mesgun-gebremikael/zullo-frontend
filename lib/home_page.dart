@@ -523,6 +523,10 @@ static const double _activeCardLift = 0;
     };
 
     await _animateTo(end, rotateEnd: rotEnd, fadeEnd: 0.0);
+    
+    if (profiles.length - currentIndex < 3){
+      loadFeed();
+    }
 
     nextProfile();
   }
@@ -1125,7 +1129,7 @@ static const double _activeCardLift = 0;
   if (nextProfile == null) {
     _cachedNextCard = null;
     _cachedNextCardUserId = null;
-    return null;
+    return null; 
   }
 
   if (_cachedNextCardUserId == nextProfile.userId && _cachedNextCard != null) {
