@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:cached_network_image/cached_network_image.dart';
 import 'services/auth_service.dart';
 import 'services/auth_storage.dart';
 import 'models/swipe_profile.dart';
@@ -1313,8 +1313,7 @@ class _TinderCardState extends State<_TinderCard> {
       });
       return;
     }
-
-    final provider = NetworkImage(url);
+      final provider = CachedNetworkImageProvider(url);
     final stream = provider.resolve(const ImageConfiguration());
 
     _removeImageListener();
@@ -1366,31 +1365,31 @@ class _TinderCardState extends State<_TinderCard> {
   }
 
   void _precacheAllPhotos() {
-    final profile = widget.profile;
+  final profile = widget.profile;
 
-    if (profile.photoUrls.isEmpty) return;
+  if (profile.photoUrls.isEmpty) return;
 
-    for (final url in profile.photoUrls.take(4)) {
-      precacheImage(
-        NetworkImage(url),
-        context,
-      );
-    }
-  }
-
-  void _precacheNextPhoto() {
-    final profile = widget.profile;
-
-    if (profile.photoUrls.isEmpty) return;
-
-    final nextIndex = imageIndex + 1;
-    if (nextIndex >= profile.photoUrls.length) return;
-
+  for (final url in profile.photoUrls.take(4)) {
     precacheImage(
-      NetworkImage(profile.photoUrls[nextIndex]),
+      CachedNetworkImageProvider(url),
       context,
     );
   }
+}
+
+ void _precacheNextPhoto() {
+  final profile = widget.profile;
+
+  if (profile.photoUrls.isEmpty) return;
+
+  final nextIndex = imageIndex + 1;
+  if (nextIndex >= profile.photoUrls.length) return;
+
+  precacheImage(
+    CachedNetworkImageProvider(profile.photoUrls[nextIndex]),
+    context,
+  );
+}
 
   @override
   Widget build(BuildContext context) {
@@ -1437,24 +1436,25 @@ class _TinderCardState extends State<_TinderCard> {
                   ? Stack(
                       fit: StackFit.expand,
                       children: [
-                        if (_visibleImageUrl.isNotEmpty)
-                          Image.network(
-                            _visibleImageUrl,
-                            fit: BoxFit.cover,
-                            gaplessPlayback: true,
-                            errorBuilder: (_, __, ___) {
-                              return Container(
-                                color: const Color(0xFF2A2A2A),
-                                child: const Center(
-                                  child: Icon(
-                                    Icons.person,
-                                    size: 120,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              );
-                            },
-                          )
+                       if (_visibleImageUrl.isNotEmpty)
+  Image(
+    image: CachedNetworkImageProvider(_visibleImageUrl),
+    fit: BoxFit.cover,
+    gaplessPlayback: true,
+    filterQuality: FilterQuality.medium,
+    errorBuilder: (_, __, ___) {
+      return Container(
+        color: const Color(0xFF2A2A2A),
+        child: const Center(
+          child: Icon(
+            Icons.person,
+            size: 120,
+            color: Colors.white,
+          ),
+        ),
+      );
+    },
+  )
                         else
                           Container(
                             color: Colors.grey.shade400,
