@@ -1388,6 +1388,20 @@ class _TinderCardState extends State<_TinderCard> {
     return photos[imageIndex];
   }
 
+     String _optimizedSwipeImageUrl(String url) {
+    if (url.isEmpty) return url;
+
+    // Cloudinary: byt ner från tunga 1080px-bilder till lättare swipe-bilder
+    if (url.contains('/image/upload/')) {
+      return url.replaceFirst(
+        '/image/upload/',
+        '/image/upload/f_auto,q_auto,w_720,c_fill/',
+      );
+    }
+
+    return url;
+  }
+
   void _removeImageListener() {
     if (_imageStream != null && _imageListener != null) {
       _imageStream!.removeListener(_imageListener!);
@@ -1405,7 +1419,7 @@ class _TinderCardState extends State<_TinderCard> {
       });
       return;
     }
-      final provider = CachedNetworkImageProvider(url);
+    final provider = CachedNetworkImageProvider(_optimizedSwipeImageUrl(url));
     final stream = provider.resolve(const ImageConfiguration());
 
     _removeImageListener();
@@ -1462,10 +1476,10 @@ class _TinderCardState extends State<_TinderCard> {
   if (profile.photoUrls.isEmpty) return;
 
   for (final url in profile.photoUrls.take(4)) {
-    precacheImage(
-      CachedNetworkImageProvider(url),
-      context,
-    );
+   precacheImage(
+        CachedNetworkImageProvider(_optimizedSwipeImageUrl(url)),
+        context,
+      );
   }
 }
 
@@ -1478,7 +1492,9 @@ class _TinderCardState extends State<_TinderCard> {
   if (nextIndex >= profile.photoUrls.length) return;
 
   precacheImage(
-    CachedNetworkImageProvider(profile.photoUrls[nextIndex]),
+    CachedNetworkImageProvider(
+      _optimizedSwipeImageUrl(profile.photoUrls[nextIndex]),
+    ),
     context,
   );
 }
@@ -1529,8 +1545,8 @@ class _TinderCardState extends State<_TinderCard> {
                       fit: StackFit.expand,
                       children: [
                        if (_visibleImageUrl.isNotEmpty)
- Image.network(
-  _visibleImageUrl,
+  Image.network(
+    _optimizedSwipeImageUrl(_visibleImageUrl),
   fit: BoxFit.cover,
   gaplessPlayback: true,
   errorBuilder: (_, __, ___) {
