@@ -3,6 +3,8 @@ import 'services/auth_service.dart';
 import 'register_page.dart';
 import 'home_page.dart';
 import 'create_profile_page.dart';
+import 'main_navigation.dart';
+
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
