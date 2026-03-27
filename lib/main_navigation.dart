@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'home_page.dart';
 import 'matches_page.dart';
-import 'profile_page.dart';
+
 
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
@@ -15,11 +15,11 @@ class _MainNavigationState extends State<MainNavigation> {
   int _selectedIndex = 0;
 
   final List<Widget> _pages = const [
-    HomePage(),
-    MatchesPage(),
-    MatchesPage(),
-    ProfilePage(),
-  ];
+  HomePage(),
+  MatchesPage(),
+  MatchesPage(),
+  _ProfileTabPlaceholder(),
+];
 
   void _onItemTapped(int index) {
     setState(() {
@@ -135,6 +135,28 @@ class _NavItem extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+class _ProfileTabPlaceholder extends StatelessWidget {
+  const _ProfileTabPlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      backgroundColor: Colors.black,
+      body: SafeArea(
+        child: Center(
+          child: Text(
+            'Profil kommer snart',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
       ),

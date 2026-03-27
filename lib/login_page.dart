@@ -55,7 +55,9 @@ class _LoginPageState extends State<LoginPage> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => hasProfile ? const HomePage() : const CreateProfilePage(),
+          builder: (_) => hasProfile
+           ? const MainNavigation()
+           : const CreateProfilePage(),
         ),
       );
     } catch (e) {
