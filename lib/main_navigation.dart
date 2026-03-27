@@ -14,11 +14,11 @@ class _MainNavigationState extends State<MainNavigation> {
   int _selectedIndex = 0;
 
   final List<Widget> _pages = const [
-    HomePage(),                 // Swipa
-    MatchesPage(),              // Explore (tillfällig)
-    MatchesPage(),              // Likes (tillfällig)
-    MatchesPage(),              // Chattar (tillfällig)
-    _ProfileTabPlaceholder(),   // Profil (tillfällig)
+    HomePage(),               // Swipa
+    MatchesPage(),            // Explore (tillfällig)
+    MatchesPage(),            // Likes (tillfällig)
+    MatchesPage(),            // Chattar (tillfällig)
+    _ProfileTabPlaceholder(), // Profil (tillfällig)
   ];
 
   void _onItemTapped(int index) {
@@ -36,8 +36,8 @@ class _MainNavigationState extends State<MainNavigation> {
         top: false,
         minimum: const EdgeInsets.fromLTRB(12, 0, 12, 10),
         child: Container(
-          height: 82,
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          height: 78,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
           decoration: BoxDecoration(
             color: const Color(0xE61A1A1A),
             borderRadius: BorderRadius.circular(34),
@@ -123,7 +123,7 @@ class _NavItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const inactiveColor = Colors.white;
-    final inactiveTextColor = Colors.white.withAlpha(220);
+    const inactiveTextColor = Color(0xE6FFFFFF);
 
     return Expanded(
       child: GestureDetector(
@@ -133,18 +133,20 @@ class _NavItem extends StatelessWidget {
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 220),
             curve: Curves.easeOut,
-           padding: EdgeInsets.symmetric(
-  horizontal: isActive ? 14 : 4,
-  vertical: isActive ? 10 : 6,
-),
+            padding: EdgeInsets.symmetric(
+              horizontal: isActive ? 10 : 4,
+              vertical: isActive ? 6 : 4,
+            ),
             decoration: BoxDecoration(
-             color: isActive
-    ? activeColor.withAlpha(activeColor == Colors.white ? 30 : 60)
-    : Colors.transparent,
-             borderRadius: BorderRadius.circular(30),
+              color: isActive
+                  ? activeColor.withAlpha(activeColor == Colors.white ? 22 : 40)
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(26),
               border: isActive
                   ? Border.all(
-                      color: activeColor.withAlpha(activeColor == Colors.white ? 28 : 50),
+                      color: activeColor.withAlpha(
+                        activeColor == Colors.white ? 28 : 55,
+                      ),
                       width: 1,
                     )
                   : null,
@@ -155,14 +157,16 @@ class _NavItem extends StatelessWidget {
                 Icon(
                   isActive ? activeIcon : icon,
                   color: isActive ? activeColor : inactiveColor,
-                  size: isActive ? 28 : 24,
+                  size: isActive ? 24 : 22,
                 ),
-                const SizedBox(height: 3),
+                const SizedBox(height: 2),
                 Text(
                   label,
+                  maxLines: 1,
+                  overflow: TextOverflow.visible,
                   style: TextStyle(
                     color: isActive ? activeColor : inactiveTextColor,
-                    fontSize: isActive ? 11.5 : 11,
+                    fontSize: isActive ? 10.5 : 10,
                     fontWeight: isActive ? FontWeight.w700 : FontWeight.w600,
                     height: 1,
                   ),
