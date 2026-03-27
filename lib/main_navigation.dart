@@ -14,10 +14,11 @@ class _MainNavigationState extends State<MainNavigation> {
   int _selectedIndex = 0;
 
   final List<Widget> _pages = const [
-    HomePage(),
-    MatchesPage(),
-    MatchesPage(),
-    _ProfileTabPlaceholder(),
+    HomePage(),                 // Swipa
+    MatchesPage(),              // Explore (tillfällig)
+    MatchesPage(),              // Likes (tillfällig)
+    MatchesPage(),              // Chattar (tillfällig)
+    _ProfileTabPlaceholder(),   // Profil (tillfällig)
   ];
 
   void _onItemTapped(int index) {
@@ -33,27 +34,26 @@ class _MainNavigationState extends State<MainNavigation> {
       body: _pages[_selectedIndex],
       bottomNavigationBar: SafeArea(
         top: false,
-        minimum: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+        minimum: const EdgeInsets.fromLTRB(12, 0, 12, 10),
         child: Container(
-          height: 74,
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          height: 82,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           decoration: BoxDecoration(
-            color: const Color(0xFF111111),
-            borderRadius: BorderRadius.circular(32),
+            color: const Color(0xE61A1A1A),
+            borderRadius: BorderRadius.circular(34),
             border: Border.all(
-              color: const Color(0x12FFFFFF),
+              color: const Color(0x26FFFFFF),
               width: 1,
             ),
             boxShadow: const [
               BoxShadow(
-                color: Color(0x66000000),
+                color: Color(0x4D000000),
                 blurRadius: 24,
                 offset: Offset(0, 10),
               ),
             ],
           ),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _NavItem(
                 icon: Icons.local_fire_department_outlined,
@@ -64,28 +64,36 @@ class _MainNavigationState extends State<MainNavigation> {
                 onTap: () => _onItemTapped(0),
               ),
               _NavItem(
+                icon: Icons.explore_outlined,
+                activeIcon: Icons.explore,
+                label: 'Explore',
+                isActive: _selectedIndex == 1,
+                activeColor: Colors.white,
+                onTap: () => _onItemTapped(1),
+              ),
+              _NavItem(
                 icon: Icons.favorite_border,
                 activeIcon: Icons.favorite,
-                label: 'Match',
-                isActive: _selectedIndex == 1,
-                activeColor: const Color(0xFFFF4458),
-                onTap: () => _onItemTapped(1),
+                label: 'Likes',
+                isActive: _selectedIndex == 2,
+                activeColor: Colors.white,
+                onTap: () => _onItemTapped(2),
               ),
               _NavItem(
                 icon: Icons.chat_bubble_outline,
                 activeIcon: Icons.chat_bubble,
                 label: 'Chattar',
-                isActive: _selectedIndex == 2,
-                activeColor: const Color(0xFFFF4458),
-                onTap: () => _onItemTapped(2),
+                isActive: _selectedIndex == 3,
+                activeColor: Colors.white,
+                onTap: () => _onItemTapped(3),
               ),
               _NavItem(
                 icon: Icons.person_outline,
                 activeIcon: Icons.person,
                 label: 'Profil',
-                isActive: _selectedIndex == 3,
-                activeColor: const Color(0xFFFF4458),
-                onTap: () => _onItemTapped(3),
+                isActive: _selectedIndex == 4,
+                activeColor: Colors.white,
+                onTap: () => _onItemTapped(4),
               ),
             ],
           ),
@@ -114,40 +122,53 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const inactiveColor = Colors.white70;
+    const inactiveColor = Colors.white;
+    final inactiveTextColor = Colors.white.withAlpha(220);
 
     return Expanded(
-      child: InkWell(
-        borderRadius: BorderRadius.circular(20),
+      child: GestureDetector(
         onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          curve: Curves.easeOut,
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          decoration: BoxDecoration(
-            color: isActive ? activeColor.withAlpha(28) : Colors.transparent,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                isActive ? activeIcon : icon,
-                color: isActive ? activeColor : inactiveColor,
-                size: isActive ? 25 : 23,
-              ),
-              const SizedBox(height: 3),
-              Text(
-                label,
-                style: TextStyle(
+        behavior: HitTestBehavior.opaque,
+        child: Center(
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOut,
+            padding: EdgeInsets.symmetric(
+              horizontal: isActive ? 10 : 4,
+              vertical: isActive ? 8 : 6,
+            ),
+            decoration: BoxDecoration(
+              color: isActive
+                  ? activeColor.withAlpha(activeColor == Colors.white ? 20 : 38)
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(999),
+              border: isActive
+                  ? Border.all(
+                      color: activeColor.withAlpha(activeColor == Colors.white ? 28 : 50),
+                      width: 1,
+                    )
+                  : null,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  isActive ? activeIcon : icon,
                   color: isActive ? activeColor : inactiveColor,
-                  fontSize: 11,
-                  fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-                  height: 1,
+                  size: isActive ? 27 : 25,
                 ),
-              ),
-            ],
+                const SizedBox(height: 3),
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: isActive ? activeColor : inactiveTextColor,
+                    fontSize: isActive ? 11.5 : 11,
+                    fontWeight: isActive ? FontWeight.w700 : FontWeight.w600,
+                    height: 1,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
