@@ -133,15 +133,15 @@ class _NavItem extends StatelessWidget {
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 220),
             curve: Curves.easeOut,
-            padding: EdgeInsets.symmetric(
-              horizontal: isActive ? 10 : 4,
-              vertical: isActive ? 8 : 6,
-            ),
+           padding: EdgeInsets.symmetric(
+  horizontal: isActive ? 14 : 4,
+  vertical: isActive ? 10 : 6,
+),
             decoration: BoxDecoration(
-              color: isActive
-                  ? activeColor.withAlpha(activeColor == Colors.white ? 20 : 38)
-                  : Colors.transparent,
-              borderRadius: BorderRadius.circular(999),
+             color: isActive
+    ? activeColor.withAlpha(activeColor == Colors.white ? 30 : 60)
+    : Colors.transparent,
+             borderRadius: BorderRadius.circular(30),
               border: isActive
                   ? Border.all(
                       color: activeColor.withAlpha(activeColor == Colors.white ? 28 : 50),
@@ -155,7 +155,7 @@ class _NavItem extends StatelessWidget {
                 Icon(
                   isActive ? activeIcon : icon,
                   color: isActive ? activeColor : inactiveColor,
-                  size: isActive ? 27 : 25,
+                  size: isActive ? 28 : 24,
                 ),
                 const SizedBox(height: 3),
                 Text(
