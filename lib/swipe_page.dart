@@ -51,9 +51,15 @@ class SwipePage extends StatelessWidget {
                 const Positioned.fill(
                   child: ColoredBox(color: Colors.black),
                 ),
-                if (nextCard != null) nextCard!,
-               Positioned.fill(
-  child: hasActiveProfile ? activeCard : emptyState,
+                Positioned.fill(
+  child: Stack(
+    children: [
+      if (nextCard != null) nextCard!,
+      Positioned.fill(
+        child: hasActiveProfile ? activeCard : emptyState,
+      ),
+    ],
+  ),
 ),
                 _TopOverlayBar(
                   hasUnreadMessages: hasUnreadMessages,
@@ -409,8 +415,17 @@ class _TopTabChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
-        color: selected ? Colors.white.withOpacity(0.18) : Colors.transparent,
+        color: selected
+            // 🔥 Afrikansk varm ton (subtil, inte stark)
+            ? const Color(0xFF3A2A1E).withOpacity(0.72)
+            : Colors.transparent,
         borderRadius: BorderRadius.circular(999),
+        border: selected
+            ? Border.all(
+                color: const Color(0xFFC89B3C).withOpacity(0.35),
+                width: 1,
+              )
+            : null,
       ),
       child: Text(
         label,
@@ -423,7 +438,6 @@ class _TopTabChip extends StatelessWidget {
     );
   }
 }
-
 class _TopTextTab extends StatelessWidget {
   final String label;
 
@@ -434,7 +448,7 @@ class _TopTextTab extends StatelessWidget {
     return Text(
       label,
       style: TextStyle(
-        color: Colors.white.withOpacity(0.92),
+        color: const Color(0xFF3A2A1E).withOpacity(0.72),
         fontSize: 15,
         fontWeight: FontWeight.w500,
       ),

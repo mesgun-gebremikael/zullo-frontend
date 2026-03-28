@@ -1,6 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-
+import 'profile_tab.dart';
 import 'home_page.dart';
 import 'matches_page.dart';
 
@@ -19,7 +19,7 @@ class _MainNavigationState extends State<MainNavigation> {
     MatchesPage(),            // Explore (tillfällig)
     MatchesPage(),            // Likes (tillfällig)
     MatchesPage(),            // Chattar (tillfällig)
-    _ProfileTabPlaceholder(), // Profil (tillfällig)
+    const ProfileTab(),// Profil (tillfällig)
   ];
 
   void _onItemTapped(int index) {
@@ -35,34 +35,29 @@ class _MainNavigationState extends State<MainNavigation> {
       body: _pages[_selectedIndex],
       bottomNavigationBar: SafeArea(
   top: false,
-minimum: const EdgeInsets.fromLTRB(16, 0, 16, 14),  child: ClipRRect(
-    borderRadius: BorderRadius.circular(34),
+minimum: const EdgeInsets.fromLTRB(14, 0, 14, 12), 
+ child: ClipRRect(
+    borderRadius: BorderRadius.circular(30),
     child: BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+      filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
       child: Container(
-        height: 64,
-padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),        decoration: BoxDecoration(
-         gradient: LinearGradient(
-  begin: Alignment.topCenter,
-  end: Alignment.bottomCenter,
-  colors: [
-    Colors.white.withOpacity(0.08),
-    Colors.white.withOpacity(0.04),
+       height: 58,
+padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+        decoration: BoxDecoration(
+  color: const Color(0xFF1A120C).withOpacity(0.62),
+  borderRadius: BorderRadius.circular(30),
+  border: Border.all(
+    color: const Color(0xFFC89B3C).withOpacity(0.18),
+    width: 1,
+  ),
+  boxShadow: [
+    BoxShadow(
+      color: Colors.black.withOpacity(0.22),
+      blurRadius: 14,
+      offset: const Offset(0, 6),
+    ),
   ],
 ),
-          borderRadius: BorderRadius.circular(34),
-          border: Border.all(
-  color: Colors.white.withOpacity(0.15),
-  width: 1,
-),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x4D000000),
-              blurRadius: 24,
-              offset: Offset(0, 10),
-            ),
-          ],
-        ),
         child: Row(
           children: [
             _NavItem(
@@ -133,54 +128,61 @@ class _NavItem extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    const inactiveColor = Colors.white;
-    const inactiveTextColor = Color(0xE6FFFFFF);
+Widget build(BuildContext context) {
+  const inactiveColor = Colors.white;
+  const inactiveTextColor = Color(0xE6FFFFFF);
 
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        behavior: HitTestBehavior.opaque,
-        child: Center(
-          child: AnimatedContainer(
-  duration: const Duration(milliseconds: 220),
-  curve: Curves.easeOut,
-  padding: EdgeInsets.symmetric(
-    horizontal: isActive ? 14 : 4,
-    vertical: isActive ? 8 : 4,
-  ),
-  decoration: BoxDecoration(
-    color: isActive
-    ? Colors.white.withOpacity(0.18)
-    : Colors.transparent,
-    borderRadius: BorderRadius.circular(999),
-  ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-               Icon(
-  isActive ? activeIcon : icon,
-  color: isActive ? Colors.white : inactiveColor,
-  size: isActive ? 25 : 22,
-),
-                const SizedBox(height: 2),
-                Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.visible,
-                  style: TextStyle(
-color: isActive ? Colors.white : inactiveTextColor,                    fontSize: isActive ? 10.5 : 10,
-                    fontWeight: isActive ? FontWeight.w700 : FontWeight.w600,
-                    height: 1,
-                  ),
+  return Expanded(
+    child: GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Center(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOut,
+          padding: EdgeInsets.symmetric(
+            horizontal: isActive ? 12 : 4,
+            vertical: isActive ? 6 : 2,
+          ),
+          decoration: BoxDecoration(
+            color: isActive
+             ? const Color(0xFF3A2A1E).withOpacity(0.55)
+             : Colors.transparent,
+            borderRadius: BorderRadius.circular(999),
+            border: isActive
+      ? Border.all(
+          color: const Color(0xFFC89B3C).withOpacity(0.25),
+          width: 1,
+        )
+      : null,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                isActive ? activeIcon : icon,
+                color: isActive ? Colors.white : inactiveColor,
+                size: isActive ? 22 : 20,
+              ),
+              const SizedBox(height: 1),
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.visible,
+                style: TextStyle(
+                  color: isActive ? Colors.white : inactiveTextColor,
+                  fontSize: isActive ? 9.5 : 9,
+                  fontWeight: isActive ? FontWeight.w700 : FontWeight.w600,
+                  height: 1,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }
 
 class _ProfileTabPlaceholder extends StatelessWidget {

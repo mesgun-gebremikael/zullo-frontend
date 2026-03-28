@@ -10,6 +10,7 @@ import 'profile_page.dart';
 import 'chat_page.dart';
 import 'edit_profile_page.dart';
 import 'swipe_page.dart';
+import 'welcome_page.dart';
 
 enum SwipeDir { left, right, up }
 
@@ -245,6 +246,18 @@ static const double _activeCardLift = 0;
       ),
     );
   }
+
+  Future<void> _logout() async {
+  await _storage.clearAuth();
+
+  if (!mounted) return;
+
+  Navigator.pushAndRemoveUntil(
+    context,
+    MaterialPageRoute(builder: (_) => const WelcomePage()),
+    (route) => false,
+  );
+}
 
   Future<void> _openEditProfile() async {
     final changed = await Navigator.push<bool>(
@@ -1036,15 +1049,6 @@ static const double _activeCardLift = 0;
     await loadUnreadStatus();
   }
 
-  Future<void> _logout() async {
-    await _storage.clearAuth();
-    if (!context.mounted) return;
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (_) => const WelcomePage()),
-      (_) => false,
-    );
-  }
 
   Widget _buildEmptyFeedState() {
     return Padding(
@@ -1156,8 +1160,7 @@ static const double _activeCardLift = 0;
     return LayoutBuilder(
       builder: (context, constraints) {
         final cardWidth = constraints.maxWidth;
-        final cardHeight = constraints.maxHeight;
-
+        final cardHeight = constraints.maxHeight - 120;
         return Center(
           child: Transform.translate(
             offset: const Offset(0, _nextCardOffsetY),
@@ -1218,8 +1221,7 @@ static const double _activeCardLift = 0;
     return LayoutBuilder(
       builder: (context, constraints) {
         final cardWidth = constraints.maxWidth;
-        final cardHeight = constraints.maxHeight;
-
+        final cardHeight = constraints.maxHeight - 120;
         return ValueListenableBuilder<Offset>(
           valueListenable: _dragNotifier,
           builder: (context, dragValue, _) {
