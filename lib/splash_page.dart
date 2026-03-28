@@ -4,6 +4,7 @@ import 'home_page.dart';
 import 'welcome_page.dart';
 import 'services/auth_service.dart';
 import 'create_profile_page.dart';
+import 'main_navigation.dart';
 
 
 class SplashPage extends StatefulWidget {
@@ -44,16 +45,16 @@ class _SplashPageState extends State<SplashPage> {
   if (!mounted) return;
 
   if (exists) {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const HomePage()),
-    );
-  } else {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const CreateProfilePage()),
-    );
-  }
+  Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(builder: (_) => const MainNavigation()),
+  );
+} else {
+  Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(builder: (_) => const CreateProfilePage()),
+  );
+}
 }
 
 

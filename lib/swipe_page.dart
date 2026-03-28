@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+
 
 class SwipePage extends StatelessWidget {
   final bool isLoading;
@@ -52,7 +52,7 @@ class SwipePage extends StatelessWidget {
                   child: ColoredBox(color: Colors.black),
                 ),
                 if (nextCard != null) nextCard!,
-                Center(
+               Positioned.fill(
   child: hasActiveProfile ? activeCard : emptyState,
 ),
                 _TopOverlayBar(

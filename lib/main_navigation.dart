@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 
 import 'home_page.dart';
@@ -33,72 +34,83 @@ class _MainNavigationState extends State<MainNavigation> {
       extendBody: true,
       body: _pages[_selectedIndex],
       bottomNavigationBar: SafeArea(
-        top: false,
-        minimum: const EdgeInsets.fromLTRB(12, 0, 12, 10),
-        child: Container(
-          height: 78,
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-          decoration: BoxDecoration(
-            color: const Color(0xE61A1A1A),
-            borderRadius: BorderRadius.circular(34),
-            border: Border.all(
-              color: const Color(0x26FFFFFF),
-              width: 1,
+  top: false,
+minimum: const EdgeInsets.fromLTRB(16, 0, 16, 14),  child: ClipRRect(
+    borderRadius: BorderRadius.circular(34),
+    child: BackdropFilter(
+      filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+      child: Container(
+        height: 64,
+padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),        decoration: BoxDecoration(
+         gradient: LinearGradient(
+  begin: Alignment.topCenter,
+  end: Alignment.bottomCenter,
+  colors: [
+    Colors.white.withOpacity(0.08),
+    Colors.white.withOpacity(0.04),
+  ],
+),
+          borderRadius: BorderRadius.circular(34),
+          border: Border.all(
+  color: Colors.white.withOpacity(0.15),
+  width: 1,
+),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x4D000000),
+              blurRadius: 24,
+              offset: Offset(0, 10),
             ),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x4D000000),
-                blurRadius: 24,
-                offset: Offset(0, 10),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              _NavItem(
-                icon: Icons.local_fire_department_outlined,
-                activeIcon: Icons.local_fire_department,
-                label: 'Swipa',
-                isActive: _selectedIndex == 0,
-                activeColor: const Color(0xFFFF4458),
-                onTap: () => _onItemTapped(0),
-              ),
-              _NavItem(
-                icon: Icons.explore_outlined,
-                activeIcon: Icons.explore,
-                label: 'Explore',
-                isActive: _selectedIndex == 1,
-                activeColor: Colors.white,
-                onTap: () => _onItemTapped(1),
-              ),
-              _NavItem(
-                icon: Icons.favorite_border,
-                activeIcon: Icons.favorite,
-                label: 'Likes',
-                isActive: _selectedIndex == 2,
-                activeColor: Colors.white,
-                onTap: () => _onItemTapped(2),
-              ),
-              _NavItem(
-                icon: Icons.chat_bubble_outline,
-                activeIcon: Icons.chat_bubble,
-                label: 'Chattar',
-                isActive: _selectedIndex == 3,
-                activeColor: Colors.white,
-                onTap: () => _onItemTapped(3),
-              ),
-              _NavItem(
-                icon: Icons.person_outline,
-                activeIcon: Icons.person,
-                label: 'Profil',
-                isActive: _selectedIndex == 4,
-                activeColor: Colors.white,
-                onTap: () => _onItemTapped(4),
-              ),
-            ],
-          ),
+          ],
+        ),
+        child: Row(
+          children: [
+            _NavItem(
+              icon: Icons.local_fire_department_outlined,
+              activeIcon: Icons.local_fire_department,
+              label: 'Swipa',
+              isActive: _selectedIndex == 0,
+              activeColor: const Color(0xFFFF4458),
+              onTap: () => _onItemTapped(0),
+            ),
+            _NavItem(
+              icon: Icons.explore_outlined,
+              activeIcon: Icons.explore,
+              label: 'Explore',
+              isActive: _selectedIndex == 1,
+              activeColor: Colors.white,
+              onTap: () => _onItemTapped(1),
+            ),
+            _NavItem(
+              icon: Icons.favorite_border,
+              activeIcon: Icons.favorite,
+              label: 'Likes',
+              isActive: _selectedIndex == 2,
+              activeColor: Colors.white,
+              onTap: () => _onItemTapped(2),
+            ),
+            _NavItem(
+              icon: Icons.chat_bubble_outline,
+              activeIcon: Icons.chat_bubble,
+              label: 'Chattar',
+              isActive: _selectedIndex == 3,
+              activeColor: Colors.white,
+              onTap: () => _onItemTapped(3),
+            ),
+            _NavItem(
+              icon: Icons.person_outline,
+              activeIcon: Icons.person,
+              label: 'Profil',
+              isActive: _selectedIndex == 4,
+              activeColor: Colors.white,
+              onTap: () => _onItemTapped(4),
+            ),
+          ],
         ),
       ),
+    ),
+  ),
+),
     );
   }
 }
@@ -131,42 +143,33 @@ class _NavItem extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         child: Center(
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 220),
-            curve: Curves.easeOut,
-            padding: EdgeInsets.symmetric(
-              horizontal: isActive ? 10 : 4,
-              vertical: isActive ? 6 : 4,
-            ),
-            decoration: BoxDecoration(
-              color: isActive
-                  ? activeColor.withAlpha(activeColor == Colors.white ? 22 : 40)
-                  : Colors.transparent,
-              borderRadius: BorderRadius.circular(26),
-              border: isActive
-                  ? Border.all(
-                      color: activeColor.withAlpha(
-                        activeColor == Colors.white ? 28 : 55,
-                      ),
-                      width: 1,
-                    )
-                  : null,
-            ),
+  duration: const Duration(milliseconds: 220),
+  curve: Curves.easeOut,
+  padding: EdgeInsets.symmetric(
+    horizontal: isActive ? 14 : 4,
+    vertical: isActive ? 8 : 4,
+  ),
+  decoration: BoxDecoration(
+    color: isActive
+    ? Colors.white.withOpacity(0.18)
+    : Colors.transparent,
+    borderRadius: BorderRadius.circular(999),
+  ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  isActive ? activeIcon : icon,
-                  color: isActive ? activeColor : inactiveColor,
-                  size: isActive ? 24 : 22,
-                ),
+               Icon(
+  isActive ? activeIcon : icon,
+  color: isActive ? Colors.white : inactiveColor,
+  size: isActive ? 25 : 22,
+),
                 const SizedBox(height: 2),
                 Text(
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.visible,
                   style: TextStyle(
-                    color: isActive ? activeColor : inactiveTextColor,
-                    fontSize: isActive ? 10.5 : 10,
+color: isActive ? Colors.white : inactiveTextColor,                    fontSize: isActive ? 10.5 : 10,
                     fontWeight: isActive ? FontWeight.w700 : FontWeight.w600,
                     height: 1,
                   ),
