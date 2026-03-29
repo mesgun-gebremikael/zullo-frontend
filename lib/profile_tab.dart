@@ -64,8 +64,8 @@ class _ProfileTabState extends State<ProfileTab> {
     final photos = (_profile!["photoUrls"] as List?) ?? [];
 
     final imageUrl = photos.isNotEmpty
-        ? photos[0].toString()
-        : "https://via.placeholder.com/400";
+    ? photos[0].toString()
+    : "https://images.unsplash.com/photo-1524504388940-b1c1722653e1";
 
     return SafeArea(
       child: SingleChildScrollView(
@@ -77,6 +77,7 @@ class _ProfileTabState extends State<ProfileTab> {
               decoration: BoxDecoration(
                 image: DecorationImage(
                   image: NetworkImage(imageUrl),
+                   onError: (_, __) {},
                   fit: BoxFit.cover,
                 ),
               ),
@@ -109,24 +110,27 @@ class _ProfileTabState extends State<ProfileTab> {
 
             const SizedBox(height: 20),
 
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFC89B3C),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 30,
-                  vertical: 12,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
-              ),
-              onPressed: _openEditProfile,
-              child: const Text(
-                "Redigera profil",
-                style: TextStyle(color: Colors.black),
-              ),
-            ),
-
+            Container(
+  width: double.infinity,
+  margin: const EdgeInsets.symmetric(horizontal: 24),
+  child: ElevatedButton(
+    style: ElevatedButton.styleFrom(
+      backgroundColor: Colors.white,
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(30),
+      ),
+    ),
+    onPressed: _openEditProfile,
+    child: const Text(
+      "Redigera profil",
+      style: TextStyle(
+        color: Colors.black,
+        fontWeight: FontWeight.bold,
+      ),
+    ),
+  ),
+),
             const SizedBox(height: 40),
           ],
         ),
