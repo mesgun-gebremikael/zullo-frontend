@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'services/auth_service.dart';
 import 'edit_profile_page.dart';
 import 'profile_settings_page.dart';
+import 'profile_photo_preview_page.dart';
 
 class ProfileTab extends StatefulWidget {
   const ProfileTab({super.key});
@@ -69,6 +70,15 @@ class _ProfileTabState extends State<ProfileTab> {
     ),
   );
 }
+
+Future<void> _openPhotoPreview(String imageUrl) async {
+  await Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => ProfilePhotoPreviewPage(imageUrl: imageUrl),
+    ),
+  );
+}
   Widget _buildProfileContent() {
     final photos = (_profile!["photoUrls"] as List?) ?? [];
 
@@ -82,17 +92,19 @@ class _ProfileTabState extends State<ProfileTab> {
           children: [
            Stack(
   children: [
-    Container(
-      height: 400,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        image: DecorationImage(
-          image: NetworkImage(imageUrl),
-          fit: BoxFit.cover,
-        ),
+   GestureDetector(
+  onTap: () => _openPhotoPreview(imageUrl),
+  child: Container(
+    height: 400,
+    width: double.infinity,
+    decoration: BoxDecoration(
+      image: DecorationImage(
+        image: NetworkImage(imageUrl),
+        fit: BoxFit.cover,
       ),
     ),
-
+  ),
+),
     Positioned(
       top: 16,
       right: 16,
