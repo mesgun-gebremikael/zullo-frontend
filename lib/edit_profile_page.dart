@@ -16,7 +16,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final _gender = TextEditingController();
   final _bio = TextEditingController();
 
-  bool _isLoading = true;
+   List<String> _photoUrls = [];
+
+  bool _isLoading = true;  
   bool _isSaving = false;
   String? _error;
 
@@ -48,6 +50,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
       _age.text = (profile["age"] ?? "").toString();
       _gender.text = (profile["gender"] ?? "").toString();
       _bio.text = (profile["bio"] ?? "").toString();
+       _photoUrls = ((profile["photoUrls"] as List?) ?? [])
+    .map((e) => e.toString())
+    .toList();
 
       if (!mounted) return;
 
@@ -85,22 +90,18 @@ class _EditProfilePageState extends State<EditProfilePage> {
     try {
       final current = await _authService.getMyProfile();
 
-      final photoUrls = ((current["photoUrls"] as List?) ?? [])
-          .map((e) => e.toString())
-          .toList();
+final interests = ((current["interests"] as List?) ?? [])
+    .map((e) => e.toString())
+    .toList();
 
-      final interests = ((current["interests"] as List?) ?? [])
-          .map((e) => e.toString())
-          .toList();
-
-      await _authService.saveProfile(
-        displayName: name,
-        age: age,
-        gender: gender,
-        bio: bio,
-        photoUrls: photoUrls,
-        interests: interests,
-      );
+await _authService.saveProfile(
+  displayName: name,
+  age: age,
+  gender: gender,
+  bio: bio,
+  photoUrls: _photoUrls,
+  interests: interests,
+);
 
       if (!mounted) return;
 
@@ -147,6 +148,40 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         ),
                       ),
                       const SizedBox(height: 16),
+
+                      if (_photoUrls.isNotEmpty) ...[
+  SizedBox(
+    height: 110,
+    child: ListView.separated(
+      scrollDirection: Axis.horizontal,
+      itemCount: _photoUrls.length,
+      separatorBuilder: (_, __) => const SizedBox(width: 12),
+      itemBuilder: (context, index) {
+        final photoUrl = _photoUrls[index];
+
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Image.network(
+            photoUrl,
+            width: 90,
+            height: 110,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              return Container(
+                width: 90,
+                height: 110,
+                color: Colors.grey.shade300,
+                alignment: Alignment.center,
+                child: const Icon(Icons.broken_image),
+              );
+            },
+          ),
+        );
+      },
+    ),
+  ),
+  const SizedBox(height: 20),
+],
 
                       TextField(
                         controller: _displayName,
