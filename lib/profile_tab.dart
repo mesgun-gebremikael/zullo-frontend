@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'services/auth_service.dart';
 import 'edit_profile_page.dart';
+import 'profile_settings_page.dart';
 
 class ProfileTab extends StatefulWidget {
   const ProfileTab({super.key});
@@ -59,10 +60,15 @@ class _ProfileTabState extends State<ProfileTab> {
       _loadProfile();
     }
   }
-  void _openSettings() {
-  print("Settings clicked");
-}
 
+  Future<void> _openSettings() async {
+  await Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => const ProfileSettingsPage(),
+    ),
+  );
+}
   Widget _buildProfileContent() {
     final photos = (_profile!["photoUrls"] as List?) ?? [];
 
