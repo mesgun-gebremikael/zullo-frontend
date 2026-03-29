@@ -10,6 +10,7 @@ class ProfileSettingsPage extends StatefulWidget {
 class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
   bool _showActivityStatus = true;
   bool _incognitoMode = false;
+  bool _marketingConsent = false;
 
   @override
   Widget build(BuildContext context) {
@@ -77,6 +78,42 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
               subtitle: 'dinmail@exempel.com',
               onTap: () {},
             ),
+            const SizedBox(height: 8),
+_SettingsSwitchRow(
+  icon: Icons.campaign,
+  title: 'Marknadsföringstillstånd',
+  subtitle: 'Jag tillåter ZULLO att använda min profil och mina bilder i våra reklamer',
+  value: _marketingConsent,
+  onChanged: (value) {
+    setState(() {
+      _marketingConsent = value;
+    });
+  },
+),
+const SizedBox(height: 8),
+_SettingsArrowRow(
+  icon: Icons.block,
+  title: 'Blockade profiler',
+  subtitle: 'Personer du har blockat',
+  onTap: () {},
+),
+const SizedBox(height: 8),
+_SettingsArrowRow(
+  icon: Icons.delete_outline,
+  title: 'Radera eller pausa konto',
+  subtitle: 'Hantera ditt konto',
+  onTap: () {},
+),
+const SizedBox(height: 28),
+const Text(
+  'User ID: MesgunSZTD',
+  style: TextStyle(
+    color: Colors.black38,
+    fontSize: 16,
+    fontWeight: FontWeight.w600,
+  ),
+),
+const SizedBox(height: 24),
           ],
         ),
       ),
