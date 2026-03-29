@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'services/auth_service.dart';
-import 'edit_profile.dart';
+import 'edit_profile_page.dart';
 
 class ProfileTab extends StatefulWidget {
   const ProfileTab({super.key});
@@ -59,6 +59,9 @@ class _ProfileTabState extends State<ProfileTab> {
       _loadProfile();
     }
   }
+  void _openSettings() {
+  print("Settings clicked");
+}
 
   Widget _buildProfileContent() {
     final photos = (_profile!["photoUrls"] as List?) ?? [];
@@ -71,18 +74,40 @@ class _ProfileTabState extends State<ProfileTab> {
       child: SingleChildScrollView(
         child: Column(
           children: [
-            Container(
-              height: 400,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: NetworkImage(imageUrl),
-                   onError: (_, __) {},
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
+           Stack(
+  children: [
+    Container(
+      height: 400,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        image: DecorationImage(
+          image: NetworkImage(imageUrl),
+          fit: BoxFit.cover,
+        ),
+      ),
+    ),
 
+    Positioned(
+      top: 16,
+      right: 16,
+      child: GestureDetector(
+        onTap: _openSettings,
+        child: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.6),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.settings,
+            color: Colors.white,
+            size: 22,
+          ),
+        ),
+      ),
+    ),
+  ],
+),
             const SizedBox(height: 16),
 
             Text(
