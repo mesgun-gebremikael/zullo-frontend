@@ -1,5 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'services/auth_service.dart';
+import 'package:image_picker/image_picker.dart';
+import 'services/cloudinary_service.dart';
+
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key});
@@ -17,6 +21,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final _bio = TextEditingController();
 
    List<String> _photoUrls = [];
+   bool _isUploadingPhoto = false;
 
   bool _isLoading = true;  
   bool _isSaving = false;
@@ -68,6 +73,58 @@ class _EditProfilePageState extends State<EditProfilePage> {
       });
     }
   }
+  
+  Future<void> _addPhoto() async {
+  if (_photoUrls.length >= 6) {
+    setState(() {
+      _error = "Du kan ha max 6 bilder.";
+    });
+    return;
+  }
+
+  try {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+    );
+
+    if (pickedFile == null) return;
+
+    setState(() {
+      _isUploadingPhoto = true;
+      _error = null;
+    });
+
+    final uploadedUrl = await CloudinaryService.uploadImage(
+      File(pickedFile.path),
+    );
+
+    if (!mounted) return;
+
+    if (uploadedUrl == null || uploadedUrl.isEmpty) {
+      setState(() {
+        _isUploadingPhoto = false;
+        _error = "Kunde inte ladda upp bilden.";
+      });
+      return;
+    }
+
+    setState(() {
+      _photoUrls.add(uploadedUrl);
+      _isUploadingPhoto = false;
+    });
+  } catch (e) {
+    if (!mounted) return;
+
+    setState(() {
+      _isUploadingPhoto = false;
+      _error = "Fel vid bildupload: $e";
+    });
+  }
+}
+
+
 
   Future<void> _saveProfile() async {
     final name = _displayName.text.trim();
@@ -182,6 +239,23 @@ await _authService.saveProfile(
   ),
   const SizedBox(height: 20),
 ],
+
+SizedBox(
+  width: double.infinity,
+  height: 48,
+  child: ElevatedButton.icon(
+    onPressed: _isUploadingPhoto ? null : _addPhoto,
+    icon: _isUploadingPhoto
+        ? const SizedBox(
+            height: 18,
+            width: 18,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          )
+        : const Icon(Icons.add_a_photo),
+    label: Text(_isUploadingPhoto ? "Laddar upp..." : "Lägg till bild"),
+  ),
+),
+const SizedBox(height: 20),
 
                       TextField(
                         controller: _displayName,
