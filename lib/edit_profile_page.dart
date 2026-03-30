@@ -6,7 +6,12 @@ import 'services/cloudinary_service.dart';
 
 
 class EditProfilePage extends StatefulWidget {
-  const EditProfilePage({super.key});
+  final bool startInPreviewMode;
+
+  const EditProfilePage({
+    super.key,
+    this.startInPreviewMode = false,
+  });
 
   @override
   State<EditProfilePage> createState() => _EditProfilePageState();
@@ -18,21 +23,31 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final _displayName = TextEditingController();
   final _age = TextEditingController();
   final _gender = TextEditingController();
+
   final _bio = TextEditingController();
 
-   List<String> _photoUrls = [];
-   bool _isUploadingPhoto = false;
+List<String> _photoUrls = [];
+List<String> _interests = [];
+
+String _intention = "";
+String _religion = "";
+String _workout = "";
+String _smoking = "";
+String _pets = "";
+
+bool _isUploadingPhoto = false;
 
   bool _isLoading = true;  
   bool _isSaving = false;
   bool _isPreviewMode = false;
   String? _error;
 
-  @override
-  void initState() {
-    super.initState();
-    _loadMyProfile();
-  }
+ @override
+void initState() {
+  super.initState();
+  _isPreviewMode = widget.startInPreviewMode;
+  _loadMyProfile();
+}
 
   @override
   void dispose() {
@@ -53,12 +68,23 @@ class _EditProfilePageState extends State<EditProfilePage> {
       final profile = await _authService.getMyProfile();
 
       _displayName.text = (profile["displayName"] ?? "").toString();
-      _age.text = (profile["age"] ?? "").toString();
-      _gender.text = (profile["gender"] ?? "").toString();
-      _bio.text = (profile["bio"] ?? "").toString();
-       _photoUrls = ((profile["photoUrls"] as List?) ?? [])
+_age.text = (profile["age"] ?? "").toString();
+_gender.text = (profile["gender"] ?? "").toString();
+_bio.text = (profile["bio"] ?? "").toString();
+
+_photoUrls = ((profile["photoUrls"] as List?) ?? [])
     .map((e) => e.toString())
     .toList();
+
+_interests = ((profile["interests"] as List?) ?? [])
+    .map((e) => e.toString())
+    .toList();
+
+_intention = (profile["intention"] ?? "").toString();
+_religion = (profile["religion"] ?? "").toString();
+_workout = (profile["workout"] ?? "").toString();
+_smoking = (profile["smoking"] ?? "").toString();
+_pets = (profile["pets"] ?? "").toString();
 
       if (!mounted) return;
 
@@ -247,6 +273,148 @@ await _authService.saveProfile(
   );
 }
 
+List<String> _buildPreviewChips() {
+  final chips = <String>[];
+
+  if (_intention.trim().isNotEmpty) chips.add(_intention.trim());
+  if (_religion.trim().isNotEmpty) chips.add(_religion.trim());
+  if (_workout.trim().isNotEmpty) chips.add(_workout.trim());
+  if (_smoking.trim().isNotEmpty) chips.add(_smoking.trim());
+  if (_pets.trim().isNotEmpty) chips.add(_pets.trim());
+
+  chips.addAll(
+    _interests
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty),
+  );
+
+  return chips;
+}
+
+Widget _buildPreviewMode() {
+  final previewImage = _photoUrls.isNotEmpty
+      ? _photoUrls[0]
+      : "https://images.unsplash.com/photo-1524504388940-b1c1722653e1";
+
+  final previewName = _displayName.text.trim();
+  final previewAge = _age.text.trim();
+  final previewBio = _bio.text.trim();
+  final previewChips = _buildPreviewChips();
+
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Container(
+        height: 520,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(28),
+          image: DecorationImage(
+            image: NetworkImage(previewImage),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(28),
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.black.withOpacity(0.10),
+                Colors.black.withOpacity(0.18),
+                Colors.black.withOpacity(0.78),
+              ],
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: List.generate(
+                    6,
+                    (index) => Expanded(
+                      child: Container(
+                        height: 4,
+                        margin: EdgeInsets.only(right: index == 5 ? 0 : 6),
+                        decoration: BoxDecoration(
+                          color: index == 0 ? Colors.white : Colors.white38,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  previewAge.isNotEmpty
+                      ? "$previewName $previewAge"
+                      : previewName,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 34,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                const Text(
+                  "Om mig & Livsstil",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 12),
+               if (previewChips.isNotEmpty) ...[
+  Wrap(
+    spacing: 10,
+    runSpacing: 10,
+    children: previewChips
+        .take(8)
+        .map((chip) => _buildPreviewChip(chip))
+        .toList(),
+  ),
+  const SizedBox(height: 14),
+],
+                if (previewBio.isNotEmpty)
+                  Text(
+                    previewBio,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      height: 1.4,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    ],
+  );
+}
+
+Widget _buildPreviewChip(String text) {
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+    decoration: BoxDecoration(
+      color: Colors.white.withOpacity(0.16),
+      borderRadius: BorderRadius.circular(24),
+    ),
+    child: Text(
+      text,
+      style: const TextStyle(
+        color: Colors.white,
+        fontSize: 15,
+        fontWeight: FontWeight.w500,
+      ),
+    ),
+  );
+}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -288,27 +456,32 @@ await _authService.saveProfile(
                   padding: const EdgeInsets.all(24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
-                   children: [
+                  children: [
   const SizedBox(height: 8),
   _buildTopToggle(),
   const SizedBox(height: 24),
 
-  const Text(
-    "MEDIA",
-    style: TextStyle(
-      fontSize: 22,
-      fontWeight: FontWeight.bold,
+  if (_isPreviewMode) ...[
+    _buildPreviewMode(),
+  ] else ...[
+    const Text(
+      "MEDIA",
+      style: TextStyle(
+        fontSize: 22,
+        fontWeight: FontWeight.bold,
+      ),
     ),
-  ),
-  const SizedBox(height: 12),
-  Text(
-    "Lägg till max 6 bilder.",
-    style: TextStyle(
-      fontSize: 16,
-      color: Colors.grey.shade700,
+    const SizedBox(height: 12),
+    Text(
+      "Lägg till max 6 bilder.",
+      style: TextStyle(
+        fontSize: 16,
+        color: Colors.grey.shade700,
+      ),
     ),
-  ),
-  const SizedBox(height: 18),
+    const SizedBox(height: 18),
+ 
+    
 
   GridView.count(
   crossAxisCount: 3,
@@ -434,9 +607,11 @@ const SizedBox(height: 20),
                               : const Text("Spara ändringar"),
                         ),
                       ),
-                    ],
+                    ],],
                   ),
+              
                 ),
     );
   }
+  
 }

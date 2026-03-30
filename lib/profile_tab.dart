@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'services/auth_service.dart';
 import 'edit_profile_page.dart';
 import 'profile_settings_page.dart';
-import 'profile_photo_preview_page.dart';
 import 'premium_page.dart';
 
 class ProfileTab extends StatefulWidget {
@@ -72,15 +71,18 @@ class _ProfileTabState extends State<ProfileTab> {
   );
 }
 
-Future<void> _openPhotoPreview(String imageUrl) async {
-  await Navigator.push(
+Future<void> _openPhotoPreview() async {
+  final result = await Navigator.push(
     context,
     MaterialPageRoute(
-      builder: (_) => ProfilePhotoPreviewPage(imageUrl: imageUrl),
+      builder: (_) => const EditProfilePage(startInPreviewMode: true),
     ),
   );
-}
 
+  if (result == true) {
+    _loadProfile();
+  }
+}
 Future<void> _openPremiumPage() async {
   await Navigator.push(
     context,
@@ -360,7 +362,7 @@ Widget _buildPremiumBox() {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               GestureDetector(
-                onTap: () => _openPhotoPreview(imageUrl),
+                onTap: _openPhotoPreview,
                 child: CircleAvatar(
                   radius: 34,
                   backgroundImage: NetworkImage(imageUrl),
