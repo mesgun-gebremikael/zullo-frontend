@@ -25,6 +25,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   bool _isLoading = true;  
   bool _isSaving = false;
+  bool _isPreviewMode = false;
   String? _error;
 
   @override
@@ -196,12 +197,89 @@ await _authService.saveProfile(
     }
   }
 
+  Widget _buildTopToggle() {
+  return Row(
+    children: [
+      Expanded(
+        child: GestureDetector(
+          onTap: () {
+            setState(() {
+              _isPreviewMode = false;
+            });
+          },
+          child: Center(
+            child: Text(
+              "Redigera",
+              style: TextStyle(
+                color: _isPreviewMode ? Colors.grey : const Color(0xFFE91E63),
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ),
+      ),
+      Container(
+        width: 1,
+        height: 34,
+        color: Colors.grey.shade300,
+      ),
+      Expanded(
+        child: GestureDetector(
+          onTap: () {
+            setState(() {
+              _isPreviewMode = true;
+            });
+          },
+          child: Center(
+            child: Text(
+              "Min profil",
+              style: TextStyle(
+                color: _isPreviewMode ? const Color(0xFFE91E63) : Colors.grey,
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ),
+      ),
+    ],
+  );
+}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Redigera profil"),
+  appBar: AppBar(
+    centerTitle: true,
+   title: Text(_isPreviewMode ? "Min profil" : "Redigera Info"),
+    actions: [
+      Padding(
+        padding: const EdgeInsets.only(right: 16),
+        child: GestureDetector(
+          onTap: _isSaving ? null : _saveProfile,
+          child: Container(
+            width: 52,
+            height: 52,
+            decoration: const BoxDecoration(
+              color: Color(0xFF1F2430),
+              shape: BoxShape.circle,
+            ),
+            child: _isSaving
+                ? const Padding(
+                    padding: EdgeInsets.all(14),
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(
+                    Icons.check,
+                    color: Colors.white,
+                    size: 28,
+                  ),
+          ),
+        ),
       ),
+    ],
+  ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _error != null && _displayName.text.isEmpty
@@ -210,17 +288,29 @@ await _authService.saveProfile(
                   padding: const EdgeInsets.all(24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const Text(
-                        "Min profil",
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
+                   children: [
+  const SizedBox(height: 8),
+  _buildTopToggle(),
+  const SizedBox(height: 24),
 
-                     GridView.count(
+  const Text(
+    "MEDIA",
+    style: TextStyle(
+      fontSize: 22,
+      fontWeight: FontWeight.bold,
+    ),
+  ),
+  const SizedBox(height: 12),
+  Text(
+    "Lägg till max 6 bilder.",
+    style: TextStyle(
+      fontSize: 16,
+      color: Colors.grey.shade700,
+    ),
+  ),
+  const SizedBox(height: 18),
+
+  GridView.count(
   crossAxisCount: 3,
   shrinkWrap: true,
   crossAxisSpacing: 10,
