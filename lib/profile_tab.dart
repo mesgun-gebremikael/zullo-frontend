@@ -79,6 +79,48 @@ Future<void> _openPhotoPreview(String imageUrl) async {
     ),
   );
 }
+
+Widget _buildInfoRow(String title, String value) {
+  if (value.trim().isEmpty) return const SizedBox.shrink();
+
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 10),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 110,
+          child: Text(
+            title,
+            style: const TextStyle(
+              color: Colors.white70,
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+String _formatList(dynamic value) {
+  if (value is List && value.isNotEmpty) {
+    return value.map((e) => e.toString()).join(", ");
+  }
+  return "";
+}
+
   Widget _buildProfileContent() {
     final photos = (_profile!["photoUrls"] as List?) ?? [];
 
@@ -152,6 +194,41 @@ Future<void> _openPhotoPreview(String imageUrl) async {
             ),
 
             const SizedBox(height: 20),
+
+            Padding(
+  padding: const EdgeInsets.symmetric(horizontal: 24),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      _buildInfoRow(
+        "Söker",
+        (_profile!["intention"] ?? "").toString(),
+      ),
+      _buildInfoRow(
+        "Religion",
+        (_profile!["religion"] ?? "").toString(),
+      ),
+      _buildInfoRow(
+        "Träning",
+        (_profile!["workout"] ?? "").toString(),
+      ),
+      _buildInfoRow(
+        "Rökning",
+        (_profile!["smoking"] ?? "").toString(),
+      ),
+      _buildInfoRow(
+        "Husdjur",
+        (_profile!["pets"] ?? "").toString(),
+      ),
+      _buildInfoRow(
+        "Intressen",
+        _formatList(_profile!["interests"]),
+      ),
+    ],
+  ),
+),
+
+const SizedBox(height: 20),
 
             Container(
   width: double.infinity,
