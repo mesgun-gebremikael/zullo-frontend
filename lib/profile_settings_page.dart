@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'services/auth_service.dart';
+import 'services/auth_storage.dart';
 
 class ProfileSettingsPage extends StatefulWidget {
   const ProfileSettingsPage({super.key});
@@ -8,9 +10,43 @@ class ProfileSettingsPage extends StatefulWidget {
 }
 
 class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
+
+final AuthService _authService = AuthService();
+final AuthStorage _authStorage = AuthStorage();
+
+String _emailText = 'Laddar...';
+String _userIdText = 'Laddar...';
+
   bool _showActivityStatus = true;
   bool _incognitoMode = false;
   bool _marketingConsent = false;
+
+  @override
+void initState() {
+  super.initState();
+  _loadAccountInfo();
+}
+
+Future<void> _loadAccountInfo() async {
+  try {
+    final profile = await _authService.getMyProfile();
+    final userId = await _authStorage.getUserId();
+
+    if (!mounted) return;
+
+    setState(() {
+      _emailText = (profile["email"] ?? "Ingen e-post hittades").toString();
+      _userIdText = userId ?? "Ingen user id hittades";
+    });
+  } catch (e) {
+    if (!mounted) return;
+
+    setState(() {
+      _emailText = "Kunde inte ladda e-post";
+      _userIdText = "Kunde inte ladda user id";
+    });
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -72,12 +108,12 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
               },
             ),
             const SizedBox(height: 8),
-            _SettingsArrowRow(
-              icon: Icons.alternate_email,
-              title: 'E-post',
-              subtitle: 'dinmail@exempel.com',
-              onTap: () {},
-            ),
+           _SettingsArrowRow(
+  icon: Icons.alternate_email,
+  title: 'E-post',
+  subtitle: _emailText,
+  onTap: () {},
+),
             const SizedBox(height: 8),
 _SettingsSwitchRow(
   icon: Icons.campaign,
@@ -105,9 +141,9 @@ _SettingsArrowRow(
   onTap: () {},
 ),
 const SizedBox(height: 28),
-const Text(
-  'User ID: MesgunSZTD',
-  style: TextStyle(
+Text(
+  'User ID: $_userIdText',
+  style: const TextStyle(
     color: Colors.black38,
     fontSize: 16,
     fontWeight: FontWeight.w600,
