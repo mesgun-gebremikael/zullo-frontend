@@ -220,84 +220,71 @@ await _authService.saveProfile(
                       ),
                       const SizedBox(height: 16),
 
-                      if (_photoUrls.isNotEmpty) ...[
-  SizedBox(
-    height: 110,
-    child: ListView.separated(
-      scrollDirection: Axis.horizontal,
-      itemCount: _photoUrls.length,
-      separatorBuilder: (_, __) => const SizedBox(width: 12),
-      itemBuilder: (context, index) {
-        final photoUrl = _photoUrls[index];
+                     GridView.count(
+  crossAxisCount: 3,
+  shrinkWrap: true,
+  crossAxisSpacing: 10,
+  mainAxisSpacing: 10,
+  physics: NeverScrollableScrollPhysics(),
+  children: [
+    ..._photoUrls.asMap().entries.map((entry) {
+      int index = entry.key;
+      String url = entry.value;
 
-        return SizedBox(
-          width: 90,
-          height: 110,
-          child: Stack(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: Image.network(
-                  photoUrl,
-                  width: 90,
-                  height: 110,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      width: 90,
-                      height: 110,
-                      color: Colors.grey.shade300,
-                      alignment: Alignment.center,
-                      child: const Icon(Icons.broken_image),
-                    );
-                  },
-                ),
-              ),
-              Positioned(
-                top: 6,
-                right: 6,
-                child: GestureDetector(
-                  onTap: () => _removePhotoAt(index),
-                  child: Container(
-                    width: 24,
-                    height: 24,
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.75),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.close,
-                      color: Colors.white,
-                      size: 16,
-                    ),
-                  ),
-                ),
-              ),
-            ],
+      return Stack(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Image.network(
+              url,
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: double.infinity,
+            ),
           ),
-        );
-      },
-    ),
-  ),
-  const SizedBox(height: 20),
-],
 
-SizedBox(
-  width: double.infinity,
-  height: 48,
-  child: ElevatedButton.icon(
-    onPressed: _isUploadingPhoto ? null : _addPhoto,
-    icon: _isUploadingPhoto
-        ? const SizedBox(
-            height: 18,
-            width: 18,
-            child: CircularProgressIndicator(strokeWidth: 2),
-          )
-        : const Icon(Icons.add_a_photo),
-    label: Text(_isUploadingPhoto ? "Laddar upp..." : "Lägg till bild"),
-  ),
+          Positioned(
+            top: 5,
+            right: 5,
+            child: GestureDetector(
+              onTap: () => _removePhotoAt(index),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.black,
+                  shape: BoxShape.circle,
+                ),
+                padding: const EdgeInsets.all(4),
+                child: const Icon(
+                  Icons.close,
+                  color: Colors.white,
+                  size: 16,
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }),
+
+    if (_photoUrls.length < 6)
+      GestureDetector(
+        onTap: _addPhoto,
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            color: Colors.grey,
+          ),
+          child: const Center(
+            child: Icon(Icons.add, color: Colors.white, size: 30),
+          ),
+        ),
+      ),
+  ],
 ),
+
 const SizedBox(height: 20),
+
+
 
                       TextField(
                         controller: _displayName,
