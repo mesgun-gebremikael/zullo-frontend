@@ -37,10 +37,10 @@ String _pets = "";
 
 bool _isUploadingPhoto = false;
 
-  bool _isLoading = true;  
-  bool _isSaving = false;
-  bool _isPreviewMode = false;
-  String? _error;
+bool _isLoading = true;
+bool _isSaving = false;
+bool _isPreviewMode = false;
+String? _error;
 
  @override
 void initState() {
@@ -291,111 +291,7 @@ List<String> _buildPreviewChips() {
   return chips;
 }
 
-Widget _buildPreviewMode() {
-  final previewImage = _photoUrls.isNotEmpty
-      ? _photoUrls[0]
-      : "https://images.unsplash.com/photo-1524504388940-b1c1722653e1";
 
-  final previewName = _displayName.text.trim();
-  final previewAge = _age.text.trim();
-  final previewBio = _bio.text.trim();
-  final previewChips = _buildPreviewChips();
-
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Container(
-        height: 520,
-        width: double.infinity,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(28),
-          image: DecorationImage(
-            image: NetworkImage(previewImage),
-            fit: BoxFit.cover,
-          ),
-        ),
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(28),
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Colors.black.withOpacity(0.10),
-                Colors.black.withOpacity(0.18),
-                Colors.black.withOpacity(0.78),
-              ],
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: List.generate(
-                    6,
-                    (index) => Expanded(
-                      child: Container(
-                        height: 4,
-                        margin: EdgeInsets.only(right: index == 5 ? 0 : 6),
-                        decoration: BoxDecoration(
-                          color: index == 0 ? Colors.white : Colors.white38,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                const Spacer(),
-                Text(
-                  previewAge.isNotEmpty
-                      ? "$previewName $previewAge"
-                      : previewName,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 34,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                const Text(
-                  "Om mig & Livsstil",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 12),
-               if (previewChips.isNotEmpty) ...[
-  Wrap(
-    spacing: 10,
-    runSpacing: 10,
-    children: previewChips
-        .take(8)
-        .map((chip) => _buildPreviewChip(chip))
-        .toList(),
-  ),
-  const SizedBox(height: 14),
-],
-                if (previewBio.isNotEmpty)
-                  Text(
-                    previewBio,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      height: 1.4,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    ],
-  );
-}
 
 Widget _buildPreviewChip(String text) {
   return Container(
@@ -448,170 +344,383 @@ Widget _buildPreviewChip(String text) {
       ),
     ],
   ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _error != null && _displayName.text.isEmpty
-              ? Center(child: Text(_error!))
-              : SingleChildScrollView(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
+     body: _isLoading
+    ? const Center(child: CircularProgressIndicator())
+    : _error != null && _displayName.text.isEmpty
+        ? Center(child: Text(_error!))
+        : _isPreviewMode
+            ? Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-  const SizedBox(height: 8),
-  _buildTopToggle(),
-  const SizedBox(height: 24),
-
-  if (_isPreviewMode) ...[
-    _buildPreviewMode(),
-  ] else ...[
-    const Text(
-      "MEDIA",
-      style: TextStyle(
-        fontSize: 22,
-        fontWeight: FontWeight.bold,
-      ),
-    ),
-    const SizedBox(height: 12),
-    Text(
-      "Lägg till max 6 bilder.",
-      style: TextStyle(
-        fontSize: 16,
-        color: Colors.grey.shade700,
-      ),
-    ),
-    const SizedBox(height: 18),
- 
-    
-
-  GridView.count(
-  crossAxisCount: 3,
-  shrinkWrap: true,
-  crossAxisSpacing: 10,
-  mainAxisSpacing: 10,
-  physics: NeverScrollableScrollPhysics(),
-  children: [
-    ..._photoUrls.asMap().entries.map((entry) {
-      int index = entry.key;
-      String url = entry.value;
-
-      return Stack(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Image.network(
-              url,
-              fit: BoxFit.cover,
-              width: double.infinity,
-              height: double.infinity,
-            ),
-          ),
-
-          Positioned(
-            top: 5,
-            right: 5,
-            child: GestureDetector(
-              onTap: () => _removePhotoAt(index),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.black,
-                  shape: BoxShape.circle,
+                    const SizedBox(height: 8),
+                    _buildTopToggle(),
+                    const SizedBox(height: 24),
+                   Expanded(
+  child: EditProfilePreviewCard(
+    photoUrls: _photoUrls,
+    displayName: _displayName.text.trim(),
+    ageText: _age.text.trim(),
+    bio: _bio.text.trim(),
+    chips: _buildPreviewChips(),
+  ),
+),
+                  ],
                 ),
-                padding: const EdgeInsets.all(4),
-                child: const Icon(
-                  Icons.close,
-                  color: Colors.white,
-                  size: 16,
+              )
+            : SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 8),
+                    _buildTopToggle(),
+                    const SizedBox(height: 24),
+
+                    const Text(
+                      "MEDIA",
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      "Lägg till max 6 bilder.",
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey.shade700,
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+
+                    GridView.count(
+                      crossAxisCount: 3,
+                      shrinkWrap: true,
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10,
+                      physics: const NeverScrollableScrollPhysics(),
+                      children: [
+                        ..._photoUrls.asMap().entries.map((entry) {
+                          final index = entry.key;
+                          final url = entry.value;
+
+                          return Stack(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: Image.network(
+                                  url,
+                                  fit: BoxFit.cover,
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                ),
+                              ),
+                              Positioned(
+                                top: 5,
+                                right: 5,
+                                child: GestureDetector(
+                                  onTap: () => _removePhotoAt(index),
+                                  child: Container(
+                                    decoration: const BoxDecoration(
+                                      color: Colors.black,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    padding: const EdgeInsets.all(4),
+                                    child: const Icon(
+                                      Icons.close,
+                                      color: Colors.white,
+                                      size: 16,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        }),
+
+                        if (_photoUrls.length < 6)
+                          GestureDetector(
+                            onTap: _addPhoto,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                color: Colors.grey,
+                              ),
+                              child: const Center(
+                                child: Icon(
+                                  Icons.add,
+                                  color: Colors.white,
+                                  size: 30,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    TextField(
+                      controller: _displayName,
+                      decoration: const InputDecoration(
+                        labelText: "Namn (display)",
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    TextField(
+                      controller: _age,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: "Ålder",
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    TextField(
+                      controller: _gender,
+                      decoration: const InputDecoration(
+                        labelText: "Kön",
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    TextField(
+                      controller: _bio,
+                      maxLines: 3,
+                      decoration: const InputDecoration(
+                        labelText: "Om mig",
+                      ),
+                    ),
+
+                    if (_error != null) ...[
+                      const SizedBox(height: 12),
+                      Text(
+                        _error!,
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                    ],
+
+                    const SizedBox(height: 20),
+
+                    SizedBox(
+                      height: 48,
+                      child: ElevatedButton(
+                        onPressed: _isSaving ? null : _saveProfile,
+                        child: _isSaving
+                            ? const SizedBox(
+                                height: 22,
+                                width: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Text("Spara ändringar"),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-          ),
-        ],
-      );
-    }),
-
-    if (_photoUrls.length < 6)
-      GestureDetector(
-        onTap: _addPhoto,
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            color: Colors.grey,
-          ),
-          child: const Center(
-            child: Icon(Icons.add, color: Colors.white, size: 30),
-          ),
-        ),
-      ),
-  ],
-),
-
-const SizedBox(height: 20),
-
-
-
-                      TextField(
-                        controller: _displayName,
-                        decoration: const InputDecoration(
-                          labelText: "Namn (display)",
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-
-                      TextField(
-                        controller: _age,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          labelText: "Ålder",
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-
-                      TextField(
-                        controller: _gender,
-                        decoration: const InputDecoration(
-                          labelText: "Kön",
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-
-                      TextField(
-                        controller: _bio,
-                        maxLines: 3,
-                        decoration: const InputDecoration(
-                          labelText: "Om mig",
-                        ),
-                      ),
-
-                      if (_error != null) ...[
-                        const SizedBox(height: 12),
-                        Text(
-                          _error!,
-                          style: const TextStyle(color: Colors.red),
-                        ),
-                      ],
-
-                      const SizedBox(height: 20),
-
-                      SizedBox(
-                        height: 48,
-                        child: ElevatedButton(
-                          onPressed: _isSaving ? null : _saveProfile,
-                          child: _isSaving
-                              ? const SizedBox(
-                                  height: 22,
-                                  width: 22,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : const Text("Spara ändringar"),
-                        ),
-                      ),
-                    ],],
-                  ),
-              
-                ),
     );
   }
   
+}
+
+class EditProfilePreviewCard extends StatefulWidget {
+  final List<String> photoUrls;
+  final String displayName;
+  final String ageText;
+  final String bio;
+  final List<String> chips;
+
+  const EditProfilePreviewCard({
+    super.key,
+    required this.photoUrls,
+    required this.displayName,
+    required this.ageText,
+    required this.bio,
+    required this.chips,
+  });
+
+  @override
+  State<EditProfilePreviewCard> createState() => _EditProfilePreviewCardState();
+}
+
+class _EditProfilePreviewCardState extends State<EditProfilePreviewCard> {
+  late final PageController _pageController;
+  int _currentImageIndex = 0;
+
+  List<String> get _photos {
+    if (widget.photoUrls.isNotEmpty) return widget.photoUrls;
+    return [
+      "https://images.unsplash.com/photo-1524504388940-b1c1722653e1",
+    ];
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+  }
+
+  @override
+  void didUpdateWidget(covariant EditProfilePreviewCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (_currentImageIndex >= _photos.length) {
+      _currentImageIndex = 0;
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _pageController.jumpToPage(0);
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  Widget _buildPreviewChip(String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.16),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 15,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 520,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(28),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(28),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            PageView.builder(
+              controller: _pageController,
+              itemCount: _photos.length,
+              onPageChanged: (index) {
+                setState(() {
+                  _currentImageIndex = index;
+                });
+              },
+              itemBuilder: (context, index) {
+                return Image.network(
+                  _photos[index],
+                  fit: BoxFit.cover,
+                );
+              },
+            ),
+
+            IgnorePointer(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withOpacity(0.10),
+                      Colors.black.withOpacity(0.18),
+                      Colors.black.withOpacity(0.78),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            IgnorePointer(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: List.generate(
+                        _photos.length,
+                        (index) => Expanded(
+                          child: Container(
+                            height: 4,
+                            margin: EdgeInsets.only(
+                              right: index == _photos.length - 1 ? 0 : 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: index == _currentImageIndex
+                                  ? Colors.white
+                                  : Colors.white38,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      widget.ageText.isNotEmpty
+                          ? "${widget.displayName} ${widget.ageText}"
+                          : widget.displayName,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 34,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    const Text(
+                      "Om mig & Livsstil",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    if (widget.chips.isNotEmpty) ...[
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: widget.chips
+                            .take(8)
+                            .map((chip) => _buildPreviewChip(chip))
+                            .toList(),
+                      ),
+                      const SizedBox(height: 14),
+                    ],
+                    if (widget.bio.isNotEmpty)
+                      Text(
+                        widget.bio,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          height: 1.4,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

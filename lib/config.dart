@@ -1,1 +1,1 @@
-const String baseApiUrl = 'https://localhost:7015';
+const String apiBaseUrl = 'http://10.0.2.2:5125';
