@@ -124,6 +124,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
   }
 }
 
+void _removePhotoAt(int index) {
+  setState(() {
+    _photoUrls.removeAt(index);
+    _error = null;
+  });
+}
+
 
 
   Future<void> _saveProfile() async {
@@ -216,22 +223,50 @@ await _authService.saveProfile(
       itemBuilder: (context, index) {
         final photoUrl = _photoUrls[index];
 
-        return ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: Image.network(
-            photoUrl,
-            width: 90,
-            height: 110,
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) {
-              return Container(
-                width: 90,
-                height: 110,
-                color: Colors.grey.shade300,
-                alignment: Alignment.center,
-                child: const Icon(Icons.broken_image),
-              );
-            },
+        return SizedBox(
+          width: 90,
+          height: 110,
+          child: Stack(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Image.network(
+                  photoUrl,
+                  width: 90,
+                  height: 110,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      width: 90,
+                      height: 110,
+                      color: Colors.grey.shade300,
+                      alignment: Alignment.center,
+                      child: const Icon(Icons.broken_image),
+                    );
+                  },
+                ),
+              ),
+              Positioned(
+                top: 6,
+                right: 6,
+                child: GestureDetector(
+                  onTap: () => _removePhotoAt(index),
+                  child: Container(
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.75),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.close,
+                      color: Colors.white,
+                      size: 16,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         );
       },
