@@ -146,6 +146,13 @@ void _removePhotoAt(int index) {
       return;
     }
 
+    if (_photoUrls.length < 2) {
+  setState(() {
+    _error = "Du måste ha minst 2 profilbilder.";
+  });
+  return;
+}
+
     setState(() {
       _isSaving = true;
       _error = null;
