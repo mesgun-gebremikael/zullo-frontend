@@ -129,7 +129,8 @@ String _formatList(dynamic value) {
     return value.map((e) => e.toString()).join(", ");
   }
   return "";
-}  Widget _buildMonetizationCard({
+}  
+Widget _buildMonetizationCard({
   required IconData icon,
   required Color iconColor,
   required String title,
@@ -143,13 +144,24 @@ String _formatList(dynamic value) {
       decoration: BoxDecoration(
         color: const Color(0xFF111111),
         borderRadius: BorderRadius.circular(28),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.05),
+        ),
       ),
       child: Row(
         children: [
-          Icon(
-            icon,
-            color: iconColor,
-            size: 34,
+          Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              color: iconColor.withOpacity(0.14),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              icon,
+              color: iconColor,
+              size: 26,
+            ),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -160,7 +172,7 @@ String _formatList(dynamic value) {
                   title,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 20,
+                    fontSize: 19,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -169,8 +181,8 @@ String _formatList(dynamic value) {
                   subtitle,
                   style: TextStyle(
                     color: iconColor,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
@@ -181,11 +193,13 @@ String _formatList(dynamic value) {
             height: 42,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
+              color: Colors.white.withOpacity(0.03),
               border: Border.all(color: Colors.white24),
             ),
             child: const Icon(
-              Icons.add,
+              Icons.arrow_forward_ios_rounded,
               color: Colors.white70,
+              size: 18,
             ),
           ),
         ],
@@ -193,7 +207,6 @@ String _formatList(dynamic value) {
     ),
   );
 }
-
 Widget _buildPremiumBox() {
   return GestureDetector(
     onTap: _openPremiumPage,
@@ -206,24 +219,46 @@ Widget _buildPremiumBox() {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color(0xFF5A4200),
-            Color(0xFF1A1408),
+            Color(0xFF2B1B14),
+            Color(0xFF17110E),
+            Color(0xFF0F0F10),
           ],
         ),
-        border: Border.all(color: Colors.white24),
+        border: Border.all(
+          color: const Color(0xFFC08B5C).withOpacity(0.35),
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x22000000),
+            blurRadius: 20,
+            offset: Offset(0, 10),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(Icons.local_fire_department, color: Color(0xFFFFC83D)),
-              const SizedBox(width: 8),
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFC08B5C).withOpacity(0.16),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.auto_awesome_rounded,
+                  color: Color(0xFFE5B07A),
+                  size: 22,
+                ),
+              ),
+              const SizedBox(width: 10),
               const Text(
-                "ZULLO Gold",
+                "ZULLO Premium",
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 26,
+                  fontSize: 25,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -231,7 +266,7 @@ Widget _buildPremiumBox() {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE5C15A),
+                  color: const Color(0xFFE5B07A),
                   borderRadius: BorderRadius.circular(24),
                 ),
                 child: const Text(
@@ -249,7 +284,7 @@ Widget _buildPremiumBox() {
             "Detta ingår",
             style: TextStyle(
               color: Colors.white,
-              fontSize: 24,
+              fontSize: 23,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -262,7 +297,7 @@ Widget _buildPremiumBox() {
                   style: TextStyle(color: Colors.white, fontSize: 18),
                 ),
               ),
-              Icon(Icons.lock, color: Colors.white70),
+              Icon(Icons.check_circle_rounded, color: Color(0xFFE5B07A)),
             ],
           ),
           const SizedBox(height: 14),
@@ -274,7 +309,7 @@ Widget _buildPremiumBox() {
                   style: TextStyle(color: Colors.white, fontSize: 18),
                 ),
               ),
-              Icon(Icons.lock, color: Colors.white70),
+              Icon(Icons.check_circle_rounded, color: Color(0xFFE5B07A)),
             ],
           ),
           const SizedBox(height: 14),
@@ -286,7 +321,7 @@ Widget _buildPremiumBox() {
                   style: TextStyle(color: Colors.white, fontSize: 18),
                 ),
               ),
-              Icon(Icons.lock, color: Colors.white70),
+              Icon(Icons.check_circle_rounded, color: Color(0xFFE5B07A)),
             ],
           ),
           const SizedBox(height: 28),
@@ -294,7 +329,7 @@ Widget _buildPremiumBox() {
             child: Text(
               "Se alla funktioner",
               style: TextStyle(
-                color: Colors.white,
+                color: Color(0xFFE5B07A),
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
@@ -387,25 +422,25 @@ Widget _buildPremiumBox() {
           ),
           const SizedBox(height: 28),
           _buildMonetizationCard(
-            icon: Icons.star,
-            iconColor: Colors.blue,
-            title: "0 Superlikes",
-            subtitle: "FÅ MER",
-          ),
-          const SizedBox(height: 18),
-          _buildMonetizationCard(
-            icon: Icons.bolt,
-            iconColor: Colors.purpleAccent,
-            title: "Mina Boosts",
-            subtitle: "FÅ MER",
-          ),
-          const SizedBox(height: 18),
-          _buildMonetizationCard(
-            icon: Icons.local_fire_department,
-            iconColor: Colors.pinkAccent,
-            title: "Prenumerationer",
-            subtitle: "Se planer",
-          ),
+  icon: Icons.favorite_rounded,
+  iconColor: const Color(0xFF58C4D8),
+  title: "0 Superlikes",
+  subtitle: "FÅ MER",
+),
+const SizedBox(height: 18),
+_buildMonetizationCard(
+  icon: Icons.rocket_launch_rounded,
+  iconColor: const Color(0xFFB57CFF),
+  title: "Mina Boosts",
+  subtitle: "FÅ MER",
+),
+const SizedBox(height: 18),
+_buildMonetizationCard(
+  icon: Icons.workspace_premium_rounded,
+  iconColor: const Color(0xFFFF7FA8),
+  title: "Prenumerationer",
+  subtitle: "Se planer",
+),
           const SizedBox(height: 22),
           _buildPremiumBox(),
         ],
