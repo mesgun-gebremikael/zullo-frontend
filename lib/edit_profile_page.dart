@@ -38,12 +38,16 @@ String _religion = "";
 String _workout = "";
 String _smoking = "";
 String _pets = "";
+String _childrenCount = "";
+String _wantChildren = "";
 
 String _workStatus = "";
 final _studyPlace = TextEditingController();
 final _studySubject = TextEditingController();
 final _workPlace = TextEditingController();
 final _jobTitle = TextEditingController();
+
+
 
 int _heightCm = 170;
 
@@ -798,11 +802,11 @@ Future<void> _openHeightPicker() async {
   int tempInches = _cmToInchesPart(_heightCm);
 
   final cmController = FixedExtentScrollController(
-    initialItem: math.max(0, tempCm - 120),
+    initialItem: math.max(0, tempCm - 140),
   );
 
   final feetController = FixedExtentScrollController(
-    initialItem: math.max(0, tempFeet - 3),
+    initialItem: math.max(0, tempFeet - 4),
   );
 
   final inchesController = FixedExtentScrollController(
@@ -944,7 +948,7 @@ Future<void> _openHeightPicker() async {
                               tempInches = _cmToInchesPart(tempCm);
                             },
                             children: List.generate(
-                              81,
+                              121,
                               (index) {
                                 final cm = 140 + index;
                                 return Center(
@@ -970,7 +974,7 @@ Future<void> _openHeightPicker() async {
                                     );
                                   },
                                   children: List.generate(
-                                    5,
+                                    6,
                                     (index) {
                                       final ft = 4 + index;
                                       return Center(
@@ -1071,6 +1075,124 @@ Widget _buildHeightSection() {
             ],
           ),
         ),
+      ),
+    ],
+  );
+}
+
+Widget _buildChildrenCountSection() {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      _buildQuestionTitle(
+        icon: Icons.child_care_outlined,
+        title: "Hur många barn har du?",
+      ),
+      const SizedBox(height: 14),
+      Wrap(
+        spacing: 10,
+        runSpacing: 10,
+        children: [
+          _buildChoiceChip(
+            label: "Jag har inga barn",
+            selected: _childrenCount == "0",
+            onTap: () {
+              setState(() {
+                _childrenCount = "0";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+          _buildChoiceChip(
+            label: "1 barn",
+            selected: _childrenCount == "1",
+            onTap: () {
+              setState(() {
+                _childrenCount = "1";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+          _buildChoiceChip(
+            label: "2 barn",
+            selected: _childrenCount == "2",
+            onTap: () {
+              setState(() {
+                _childrenCount = "2";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+          _buildChoiceChip(
+            label: "3 barn",
+            selected: _childrenCount == "3",
+            onTap: () {
+              setState(() {
+                _childrenCount = "3";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+          _buildChoiceChip(
+            label: "4 eller fler",
+            selected: _childrenCount == "4+",
+            onTap: () {
+              setState(() {
+                _childrenCount = "4+";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+        ],
+      ),
+    ],
+  );
+}
+
+Widget _buildWantChildrenSection() {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      _buildQuestionTitle(
+        icon: Icons.stroller_outlined,
+        title: "Vill du ha barn i framtiden?",
+      ),
+      const SizedBox(height: 14),
+      Wrap(
+        spacing: 10,
+        runSpacing: 10,
+        children: [
+          _buildChoiceChip(
+            label: "Jag vill ha barn",
+            selected: _wantChildren == "yes",
+            onTap: () {
+              setState(() {
+                _wantChildren = "yes";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+          _buildChoiceChip(
+            label: "Inte säker än",
+            selected: _wantChildren == "maybe",
+            onTap: () {
+              setState(() {
+                _wantChildren = "maybe";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+          _buildChoiceChip(
+            label: "Jag vill inte ha barn",
+            selected: _wantChildren == "no",
+            onTap: () {
+              setState(() {
+                _wantChildren = "no";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+        ],
       ),
     ],
   );
@@ -1369,13 +1491,19 @@ Widget _buildPreviewChip(String text) {
                    _buildReligionSection(),
                    const SizedBox(height: 24),
 
-                   _buildLifestyleSection(),
-                   const SizedBox(height: 24),
+                  _buildLifestyleSection(),
+const SizedBox(height: 24),
 
-                  _buildHeightSection(),
-                  const SizedBox(height: 24),
+_buildHeightSection(),
+const SizedBox(height: 24),
 
-                   TextField(
+_buildChildrenCountSection(),
+const SizedBox(height: 24),
+
+_buildWantChildrenSection(),
+const SizedBox(height: 24),
+
+TextField(
                     controller: _displayName,
                       decoration: const InputDecoration(
                         labelText: "Namn (display)",
