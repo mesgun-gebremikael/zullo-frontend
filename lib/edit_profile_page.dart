@@ -41,11 +41,16 @@ String _pets = "";
 String _childrenCount = "";
 String _wantChildren = "";
 
+String _relationshipHistory = "";
+String _zodiacSign = "";
+
 String _workStatus = "";
 final _studyPlace = TextEditingController();
 final _studySubject = TextEditingController();
 final _workPlace = TextEditingController();
 final _jobTitle = TextEditingController();
+final _livePlace = TextEditingController();
+final _originPlace = TextEditingController();
 
 
 
@@ -72,9 +77,11 @@ void dispose() {
   _gender.dispose();
   _bio.dispose();
   _studyPlace.dispose();
-  _studySubject.dispose();
-  _workPlace.dispose();
-  _jobTitle.dispose();
+_studySubject.dispose();
+_workPlace.dispose();
+_jobTitle.dispose();
+_livePlace.dispose();
+_originPlace.dispose();
   super.dispose();
 }
   Future<void> _loadMyProfile() async {
@@ -626,14 +633,7 @@ Widget _buildLifestyleSection() {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      _buildQuestionTitle(
-        icon: Icons.local_bar_outlined,
-        title: "Livsstil",
-        subtitle: "Detta hjälper oss matcha dig bättre.",
-      ),
-      const SizedBox(height: 20),
-
-      /// 🍺 Alkohol
+      /// Alkohol
       _buildQuestionTitle(
         icon: Icons.local_drink_outlined,
         title: "Dricker du alkohol?",
@@ -676,12 +676,12 @@ Widget _buildLifestyleSection() {
         ],
       ),
 
-      const SizedBox(height: 20),
+      const SizedBox(height: 24),
 
-      /// 🚬 Rökning
+      /// Rökning / nikotin
       _buildQuestionTitle(
         icon: Icons.smoking_rooms_outlined,
-        title: "Röker du?",
+        title: "Använder du nikotin?",
       ),
       const SizedBox(height: 12),
       Wrap(
@@ -721,12 +721,12 @@ Widget _buildLifestyleSection() {
         ],
       ),
 
-      const SizedBox(height: 20),
+      const SizedBox(height: 24),
 
-      /// 🌿 Weed / Cannabis
+      /// Cannabis
       _buildQuestionTitle(
         icon: Icons.eco_outlined,
-        title: "Använder du cannabis?",
+        title: "Röker du gräs?",
       ),
       const SizedBox(height: 12),
       Wrap(
@@ -759,6 +759,194 @@ Widget _buildLifestyleSection() {
             onTap: () {
               setState(() {
                 _pets = "Ofta";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+        ],
+      ),
+    ],
+  );
+}
+
+Widget _buildRelationshipHistorySection() {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      _buildQuestionTitle(
+        icon: Icons.favorite_outline_rounded,
+        title: "Har du varit i en relation?",
+      ),
+      const SizedBox(height: 12),
+      Wrap(
+        spacing: 10,
+        runSpacing: 10,
+        children: [
+          _buildChoiceChip(
+            label: "Varit i ett förhållande",
+            selected: _relationshipHistory == "relationship",
+            onTap: () {
+              setState(() {
+                _relationshipHistory = "relationship";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+          _buildChoiceChip(
+            label: "Inget seriöst",
+            selected: _relationshipHistory == "casual",
+            onTap: () {
+              setState(() {
+                _relationshipHistory = "casual";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+          _buildChoiceChip(
+            label: "Aldrig haft ett förhållande",
+            selected: _relationshipHistory == "never",
+            onTap: () {
+              setState(() {
+                _relationshipHistory = "never";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+        ],
+      ),
+    ],
+  );
+}
+
+Widget _buildZodiacSection() {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      _buildQuestionTitle(
+        icon: Icons.auto_awesome_outlined,
+        title: "Vad är ditt stjärntecken?",
+      ),
+      const SizedBox(height: 12),
+      Wrap(
+        spacing: 10,
+        runSpacing: 10,
+        children: [
+          _buildChoiceChip(
+            label: "Vattuman",
+            selected: _zodiacSign == "Vattuman",
+            onTap: () {
+              setState(() {
+                _zodiacSign = "Vattuman";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+          _buildChoiceChip(
+            label: "Vädur",
+            selected: _zodiacSign == "Vädur",
+            onTap: () {
+              setState(() {
+                _zodiacSign = "Vädur";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+          _buildChoiceChip(
+            label: "Kräfta",
+            selected: _zodiacSign == "Kräfta",
+            onTap: () {
+              setState(() {
+                _zodiacSign = "Kräfta";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+          _buildChoiceChip(
+            label: "Stenbock",
+            selected: _zodiacSign == "Stenbock",
+            onTap: () {
+              setState(() {
+                _zodiacSign = "Stenbock";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+          _buildChoiceChip(
+            label: "Tvilling",
+            selected: _zodiacSign == "Tvilling",
+            onTap: () {
+              setState(() {
+                _zodiacSign = "Tvilling";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+          _buildChoiceChip(
+            label: "Lejon",
+            selected: _zodiacSign == "Lejon",
+            onTap: () {
+              setState(() {
+                _zodiacSign = "Lejon";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+          _buildChoiceChip(
+            label: "Våg",
+            selected: _zodiacSign == "Våg",
+            onTap: () {
+              setState(() {
+                _zodiacSign = "Våg";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+          _buildChoiceChip(
+            label: "Fisk",
+            selected: _zodiacSign == "Fisk",
+            onTap: () {
+              setState(() {
+                _zodiacSign = "Fisk";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+          _buildChoiceChip(
+            label: "Skytt",
+            selected: _zodiacSign == "Skytt",
+            onTap: () {
+              setState(() {
+                _zodiacSign = "Skytt";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+          _buildChoiceChip(
+            label: "Skorpion",
+            selected: _zodiacSign == "Skorpion",
+            onTap: () {
+              setState(() {
+                _zodiacSign = "Skorpion";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+          _buildChoiceChip(
+            label: "Oxe",
+            selected: _zodiacSign == "Oxe",
+            onTap: () {
+              setState(() {
+                _zodiacSign = "Oxe";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+          _buildChoiceChip(
+            label: "Jungfru",
+            selected: _zodiacSign == "Jungfru",
+            onTap: () {
+              setState(() {
+                _zodiacSign = "Jungfru";
                 _cachedPreviewProfile = null;
               });
             },
@@ -810,7 +998,7 @@ Future<void> _openHeightPicker() async {
   );
 
   final inchesController = FixedExtentScrollController(
-    initialItem: tempInches,
+    initialItem: tempInches.clamp(0, 11),
   );
 
   await showModalBottomSheet(
@@ -824,6 +1012,8 @@ Future<void> _openHeightPicker() async {
 
       return StatefulBuilder(
         builder: (context, setModalState) {
+          final maxInchesForFeet = tempFeet >= 8 ? 6 : 11;
+
           return SafeArea(
             top: false,
             child: Padding(
@@ -854,7 +1044,7 @@ Future<void> _openHeightPicker() async {
                       GestureDetector(
                         onTap: () {
                           setState(() {
-                            _heightCm = tempCm;
+                            _heightCm = tempCm.clamp(140, 260);
                             _cachedPreviewProfile = null;
                           });
                           Navigator.pop(context);
@@ -875,7 +1065,6 @@ Future<void> _openHeightPicker() async {
                     ],
                   ),
                   const SizedBox(height: 18),
-
                   Row(
                     children: [
                       Expanded(
@@ -933,17 +1122,15 @@ Future<void> _openHeightPicker() async {
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 20),
-
                   SizedBox(
-                    height: 260,
+                    height: 220,
                     child: useCm
                         ? CupertinoPicker(
                             scrollController: cmController,
                             itemExtent: 44,
                             onSelectedItemChanged: (index) {
-                              tempCm = 120 + index;
+                              tempCm = 140 + index;
                               tempFeet = _cmToFeet(tempCm);
                               tempInches = _cmToInchesPart(tempCm);
                             },
@@ -967,14 +1154,22 @@ Future<void> _openHeightPicker() async {
                                   scrollController: feetController,
                                   itemExtent: 44,
                                   onSelectedItemChanged: (index) {
-                                    tempFeet = 3 + index;
+                                    tempFeet = 4 + index;
+
+                                    final maxAllowedInches =
+                                        tempFeet >= 8 ? 6 : 11;
+
+                                    if (tempInches > maxAllowedInches) {
+                                      tempInches = maxAllowedInches;
+                                    }
+
                                     tempCm = _feetAndInchesToCm(
                                       tempFeet,
                                       tempInches,
-                                    );
+                                    ).clamp(140, 260);
                                   },
                                   children: List.generate(
-                                    6,
+                                    5,
                                     (index) {
                                       final ft = 4 + index;
                                       return Center(
@@ -989,21 +1184,23 @@ Future<void> _openHeightPicker() async {
                               ),
                               Expanded(
                                 child: CupertinoPicker(
-                                  scrollController: inchesController,
+                                  scrollController: FixedExtentScrollController(
+                                    initialItem: tempInches.clamp(0, maxInchesForFeet),
+                                  ),
                                   itemExtent: 44,
                                   onSelectedItemChanged: (index) {
                                     tempInches = index;
                                     tempCm = _feetAndInchesToCm(
                                       tempFeet,
                                       tempInches,
-                                    );
+                                    ).clamp(140, 260);
                                   },
                                   children: List.generate(
-                                    12,
+                                    maxInchesForFeet + 1,
                                     (index) {
                                       return Center(
                                         child: Text(
-                                          "$index in",
+                                          "$index tum",
                                           style: const TextStyle(fontSize: 24),
                                         ),
                                       );
@@ -1014,7 +1211,6 @@ Future<void> _openHeightPicker() async {
                             ],
                           ),
                   ),
-
                   const SizedBox(height: 14),
                   Text(
                     "${tempCm} cm • ${_cmToFeet(tempCm)}'${_cmToInchesPart(tempCm)}\"",
@@ -1303,6 +1499,50 @@ Widget _buildWorkStudySection() {
   );
 }
 
+Widget _buildLivePlaceSection() {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      _buildQuestionTitle(
+        icon: Icons.location_on_outlined,
+        title: "Var bor du?",
+      ),
+      const SizedBox(height: 12),
+      TextField(
+        controller: _livePlace,
+        decoration: const InputDecoration(
+          hintText: "Stockholm, Göteborg, Oslo...",
+        ),
+        onChanged: (_) {
+          _cachedPreviewProfile = null;
+        },
+      ),
+    ],
+  );
+}
+
+Widget _buildOriginPlaceSection() {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      _buildQuestionTitle(
+        icon: Icons.home_outlined,
+        title: "Var kommer du ifrån?",
+      ),
+      const SizedBox(height: 12),
+      TextField(
+        controller: _originPlace,
+        decoration: const InputDecoration(
+          hintText: "Asmara, Addis Abeba, Stockholm...",
+        ),
+        onChanged: (_) {
+          _cachedPreviewProfile = null;
+        },
+      ),
+    ],
+  );
+}
+
 Widget _buildPreviewChip(String text) {
   return Container(
     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -1482,19 +1722,28 @@ Widget _buildPreviewChip(String text) {
 
                    const SizedBox(height: 20),
 
-                   _buildWorkStudySection(),
-                    const SizedBox(height: 24),
+                  _buildWorkStudySection(),
+const SizedBox(height: 24),
 
-                   _buildIntentionSection(),
-                    const SizedBox(height: 24),
+_buildLivePlaceSection(),
+const SizedBox(height: 24),
 
-                   _buildReligionSection(),
-                   const SizedBox(height: 24),
+_buildOriginPlaceSection(),
+const SizedBox(height: 24),
 
-                  _buildLifestyleSection(),
+_buildIntentionSection(),
 const SizedBox(height: 24),
 
 _buildHeightSection(),
+const SizedBox(height: 24),
+
+_buildRelationshipHistorySection(),
+const SizedBox(height: 24),
+
+_buildZodiacSection(),
+const SizedBox(height: 24),
+
+_buildReligionSection(),
 const SizedBox(height: 24),
 
 _buildChildrenCountSection(),
@@ -1503,7 +1752,13 @@ const SizedBox(height: 24),
 _buildWantChildrenSection(),
 const SizedBox(height: 24),
 
-TextField(
+_buildLifestyleSection(),
+const SizedBox(height: 24),
+
+                        _buildWantChildrenSection(),
+                           const SizedBox(height: 24),
+
+ TextField(
                     controller: _displayName,
                       decoration: const InputDecoration(
                         labelText: "Namn (display)",
