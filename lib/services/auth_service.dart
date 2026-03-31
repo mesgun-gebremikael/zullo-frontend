@@ -253,6 +253,11 @@ Future<void> saveProfile({
   String? bio,
   List<String>? photoUrls,
   List<String>? interests,
+  String? intention,
+  String? religion,
+  String? workout,
+  String? smoking,
+  String? pets,
 }) async {
   final token = await _storage.getToken();
   if (token == null || token.isEmpty) {
@@ -261,14 +266,19 @@ Future<void> saveProfile({
 
   final url = Uri.parse('$baseApiUrl/me/profile');
 
-  final body = {
-    'displayName': displayName,
-    'age': age,
-    'gender': gender,
-    'bio': bio ?? '',
-    'photoUrls': photoUrls ?? [],
-    'interests': interests ?? [],
-  };
+ final body = {
+  'displayName': displayName,
+  'age': age,
+  'gender': gender,
+  'bio': bio ?? '',
+  'photoUrls': photoUrls ?? [],
+  'interests': interests ?? [],
+  'intention': intention ?? '',
+  'religion': religion ?? '',
+  'workout': workout ?? '',
+  'smoking': smoking ?? '',
+  'pets': pets ?? '',
+};
 
   final res = await http.post(
     url,

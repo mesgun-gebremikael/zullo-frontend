@@ -212,20 +212,19 @@ void _removePhotoAt(int index) {
     });
 
     try {
-      final current = await _authService.getMyProfile();
-
-final interests = ((current["interests"] as List?) ?? [])
-    .map((e) => e.toString())
-    .toList();
-
-await _authService.saveProfile(
-  displayName: name,
-  age: age,
-  gender: gender,
-  bio: bio,
-  photoUrls: _photoUrls,
-  interests: interests,
-);
+  await _authService.saveProfile(
+    displayName: name,
+    age: age,
+    gender: gender,
+    bio: bio,
+    photoUrls: _photoUrls,
+    interests: _interests,
+    intention: _intention,
+    religion: _religion,
+    workout: _workout,
+    smoking: _smoking,
+    pets: _pets,
+  );
 
       if (!mounted) return;
 
@@ -1746,17 +1745,18 @@ const SizedBox(height: 24),
 _buildReligionSection(),
 const SizedBox(height: 24),
 
+_buildLifestyleSection(),
+const SizedBox(height: 24),
+
 _buildChildrenCountSection(),
 const SizedBox(height: 24),
 
 _buildWantChildrenSection(),
 const SizedBox(height: 24),
 
-_buildLifestyleSection(),
-const SizedBox(height: 24),
 
-                        _buildWantChildrenSection(),
-                           const SizedBox(height: 24),
+
+                        
 
  TextField(
                     controller: _displayName,
