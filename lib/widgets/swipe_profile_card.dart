@@ -716,15 +716,19 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
   }
 
   String _formatIntention(String value) {
-    switch (value) {
-      case 'Relationship':
-        return 'Seriöst förhållande';
-      case 'Marriage':
-        return 'Öppen för äktenskap';
-      case 'Date':
-        return 'Öppen för att dejta';
-      default:
-        return value.isEmpty ? 'Seriöst förhållande' : value;
-    }
+  switch (value) {
+    case 'Relationship':
+      return 'Relation';
+    case 'Marriage':
+      return 'Gifta mig';
+    case 'Date':
+      return 'Date';
+    case 'Serious':
+      return 'Något seriöst';
+    case 'NotSure':
+      return 'Jag vet inte än';
+    default:
+      return value.isEmpty ? 'Relation' : value;
   }
+}
 }

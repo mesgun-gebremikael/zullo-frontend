@@ -20,7 +20,7 @@ class EditProfilePage extends StatefulWidget {
 
 class _EditProfilePageState extends State<EditProfilePage> {
   final AuthService _authService = AuthService();
-
+   SwipeProfile? _cachedPreviewProfile;
   final _displayName = TextEditingController();
   final _age = TextEditingController();
   final _gender = TextEditingController();
@@ -35,6 +35,12 @@ String _religion = "";
 String _workout = "";
 String _smoking = "";
 String _pets = "";
+
+String _workStatus = "";
+final _studyPlace = TextEditingController();
+final _studySubject = TextEditingController();
+final _workPlace = TextEditingController();
+final _jobTitle = TextEditingController();
 
 bool _isUploadingPhoto = false;
 
@@ -51,14 +57,17 @@ void initState() {
 }
 
   @override
-  void dispose() {
-    _displayName.dispose();
-    _age.dispose();
-    _gender.dispose();
-    _bio.dispose();
-    super.dispose();
-  }
-
+void dispose() {
+  _displayName.dispose();
+  _age.dispose();
+  _gender.dispose();
+  _bio.dispose();
+  _studyPlace.dispose();
+  _studySubject.dispose();
+  _workPlace.dispose();
+  _jobTitle.dispose();
+  super.dispose();
+}
   Future<void> _loadMyProfile() async {
     setState(() {
       _isLoading = true;
@@ -293,7 +302,11 @@ List<String> _buildPreviewChips() {
 }
 
 SwipeProfile _buildPreviewProfile() {
-  return SwipeProfile(
+  if (_cachedPreviewProfile != null) {
+    return _cachedPreviewProfile!;
+  }
+
+  final profile = SwipeProfile(
     userId: 'preview-user',
     displayName: _displayName.text.trim().isEmpty
         ? 'Din profil'
@@ -310,8 +323,261 @@ SwipeProfile _buildPreviewProfile() {
     interests: _interests,
     distanceKm: 0,
   );
+
+  _cachedPreviewProfile = profile;
+  return profile;
 }
 
+Widget _buildChoiceChip({
+  required String label,
+  required bool selected,
+  required VoidCallback onTap,
+}) {
+  return GestureDetector(
+    onTap: onTap,
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: selected ? const Color(0xFFE91E63) : Colors.white,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(
+          color: selected ? const Color(0xFFE91E63) : Colors.grey.shade300,
+        ),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: selected ? Colors.white : Colors.black87,
+          fontSize: 15,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    ),
+  );
+}
+
+Widget _buildQuestionTitle({
+  required IconData icon,
+  required String title,
+  String? subtitle,
+}) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            icon,
+            color: const Color(0xFFE91E63),
+            size: 28,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black,
+                  ),
+                ),
+                if (subtitle != null) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: Colors.grey.shade700,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    ],
+  );
+}
+
+Widget _buildIntentionSection() {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      _buildQuestionTitle(
+        icon: Icons.favorite_border_rounded,
+        title: "Vad hoppas du hitta här?",
+        subtitle: "Välj det som passar dig bäst just nu.",
+      ),
+      const SizedBox(height: 14),
+      Wrap(
+        spacing: 10,
+        runSpacing: 10,
+        children: [
+          _buildChoiceChip(
+            label: "Date",
+            selected: _intention == "Date",
+            onTap: () {
+              setState(() {
+                _intention = "Date";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+          _buildChoiceChip(
+            label: "Relation",
+            selected: _intention == "Relationship",
+            onTap: () {
+              setState(() {
+                _intention = "Relationship";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+          _buildChoiceChip(
+            label: "Gifta mig",
+            selected: _intention == "Marriage",
+            onTap: () {
+              setState(() {
+                _intention = "Marriage";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+          _buildChoiceChip(
+            label: "Något seriöst",
+            selected: _intention == "Serious",
+            onTap: () {
+              setState(() {
+                _intention = "Serious";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+          _buildChoiceChip(
+            label: "Jag vet inte än",
+            selected: _intention == "NotSure",
+            onTap: () {
+              setState(() {
+                _intention = "NotSure";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+        ],
+      ),
+    ],
+  );
+}
+
+Widget _buildWorkStudySection() {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      _buildQuestionTitle(
+        icon: Icons.work_outline_rounded,
+        title: "Vad jobbar du med?",
+      ),
+      const SizedBox(height: 14),
+      Wrap(
+        spacing: 10,
+        runSpacing: 10,
+        children: [
+          _buildChoiceChip(
+            label: "Pluggar just nu",
+            selected: _workStatus == "study",
+            onTap: () {
+              setState(() {
+                _workStatus = "study";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+          _buildChoiceChip(
+            label: "Jobbar just nu",
+            selected: _workStatus == "work",
+            onTap: () {
+              setState(() {
+                _workStatus = "work";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+        ],
+      ),
+
+      if (_workStatus == "study") ...[
+        const SizedBox(height: 24),
+        _buildQuestionTitle(
+          icon: Icons.school_outlined,
+          title: "Var pluggar du?",
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          controller: _studyPlace,
+          decoration: const InputDecoration(
+            hintText: "Stockholm, universitet, skola...",
+          ),
+          onChanged: (_) {
+            _cachedPreviewProfile = null;
+          },
+        ),
+        const SizedBox(height: 20),
+        _buildQuestionTitle(
+          icon: Icons.menu_book_outlined,
+          title: "Vad pluggar du?",
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          controller: _studySubject,
+          decoration: const InputDecoration(
+            hintText: "Data, ekonomi, vård...",
+          ),
+          onChanged: (_) {
+            _cachedPreviewProfile = null;
+          },
+        ),
+      ],
+
+      if (_workStatus == "work") ...[
+        const SizedBox(height: 24),
+        _buildQuestionTitle(
+          icon: Icons.business_outlined,
+          title: "Var jobbar du?",
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          controller: _workPlace,
+          decoration: const InputDecoration(
+            hintText: "Företag, plats, bransch...",
+          ),
+          onChanged: (_) {
+            _cachedPreviewProfile = null;
+          },
+        ),
+        const SizedBox(height: 20),
+        _buildQuestionTitle(
+          icon: Icons.badge_outlined,
+          title: "Vad har du för jobbtitel?",
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          controller: _jobTitle,
+          decoration: const InputDecoration(
+            hintText: "Utvecklare, lärare, chaufför...",
+          ),
+          onChanged: (_) {
+            _cachedPreviewProfile = null;
+          },
+        ),
+      ],
+    ],
+  );
+}
 
 Widget _buildPreviewChip(String text) {
   return Container(
@@ -490,9 +756,15 @@ Widget _buildPreviewChip(String text) {
                       ],
                     ),
 
-                    const SizedBox(height: 20),
+                   const SizedBox(height: 20),
 
-                    TextField(
+                   _buildWorkStudySection(),
+                    const SizedBox(height: 24),
+
+                   _buildIntentionSection(),
+                    const SizedBox(height: 24),
+
+                       TextField(
                       controller: _displayName,
                       decoration: const InputDecoration(
                         labelText: "Namn (display)",
