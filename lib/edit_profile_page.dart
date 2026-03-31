@@ -5,6 +5,9 @@ import 'package:image_picker/image_picker.dart';
 import 'services/cloudinary_service.dart';
 import 'models/swipe_profile.dart';
 import 'widgets/swipe_profile_card.dart';
+import 'dart:math' as math;
+import 'package:flutter/cupertino.dart';
+
 
 class EditProfilePage extends StatefulWidget {
   final bool startInPreviewMode;
@@ -41,6 +44,8 @@ final _studyPlace = TextEditingController();
 final _studySubject = TextEditingController();
 final _workPlace = TextEditingController();
 final _jobTitle = TextEditingController();
+
+int _heightCm = 170;
 
 bool _isUploadingPhoto = false;
 
@@ -474,6 +479,603 @@ Widget _buildIntentionSection() {
   );
 }
 
+Widget _buildReligionSection() {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      _buildQuestionTitle(
+        icon: Icons.spa_outlined,
+        title: "Är du religiös?",
+      ),
+      const SizedBox(height: 14),
+      Wrap(
+        spacing: 10,
+        runSpacing: 10,
+        children: [
+          _buildChoiceChip(
+            label: "Agnostiker",
+            selected: _religion == "Agnostiker",
+            onTap: () {
+              setState(() {
+                _religion = "Agnostiker";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+          _buildChoiceChip(
+            label: "Ateist",
+            selected: _religion == "Ateist",
+            onTap: () {
+              setState(() {
+                _religion = "Ateist";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+          _buildChoiceChip(
+            label: "Buddhist",
+            selected: _religion == "Buddhist",
+            onTap: () {
+              setState(() {
+                _religion = "Buddhist";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+          _buildChoiceChip(
+            label: "Katolik",
+            selected: _religion == "Katolik",
+            onTap: () {
+              setState(() {
+                _religion = "Katolik";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+          _buildChoiceChip(
+            label: "Kristen",
+            selected: _religion == "Kristen",
+            onTap: () {
+              setState(() {
+                _religion = "Kristen";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+          _buildChoiceChip(
+            label: "Hindu",
+            selected: _religion == "Hindu",
+            onTap: () {
+              setState(() {
+                _religion = "Hindu";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+          _buildChoiceChip(
+            label: "Judisk",
+            selected: _religion == "Judisk",
+            onTap: () {
+              setState(() {
+                _religion = "Judisk";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+          _buildChoiceChip(
+            label: "Muslim",
+            selected: _religion == "Muslim",
+            onTap: () {
+              setState(() {
+                _religion = "Muslim";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+          _buildChoiceChip(
+  label: "Ortodox",
+  selected: _religion == "Ortodox",
+  onTap: () {
+    setState(() {
+      _religion = "Ortodox";
+      _cachedPreviewProfile = null;
+    });
+  },
+),
+          _buildChoiceChip(
+            label: "Sikh",
+            selected: _religion == "Sikh",
+            onTap: () {
+              setState(() {
+                _religion = "Sikh";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+          _buildChoiceChip(
+            label: "Andlig, inte religiös",
+            selected: _religion == "Andlig, inte religiös",
+            onTap: () {
+              setState(() {
+                _religion = "Andlig, inte religiös";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+          _buildChoiceChip(
+            label: "Annat",
+            selected: _religion == "Annat",
+            onTap: () {
+              setState(() {
+                _religion = "Annat";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+        ],
+      ),
+    ],
+  );
+}
+
+Widget _buildLifestyleSection() {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      _buildQuestionTitle(
+        icon: Icons.local_bar_outlined,
+        title: "Livsstil",
+        subtitle: "Detta hjälper oss matcha dig bättre.",
+      ),
+      const SizedBox(height: 20),
+
+      /// 🍺 Alkohol
+      _buildQuestionTitle(
+        icon: Icons.local_drink_outlined,
+        title: "Dricker du alkohol?",
+      ),
+      const SizedBox(height: 12),
+      Wrap(
+        spacing: 10,
+        runSpacing: 10,
+        children: [
+          _buildChoiceChip(
+            label: "Aldrig",
+            selected: _workout == "Aldrig",
+            onTap: () {
+              setState(() {
+                _workout = "Aldrig";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+          _buildChoiceChip(
+            label: "Ibland",
+            selected: _workout == "Ibland",
+            onTap: () {
+              setState(() {
+                _workout = "Ibland";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+          _buildChoiceChip(
+            label: "Ofta",
+            selected: _workout == "Ofta",
+            onTap: () {
+              setState(() {
+                _workout = "Ofta";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+        ],
+      ),
+
+      const SizedBox(height: 20),
+
+      /// 🚬 Rökning
+      _buildQuestionTitle(
+        icon: Icons.smoking_rooms_outlined,
+        title: "Röker du?",
+      ),
+      const SizedBox(height: 12),
+      Wrap(
+        spacing: 10,
+        runSpacing: 10,
+        children: [
+          _buildChoiceChip(
+            label: "Nej",
+            selected: _smoking == "Nej",
+            onTap: () {
+              setState(() {
+                _smoking = "Nej";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+          _buildChoiceChip(
+            label: "Ibland",
+            selected: _smoking == "Ibland",
+            onTap: () {
+              setState(() {
+                _smoking = "Ibland";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+          _buildChoiceChip(
+            label: "Ja",
+            selected: _smoking == "Ja",
+            onTap: () {
+              setState(() {
+                _smoking = "Ja";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+        ],
+      ),
+
+      const SizedBox(height: 20),
+
+      /// 🌿 Weed / Cannabis
+      _buildQuestionTitle(
+        icon: Icons.eco_outlined,
+        title: "Använder du cannabis?",
+      ),
+      const SizedBox(height: 12),
+      Wrap(
+        spacing: 10,
+        runSpacing: 10,
+        children: [
+          _buildChoiceChip(
+            label: "Aldrig",
+            selected: _pets == "Aldrig",
+            onTap: () {
+              setState(() {
+                _pets = "Aldrig";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+          _buildChoiceChip(
+            label: "Ibland",
+            selected: _pets == "Ibland",
+            onTap: () {
+              setState(() {
+                _pets = "Ibland";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+          _buildChoiceChip(
+            label: "Ofta",
+            selected: _pets == "Ofta",
+            onTap: () {
+              setState(() {
+                _pets = "Ofta";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+        ],
+      ),
+    ],
+  );
+}
+
+String _heightDisplayCm() {
+  return "$_heightCm cm";
+}
+
+String _heightDisplayFt() {
+  final totalInches = (_heightCm / 2.54).round();
+  final feet = totalInches ~/ 12;
+  final inches = totalInches % 12;
+  return "$feet'$inches\"";
+}
+
+int _cmToFeet(int cm) {
+  final totalInches = (cm / 2.54).round();
+  return totalInches ~/ 12;
+}
+
+int _cmToInchesPart(int cm) {
+  final totalInches = (cm / 2.54).round();
+  return totalInches % 12;
+}
+
+int _feetAndInchesToCm(int feet, int inches) {
+  final totalInches = (feet * 12) + inches;
+  return (totalInches * 2.54).round();
+}
+
+Future<void> _openHeightPicker() async {
+  int tempCm = _heightCm;
+
+  int tempFeet = _cmToFeet(_heightCm);
+  int tempInches = _cmToInchesPart(_heightCm);
+
+  final cmController = FixedExtentScrollController(
+    initialItem: math.max(0, tempCm - 120),
+  );
+
+  final feetController = FixedExtentScrollController(
+    initialItem: math.max(0, tempFeet - 3),
+  );
+
+  final inchesController = FixedExtentScrollController(
+    initialItem: tempInches,
+  );
+
+  await showModalBottomSheet(
+    context: context,
+    backgroundColor: Colors.white,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+    ),
+    builder: (context) {
+      bool useCm = true;
+
+      return StatefulBuilder(
+        builder: (context, setModalState) {
+          return SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 42,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: Colors.black12,
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  Row(
+                    children: [
+                      const Expanded(
+                        child: Text(
+                          "Hur lång är du?",
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _heightCm = tempCm;
+                            _cachedPreviewProfile = null;
+                          });
+                          Navigator.pop(context);
+                        },
+                        child: Container(
+                          width: 48,
+                          height: 48,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF1F2430),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.check,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            setModalState(() {
+                              useCm = true;
+                            });
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            decoration: BoxDecoration(
+                              color: useCm
+                                  ? const Color(0xFFE91E63)
+                                  : Colors.grey.shade100,
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                            child: Text(
+                              "cm",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: useCm ? Colors.white : Colors.black87,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            setModalState(() {
+                              useCm = false;
+                            });
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            decoration: BoxDecoration(
+                              color: !useCm
+                                  ? const Color(0xFFE91E63)
+                                  : Colors.grey.shade100,
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                            child: Text(
+                              "fot",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: !useCm ? Colors.white : Colors.black87,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  SizedBox(
+                    height: 260,
+                    child: useCm
+                        ? CupertinoPicker(
+                            scrollController: cmController,
+                            itemExtent: 44,
+                            onSelectedItemChanged: (index) {
+                              tempCm = 120 + index;
+                              tempFeet = _cmToFeet(tempCm);
+                              tempInches = _cmToInchesPart(tempCm);
+                            },
+                            children: List.generate(
+                              81,
+                              (index) {
+                                final cm = 140 + index;
+                                return Center(
+                                  child: Text(
+                                    "$cm cm",
+                                    style: const TextStyle(fontSize: 24),
+                                  ),
+                                );
+                              },
+                            ),
+                          )
+                        : Row(
+                            children: [
+                              Expanded(
+                                child: CupertinoPicker(
+                                  scrollController: feetController,
+                                  itemExtent: 44,
+                                  onSelectedItemChanged: (index) {
+                                    tempFeet = 3 + index;
+                                    tempCm = _feetAndInchesToCm(
+                                      tempFeet,
+                                      tempInches,
+                                    );
+                                  },
+                                  children: List.generate(
+                                    5,
+                                    (index) {
+                                      final ft = 4 + index;
+                                      return Center(
+                                        child: Text(
+                                          "$ft fot",
+                                          style: const TextStyle(fontSize: 24),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: CupertinoPicker(
+                                  scrollController: inchesController,
+                                  itemExtent: 44,
+                                  onSelectedItemChanged: (index) {
+                                    tempInches = index;
+                                    tempCm = _feetAndInchesToCm(
+                                      tempFeet,
+                                      tempInches,
+                                    );
+                                  },
+                                  children: List.generate(
+                                    12,
+                                    (index) {
+                                      return Center(
+                                        child: Text(
+                                          "$index in",
+                                          style: const TextStyle(fontSize: 24),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                  ),
+
+                  const SizedBox(height: 14),
+                  Text(
+                    "${tempCm} cm • ${_cmToFeet(tempCm)}'${_cmToInchesPart(tempCm)}\"",
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey.shade700,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    },
+  );
+}
+
+Widget _buildHeightSection() {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      _buildQuestionTitle(
+        icon: Icons.height_rounded,
+        title: "Hur lång är du?",
+        subtitle: "Välj din längd i cm eller fot.",
+      ),
+      const SizedBox(height: 14),
+      GestureDetector(
+        onTap: _openHeightPicker,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+         decoration: BoxDecoration(
+  color: const Color(0xFFF7F7F7),
+  borderRadius: BorderRadius.circular(20),
+  border: Border.all(color: Colors.grey.shade200),
+),
+            
+          
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  "${_heightDisplayCm()} • ${_heightDisplayFt()}",
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
+                  ),
+                ),
+              ),
+              const Icon(
+                Icons.unfold_more_rounded,
+                color: Color(0xFFE91E63),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ],
+  );
+}
+
 Widget _buildWorkStudySection() {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
@@ -764,8 +1366,17 @@ Widget _buildPreviewChip(String text) {
                    _buildIntentionSection(),
                     const SizedBox(height: 24),
 
-                       TextField(
-                      controller: _displayName,
+                   _buildReligionSection(),
+                   const SizedBox(height: 24),
+
+                   _buildLifestyleSection(),
+                   const SizedBox(height: 24),
+
+                  _buildHeightSection(),
+                  const SizedBox(height: 24),
+
+                   TextField(
+                    controller: _displayName,
                       decoration: const InputDecoration(
                         labelText: "Namn (display)",
                       ),
