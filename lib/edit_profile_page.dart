@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'services/auth_service.dart';
 import 'package:image_picker/image_picker.dart';
 import 'services/cloudinary_service.dart';
-
+import 'models/swipe_profile.dart';
+import 'widgets/swipe_profile_card.dart';
 
 class EditProfilePage extends StatefulWidget {
   final bool startInPreviewMode;
@@ -291,6 +292,25 @@ List<String> _buildPreviewChips() {
   return chips;
 }
 
+SwipeProfile _buildPreviewProfile() {
+  return SwipeProfile(
+    userId: 'preview-user',
+    displayName: _displayName.text.trim().isEmpty
+        ? 'Din profil'
+        : _displayName.text.trim(),
+    age: int.tryParse(_age.text.trim()) ?? 18,
+    countryCode: '',
+    intention: _intention,
+    photoUrls: _photoUrls,
+    bio: _bio.text.trim(),
+    religion: _religion,
+    workout: _workout,
+    smoking: _smoking,
+    pets: _pets,
+    interests: _interests,
+    distanceKm: 0,
+  );
+}
 
 
 Widget _buildPreviewChip(String text) {
@@ -358,12 +378,22 @@ Widget _buildPreviewChip(String text) {
                     _buildTopToggle(),
                     const SizedBox(height: 24),
                    Expanded(
-  child: EditProfilePreviewCard(
-    photoUrls: _photoUrls,
-    displayName: _displayName.text.trim(),
-    ageText: _age.text.trim(),
-    bio: _bio.text.trim(),
-    chips: _buildPreviewChips(),
+  child: LayoutBuilder(
+    builder: (context, constraints) {
+      return Center(
+        child: SizedBox(
+          width: constraints.maxWidth,
+          height: constraints.maxHeight,
+          child: SwipeProfileCard(
+            profile: _buildPreviewProfile(),
+            width: constraints.maxWidth,
+            height: constraints.maxHeight,
+            photoBarsTop: 66,
+            distanceFallbackKm: 0,
+          ),
+        ),
+      );
+    },
   ),
 ),
                   ],
@@ -528,199 +558,4 @@ Widget _buildPreviewChip(String text) {
   
 }
 
-class EditProfilePreviewCard extends StatefulWidget {
-  final List<String> photoUrls;
-  final String displayName;
-  final String ageText;
-  final String bio;
-  final List<String> chips;
 
-  const EditProfilePreviewCard({
-    super.key,
-    required this.photoUrls,
-    required this.displayName,
-    required this.ageText,
-    required this.bio,
-    required this.chips,
-  });
-
-  @override
-  State<EditProfilePreviewCard> createState() => _EditProfilePreviewCardState();
-}
-
-class _EditProfilePreviewCardState extends State<EditProfilePreviewCard> {
-  late final PageController _pageController;
-  int _currentImageIndex = 0;
-
-  List<String> get _photos {
-    if (widget.photoUrls.isNotEmpty) return widget.photoUrls;
-    return [
-      "https://images.unsplash.com/photo-1524504388940-b1c1722653e1",
-    ];
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _pageController = PageController();
-  }
-
-  @override
-  void didUpdateWidget(covariant EditProfilePreviewCard oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    if (_currentImageIndex >= _photos.length) {
-      _currentImageIndex = 0;
-
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        _pageController.jumpToPage(0);
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
-
-  Widget _buildPreviewChip(String text) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.16),
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Text(
-        text,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 15,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 520,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(28),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(28),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            PageView.builder(
-              controller: _pageController,
-              itemCount: _photos.length,
-              onPageChanged: (index) {
-                setState(() {
-                  _currentImageIndex = index;
-                });
-              },
-              itemBuilder: (context, index) {
-                return Image.network(
-                  _photos[index],
-                  fit: BoxFit.cover,
-                );
-              },
-            ),
-
-            IgnorePointer(
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.black.withOpacity(0.10),
-                      Colors.black.withOpacity(0.18),
-                      Colors.black.withOpacity(0.78),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-
-            IgnorePointer(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: List.generate(
-                        _photos.length,
-                        (index) => Expanded(
-                          child: Container(
-                            height: 4,
-                            margin: EdgeInsets.only(
-                              right: index == _photos.length - 1 ? 0 : 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: index == _currentImageIndex
-                                  ? Colors.white
-                                  : Colors.white38,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const Spacer(),
-                    Text(
-                      widget.ageText.isNotEmpty
-                          ? "${widget.displayName} ${widget.ageText}"
-                          : widget.displayName,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 34,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      "Om mig & Livsstil",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    if (widget.chips.isNotEmpty) ...[
-                      Wrap(
-                        spacing: 10,
-                        runSpacing: 10,
-                        children: widget.chips
-                            .take(8)
-                            .map((chip) => _buildPreviewChip(chip))
-                            .toList(),
-                      ),
-                      const SizedBox(height: 14),
-                    ],
-                    if (widget.bio.isNotEmpty)
-                      Text(
-                        widget.bio,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          height: 1.4,
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
