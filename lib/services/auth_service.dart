@@ -250,15 +250,31 @@ Future<void> saveProfile({
   required String displayName,
   required int age,
   required String gender,
-  String? bio,
-  List<String>? photoUrls,
-  List<String>? interests,
-  String? intention,
-  String? religion,
-  String? workout,
-  String? smoking,
-  String? pets,
+  required String bio,
+  required List<String> photoUrls,
+  required List<String> interests,
+  required String intention,
+  required String religion,
+  required String workout,
+  required String smoking,
+  required String pets,
+
+  int? heightCm,
+  String relationshipHistory = "",
+  String zodiacSign = "",
+  String alcohol = "",
+  String cannabis = "",
+  String childrenCount = "",
+  String wantChildren = "",
+  String workStatus = "",
+  String studyPlace = "",
+  String studySubject = "",
+  String workPlace = "",
+  String jobTitle = "",
+  String livePlace = "",
+  String originPlace = "",
 }) async {
+
   final token = await _storage.getToken();
   if (token == null || token.isEmpty) {
     throw Exception('No token found. Please login again.');
@@ -266,7 +282,7 @@ Future<void> saveProfile({
 
   final url = Uri.parse('$baseApiUrl/me/profile');
 
- final body = {
+final body = {
   'displayName': displayName,
   'age': age,
   'gender': gender,
@@ -278,6 +294,20 @@ Future<void> saveProfile({
   'workout': workout ?? '',
   'smoking': smoking ?? '',
   'pets': pets ?? '',
+  'heightCm': heightCm,
+  'relationshipHistory': relationshipHistory ?? '',
+  'zodiacSign': zodiacSign ?? '',
+  'alcohol': alcohol ?? '',
+  'cannabis': cannabis ?? '',
+  'childrenCount': childrenCount ?? '',
+  'wantChildren': wantChildren ?? '',
+  'workStatus': workStatus ?? '',
+  'studyPlace': studyPlace ?? '',
+  'studySubject': studySubject ?? '',
+  'workPlace': workPlace ?? '',
+  'jobTitle': jobTitle ?? '',
+  'livePlace': livePlace ?? '',
+  'originPlace': originPlace ?? '',
 };
 
   final res = await http.post(

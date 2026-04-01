@@ -632,10 +632,9 @@ Widget _buildLifestyleSection() {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      /// Alkohol
       _buildQuestionTitle(
-        icon: Icons.local_drink_outlined,
-        title: "Dricker du alkohol?",
+        icon: Icons.fitness_center_outlined,
+        title: "Tränar du?",
       ),
       const SizedBox(height: 12),
       Wrap(
@@ -644,30 +643,30 @@ Widget _buildLifestyleSection() {
         children: [
           _buildChoiceChip(
             label: "Aldrig",
-            selected: _workout == "Aldrig",
+            selected: _workout == "Never",
             onTap: () {
               setState(() {
-                _workout = "Aldrig";
+                _workout = "Never";
                 _cachedPreviewProfile = null;
               });
             },
           ),
           _buildChoiceChip(
             label: "Ibland",
-            selected: _workout == "Ibland",
+            selected: _workout == "Sometimes",
             onTap: () {
               setState(() {
-                _workout = "Ibland";
+                _workout = "Sometimes";
                 _cachedPreviewProfile = null;
               });
             },
           ),
           _buildChoiceChip(
             label: "Ofta",
-            selected: _workout == "Ofta",
+            selected: _workout == "Often",
             onTap: () {
               setState(() {
-                _workout = "Ofta";
+                _workout = "Often";
                 _cachedPreviewProfile = null;
               });
             },
@@ -677,7 +676,60 @@ Widget _buildLifestyleSection() {
 
       const SizedBox(height: 24),
 
-      /// Rökning / nikotin
+      _buildQuestionTitle(
+        icon: Icons.pets_outlined,
+        title: "Husdjur",
+      ),
+      const SizedBox(height: 12),
+      Wrap(
+        spacing: 10,
+        runSpacing: 10,
+        children: [
+          _buildChoiceChip(
+            label: "Har husdjur",
+            selected: _pets == "Have",
+            onTap: () {
+              setState(() {
+                _pets = "Have";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+          _buildChoiceChip(
+            label: "Vill ha husdjur",
+            selected: _pets == "Want",
+            onTap: () {
+              setState(() {
+                _pets = "Want";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+          _buildChoiceChip(
+            label: "Vill inte ha",
+            selected: _pets == "No",
+            onTap: () {
+              setState(() {
+                _pets = "No";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+          _buildChoiceChip(
+            label: "Allergisk",
+            selected: _pets == "Allergic",
+            onTap: () {
+              setState(() {
+                _pets = "Allergic";
+                _cachedPreviewProfile = null;
+              });
+            },
+          ),
+        ],
+      ),
+
+      const SizedBox(height: 24),
+
       _buildQuestionTitle(
         icon: Icons.smoking_rooms_outlined,
         title: "Använder du nikotin?",
@@ -689,75 +741,30 @@ Widget _buildLifestyleSection() {
         children: [
           _buildChoiceChip(
             label: "Nej",
-            selected: _smoking == "Nej",
+            selected: _smoking == "No",
             onTap: () {
               setState(() {
-                _smoking = "Nej";
+                _smoking = "No";
                 _cachedPreviewProfile = null;
               });
             },
           ),
           _buildChoiceChip(
             label: "Ibland",
-            selected: _smoking == "Ibland",
+            selected: _smoking == "Sometimes",
             onTap: () {
               setState(() {
-                _smoking = "Ibland";
+                _smoking = "Sometimes";
                 _cachedPreviewProfile = null;
               });
             },
           ),
           _buildChoiceChip(
             label: "Ja",
-            selected: _smoking == "Ja",
+            selected: _smoking == "Yes",
             onTap: () {
               setState(() {
-                _smoking = "Ja";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-        ],
-      ),
-
-      const SizedBox(height: 24),
-
-      /// Cannabis
-      _buildQuestionTitle(
-        icon: Icons.eco_outlined,
-        title: "Röker du gräs?",
-      ),
-      const SizedBox(height: 12),
-      Wrap(
-        spacing: 10,
-        runSpacing: 10,
-        children: [
-          _buildChoiceChip(
-            label: "Aldrig",
-            selected: _pets == "Aldrig",
-            onTap: () {
-              setState(() {
-                _pets = "Aldrig";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-          _buildChoiceChip(
-            label: "Ibland",
-            selected: _pets == "Ibland",
-            onTap: () {
-              setState(() {
-                _pets = "Ibland";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-          _buildChoiceChip(
-            label: "Ofta",
-            selected: _pets == "Ofta",
-            onTap: () {
-              setState(() {
-                _pets = "Ofta";
+                _smoking = "Yes";
                 _cachedPreviewProfile = null;
               });
             },
@@ -766,7 +773,8 @@ Widget _buildLifestyleSection() {
       ),
     ],
   );
-}
+}  
+
 
 Widget _buildRelationshipHistorySection() {
   return Column(
@@ -1730,10 +1738,13 @@ const SizedBox(height: 24),
 _buildOriginPlaceSection(),
 const SizedBox(height: 24),
 
-_buildIntentionSection(),
+ _buildIntentionSection(),
 const SizedBox(height: 24),
 
 _buildHeightSection(),
+const SizedBox(height: 24),
+
+_buildLifestyleSection(),
 const SizedBox(height: 24),
 
 _buildRelationshipHistorySection(),
@@ -1745,14 +1756,12 @@ const SizedBox(height: 24),
 _buildReligionSection(),
 const SizedBox(height: 24),
 
-_buildLifestyleSection(),
-const SizedBox(height: 24),
-
 _buildChildrenCountSection(),
 const SizedBox(height: 24),
 
 _buildWantChildrenSection(),
-const SizedBox(height: 24),
+const SizedBox(height: 24),   
+
 
 
 
