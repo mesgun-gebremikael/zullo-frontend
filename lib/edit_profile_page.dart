@@ -43,6 +43,8 @@ String _wantChildren = "";
 
 String _relationshipHistory = "";
 String _zodiacSign = "";
+String _alcohol = "";
+String _cannabis = "";
 
 String _workStatus = "";
 final _studyPlace = TextEditingController();
@@ -111,6 +113,26 @@ _religion = (profile["religion"] ?? "").toString();
 _workout = (profile["workout"] ?? "").toString();
 _smoking = (profile["smoking"] ?? "").toString();
 _pets = (profile["pets"] ?? "").toString();
+_heightCm = (profile["heightCm"] as num?)?.toInt() ?? 170;
+
+_relationshipHistory = (profile["relationshipHistory"] ?? "").toString();
+_zodiacSign = (profile["zodiacSign"] ?? "").toString();
+
+_alcohol = (profile["alcohol"] ?? "").toString();
+_cannabis = (profile["cannabis"] ?? "").toString();
+
+_childrenCount = (profile["childrenCount"] ?? "").toString();
+_wantChildren = (profile["wantChildren"] ?? "").toString();
+
+_workStatus = (profile["workStatus"] ?? "").toString();
+_studyPlace.text = (profile["studyPlace"] ?? "").toString();
+_studySubject.text = (profile["studySubject"] ?? "").toString();
+_workPlace.text = (profile["workPlace"] ?? "").toString();
+_jobTitle.text = (profile["jobTitle"] ?? "").toString();
+
+_livePlace.text = (profile["livePlace"] ?? "").toString();
+_originPlace.text = (profile["originPlace"] ?? "").toString();
+
 
       if (!mounted) return;
 
