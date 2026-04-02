@@ -309,6 +309,7 @@ final body = {
   'livePlace': livePlace ?? '',
   'originPlace': originPlace ?? '',
 };
+print('SAVE PROFILE request body: ${jsonEncode(body)}');
 
   final res = await http.post(
     url,

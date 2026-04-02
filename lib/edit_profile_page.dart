@@ -234,20 +234,51 @@ void _removePhotoAt(int index) {
     });
 
     try {
-  await _authService.saveProfile(
-    displayName: name,
-    age: age,
-    gender: gender,
-    bio: bio,
-    photoUrls: _photoUrls,
-    interests: _interests,
-    intention: _intention,
-    religion: _religion,
-    workout: _workout,
-    smoking: _smoking,
-    pets: _pets,
-  );
 
+            print('EDIT PROFILE values before save:');
+      print('heightCm=$_heightCm');
+      print('relationshipHistory=$_relationshipHistory');
+      print('zodiacSign=$_zodiacSign');
+      print('alcohol=$_alcohol');
+      print('cannabis=$_cannabis');
+      print('childrenCount=$_childrenCount');
+      print('wantChildren=$_wantChildren');
+      print('workStatus=$_workStatus');
+      print('studyPlace=${_studyPlace.text}');
+      print('studySubject=${_studySubject.text}');
+      print('workPlace=${_workPlace.text}');
+      print('jobTitle=${_jobTitle.text}');
+      print('livePlace=${_livePlace.text}');
+      print('originPlace=${_originPlace.text}');
+  await _authService.saveProfile(
+  displayName: _displayName.text,
+  age: int.parse(_age.text),
+  gender: _gender.text,
+  bio: _bio.text,
+  photoUrls: _photoUrls,
+  interests: _interests,
+  intention: _intention,
+  religion: _religion,
+  workout: _workout,
+  smoking: _smoking,
+  pets: _pets,
+
+  // 🔥 NYA FÄLT (DETTA VAR BUGGEN)
+  heightCm: _heightCm,
+  relationshipHistory: _relationshipHistory,
+  zodiacSign: _zodiacSign,
+  alcohol: _alcohol,
+  cannabis: _cannabis,
+  childrenCount: _childrenCount,
+  wantChildren: _wantChildren,
+  workStatus: _workStatus,
+  studyPlace: _studyPlace.text,
+  studySubject: _studySubject.text,
+  workPlace: _workPlace.text,
+  jobTitle: _jobTitle.text,
+  livePlace: _livePlace.text,
+  originPlace: _originPlace.text,
+);
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -343,7 +374,7 @@ SwipeProfile _buildPreviewProfile() {
     return _cachedPreviewProfile!;
   }
 
-  final profile = SwipeProfile(
+    final profile = SwipeProfile(
     userId: 'preview-user',
     displayName: _displayName.text.trim().isEmpty
         ? 'Din profil'
@@ -357,6 +388,22 @@ SwipeProfile _buildPreviewProfile() {
     workout: _workout,
     smoking: _smoking,
     pets: _pets,
+
+    heightCm: _heightCm,
+    relationshipHistory: _relationshipHistory,
+    zodiacSign: _zodiacSign,
+    alcohol: _alcohol,
+    cannabis: _cannabis,
+    childrenCount: _childrenCount,
+    wantChildren: _wantChildren,
+    workStatus: _workStatus,
+    studyPlace: _studyPlace.text.trim(),
+    studySubject: _studySubject.text.trim(),
+    workPlace: _workPlace.text.trim(),
+    jobTitle: _jobTitle.text.trim(),
+    livePlace: _livePlace.text.trim(),
+    originPlace: _originPlace.text.trim(),
+
     interests: _interests,
     distanceKm: 0,
   );
