@@ -413,7 +413,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
     );
   }
 
-    Widget _buildBottomContent(SwipeProfile profile) {
+     Widget _buildBottomContent(SwipeProfile profile) {
     final groups = _contentGroupsForProfile(profile);
 
     final safeIndex = imageIndex < groups.length
@@ -435,164 +435,77 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
         return _buildImage4(profile);
     }
   }
+  
+
 
   Widget _buildImage0(SwipeProfile profile) {
-    return Stack(
-      children: [
+  final distanceText = profile.distanceKm != null
+      ? "${profile.distanceKm!.toStringAsFixed(0)} km bort"
+      : "";
+
+  final livePlace = profile.livePlace?.trim() ?? "";
+
+  return Stack(
+    children: [
+      // 🔥 Namn + ålder
+      Positioned(
+        left: 20,
+        right: 20,
+        bottom: 150,
+        child: Text(
+          "${profile.displayName} ${profile.age}",
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 30,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+
+      // 📍 KM bort
+      if (distanceText.isNotEmpty)
         Positioned(
           left: 20,
-          right: 20,
-          bottom: 126,
+          bottom: 120,
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Expanded(
-                child: Text(
-                  "${profile.displayName} ${profile.age}",
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 28,
-                    fontWeight: FontWeight.w800,
-                    height: 1.0,
-                    letterSpacing: -0.4,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.42),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white24),
-                ),
-                child: const Icon(
-                  Icons.arrow_upward_rounded,
-                  color: Colors.white,
-                  size: 22,
-                ),
+              const Icon(Icons.location_on, color: Colors.white70, size: 16),
+              const SizedBox(width: 4),
+              Text(
+                distanceText,
+                style: const TextStyle(color: Colors.white70, fontSize: 14),
               ),
             ],
           ),
         ),
-       Positioned(
-  left: 20,
-  right: 20,
-  bottom: 66,
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      if (profile.livePlace.trim().isNotEmpty)
-        _infoRow(
-          icon: Icons.location_on_outlined,
-          text: "Bor i ${profile.livePlace.trim()}",
-        ),
-      const SizedBox(height: 6),
-      _infoRow(
-        icon: Icons.near_me_rounded,
-        text: "${profile.distanceKm.round()} km bort",
-      ),
-    ],
-  ),
-),
-      ],
-    );
-  }
 
-    Widget _buildImage1(SwipeProfile profile) {
+      // 🏠 Bor i
+      if (livePlace.isNotEmpty)
+        Positioned(
+          left: 20,
+          bottom: 100,
+          child: Row(
+            children: [
+              const Icon(Icons.home, color: Colors.white70, size: 16),
+              const SizedBox(width: 4),
+              Text(
+                "Bor i $livePlace",
+                style: const TextStyle(color: Colors.white70, fontSize: 14),
+              ),
+            ],
+          ),
+        ),
+    ],
+  );
+}
+
+
+     Widget _buildImage1(SwipeProfile profile) {
     final backgroundChips = <String>[
       if (profile.originPlace.trim().isNotEmpty)
-        profile.originPlace.trim(),
+        "Från ${profile.originPlace.trim()}",
       if (profile.religion.trim().isNotEmpty)
         profile.religion.trim(),
-    ];
-
-    return Stack(
-      children: [
-        Positioned(
-          left: 20,
-          right: 20,
-          bottom: 154,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                child: Text(
-                  "${profile.displayName} ${profile.age}",
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 28,
-                    fontWeight: FontWeight.w800,
-                    height: 1.0,
-                    letterSpacing: -0.4,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.42),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white24),
-                ),
-                child: const Icon(
-                  Icons.arrow_upward_rounded,
-                  color: Colors.white,
-                  size: 22,
-                ),
-              ),
-            ],
-          ),
-        ),
-        Positioned(
-          left: 20,
-          right: 20,
-          bottom: 84,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _sectionTitle(
-                icon: Icons.public_rounded,
-                title: "Bakgrund",
-              ),
-              const SizedBox(height: 10),
-              _chipWrap(
-                backgroundChips.isNotEmpty
-                    ? backgroundChips
-                    : ["Lägg till mer info"],
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-      Widget _buildImage2(SwipeProfile profile) {
-    final aboutLifeChips = <String>[
-      if (_formatRelationshipHistory(profile.relationshipHistory).trim().isNotEmpty)
-        _formatRelationshipHistory(profile.relationshipHistory).trim(),
-      if (profile.zodiacSign.trim().isNotEmpty)
-        profile.zodiacSign.trim(),
-      if (_formatWantChildren(profile.wantChildren).trim().isNotEmpty)
-        _formatWantChildren(profile.wantChildren).trim(),
-      if (_formatChildrenCount(profile.childrenCount).trim().isNotEmpty)
-        _formatChildrenCount(profile.childrenCount).trim(),
-      if (_formatWorkout(profile.workout).trim().isNotEmpty)
-        _formatWorkout(profile.workout).trim(),
-      if (_formatSmoking(profile.smoking).trim().isNotEmpty)
-        _formatSmoking(profile.smoking).trim(),
-      if (_formatAlcohol(profile.alcohol).trim().isNotEmpty)
-        _formatAlcohol(profile.alcohol).trim(),
-      if (_formatPets(profile.pets).trim().isNotEmpty)
-        _formatPets(profile.pets).trim(),
     ];
 
     return Stack(
@@ -644,13 +557,13 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _sectionTitle(
-                icon: Icons.auto_awesome_rounded,
-                title: "Om mig & mitt liv",
+                icon: Icons.public_rounded,
+                title: "Bakgrund",
               ),
               const SizedBox(height: 10),
               _chipWrap(
-                aboutLifeChips.isNotEmpty
-                    ? aboutLifeChips
+                backgroundChips.isNotEmpty
+                    ? backgroundChips
                     : ["Lägg till mer info"],
               ),
             ],
@@ -660,7 +573,121 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
     );
   }
 
-    Widget _buildImage3(SwipeProfile profile) {
+
+      Widget _buildImage2(SwipeProfile profile) {
+    final aboutLifeItems = <MapEntry<IconData, String>>[
+      if (_formatRelationshipHistory(profile.relationshipHistory).trim().isNotEmpty)
+        MapEntry(
+          _relationshipHistoryIcon(profile.relationshipHistory),
+          _formatRelationshipHistory(profile.relationshipHistory).trim(),
+        ),
+      if (profile.zodiacSign.trim().isNotEmpty)
+        MapEntry(
+          _zodiacIcon(profile.zodiacSign),
+          profile.zodiacSign.trim(),
+        ),
+      if (_formatWantChildren(profile.wantChildren).trim().isNotEmpty)
+        MapEntry(
+          _wantChildrenIcon(profile.wantChildren),
+          _formatWantChildren(profile.wantChildren).trim(),
+        ),
+      if (_formatChildrenCount(profile.childrenCount).trim().isNotEmpty)
+        MapEntry(
+          _childrenCountIcon(profile.childrenCount),
+          _formatChildrenCount(profile.childrenCount).trim(),
+        ),
+      if (_formatWorkout(profile.workout).trim().isNotEmpty)
+        MapEntry(
+          _workoutIcon(profile.workout),
+          _formatWorkout(profile.workout).trim(),
+        ),
+      if (_formatSmoking(profile.smoking).trim().isNotEmpty)
+        MapEntry(
+          _smokingIcon(profile.smoking),
+          _formatSmoking(profile.smoking).trim(),
+        ),
+      if (_formatAlcohol(profile.alcohol).trim().isNotEmpty)
+        MapEntry(
+          _alcoholIcon(profile.alcohol),
+          _formatAlcohol(profile.alcohol).trim(),
+        ),
+      if (_formatPets(profile.pets).trim().isNotEmpty)
+        MapEntry(
+          _petsIcon(profile.pets),
+          _formatPets(profile.pets).trim(),
+        ),
+    ];
+
+    return Stack(
+      children: [
+        Positioned(
+          left: 20,
+          right: 20,
+          bottom: 162,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Text(
+                  "${profile.displayName} ${profile.age}",
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 28,
+                    fontWeight: FontWeight.w800,
+                    height: 1.0,
+                    letterSpacing: -0.4,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.42),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white24),
+                ),
+                child: const Icon(
+                  Icons.arrow_upward_rounded,
+                  color: Colors.white,
+                  size: 22,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Positioned(
+          left: 20,
+          right: 20,
+          bottom: 84,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _sectionTitle(
+                icon: Icons.tune_rounded,
+                title: "Om mig & mitt liv",
+              ),
+              const SizedBox(height: 10),
+              _iconChipWrap(
+                aboutLifeItems.isNotEmpty
+                    ? aboutLifeItems
+                    : [
+                        const MapEntry(Icons.info_outline_rounded, "Lägg till mer info"),
+                      ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+
+
+     Widget _buildImage3(SwipeProfile profile) {
     final workStudyChips = <String>[
       if (_formatHeight(profile.heightCm).trim().isNotEmpty)
         _formatHeight(profile.heightCm).trim(),
@@ -725,7 +752,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _sectionTitle(
-                icon: Icons.work_outline_rounded,
+                icon: Icons.school_outlined,
                 title: "Längd, jobb & skola",
               ),
               const SizedBox(height: 10),
@@ -741,7 +768,8 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
     );
   }
 
-    Widget _buildImage4(SwipeProfile profile) {
+
+     Widget _buildImage4(SwipeProfile profile) {
     final lookingForText = _formatIntention(profile.intention).trim();
 
     return Stack(
@@ -808,6 +836,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
       ],
     );
   }
+
 
   Widget _sectionTitle({required IconData icon, required String title}) {
     return Row(
@@ -886,6 +915,56 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
     );
   }
 
+   Widget _iconChip({
+    required IconData icon,
+    required String text,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.68),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            size: 16,
+            color: Colors.white,
+          ),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              text,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                height: 1.0,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+   Widget _iconChipWrap(List<MapEntry<IconData, String>> items) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: items.map((item) {
+        return _iconChip(
+          icon: item.key,
+          text: item.value,
+        );
+      }).toList(),
+    );
+  }
+
+
    String _formatWorkout(String value) {
   switch (value) {
     case 'Never':
@@ -915,27 +994,24 @@ String _formatPets(String value) {
 }
   
 
-  String _formatIntention(String value) {
+  
+String _formatIntention(String value) {
   switch (value) {
     case 'Relationship':
       return 'Relation';
     case 'Marriage':
       return 'Gifta mig';
     case 'Date':
-      return 'Date';
+      return 'Dejta';
     case 'Serious':
       return 'Något seriöst';
     case 'NotSure':
       return 'Jag vet inte än';
     default:
-      return value.isEmpty ? 'Relation' : value;
+      return '';
   }
-}
+}  
 
-String _labelOrEmpty(String value) {
-  final v = value.trim();
-  return v;
-}
 
 String _formatHeight(int? value) {
   if (value == null || value <= 0) return '';
@@ -954,9 +1030,10 @@ String _formatRelationshipHistory(String value) {
     case 'Never':
       return 'Aldrig haft ett förhållande';
     default:
-      return value;
+      return ''; // 🔥 viktigt
   }
 }
+
 
 String _formatWantChildren(String value) {
   switch (value) {
@@ -1000,9 +1077,10 @@ String _formatWorkStatus(String value) {
     case 'Work':
       return 'Jobbar just nu';
     default:
-      return value;
+      return ''; // om ingen bild finns retunera tom
   }
 }
+
 
 String _formatSmoking(String value) {
   switch (value) {
@@ -1029,5 +1107,97 @@ String _formatAlcohol(String value) {
       return value;
   }
 }
+
+ IconData _relationshipHistoryIcon(String value) {
+    switch (value) {
+      case 'relationship':
+      case 'Relationship':
+        return Icons.favorite_rounded;
+      case 'casual':
+      case 'Casual':
+        return Icons.people_alt_rounded;
+      case 'never':
+      case 'Never':
+        return Icons.heart_broken_rounded;
+      default:
+        return Icons.favorite_border_rounded;
+    }
+  }
+
+  IconData _wantChildrenIcon(String value) {
+    switch (value) {
+      case 'yes':
+        return Icons.stroller_rounded;
+      case 'maybe':
+        return Icons.child_care_rounded;
+      case 'no':
+        return Icons.block_rounded;
+      default:
+        return Icons.stroller_outlined;
+    }
+  }
+
+  IconData _childrenCountIcon(String value) {
+    return Icons.child_friendly_rounded;
+  }
+
+  IconData _workoutIcon(String value) {
+    switch (value) {
+      case 'Never':
+        return Icons.fitness_center_outlined;
+      case 'Sometimes':
+        return Icons.fitness_center_rounded;
+      case 'Often':
+        return Icons.sports_gymnastics_rounded;
+      default:
+        return Icons.fitness_center_outlined;
+    }
+  }
+
+  IconData _smokingIcon(String value) {
+    switch (value) {
+      case 'No':
+        return Icons.smoke_free_rounded;
+      case 'Sometimes':
+        return Icons.smoking_rooms_outlined;
+      case 'Yes':
+        return Icons.smoking_rooms_rounded;
+      default:
+        return Icons.smoking_rooms_outlined;
+    }
+  }
+
+  IconData _alcoholIcon(String value) {
+    switch (value) {
+      case 'No':
+        return Icons.no_drinks_rounded;
+      case 'Sometimes':
+        return Icons.wine_bar_outlined;
+      case 'Yes':
+        return Icons.local_bar_rounded;
+      default:
+        return Icons.local_bar_outlined;
+    }
+  }
+
+  IconData _petsIcon(String value) {
+    switch (value) {
+      case 'Have':
+        return Icons.pets_rounded;
+      case 'Want':
+        return Icons.pets_outlined;
+      case 'No':
+        return Icons.block_rounded;
+      case 'Allergic':
+        return Icons.healing_rounded;
+      default:
+        return Icons.pets_outlined;
+    }
+  }
+
+  IconData _zodiacIcon(String value) {
+    return Icons.auto_awesome_rounded;
+  }
+
 
 }

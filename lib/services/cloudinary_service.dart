@@ -12,6 +12,11 @@ class CloudinaryService {
       "https://api.cloudinary.com/v1_1/$cloudName/image/upload",
     );
 
+    print("CLOUDINARY URL: $url");
+    print("CLOUDINARY PRESET: $uploadPreset");
+    print("CLOUDINARY FILE PATH: ${imageFile.path}");
+
+
     final request = http.MultipartRequest("POST", url);
     request.fields["upload_preset"] = uploadPreset;
     request.fields["folder"] = "zullo_profiles";
