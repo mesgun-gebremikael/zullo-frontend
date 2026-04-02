@@ -574,7 +574,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
   }
 
 
-      Widget _buildImage2(SwipeProfile profile) {
+     Widget _buildImage2(SwipeProfile profile) {
     final aboutLifeItems = <MapEntry<IconData, String>>[
       if (_formatRelationshipHistory(profile.relationshipHistory).trim().isNotEmpty)
         MapEntry(
@@ -618,45 +618,43 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
         ),
     ];
 
+    final visibleItems = aboutLifeItems.take(8).toList();
+
     return Stack(
       children: [
         Positioned(
           left: 20,
+          right: 84,
+          bottom: 246,
+          child: Text(
+            "${profile.displayName} ${profile.age}",
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 28,
+              fontWeight: FontWeight.w800,
+              height: 1.0,
+              letterSpacing: -0.4,
+            ),
+          ),
+        ),
+        Positioned(
           right: 20,
-          bottom: 162,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                child: Text(
-                  "${profile.displayName} ${profile.age}",
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 28,
-                    fontWeight: FontWeight.w800,
-                    height: 1.0,
-                    letterSpacing: -0.4,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.42),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white24),
-                ),
-                child: const Icon(
-                  Icons.arrow_upward_rounded,
-                  color: Colors.white,
-                  size: 22,
-                ),
-              ),
-            ],
+          bottom: 236,
+          child: Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.42),
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white24),
+            ),
+            child: const Icon(
+              Icons.arrow_upward_rounded,
+              color: Colors.white,
+              size: 22,
+            ),
           ),
         ),
         Positioned(
@@ -664,16 +662,17 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
           right: 20,
           bottom: 84,
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _sectionTitle(
                 icon: Icons.tune_rounded,
-                title: "Om mig & mitt liv",
+                title: "Om mig & Livsstil",
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
               _iconChipWrap(
-                aboutLifeItems.isNotEmpty
-                    ? aboutLifeItems
+                visibleItems.isNotEmpty
+                    ? visibleItems
                     : [
                         const MapEntry(Icons.info_outline_rounded, "Lägg till mer info"),
                       ],
@@ -684,6 +683,8 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
       ],
     );
   }
+
+
 
 
 
@@ -919,42 +920,50 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
     required IconData icon,
     required String text,
   }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.68),
-        borderRadius: BorderRadius.circular(999),
+    return ConstrainedBox(
+      constraints: const BoxConstraints(
+        maxWidth: 190,
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            size: 16,
-            color: Colors.white,
-          ),
-          const SizedBox(width: 8),
-          Flexible(
-            child: Text(
-              text,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                height: 1.0,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.72),
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 16,
+              color: Colors.white,
+            ),
+            const SizedBox(width: 7),
+            Flexible(
+              child: Text(
+                text,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                softWrap: true,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14.5,
+                  fontWeight: FontWeight.w600,
+                  height: 1.1,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
+
    Widget _iconChipWrap(List<MapEntry<IconData, String>> items) {
     return Wrap(
-      spacing: 8,
-      runSpacing: 8,
+      spacing: 10,
+      runSpacing: 10,
       children: items.map((item) {
         return _iconChip(
           icon: item.key,
@@ -963,6 +972,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
       }).toList(),
     );
   }
+
 
 
    String _formatWorkout(String value) {
