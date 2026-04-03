@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'profile_tab.dart';
 import 'home_page.dart';
 import 'matches_page.dart';
+import 'services/auth_service.dart';
+
 
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
@@ -13,6 +15,16 @@ class MainNavigation extends StatefulWidget {
 
 class _MainNavigationState extends State<MainNavigation> {
   int _selectedIndex = 0;
+
+   final AuthService _authService = AuthService();
+  bool _hasUnreadMessages = false;
+
+ @override
+  void initState() {
+    super.initState();
+    _loadUnreadStatus();
+  }
+
 
   final List<Widget> _pages = const [
     HomePage(),               // Swipa
@@ -27,6 +39,23 @@ class _MainNavigationState extends State<MainNavigation> {
       _selectedIndex = index;
     });
   }
+
+  Future<void> _loadUnreadStatus() async {
+    try {
+      final matches = await _authService.getMatches();
+
+      if (!mounted) return;
+
+      final hasUnread = matches.any((m) => m.hasUnread == true);
+
+      setState(() {
+        _hasUnreadMessages = hasUnread;
+      });
+    } catch (_) {
+      // Behåll tyst här just nu
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -85,13 +114,15 @@ padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
               onTap: () => _onItemTapped(2),
             ),
             _NavItem(
-              icon: Icons.chat_bubble_outline,
-              activeIcon: Icons.chat_bubble,
-              label: 'Chattar',
-              isActive: _selectedIndex == 3,
-              activeColor: Colors.white,
-              onTap: () => _onItemTapped(3),
-            ),
+  icon: Icons.chat_bubble_outline,
+  activeIcon: Icons.chat_bubble,
+  label: 'Chattar',
+  isActive: _selectedIndex == 3,
+  activeColor: Colors.white,
+  showDot: _hasUnreadMessages,
+  onTap: () => _onItemTapped(3),
+),
+
             _NavItem(
               icon: Icons.person_outline,
               activeIcon: Icons.person,
@@ -117,15 +148,19 @@ class _NavItem extends StatelessWidget {
   final bool isActive;
   final Color activeColor;
   final VoidCallback onTap;
+   final bool showDot;
+
 
   const _NavItem({
-    required this.icon,
-    required this.activeIcon,
-    required this.label,
-    required this.isActive,
-    required this.activeColor,
-    required this.onTap,
-  });
+  required this.icon,
+  required this.activeIcon,
+  required this.label,
+  required this.isActive,
+  required this.activeColor,
+  required this.onTap,
+  this.showDot = false,
+});
+
 
   @override
 Widget build(BuildContext context) {
@@ -159,11 +194,34 @@ Widget build(BuildContext context) {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                isActive ? activeIcon : icon,
-                color: isActive ? Colors.white : inactiveColor,
-                size: isActive ? 22 : 20,
-              ),
+             Stack(
+  clipBehavior: Clip.none,
+  children: [
+    Icon(
+      isActive ? activeIcon : icon,
+      color: isActive ? Colors.white : inactiveColor,
+      size: isActive ? 22 : 20,
+    ),
+    if (showDot)
+      Positioned(
+        right: -2,
+        top: -2,
+        child: Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(
+            color: const Color(0xFFFF4458),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: const Color(0xFF1A120C),
+              width: 1.2,
+            ),
+          ),
+        ),
+      ),
+  ],
+),
+
               const SizedBox(height: 1),
               Text(
                 label,
