@@ -497,32 +497,15 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
 
 
 
-    Widget _buildImage1(SwipeProfile profile) {
+     Widget _buildImage1(SwipeProfile profile) {
     final hasOrigin = profile.originPlace.trim().isNotEmpty;
     final hasReligion = profile.religion.trim().isNotEmpty;
 
     return Stack(
       children: [
         Positioned(
-          left: 20,
-          right: 84,
-          bottom: 188,
-          child: Text(
-            "${profile.displayName} ${profile.age}",
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 28,
-              fontWeight: FontWeight.w800,
-              height: 1.0,
-              letterSpacing: -0.4,
-            ),
-          ),
-        ),
-        Positioned(
           right: 20,
-          bottom: 178,
+          bottom: 188,
           child: Container(
             width: 44,
             height: 44,
@@ -546,6 +529,8 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
+              _buildBottomName(profile.displayName, profile.age),
+              const SizedBox(height: 10),
               if (hasOrigin)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 8),
@@ -575,7 +560,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
 
 
     
- Widget _buildImage2(SwipeProfile profile) {
+  Widget _buildImage2(SwipeProfile profile) {
     final aboutLifeItems = <MapEntry<IconData, String>>[
       if (_formatRelationshipHistory(profile.relationshipHistory).trim().isNotEmpty)
         MapEntry(
@@ -624,125 +609,8 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
     return Stack(
       children: [
         Positioned(
-          left: 20,
           right: 20,
-          bottom: 88,
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        "${profile.displayName} ${profile.age}",
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 28,
-                          fontWeight: FontWeight.w800,
-                          height: 1.0,
-                          letterSpacing: -0.4,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.42),
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white24),
-                      ),
-                      child: const Icon(
-                        Icons.arrow_upward_rounded,
-                        color: Colors.white,
-                        size: 22,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                _sectionTitle(
-                  icon: Icons.tune_rounded,
-                  title: "Om mig & Livsstil",
-                ),
-                const SizedBox(height: 12),
-                _iconChipWrap(
-                  visibleItems.isNotEmpty
-                      ? visibleItems
-                      : [
-                          const MapEntry(
-                            Icons.info_outline_rounded,
-                            "Lägg till mer info",
-                          ),
-                        ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-
-
-
-
-    Widget _buildImage3(SwipeProfile profile) {
-    final details = <MapEntry<IconData, String>>[
-      if (_formatHeight(profile.heightCm).trim().isNotEmpty)
-        MapEntry(
-          Icons.straighten, 
-
-          _formatHeight(profile.heightCm).trim(),
-        ),
-      if (profile.studyPlace.trim().isNotEmpty)
-        MapEntry(
-          Icons.school_rounded,
-          profile.studySubject.trim().isNotEmpty
-              ? "${profile.studyPlace.trim()} • ${profile.studySubject.trim()}"
-              : profile.studyPlace.trim(),
-        ),
-      if (profile.jobTitle.trim().isNotEmpty || profile.workPlace.trim().isNotEmpty)
-        MapEntry(
-          Icons.work_outline_rounded,
-          profile.jobTitle.trim().isNotEmpty && profile.workPlace.trim().isNotEmpty
-              ? "${profile.jobTitle.trim()} • ${profile.workPlace.trim()}"
-              : profile.jobTitle.trim().isNotEmpty
-                  ? profile.jobTitle.trim()
-                  : profile.workPlace.trim(),
-        ),
-    ];
-
-    return Stack(
-      children: [
-        Positioned(
-          left: 20,
-          right: 84,
           bottom: 188,
-          child: Text(
-            "${profile.displayName} ${profile.age}",
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 28,
-              fontWeight: FontWeight.w800,
-              height: 1.0,
-              letterSpacing: -0.4,
-            ),
-          ),
-        ),
-        Positioned(
-          right: 20,
-          bottom: 178,
           child: Container(
             width: 44,
             height: 44,
@@ -761,26 +629,29 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
         Positioned(
           left: 20,
           right: 20,
-          bottom: 96,
+          bottom: 88,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
-            children: details.isNotEmpty
-                ? details.map((item) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: _infoRow(
-                        icon: item.key,
-                        text: item.value,
-                      ),
-                    );
-                  }).toList()
-                : [
-                    _infoRow(
-                      icon: Icons.info_outline_rounded,
-                      text: "Lägg till mer info",
-                    ),
-                  ],
+            children: [
+              _buildBottomName(profile.displayName, profile.age),
+              const SizedBox(height: 8),
+              _sectionTitle(
+                icon: Icons.tune_rounded,
+                title: "Om mig & Livsstil",
+              ),
+              const SizedBox(height: 10),
+              _iconChipWrap(
+                visibleItems.isNotEmpty
+                    ? visibleItems
+                    : [
+                        const MapEntry(
+                          Icons.info_outline_rounded,
+                          "Lägg till mer info",
+                        ),
+                      ],
+              ),
+            ],
           ),
         ),
       ],
@@ -789,28 +660,38 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
 
 
 
-     Widget _buildImage4(SwipeProfile profile) {
-    final lookingForText = _formatIntention(profile.intention).trim();
+
+
+
+    Widget _buildImage3(SwipeProfile profile) {
+    final details = <MapEntry<IconData, String>>[
+      if (_formatHeight(profile.heightCm).trim().isNotEmpty)
+        MapEntry(
+          Icons.height_rounded,
+          _formatHeight(profile.heightCm).trim(),
+        ),
+      if (profile.studyPlace.trim().isNotEmpty || profile.studySubject.trim().isNotEmpty)
+        MapEntry(
+          Icons.school_rounded,
+          profile.studyPlace.trim().isNotEmpty && profile.studySubject.trim().isNotEmpty
+              ? "${profile.studyPlace.trim()} • ${profile.studySubject.trim()}"
+              : profile.studyPlace.trim().isNotEmpty
+                  ? profile.studyPlace.trim()
+                  : profile.studySubject.trim(),
+        ),
+      if (profile.jobTitle.trim().isNotEmpty || profile.workPlace.trim().isNotEmpty)
+        MapEntry(
+          Icons.work_outline_rounded,
+          profile.jobTitle.trim().isNotEmpty && profile.workPlace.trim().isNotEmpty
+              ? "${profile.jobTitle.trim()} • ${profile.workPlace.trim()}"
+              : profile.jobTitle.trim().isNotEmpty
+                  ? profile.jobTitle.trim()
+                  : profile.workPlace.trim(),
+        ),
+    ];
 
     return Stack(
       children: [
-        Positioned(
-          left: 20,
-          right: 84,
-          bottom: 198,
-          child: Text(
-            "${profile.displayName} ${profile.age}",
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 28,
-              fontWeight: FontWeight.w800,
-              height: 1.0,
-              letterSpacing: -0.4,
-            ),
-          ),
-        ),
         Positioned(
           right: 20,
           bottom: 188,
@@ -837,34 +718,90 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
+              _buildBottomName(profile.displayName, profile.age),
+              const SizedBox(height: 10),
+              if (details.isNotEmpty)
+                ...details.map((item) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: _infoRow(
+                      icon: item.key,
+                      text: item.value,
+                    ),
+                  );
+                }),
+              if (details.isEmpty)
+                _infoRow(
+                  icon: Icons.info_outline_rounded,
+                  text: "Lägg till mer info",
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+
+
+
+     Widget _buildImage4(SwipeProfile profile) {
+    final lookingItems = <MapEntry<IconData, String>>[
+      if (_formatIntention(profile.intention).trim().isNotEmpty)
+        MapEntry(
+          _intentionIcon(profile.intention),
+          _formatIntention(profile.intention).trim(),
+        ),
+    ];
+
+    return Stack(
+      children: [
+        Positioned(
+          right: 20,
+          bottom: 188,
+          child: Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.42),
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white24),
+            ),
+            child: const Icon(
+              Icons.arrow_upward_rounded,
+              color: Colors.white,
+              size: 22,
+            ),
+          ),
+        ),
+        Positioned(
+          left: 20,
+          right: 20,
+          bottom: 96,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildBottomName(profile.displayName, profile.age),
+              const SizedBox(height: 8),
+
+              // 🔍 Titel som Tinder
               _sectionTitle(
                 icon: Icons.search_rounded,
-                title: "Söker efter",
+                title: "Söker",
               ),
+
               const SizedBox(height: 10),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(
-                    _intentionIcon(profile.intention),
-                    size: 26,
-                    color: Colors.white.withOpacity(0.95),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      lookingForText.isNotEmpty
-                          ? lookingForText
-                          : "Lägg till mer info",
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.96),
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        height: 1.2,
-                      ),
-                    ),
-                  ),
-                ],
+
+              _iconChipWrap(
+                lookingItems.isNotEmpty
+                    ? lookingItems
+                    : [
+                        const MapEntry(
+                          Icons.info_outline_rounded,
+                          "Inte angivet",
+                        ),
+                      ],
               ),
             ],
           ),
