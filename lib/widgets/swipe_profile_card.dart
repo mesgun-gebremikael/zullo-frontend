@@ -823,8 +823,8 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
       children: [
         Icon(
           icon,
-          size: 18,
-          color: Colors.white.withOpacity(0.95),
+          size: 19,
+          color: Colors.white,
         ),
         const SizedBox(width: 7),
         Text(
