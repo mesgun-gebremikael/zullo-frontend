@@ -813,34 +813,36 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
 
 
 
-   Widget _sectionTitle({
+    Widget _sectionTitle({
     required IconData icon,
     required String title,
   }) {
     return Row(
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Icon(
           icon,
           size: 18,
-          color: Colors.white.withOpacity(0.85),
+          color: Colors.white.withOpacity(0.95),
         ),
-        const SizedBox(width: 6),
+        const SizedBox(width: 7),
         Text(
           title,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            color: Colors.white.withOpacity(0.85),
+          style: const TextStyle(
+            color: Colors.white,
             fontSize: 16.5,
             fontWeight: FontWeight.w700,
-            height: 1.0,
             letterSpacing: -0.2,
+            height: 1.0,
           ),
         ),
       ],
     );
   }
+
 
 
   Widget _infoRow({required IconData icon, required String text}) {
