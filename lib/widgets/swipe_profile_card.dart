@@ -822,7 +822,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
       children: [
         Icon(
           icon,
-          size: 15,
+          size: 18,
           color: Colors.white.withOpacity(0.85),
         ),
         const SizedBox(width: 6),
@@ -832,10 +832,10 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
             color: Colors.white.withOpacity(0.85),
-            fontSize: 14.5,
-            fontWeight: FontWeight.w600,
+            fontSize: 16.5,
+            fontWeight: FontWeight.w700,
             height: 1.0,
-            letterSpacing: 0.2,
+            letterSpacing: -0.2,
           ),
         ),
       ],
