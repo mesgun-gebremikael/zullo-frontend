@@ -474,7 +474,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
             mainAxisSize: MainAxisSize.min,
             children: [
               _buildBottomName(profile.displayName, profile.age),
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
               _infoRow(
                 icon: Icons.location_on_outlined,
                 text: distanceText,
@@ -530,7 +530,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
             mainAxisSize: MainAxisSize.min,
             children: [
               _buildBottomName(profile.displayName, profile.age),
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
               if (hasOrigin)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 8),
@@ -640,7 +640,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
                 icon: Icons.tune_rounded,
                 title: "Om mig & Livsstil",
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
               _iconChipWrap(
                 visibleItems.isNotEmpty
                     ? visibleItems
@@ -719,7 +719,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
             mainAxisSize: MainAxisSize.min,
             children: [
               _buildBottomName(profile.displayName, profile.age),
-              const SizedBox(height: 10),
+              const SizedBox(height: 18),
               if (details.isNotEmpty)
                 ...details.map((item) {
                   return Padding(
@@ -791,7 +791,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
                 title: "Söker",
               ),
 
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
 
               _iconChipWrap(
                 lookingItems.isNotEmpty
@@ -832,9 +832,9 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
             color: Colors.white.withOpacity(0.85),
-            fontSize: 13.5,
-            fontWeight: FontWeight.w500,
-            height: 1.1,
+            fontSize: 14.5,
+            fontWeight: FontWeight.w600,
+            height: 1.0,
             letterSpacing: 0.2,
           ),
         ),
@@ -853,13 +853,13 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
         child: Icon(
           icon,
           color: Colors.white.withOpacity(0.9),
-          size: 18,
+          size: 17,
         ),
       )
     : Icon(
         icon,
         color: Colors.white.withOpacity(0.9),
-        size: 18,
+        size: 17,
       ),
 
         const SizedBox(width: 6),
@@ -870,9 +870,9 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               color: Colors.white.withOpacity(0.90),
-              fontSize: 15,
+              fontSize: 14.5,
               fontWeight: FontWeight.w500,
-              height: 1.15,
+              height: 1.1,
             ),
           ),
         ),
