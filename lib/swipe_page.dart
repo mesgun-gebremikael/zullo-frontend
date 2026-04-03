@@ -62,11 +62,10 @@ class SwipePage extends StatelessWidget {
   ),
 ),
                 _TopOverlayBar(
-                  hasUnreadMessages: hasUnreadMessages,
-                  onOpenRadiusSheet: onOpenRadiusSheet,
-                  onOpenMatchesPage: onOpenMatchesPage,
-                  onLogout: onLogout,
-                ),
+  onOpenRadiusSheet: onOpenRadiusSheet,
+  onLogout: onLogout,
+),
+
                 if (hasActiveProfile)
                    _BottomActionBar(
                     dragListenable: dragListenable,
@@ -82,17 +81,15 @@ class SwipePage extends StatelessWidget {
 }
 
 class _TopOverlayBar extends StatelessWidget {
-  final bool hasUnreadMessages;
   final VoidCallback onOpenRadiusSheet;
-  final VoidCallback onOpenMatchesPage;
   final VoidCallback onLogout;
 
+
   const _TopOverlayBar({
-    required this.hasUnreadMessages,
-    required this.onOpenRadiusSheet,
-    required this.onOpenMatchesPage,
-    required this.onLogout,
-  });
+  required this.onOpenRadiusSheet,
+  required this.onLogout,
+});
+
 
   @override
   Widget build(BuildContext context) {
@@ -137,16 +134,11 @@ class _TopOverlayBar extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              _TopIconButton(
-                icon: Icons.chat_bubble_outline,
-                onTap: onOpenMatchesPage,
-                showDot: hasUnreadMessages,
-              ),
-              const SizedBox(width: 10),
-              _TopIconButton(
-                icon: Icons.logout,
-                onTap: onLogout,
-              ),
+_TopIconButton(
+  icon: Icons.logout,
+  onTap: onLogout,
+),
+
             ],
           ),
         ),
