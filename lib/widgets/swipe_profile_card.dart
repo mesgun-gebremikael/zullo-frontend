@@ -828,10 +828,11 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _sectionTitle(
-                icon: Icons.favorite_border_rounded,
-                title: "Vad man söker",
-              ),
+             _sectionTitle(
+  icon: Icons.search_rounded,
+  title: "Söker efter",
+),
+
               const SizedBox(height: 10),
               _chipWrap(
                 lookingForText.isNotEmpty
@@ -846,39 +847,43 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
   }
 
 
-  Widget _sectionTitle({required IconData icon, required String title}) {
+   Widget _sectionTitle({
+    required IconData icon,
+    required String title,
+  }) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Icon(
           icon,
-          size: 18,
-          color: Colors.white.withOpacity(0.96),
+          size: 15,
+          color: Colors.white.withOpacity(0.85),
         ),
         const SizedBox(width: 6),
-        Expanded(
-          child: Text(
-            title,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.96),
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              height: 1.1,
-            ),
+        Text(
+          title,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            color: Colors.white.withOpacity(0.85),
+            fontSize: 13.5,
+            fontWeight: FontWeight.w500,
+            height: 1.1,
+            letterSpacing: 0.2,
           ),
         ),
       ],
     );
   }
 
+
   Widget _infoRow({required IconData icon, required String text}) {
     return Row(
       children: [
         Icon(
           icon,
-          size: 19,
-          color: Colors.white.withOpacity(0.96),
+          size: 18,
+          color: Colors.white.withOpacity(0.90),
         ),
         const SizedBox(width: 6),
         Expanded(
@@ -887,9 +892,9 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.96),
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
+              color: Colors.white.withOpacity(0.90),
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
               height: 1.15,
             ),
           ),
