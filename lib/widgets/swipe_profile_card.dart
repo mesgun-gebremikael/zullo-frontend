@@ -552,7 +552,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
         Positioned(
           left: 20,
           right: 20,
-          bottom: 88,
+          bottom: 96,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -574,7 +574,8 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
   }
 
 
-     Widget _buildImage2(SwipeProfile profile) {
+    
+ Widget _buildImage2(SwipeProfile profile) {
     final aboutLifeItems = <MapEntry<IconData, String>>[
       if (_formatRelationshipHistory(profile.relationshipHistory).trim().isNotEmpty)
         MapEntry(
@@ -624,60 +625,66 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
       children: [
         Positioned(
           left: 20,
-          right: 84,
-          bottom: 246,
-          child: Text(
-            "${profile.displayName} ${profile.age}",
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 28,
-              fontWeight: FontWeight.w800,
-              height: 1.0,
-              letterSpacing: -0.4,
-            ),
-          ),
-        ),
-        Positioned(
           right: 20,
-          bottom: 236,
-          child: Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.42),
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white24),
+          bottom: 88,
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        "${profile.displayName} ${profile.age}",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 28,
+                          fontWeight: FontWeight.w800,
+                          height: 1.0,
+                          letterSpacing: -0.4,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.42),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white24),
+                      ),
+                      child: const Icon(
+                        Icons.arrow_upward_rounded,
+                        color: Colors.white,
+                        size: 22,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                _sectionTitle(
+                  icon: Icons.tune_rounded,
+                  title: "Om mig & Livsstil",
+                ),
+                const SizedBox(height: 12),
+                _iconChipWrap(
+                  visibleItems.isNotEmpty
+                      ? visibleItems
+                      : [
+                          const MapEntry(
+                            Icons.info_outline_rounded,
+                            "Lägg till mer info",
+                          ),
+                        ],
+                ),
+              ],
             ),
-            child: const Icon(
-              Icons.arrow_upward_rounded,
-              color: Colors.white,
-              size: 22,
-            ),
-          ),
-        ),
-        Positioned(
-          left: 20,
-          right: 20,
-          bottom: 84,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _sectionTitle(
-                icon: Icons.tune_rounded,
-                title: "Om mig & Livsstil",
-              ),
-              const SizedBox(height: 12),
-              _iconChipWrap(
-                visibleItems.isNotEmpty
-                    ? visibleItems
-                    : [
-                        const MapEntry(Icons.info_outline_rounded, "Lägg till mer info"),
-                      ],
-              ),
-            ],
           ),
         ),
       ],
@@ -748,7 +755,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
         Positioned(
           left: 20,
           right: 20,
-          bottom: 88,
+          bottom: 99,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -817,7 +824,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
         Positioned(
           left: 20,
           right: 20,
-          bottom: 88,
+          bottom: 90,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -922,10 +929,10 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
   }) {
     return ConstrainedBox(
       constraints: const BoxConstraints(
-        maxWidth: 190,
+        maxWidth: 170,
       ),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
         decoration: BoxDecoration(
           color: Colors.black.withOpacity(0.72),
           borderRadius: BorderRadius.circular(999),
@@ -947,7 +954,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
                 softWrap: true,
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 14.5,
+                  fontSize: 13.5,
                   fontWeight: FontWeight.w600,
                   height: 1.1,
                 ),
@@ -962,8 +969,8 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
 
    Widget _iconChipWrap(List<MapEntry<IconData, String>> items) {
     return Wrap(
-      spacing: 10,
-      runSpacing: 10,
+      spacing: 6,
+      runSpacing: 6,
       children: items.map((item) {
         return _iconChip(
           icon: item.key,
