@@ -45,11 +45,14 @@ class _MainNavigationState extends State<MainNavigation> {
   }
 
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
+  Future<void> _onItemTapped(int index) async {
+  setState(() {
+    _selectedIndex = index;
+  });
+
+  await _loadUnreadStatus();
+}
+
 
   Future<void> _loadUnreadStatus() async {
     try {
@@ -57,8 +60,7 @@ class _MainNavigationState extends State<MainNavigation> {
 
       if (!mounted) return;
 
-      final hasUnread = matches.any((m) => m.hasUnread == true);
-
+      final hasUnread = matches.any((m) => m['hasUnread'] == true);
       setState(() {
         _hasUnreadMessages = hasUnread;
       });
