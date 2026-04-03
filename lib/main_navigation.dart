@@ -17,22 +17,33 @@ class _MainNavigationState extends State<MainNavigation> {
   int _selectedIndex = 0;
 
    final AuthService _authService = AuthService();
-  bool _hasUnreadMessages = false;
+  bool _hasUnreadMessages = false; 
 
- @override
+
+  
+ late final List<Widget> _pages;
+
+  @override
   void initState() {
     super.initState();
     _loadUnreadStatus();
+
+    _pages = [
+      const HomePage(),
+      const MatchesPage(), // Explore tillfällig
+      const MatchesPage(), // Likes tillfällig
+      MatchesPage(
+        onUnreadChanged: (hasUnread) {
+          if (!mounted) return;
+          setState(() {
+            _hasUnreadMessages = hasUnread;
+          });
+        },
+      ),
+      const ProfileTab(),
+    ];
   }
 
-
-  final List<Widget> _pages = const [
-    HomePage(),               // Swipa
-    MatchesPage(),            // Explore (tillfällig)
-    MatchesPage(),            // Likes (tillfällig)
-    MatchesPage(),            // Chattar (tillfällig)
-    const ProfileTab(),// Profil (tillfällig)
-  ];
 
   void _onItemTapped(int index) {
     setState(() {

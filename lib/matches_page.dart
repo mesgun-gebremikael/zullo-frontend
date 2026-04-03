@@ -4,7 +4,13 @@ import 'chat_page.dart';
 import 'premium_page.dart';
 
 class MatchesPage extends StatefulWidget {
-  const MatchesPage({super.key});
+  final ValueChanged<bool>? onUnreadChanged;
+
+  const MatchesPage({
+    super.key,
+    this.onUnreadChanged,
+  });
+
 
   @override
   State<MatchesPage> createState() => _MatchesPageState();
@@ -53,12 +59,18 @@ class _MatchesPageState extends State<MatchesPage> {
     });
 
     try {
-      final matchesData = await _auth.getMatches();
-      final matchesList = List<dynamic>.from(matchesData);
+     final matchesData = await _auth.getMatches();
+final matchesList = List<dynamic>.from(matchesData);
 
-      _sortMatchesInUi(matchesList);
+_sortMatchesInUi(matchesList);
 
-      final likesData = await _auth.getLikesReceived();
+final hasUnread = matchesList.any((m) => m['hasUnread'] == true);
+widget.onUnreadChanged?.call(hasUnread);
+
+final likesData = await _auth.getLikesReceived();
+
+
+
       final likesList = List<dynamic>.from(likesData);
 
       setState(() {
