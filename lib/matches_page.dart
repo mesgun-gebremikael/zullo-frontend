@@ -54,9 +54,12 @@ class _MatchesPageState extends State<MatchesPage> {
 
   Future<void> loadMatches() async {
     setState(() {
-      isLoading = true;
-      error = null;
-    });
+  if (matches.isEmpty && likesReceived.isEmpty) {
+    isLoading = true;
+  }
+  error = null;
+});
+
 
     try {
      final matchesData = await _auth.getMatches();
