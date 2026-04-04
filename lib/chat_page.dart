@@ -181,8 +181,15 @@ class _ChatPageState extends State<ChatPage> {
     _error = null;
   });
 
-  _lastLoadedAt = DateTime.now();
-  _scrollToBottom();
+   final shouldStickToBottom = _messages.isEmpty || _isNearBottom();
+
+      _lastLoadedAt = DateTime.now();
+
+      if (shouldStickToBottom) {
+        _scrollToBottom();
+      }
+
+
 } catch (e) {
   if (!mounted) return;
   setState(() {
@@ -202,6 +209,13 @@ class _ChatPageState extends State<ChatPage> {
       );
     });
   }
+
+   bool _isNearBottom() {
+    if (!_scroll.hasClients) return true;
+    final distance = _scroll.position.maxScrollExtent - _scroll.position.pixels;
+    return distance < 120;
+  }
+
 
   Future<void> _send() async {
     final text = _controller.text.trim();
