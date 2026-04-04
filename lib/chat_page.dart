@@ -41,6 +41,7 @@ class _ChatPageState extends State<ChatPage> {
   bool _isSending = false;
   String? _error;
    bool _isThreadFetchInFlight = false;
+     bool _hasLoadedInitialThread = false;
 
   final List<_UiMessage> _messages = [];
 
@@ -199,13 +200,17 @@ if (!silent) {
         _error = null;
       });
 
-      final shouldStickToBottom = _messages.isEmpty || _isNearBottom();
+      
+     final shouldStickToBottom = !_hasLoadedInitialThread || _isNearBottom();
 
       _lastLoadedAt = DateTime.now();
 
       if (shouldStickToBottom) {
-        _scrollToBottom();
+        _scrollToBottom(animated: _hasLoadedInitialThread);
       }
+
+      _hasLoadedInitialThread = true;
+
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -218,16 +223,27 @@ if (!silent) {
 
   }
 
-  void _scrollToBottom() {
+  
+ void _scrollToBottom({bool animated = true}) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_scroll.hasClients) return;
+
+      final target = _scroll.position.maxScrollExtent;
+
+      if (!animated) {
+        _scroll.jumpTo(target);
+        return;
+      }
+
       _scroll.animateTo(
-        _scroll.position.maxScrollExtent,
+        target,
         duration: const Duration(milliseconds: 220),
         curve: Curves.easeOut,
       );
     });
   }
+
+
 
    bool _isNearBottom() {
     if (!_scroll.hasClients) return true;
