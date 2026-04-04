@@ -3,13 +3,41 @@ import 'register_page.dart';
 import 'login_page.dart';
 import 'welcome_page.dart'; 
 import 'splash_page.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'services/auth_service.dart';
 
 
 
 
-void main() {
-  runApp(const ZulloApp());
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  await FirebaseMessaging.instance.requestPermission();
+
+final fcmToken = await FirebaseMessaging.instance.getToken();
+print("TOKEN: $fcmToken");
+
+if (fcmToken != null && fcmToken.isNotEmpty) {
+  try {
+    await AuthService().saveDeviceToken(fcmToken);
+    print("Device token saved to backend");
+  } catch (e) {
+    print("Could not save device token: $e");
+  }
 }
+
+
+
+  runApp(const ZulloApp());
+
+}
+
 
 class ZulloApp extends StatelessWidget {
   const ZulloApp({super.key});

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "860454038998",
+    "project_id": "zullo-13dac",
+    "storage_bucket": "zullo-13dac.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:860454038998:android:bd18b01bcb0439307e4877",
+        "android_client_info": {
+          "package_name": "com.example.zullo_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAAtON0MsavxUXKcIc8SeysaU3qIdhrBRU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

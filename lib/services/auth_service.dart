@@ -413,4 +413,29 @@ Future<void> updateFilterProfile({
   }
 }
 
+ Future<void> saveDeviceToken(String token) async {
+    final authToken = await _storage.getToken();
+    if (authToken == null || authToken.isEmpty) {
+      throw Exception('No auth token found');
+    }
+
+    final url = Uri.parse('$baseApiUrl/me/device-token');
+
+    final res = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $authToken',
+      },
+      body: jsonEncode(token),
+    );
+
+    if (res.statusCode != 200) {
+      throw Exception('Save device token failed: ${res.statusCode} ${res.body}');
+    }
+  }
+
+
+
+
 }
