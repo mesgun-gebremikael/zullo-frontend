@@ -40,6 +40,7 @@ class _ChatPageState extends State<ChatPage> {
   bool _isLoading = true;
   bool _isSending = false;
   String? _error;
+   bool _isThreadFetchInFlight = false;
 
   final List<_UiMessage> _messages = [];
 
@@ -75,8 +76,15 @@ class _ChatPageState extends State<ChatPage> {
     await _loadThread();
 
     // 2) Poll (MVP): bara hämta tråd
-   _pollTimer = Timer.periodic(const Duration(seconds: 3), (_) {
-  _loadThread(silent: true);
+    _pollTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (_isThreadFetchInFlight) return;
+      _loadThread(silent: true);
+
+
+  print("NOW local: ${DateTime.now()}");
+print("TIMEZONE name: ${DateTime.now().timeZoneName}");
+print("TIMEZONE offset: ${DateTime.now().timeZoneOffset}");
+
 });
   }
 
@@ -129,16 +137,20 @@ class _ChatPageState extends State<ChatPage> {
 
       // createdAtUtc -> local
       final createdUtcRaw = m['createdAtUtc'];
-      final createdUtc = DateTime.tryParse((createdUtcRaw ?? '').toString());
-      final createdLocal = (createdUtc ?? DateTime.now()).toLocal();
+      print("RAW createdAtUtc: $createdUtcRaw");
+      print("RAW readAtUtc: ${m['readAtUtc']}");
+
+      final createdLocal = _parseUtcStringToLocal(createdUtcRaw) ?? DateTime.now();
+       print("PARSED createdLocal: $createdLocal");
+
 
       // readAtUtc -> local (valfri)
-      DateTime? readAtLocal;
+     DateTime? readAtLocal;
       final readAtUtcRaw = m['readAtUtc'];
-      if (readAtUtcRaw != null) {
-        final readUtc = DateTime.tryParse(readAtUtcRaw.toString());
-        readAtLocal = readUtc?.toLocal();
-      }
+    if (readAtUtcRaw != null) {
+     readAtLocal = _parseUtcStringToLocal(readAtUtcRaw);
+}
+
 
       parsed.add(
         _UiMessage(
@@ -157,46 +169,53 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Future<void> _loadThread({bool silent = false}) async {
-    if (!silent) {
-      setState(() {
-        _isLoading = true;
-        _error = null;
-      });
-    }
+      if (_isThreadFetchInFlight) return;
+    _isThreadFetchInFlight = true; 
 
-   try {
-  final data = await _messagesService.getThread(widget.userId);
-  final parsed = _parseThread(data);
-
-  // ✅ Markera som läst bara om det behövs (men gör INTE extra getThread direkt)
-  await _markReadIfNeeded(parsed);
-
-  if (!mounted) return;
-
+   
+if (!silent) {
   setState(() {
-    _messages
-      ..clear()
-      ..addAll(parsed);
-    _isLoading = false;
+    if (_messages.isEmpty) {
+      _isLoading = true;
+    }
     _error = null;
   });
+}  
 
-   final shouldStickToBottom = _messages.isEmpty || _isNearBottom();
+
+    try {
+      final data = await _messagesService.getThread(widget.userId);
+      final parsed = _parseThread(data);
+
+      await _markReadIfNeeded(parsed);
+
+      if (!mounted) return;
+
+      setState(() {
+        _messages
+          ..clear()
+          ..addAll(parsed);
+        _isLoading = false;
+        _error = null;
+      });
+
+      final shouldStickToBottom = _messages.isEmpty || _isNearBottom();
 
       _lastLoadedAt = DateTime.now();
 
       if (shouldStickToBottom) {
         _scrollToBottom();
       }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = "Kunde inte ladda chat: $e";
+        _isLoading = false;
+      });
+    } finally {
+      _isThreadFetchInFlight = false;
+    }
 
-
-} catch (e) {
-  if (!mounted) return;
-  setState(() {
-    _error = "Kunde inte ladda chat: $e";
-    _isLoading = false;
-  });
-}
   }
 
   void _scrollToBottom() {
@@ -371,6 +390,24 @@ Future<void> _showReportDialog() async {
     final m = months[(dt.month - 1).clamp(0, 11)];
     return "${dt.day} $m ${dt.year}";
   }
+
+   DateTime? _parseUtcStringToLocal(dynamic raw) {
+    if (raw == null) return null;
+
+    var s = raw.toString().trim();
+    if (s.isEmpty) return null;
+
+    final hasTimezone =
+        s.endsWith('Z') || s.contains('+') || RegExp(r'-\d{2}:\d{2}$').hasMatch(s);
+
+    if (!hasTimezone) {
+      s = '${s}Z';
+    }
+
+    final parsed = DateTime.tryParse(s);
+    return parsed?.toLocal();
+  }
+
 
   @override
    Widget build(BuildContext context) {
@@ -644,7 +681,15 @@ class _MessageBubble extends StatelessWidget {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(timeText, style: TextStyle(fontSize: 11, color: timeColor)),
+                Text(
+  timeText,
+  style: TextStyle(
+    fontSize: 10.5,
+    color: timeColor,
+    fontWeight: FontWeight.w500,
+  ),
+),
+
                 if (pending) ...[
                   const SizedBox(width: 6),
                   Text("Skickar…",
@@ -662,17 +707,19 @@ class _MessageBubble extends StatelessWidget {
                 ] else if (isMe) ...[
                   const SizedBox(width: 6),
                   Text(
-                    readAtLocal != null ? "Sedd" : "Levererad",
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: readAtLocal != null
-                          ? scheme.primary.withOpacity(0.9)
-                          : timeColor,
-                      fontWeight: readAtLocal != null
-                          ? FontWeight.w600
-                          : FontWeight.normal,
-                    ),
-                  ),
+  readAtLocal != null ? "Sedd" : "Levererad",
+  style: TextStyle(
+    fontSize: 10.5,
+    color: readAtLocal != null
+        ? scheme.primary.withOpacity(0.92)
+        : timeColor,
+    fontWeight: readAtLocal != null
+        ? FontWeight.w700
+        : FontWeight.w500,
+    letterSpacing: 0.1,
+  ),
+),
+
                 ],
               ],
             ),
