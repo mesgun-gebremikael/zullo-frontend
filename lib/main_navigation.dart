@@ -45,13 +45,14 @@ class _MainNavigationState extends State<MainNavigation> {
   }
 
 
-  Future<void> _onItemTapped(int index) async {
+  void _onItemTapped(int index) {
   setState(() {
     _selectedIndex = index;
   });
 
-  await _loadUnreadStatus();
+  _loadUnreadStatus();
 }
+
 
 
   Future<void> _loadUnreadStatus() async {
@@ -74,7 +75,11 @@ class _MainNavigationState extends State<MainNavigation> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBody: true,
-      body: _pages[_selectedIndex],
+     body: IndexedStack(
+  index: _selectedIndex,
+  children: _pages,
+),
+
       bottomNavigationBar: SafeArea(
   top: false,
 minimum: const EdgeInsets.fromLTRB(14, 0, 14, 12), 
