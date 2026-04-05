@@ -7,6 +7,13 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'services/auth_service.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
+
+
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
+
 
 
 
@@ -20,23 +27,34 @@ void main() async {
   );
   await FirebaseMessaging.instance.requestPermission();
 
-final fcmToken = await FirebaseMessaging.instance.getToken();
-print("TOKEN: $fcmToken");
+  const AndroidNotificationChannel channel = AndroidNotificationChannel(
+    'messages',
+    'Messages',
+    description: 'Chat notifications',
+    importance: Importance.high,
+  );
 
-if (fcmToken != null && fcmToken.isNotEmpty) {
-  try {
-    await AuthService().saveDeviceToken(fcmToken);
-    print("Device token saved to backend");
-  } catch (e) {
-    print("Could not save device token: $e");
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>()
+      ?.createNotificationChannel(channel);
+
+  final fcmToken = await FirebaseMessaging.instance.getToken();
+  print("TOKEN: $fcmToken");
+
+  if (fcmToken != null && fcmToken.isNotEmpty) {
+    try {
+      await AuthService().saveDeviceToken(fcmToken);
+      print("Device token saved to backend");
+    } catch (e) {
+      print("Could not save device token: $e");
+    }
   }
-}
-
-
 
   runApp(const ZulloApp());
-
 }
+
+
 
 
 class ZulloApp extends StatelessWidget {
