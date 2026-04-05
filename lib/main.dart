@@ -25,6 +25,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
   await FirebaseMessaging.instance.requestPermission();
 
   const AndroidNotificationChannel channel = AndroidNotificationChannel(
@@ -38,6 +39,12 @@ void main() async {
       .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(channel);
+
+  const androidInitSettings =
+      AndroidInitializationSettings('@mipmap/ic_launcher');
+  const initSettings = InitializationSettings(android: androidInitSettings);
+
+  await flutterLocalNotificationsPlugin.initialize(initSettings);
 
   final fcmToken = await FirebaseMessaging.instance.getToken();
   print("TOKEN: $fcmToken");
@@ -53,6 +60,8 @@ void main() async {
 
   runApp(const ZulloApp());
 }
+
+
 
 
 
