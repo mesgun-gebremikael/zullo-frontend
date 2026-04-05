@@ -1,23 +1,12 @@
 import 'package:flutter/material.dart';
 import 'register_page.dart';
 import 'login_page.dart';
-import 'welcome_page.dart'; 
+import 'welcome_page.dart';
 import 'splash_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'services/auth_service.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-
-
-
-final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-    FlutterLocalNotificationsPlugin();
-
-
-
-
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,24 +16,6 @@ void main() async {
   );
 
   await FirebaseMessaging.instance.requestPermission();
-
-  const AndroidNotificationChannel channel = AndroidNotificationChannel(
-    'messages',
-    'Messages',
-    description: 'Chat notifications',
-    importance: Importance.high,
-  );
-
-  await flutterLocalNotificationsPlugin
-      .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>()
-      ?.createNotificationChannel(channel);
-
-  const androidInitSettings =
-      AndroidInitializationSettings('@mipmap/ic_launcher');
-  const initSettings = InitializationSettings(android: androidInitSettings);
-
-  await flutterLocalNotificationsPlugin.initialize(initSettings);
 
   final fcmToken = await FirebaseMessaging.instance.getToken();
   print("TOKEN: $fcmToken");
@@ -61,42 +32,34 @@ void main() async {
   runApp(const ZulloApp());
 }
 
-
-
-
-
-
 class ZulloApp extends StatelessWidget {
   const ZulloApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-   return MaterialApp(
-  debugShowCheckedModeBanner: false,
-  theme: ThemeData(
-    useMaterial3: true,
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: Colors.pink,
-    ),
-    inputDecorationTheme: const InputDecorationTheme(
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.all(Radius.circular(16)),
-      ),
-    ),
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      style: ElevatedButton.styleFrom(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(24)),
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.pink,
         ),
-        padding: EdgeInsets.symmetric(vertical: 16),
+        inputDecorationTheme: const InputDecorationTheme(
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(16)),
+          ),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(24)),
+            ),
+            padding: const EdgeInsets.symmetric(vertical: 16),
+          ),
+        ),
       ),
-    ),
-  ),
-  //home: const WelcomePage(),
-  home: const SplashPage(),
-
-);
-
+      home: const SplashPage(),
+    );
   }
 }
 
@@ -133,29 +96,28 @@ class WelcomeScreen extends StatelessWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                   MaterialPageRoute(
-                     builder: (context) => const RegisterPage(),
-                   ),
-                 );
-               },
-               child: const Text('Create account'),
+                    MaterialPageRoute(
+                      builder: (context) => const RegisterPage(),
+                    ),
+                  );
+                },
+                child: const Text('Create account'),
               ),
             ),
             const SizedBox(height: 12),
             SizedBox(
- width: double.infinity,
- child:OutlinedButton(
-  onPressed: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const LoginPage(),
-      ),
-    );
-  },
-  child: const Text('Log in'),
-),
-
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const LoginPage(),
+                    ),
+                  );
+                },
+                child: const Text('Log in'),
+              ),
             ),
           ],
         ),
@@ -163,3 +125,4 @@ class WelcomeScreen extends StatelessWidget {
     );
   }
 }
+
