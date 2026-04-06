@@ -42,7 +42,6 @@ class _ChatPageState extends State<ChatPage> {
   String? _error;
   bool _isThreadFetchInFlight = false;
   bool _hasLoadedInitialThread = false;
-  bool _isInitialListPositioned = false;
 
   final List<_UiMessage> _messages = [];
 
@@ -208,30 +207,12 @@ if (!silent) {
       });
 
       
-           final shouldStickToBottom = !_hasLoadedInitialThread || _isNearBottom();
+               final shouldStickToBottom = !_hasLoadedInitialThread || _isNearBottom();
 
       _lastLoadedAt = DateTime.now();
 
-      if (!_hasLoadedInitialThread) {
-        if (_messages.isEmpty) {
-          _isInitialListPositioned = true;
-        } else {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (!mounted) return;
-
-            if (_scroll.hasClients) {
-              _scroll.jumpTo(_scroll.position.maxScrollExtent);
-            }
-
-            if (!mounted) return;
-
-            setState(() {
-              _isInitialListPositioned = true;
-            });
-          });
-        }
-      } else if (shouldStickToBottom) {
-        _scrollToBottom(animated: true);
+      if (shouldStickToBottom) {
+        _scrollToBottom(animated: _hasLoadedInitialThread);
       }
 
       _hasLoadedInitialThread = true;
@@ -249,11 +230,11 @@ if (!silent) {
   }
 
   
- void _scrollToBottom({bool animated = true}) {
+   void _scrollToBottom({bool animated = true}) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_scroll.hasClients) return;
 
-      final target = _scroll.position.maxScrollExtent;
+      const target = 0.0;
 
       if (!animated) {
         _scroll.jumpTo(target);
@@ -270,10 +251,9 @@ if (!silent) {
 
 
 
-   bool _isNearBottom() {
+     bool _isNearBottom() {
     if (!_scroll.hasClients) return true;
-    final distance = _scroll.position.maxScrollExtent - _scroll.position.pixels;
-    return distance < 120;
+    return _scroll.position.pixels < 120;
   }
 
 
@@ -525,53 +505,52 @@ child: widget.photoUrl.isEmpty
             onRefresh: () async {
               await _loadThread();
             },
-                       child: Opacity(
-              opacity: (_messages.isEmpty || _isInitialListPositioned) ? 1 : 0,
-              child: _messages.isEmpty
-                  ? ListView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      children: const [
-                        SizedBox(height: 140),
-                        Center(child: Text("Säg hej 👋")),
-                      ],
-                    )
-                  : ListView.builder(
-                      controller: _scroll,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 10,
-                      ),
-                      itemCount: _messages.length,
-                      itemBuilder: (context, i) {
-                        final m = _messages[i];
-
-                        final showDateChip = i == 0
-                            ? true
-                            : !_isSameDay(
-                                _messages[i - 1].timeLocal,
-                                m.timeLocal,
-                              );
-
-                        return Column(
-                          children: [
-                            if (showDateChip) ...[
-                              const SizedBox(height: 8),
-                              _DateChip(text: _formatDateSw(m.timeLocal)),
-                              const SizedBox(height: 8),
-                            ],
-                            _MessageBubble(
-                              text: m.text,
-                              isMe: m.isMe,
-                              timeText: _formatTime(m.timeLocal),
-                              pending: m.pending,
-                              failed: m.failed,
-                              readAtLocal: m.readAtLocal,
-                            ),
-                          ],
-                        );
-                      },
+                                 child: _messages.isEmpty
+                ? ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    children: const [
+                      SizedBox(height: 140),
+                      Center(child: Text("Säg hej 👋")),
+                    ],
+                  )
+                : ListView.builder(
+                    controller: _scroll,
+                    reverse: true,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
                     ),
-            ),
+                    itemCount: _messages.length,
+                    itemBuilder: (context, i) {
+                      final reversedIndex = _messages.length - 1 - i;
+                      final m = _messages[reversedIndex];
+
+                      final showDateChip = reversedIndex == 0
+                          ? true
+                          : !_isSameDay(
+                              _messages[reversedIndex - 1].timeLocal,
+                              m.timeLocal,
+                            );
+
+                      return Column(
+                        children: [
+                          _MessageBubble(
+                            text: m.text,
+                            isMe: m.isMe,
+                            timeText: _formatTime(m.timeLocal),
+                            pending: m.pending,
+                            failed: m.failed,
+                            readAtLocal: m.readAtLocal,
+                          ),
+                          if (showDateChip) ...[
+                            const SizedBox(height: 8),
+                            _DateChip(text: _formatDateSw(m.timeLocal)),
+                            const SizedBox(height: 8),
+                          ],
+                        ],
+                      );
+                    },
+                  ),
           ),
   if (_isLoading && _messages.isEmpty)
   const Positioned(
