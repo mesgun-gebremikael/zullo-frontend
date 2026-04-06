@@ -10,6 +10,9 @@ import 'services/auth_service.dart';
 import 'main_navigation.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
+    GlobalKey<ScaffoldMessengerState>();
+
 Route<T> _instantRoute<T>(Widget page) {
   return PageRouteBuilder<T>(
     pageBuilder: (_, __, ___) => page,
@@ -46,10 +49,7 @@ NotificationLaunchData? _parseNotificationLaunch(RemoteMessage? message) {
   );
 }
 
-void _openChatFromMessage(RemoteMessage message) {
-  final launch = _parseNotificationLaunch(message);
-  if (launch == null) return;
-
+void _openChatFromLaunch(NotificationLaunchData launch) {
   navigatorKey.currentState?.pushAndRemoveUntil(
     _instantRoute(
       ChatPage(
@@ -61,6 +61,13 @@ void _openChatFromMessage(RemoteMessage message) {
     ),
     (route) => false,
   );
+}
+
+void _openChatFromMessage(RemoteMessage message) {
+  final launch = _parseNotificationLaunch(message);
+  if (launch == null) return;
+
+  _openChatFromLaunch(launch);
 }
 
 void main() async {
@@ -115,28 +122,71 @@ class _ZulloAppState extends State<ZulloApp> {
     _setupNotificationTapHandling();
   }
 
-  Future<void> _setupNotificationTapHandling() async {
-   FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-  if (_lastOpenedMessageId == message.messageId) return;
-_lastOpenedMessageId = message.messageId;
+   Future<void> _setupNotificationTapHandling() async {
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      if (_lastOpenedMessageId == message.messageId) return;
+      _lastOpenedMessageId = message.messageId;
 
-final launch = _parseNotificationLaunch(message);
-if (launch == null) return;
+      final launch = _parseNotificationLaunch(message);
+      if (launch == null) return;
 
+      _openChatFromLaunch(launch);
+    });
 
-   navigatorKey.currentState?.pushAndRemoveUntil(
-    _instantRoute(
-      ChatPage(
-        userId: launch.userId,
-        displayName: launch.displayName,
-        photoUrl: launch.photoUrl,
-        openChatsListOnExit: true,
-      ),
-    ),
-    (route) => false,
-  );
-});
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      final launch = _parseNotificationLaunch(message);
+      if (launch == null) return;
 
+      final senderName = launch.displayName;
+      final messageText =
+          (message.data['messageText'] ?? message.notification?.body ?? '')
+              .toString()
+              .trim();
+
+      scaffoldMessengerKey.currentState?.hideCurrentMaterialBanner();
+
+      scaffoldMessengerKey.currentState?.showMaterialBanner(
+        MaterialBanner(
+          backgroundColor: const Color(0xFF1A120C),
+          content: Text(
+            messageText.isEmpty
+                ? '$senderName skickade ett meddelande'
+                : '$senderName: $messageText',
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          leading: CircleAvatar(
+            radius: 18,
+            backgroundImage:
+                launch.photoUrl.isNotEmpty ? NetworkImage(launch.photoUrl) : null,
+            child: launch.photoUrl.isEmpty
+                ? const Icon(Icons.person)
+                : null,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                scaffoldMessengerKey.currentState?.hideCurrentMaterialBanner();
+              },
+              child: const Text('Stäng'),
+            ),
+            TextButton(
+              onPressed: () {
+                scaffoldMessengerKey.currentState?.hideCurrentMaterialBanner();
+                _openChatFromLaunch(launch);
+              },
+              child: const Text('Öppna'),
+            ),
+          ],
+        ),
+      );
+
+      Future.delayed(const Duration(seconds: 4), () {
+        scaffoldMessengerKey.currentState?.hideCurrentMaterialBanner();
+      });
+    });
   }
 
   @override
@@ -151,8 +201,9 @@ if (launch == null) return;
     : const SplashPage(skipNavigation: false);
 
 
-    return MaterialApp(
+        return MaterialApp(
       navigatorKey: navigatorKey,
+      scaffoldMessengerKey: scaffoldMessengerKey,
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
