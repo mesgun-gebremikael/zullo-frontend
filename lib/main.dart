@@ -13,12 +13,19 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
     GlobalKey<ScaffoldMessengerState>();
 
+OverlayEntry? _activeMessageOverlay;
+
 Route<T> _instantRoute<T>(Widget page) {
   return PageRouteBuilder<T>(
     pageBuilder: (_, __, ___) => page,
     transitionDuration: Duration.zero,
     reverseTransitionDuration: Duration.zero,
   );
+}
+
+void _hideInAppMessageOverlay() {
+  _activeMessageOverlay?.remove();
+  _activeMessageOverlay = null;
 }
 
 class NotificationLaunchData {
@@ -61,6 +68,46 @@ void _openChatFromLaunch(NotificationLaunchData launch) {
     ),
     (route) => false,
   );
+}
+
+void _showInAppMessageOverlay({
+  required NotificationLaunchData launch,
+  required String messageText,
+}) {
+  final context = navigatorKey.currentContext;
+  if (context == null) return;
+
+  _hideInAppMessageOverlay();
+
+  _activeMessageOverlay = OverlayEntry(
+    builder: (context) {
+      final topPadding = MediaQuery.of(context).padding.top;
+
+      return Positioned(
+        top: topPadding + 10,
+        left: 14,
+        right: 14,
+        child: _FloatingMessageBanner(
+          photoUrl: launch.photoUrl,
+          senderName: launch.displayName,
+          messageText: messageText.isEmpty
+              ? 'Skickade ett meddelande'
+              : messageText,
+          onClose: _hideInAppMessageOverlay,
+          onOpen: () {
+            _hideInAppMessageOverlay();
+            _openChatFromLaunch(launch);
+          },
+        ),
+      );
+    },
+  );
+
+  Overlay.of(context, rootOverlay: true).insert(_activeMessageOverlay!);
+
+  Future.delayed(const Duration(seconds: 4), () {
+    _hideInAppMessageOverlay();
+  });
 }
 
 void _openChatFromMessage(RemoteMessage message) {
@@ -133,59 +180,19 @@ class _ZulloAppState extends State<ZulloApp> {
       _openChatFromLaunch(launch);
     });
 
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       final launch = _parseNotificationLaunch(message);
       if (launch == null) return;
 
-      final senderName = launch.displayName;
       final messageText =
           (message.data['messageText'] ?? message.notification?.body ?? '')
               .toString()
               .trim();
 
-      scaffoldMessengerKey.currentState?.hideCurrentMaterialBanner();
-
-      scaffoldMessengerKey.currentState?.showMaterialBanner(
-        MaterialBanner(
-          backgroundColor: const Color(0xFF1A120C),
-          content: Text(
-            messageText.isEmpty
-                ? '$senderName skickade ett meddelande'
-                : '$senderName: $messageText',
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          leading: CircleAvatar(
-            radius: 18,
-            backgroundImage:
-                launch.photoUrl.isNotEmpty ? NetworkImage(launch.photoUrl) : null,
-            child: launch.photoUrl.isEmpty
-                ? const Icon(Icons.person)
-                : null,
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                scaffoldMessengerKey.currentState?.hideCurrentMaterialBanner();
-              },
-              child: const Text('Stäng'),
-            ),
-            TextButton(
-              onPressed: () {
-                scaffoldMessengerKey.currentState?.hideCurrentMaterialBanner();
-                _openChatFromLaunch(launch);
-              },
-              child: const Text('Öppna'),
-            ),
-          ],
-        ),
+      _showInAppMessageOverlay(
+        launch: launch,
+        messageText: messageText,
       );
-
-      Future.delayed(const Duration(seconds: 4), () {
-        scaffoldMessengerKey.currentState?.hideCurrentMaterialBanner();
-      });
     });
   }
 
@@ -286,6 +293,180 @@ class WelcomeScreen extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FloatingMessageBanner extends StatefulWidget {
+  final String photoUrl;
+  final String senderName;
+  final String messageText;
+  final VoidCallback onClose;
+  final VoidCallback onOpen;
+
+  const _FloatingMessageBanner({
+    required this.photoUrl,
+    required this.senderName,
+    required this.messageText,
+    required this.onClose,
+    required this.onOpen,
+  });
+
+  @override
+  State<_FloatingMessageBanner> createState() => _FloatingMessageBannerState();
+}
+
+class _FloatingMessageBannerState extends State<_FloatingMessageBanner>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<Offset> _slideAnimation;
+  late final Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 260),
+    );
+
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, -0.18),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
+    );
+
+    _fadeAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOut,
+    );
+
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: SlideTransition(
+        position: _slideAnimation,
+        child: Material(
+          color: Colors.transparent,
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 520),
+              child: InkWell(
+                onTap: widget.onOpen,
+                borderRadius: BorderRadius.circular(24),
+                child: Ink(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(24),
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        const Color(0xFF2A1D17).withOpacity(0.94),
+                        const Color(0xFF140F0C).withOpacity(0.90),
+                      ],
+                    ),
+                    border: Border.all(
+                      color: const Color(0xFFE8B06A).withOpacity(0.18),
+                      width: 1,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.30),
+                        blurRadius: 22,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 22,
+                          backgroundColor: const Color(0xFF2B211C),
+                          backgroundImage: widget.photoUrl.isNotEmpty
+                              ? NetworkImage(widget.photoUrl)
+                              : null,
+                          child: widget.photoUrl.isEmpty
+                              ? const Icon(
+                                  Icons.person,
+                                  color: Colors.white70,
+                                )
+                              : null,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                widget.senderName,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 15.5,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.1,
+                                ),
+                              ),
+                              const SizedBox(height: 3),
+                              Text(
+                                widget.messageText,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: Color(0xFFE7D7CF),
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        InkWell(
+                          onTap: widget.onClose,
+                          borderRadius: BorderRadius.circular(999),
+                          child: Container(
+                            width: 34,
+                            height: 34,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white.withOpacity(0.06),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.08),
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.close,
+                              size: 18,
+                              color: Colors.white70,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );
