@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'services/auth_service.dart';
 import 'chat_page.dart';
@@ -19,15 +20,31 @@ class MatchesPage extends StatefulWidget {
 class _MatchesPageState extends State<MatchesPage> {
   final AuthService _auth = AuthService();
 
+  Timer? _pollTimer;
+
   bool isLoading = true;
   String? error;
   List<dynamic> matches = [];
   List<dynamic> likesReceived = [];
 
-  @override
+    @override
   void initState() {
     super.initState();
     loadMatches();
+
+    
+
+    // Pollar chatlistan så senaste meddelande/unread uppdateras utan manuell refresh
+    _pollTimer = Timer.periodic(const Duration(seconds: 4), (_) {
+      if (!mounted) return;
+      loadMatches(silent: true);
+    });
+  }
+
+    @override
+  void dispose() {
+    _pollTimer?.cancel();
+    super.dispose();
   }
 
   DateTime? _tryParseUtc(dynamic v) {
@@ -52,40 +69,45 @@ class _MatchesPageState extends State<MatchesPage> {
     });
   }
 
-  Future<void> loadMatches() async {
-    setState(() {
-  if (matches.isEmpty && likesReceived.isEmpty) {
-    isLoading = true;
-  }
-  error = null;
-});
-
+   Future<void> loadMatches({bool silent = false}) async {
+    if (!silent) {
+      setState(() {
+        if (matches.isEmpty && likesReceived.isEmpty) {
+          isLoading = true;
+        }
+        error = null;
+      });
+    }
 
     try {
-     final matchesData = await _auth.getMatches();
-final matchesList = List<dynamic>.from(matchesData);
+      final matchesData = await _auth.getMatches();
+      final matchesList = List<dynamic>.from(matchesData);
 
-_sortMatchesInUi(matchesList);
+      _sortMatchesInUi(matchesList);
 
-final hasUnread = matchesList.any((m) => m['hasUnread'] == true);
-widget.onUnreadChanged?.call(hasUnread);
+      final hasUnread = matchesList.any((m) => m['hasUnread'] == true);
+      widget.onUnreadChanged?.call(hasUnread);
 
-final likesData = await _auth.getLikesReceived();
-
-
-
+      final likesData = await _auth.getLikesReceived();
       final likesList = List<dynamic>.from(likesData);
+
+      if (!mounted) return;
 
       setState(() {
         matches = matchesList;
         likesReceived = likesList;
         isLoading = false;
+        error = null;
       });
     } catch (e) {
-      setState(() {
-        error = "Kunde inte ladda matches: $e";
-        isLoading = false;
-      });
+      if (!mounted) return;
+
+      if (!silent) {
+        setState(() {
+          error = "Kunde inte ladda matches: $e";
+          isLoading = false;
+        });
+      }
     }
   }
 

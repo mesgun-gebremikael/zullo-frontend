@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'profile_tab.dart';
@@ -5,6 +6,7 @@ import 'home_page.dart';
 import 'matches_page.dart';
 import 'services/auth_service.dart';
 import 'chat_page.dart';
+
 
 
 
@@ -30,9 +32,9 @@ class MainNavigation extends StatefulWidget {
 class _MainNavigationState extends State<MainNavigation> {
   late int _selectedIndex;
 
-   final AuthService _authService = AuthService();
-  bool _hasUnreadMessages = false; 
-
+  final AuthService _authService = AuthService();
+  Timer? _unreadPollTimer;
+  bool _hasUnreadMessages = false;
 
   
  late final List<Widget> _pages;
@@ -88,9 +90,20 @@ class _MainNavigationState extends State<MainNavigation> {
       const ProfileTab(),
     ];
 
-    _openNotificationChatIfNeeded();
+        _openNotificationChatIfNeeded();
+
+    // Pollar unread-status så chat-dot i bottom nav hålls mer uppdaterad
+    _unreadPollTimer = Timer.periodic(const Duration(seconds: 4), (_) {
+      if (!mounted) return;
+      _loadUnreadStatus();
+    });
   }
 
+    @override
+  void dispose() {
+    _unreadPollTimer?.cancel();
+    super.dispose();
+  }
 
 
   void _onItemTapped(int index) {

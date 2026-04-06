@@ -543,10 +543,20 @@ child: widget.photoUrl.isEmpty
                     },
                   ),
           ),
-          if (_isLoading && _messages.isEmpty)
-            const Center(
-              child: CircularProgressIndicator(),
-            ),
+          if (_isLoading)
+  const Positioned(
+    top: 10,
+    left: 0,
+    right: 0,
+    child: Center(
+      child: SizedBox(
+        width: 18,
+        height: 18,
+        child: CircularProgressIndicator(strokeWidth: 2),
+      ),
+    ),
+  ),
+
         ],
     ),
       ),

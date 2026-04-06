@@ -39,40 +39,20 @@ NotificationLaunchData? _parseNotificationLaunch(RemoteMessage? message) {
 }
 
 void _openChatFromMessage(RemoteMessage message) {
-  final data = message.data;
+  final launch = _parseNotificationLaunch(message);
+  if (launch == null) return;
 
-  if (data['type'] != 'message') return;
-
-  final senderUserId = data['senderUserId'];
-  final senderName = data['senderName'] ?? 'Chat';
-  final senderPhotoUrl = data['senderPhotoUrl'] ?? '';
-
-  if (senderUserId == null || senderUserId.isEmpty) return;
-
-  // 👇 1. visa svart sida direkt (ingen blink)
   navigatorKey.currentState?.pushAndRemoveUntil(
     MaterialPageRoute(
-      builder: (_) => const Scaffold(
-        backgroundColor: Colors.black,
+      builder: (_) => MainNavigation(
+        initialIndex: 3,
+        openChatUserId: launch.userId,
+        openChatDisplayName: launch.displayName,
+        openChatPhotoUrl: launch.photoUrl,
       ),
     ),
     (route) => false,
   );
-
-  // 👇 2. direkt till chat efter en frame
-  Future.delayed(const Duration(milliseconds: 50), () {
-    navigatorKey.currentState?.pushAndRemoveUntil(
-      MaterialPageRoute(
-        builder: (_) => MainNavigation(
-          initialIndex: 3,
-          openChatUserId: senderUserId,
-          openChatDisplayName: senderName,
-          openChatPhotoUrl: senderPhotoUrl,
-        ),
-      ),
-      (route) => false,
-    );
-  });
 }
 
 
@@ -129,11 +109,27 @@ class _ZulloAppState extends State<ZulloApp> {
   }
 
   Future<void> _setupNotificationTapHandling() async {
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      if (_lastOpenedMessageId == message.messageId) return;
-      _lastOpenedMessageId = message.messageId;
-      _openChatFromMessage(message);
-    });
+   FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+  if (_lastOpenedMessageId == message.messageId) return;
+_lastOpenedMessageId = message.messageId;
+
+final launch = _parseNotificationLaunch(message);
+if (launch == null) return;
+
+
+  navigatorKey.currentState?.pushAndRemoveUntil(
+    MaterialPageRoute(
+      builder: (_) => MainNavigation(
+        initialIndex: 3,
+        openChatUserId: launch.userId,
+        openChatDisplayName: launch.displayName,
+        openChatPhotoUrl: launch.photoUrl,
+      ),
+    ),
+    (route) => false,
+  );
+});
+
   }
 
   @override
