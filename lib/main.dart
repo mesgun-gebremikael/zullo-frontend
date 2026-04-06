@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'register_page.dart';
 import 'login_page.dart';
 import 'splash_page.dart';
+import 'chat_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -44,11 +45,11 @@ void _openChatFromMessage(RemoteMessage message) {
 
   navigatorKey.currentState?.pushAndRemoveUntil(
     MaterialPageRoute(
-      builder: (_) => MainNavigation(
-        initialIndex: 3,
-        openChatUserId: launch.userId,
-        openChatDisplayName: launch.displayName,
-        openChatPhotoUrl: launch.photoUrl,
+      builder: (_) => ChatPage(
+        userId: launch.userId,
+        displayName: launch.displayName,
+        photoUrl: launch.photoUrl,
+        openChatsListOnExit: true,
       ),
     ),
     (route) => false,
@@ -134,12 +135,12 @@ if (launch == null) return;
 
   @override
   Widget build(BuildContext context) {
-   final initialHome = widget.launchFromNotification != null
-    ? MainNavigation(
-        initialIndex: 3,
-        openChatUserId: widget.launchFromNotification!.userId,
-        openChatDisplayName: widget.launchFromNotification!.displayName,
-        openChatPhotoUrl: widget.launchFromNotification!.photoUrl,
+     final initialHome = widget.launchFromNotification != null
+    ? ChatPage(
+        userId: widget.launchFromNotification!.userId,
+        displayName: widget.launchFromNotification!.displayName,
+        photoUrl: widget.launchFromNotification!.photoUrl,
+        openChatsListOnExit: true,
       )
     : const SplashPage(skipNavigation: false);
 

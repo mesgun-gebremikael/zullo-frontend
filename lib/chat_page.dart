@@ -1,6 +1,6 @@
-
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'main_navigation.dart';
 import '../services/messages_service.dart';
 import '../services/auth_storage.dart';
 import '../services/auth_service.dart';
@@ -10,12 +10,14 @@ class ChatPage extends StatefulWidget {
   final String userId; // other user id
   final String displayName;
   final String photoUrl;
+  final bool openChatsListOnExit;
 
   const ChatPage({
     super.key,
     required this.userId,
     required this.displayName,
     required this.photoUrl,
+    this.openChatsListOnExit = false,
   });
 
   @override
@@ -103,6 +105,20 @@ print("TIMEZONE offset: ${DateTime.now().timeZoneOffset}");
     _scroll.dispose();
     _pollTimer?.cancel();
     super.dispose();
+  }
+
+    void _handleBackNavigation() {
+    if (widget.openChatsListOnExit) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (_) => const MainNavigation(initialIndex: 3),
+        ),
+        (route) => false,
+      );
+      return;
+    }
+
+    Navigator.pop(context, true);
   }
 
   Future<bool> _markReadIfNeeded(List<_UiMessage> parsed) async {
@@ -437,17 +453,17 @@ Future<void> _showReportDialog() async {
 
   final scheme = Theme.of(context).colorScheme;
 
- return PopScope<bool>(
+  return PopScope<bool>(
   canPop: false,
   onPopInvokedWithResult: (didPop, result) {
     if (didPop) return;
-    Navigator.pop(context, true); // skickar refresh
+    _handleBackNavigation();
   },
   child: Scaffold(
     appBar: AppBar(
-      leading: IconButton(
+            leading: IconButton(
         icon: const Icon(Icons.arrow_back),
-        onPressed: () => Navigator.pop(context, true),
+        onPressed: _handleBackNavigation,
       ),
      actions: [
   PopupMenuButton<String>(
