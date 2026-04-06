@@ -10,6 +10,13 @@ import 'services/auth_service.dart';
 import 'main_navigation.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+Route<T> _instantRoute<T>(Widget page) {
+  return PageRouteBuilder<T>(
+    pageBuilder: (_, __, ___) => page,
+    transitionDuration: Duration.zero,
+    reverseTransitionDuration: Duration.zero,
+  );
+}
 
 class NotificationLaunchData {
   final String userId;
@@ -44,8 +51,8 @@ void _openChatFromMessage(RemoteMessage message) {
   if (launch == null) return;
 
   navigatorKey.currentState?.pushAndRemoveUntil(
-    MaterialPageRoute(
-      builder: (_) => ChatPage(
+    _instantRoute(
+      ChatPage(
         userId: launch.userId,
         displayName: launch.displayName,
         photoUrl: launch.photoUrl,
@@ -55,7 +62,6 @@ void _openChatFromMessage(RemoteMessage message) {
     (route) => false,
   );
 }
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -118,13 +124,13 @@ final launch = _parseNotificationLaunch(message);
 if (launch == null) return;
 
 
-  navigatorKey.currentState?.pushAndRemoveUntil(
-    MaterialPageRoute(
-      builder: (_) => MainNavigation(
-        initialIndex: 3,
-        openChatUserId: launch.userId,
-        openChatDisplayName: launch.displayName,
-        openChatPhotoUrl: launch.photoUrl,
+   navigatorKey.currentState?.pushAndRemoveUntil(
+    _instantRoute(
+      ChatPage(
+        userId: launch.userId,
+        displayName: launch.displayName,
+        photoUrl: launch.photoUrl,
+        openChatsListOnExit: true,
       ),
     ),
     (route) => false,
