@@ -117,14 +117,15 @@ class _ZulloAppState extends State<ZulloApp> {
 
   @override
   Widget build(BuildContext context) {
-    final initialHome = widget.launchFromNotification != null
-        ? MainNavigation(
-            initialIndex: 3,
-            openChatUserId: widget.launchFromNotification!.userId,
-            openChatDisplayName: widget.launchFromNotification!.displayName,
-            openChatPhotoUrl: widget.launchFromNotification!.photoUrl,
-          )
-        : const SplashPage();
+   final initialHome = widget.launchFromNotification != null
+    ? MainNavigation(
+        initialIndex: 3,
+        openChatUserId: widget.launchFromNotification!.userId,
+        openChatDisplayName: widget.launchFromNotification!.displayName,
+        openChatPhotoUrl: widget.launchFromNotification!.photoUrl,
+      )
+    : const SplashPage(skipNavigation: false);
+
 
     return MaterialApp(
       navigatorKey: navigatorKey,
