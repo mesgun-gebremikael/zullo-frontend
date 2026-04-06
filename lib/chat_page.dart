@@ -37,11 +37,12 @@ class _ChatPageState extends State<ChatPage> {
   Timer? _pollTimer;
   DateTime? _lastLoadedAt; // debug/insyn
 
-  bool _isLoading = true;
+    bool _isLoading = true;
   bool _isSending = false;
   String? _error;
-   bool _isThreadFetchInFlight = false;
-     bool _hasLoadedInitialThread = false;
+  bool _isThreadFetchInFlight = false;
+  bool _hasLoadedInitialThread = false;
+  bool _isInitialListPositioned = false;
 
   final List<_UiMessage> _messages = [];
 
@@ -207,12 +208,30 @@ if (!silent) {
       });
 
       
-     final shouldStickToBottom = !_hasLoadedInitialThread || _isNearBottom();
+           final shouldStickToBottom = !_hasLoadedInitialThread || _isNearBottom();
 
       _lastLoadedAt = DateTime.now();
 
-      if (shouldStickToBottom) {
-        _scrollToBottom(animated: _hasLoadedInitialThread);
+      if (!_hasLoadedInitialThread) {
+        if (_messages.isEmpty) {
+          _isInitialListPositioned = true;
+        } else {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+
+            if (_scroll.hasClients) {
+              _scroll.jumpTo(_scroll.position.maxScrollExtent);
+            }
+
+            if (!mounted) return;
+
+            setState(() {
+              _isInitialListPositioned = true;
+            });
+          });
+        }
+      } else if (shouldStickToBottom) {
+        _scrollToBottom(animated: true);
       }
 
       _hasLoadedInitialThread = true;
@@ -506,48 +525,53 @@ child: widget.photoUrl.isEmpty
             onRefresh: () async {
               await _loadThread();
             },
-            child: _messages.isEmpty
-                ? ListView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    children: const [
-                      SizedBox(height: 140),
-                      Center(child: Text("Säg hej 👋")),
-                    ],
-                  )
-                : ListView.builder(
-                    controller: _scroll,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 10),
-                    itemCount: _messages.length,
-                    itemBuilder: (context, i) {
-                      final m = _messages[i];
+                       child: Opacity(
+              opacity: (_messages.isEmpty || _isInitialListPositioned) ? 1 : 0,
+              child: _messages.isEmpty
+                  ? ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      children: const [
+                        SizedBox(height: 140),
+                        Center(child: Text("Säg hej 👋")),
+                      ],
+                    )
+                  : ListView.builder(
+                      controller: _scroll,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
+                      itemCount: _messages.length,
+                      itemBuilder: (context, i) {
+                        final m = _messages[i];
 
-                      final showDateChip = i == 0
-                          ? true
-                          : !_isSameDay(
-                              _messages[i - 1].timeLocal,
-                              m.timeLocal,
-                            );
+                        final showDateChip = i == 0
+                            ? true
+                            : !_isSameDay(
+                                _messages[i - 1].timeLocal,
+                                m.timeLocal,
+                              );
 
-                      return Column(
-                        children: [
-                          if (showDateChip) ...[
-                            const SizedBox(height: 8),
-                            _DateChip(text: _formatDateSw(m.timeLocal)),
-                            const SizedBox(height: 8),
+                        return Column(
+                          children: [
+                            if (showDateChip) ...[
+                              const SizedBox(height: 8),
+                              _DateChip(text: _formatDateSw(m.timeLocal)),
+                              const SizedBox(height: 8),
+                            ],
+                            _MessageBubble(
+                              text: m.text,
+                              isMe: m.isMe,
+                              timeText: _formatTime(m.timeLocal),
+                              pending: m.pending,
+                              failed: m.failed,
+                              readAtLocal: m.readAtLocal,
+                            ),
                           ],
-                          _MessageBubble(
-                            text: m.text,
-                            isMe: m.isMe,
-                            timeText: _formatTime(m.timeLocal),
-                            pending: m.pending,
-                            failed: m.failed,
-                            readAtLocal: m.readAtLocal,
-                          ),
-                        ],
-                      );
-                    },
-                  ),
+                        );
+                      },
+                    ),
+            ),
           ),
   if (_isLoading && _messages.isEmpty)
   const Positioned(
