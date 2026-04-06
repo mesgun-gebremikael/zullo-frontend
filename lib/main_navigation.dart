@@ -4,17 +4,31 @@ import 'profile_tab.dart';
 import 'home_page.dart';
 import 'matches_page.dart';
 import 'services/auth_service.dart';
+import 'chat_page.dart';
+
 
 
 class MainNavigation extends StatefulWidget {
-  const MainNavigation({super.key});
+  final int initialIndex;
+  final String? openChatUserId;
+  final String? openChatDisplayName;
+  final String? openChatPhotoUrl;
+
+  const MainNavigation({
+    super.key,
+    this.initialIndex = 0,
+    this.openChatUserId,
+    this.openChatDisplayName,
+    this.openChatPhotoUrl,
+  });
 
   @override
   State<MainNavigation> createState() => _MainNavigationState();
 }
 
+
 class _MainNavigationState extends State<MainNavigation> {
-  int _selectedIndex = 0;
+  late int _selectedIndex;
 
    final AuthService _authService = AuthService();
   bool _hasUnreadMessages = false; 
@@ -23,9 +37,40 @@ class _MainNavigationState extends State<MainNavigation> {
   
  late final List<Widget> _pages;
 
+
+ 
+ Future<void> _openNotificationChatIfNeeded() async {
+    final userId = widget.openChatUserId;
+    if (userId == null || userId.isEmpty) return;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+
+      final shouldRefresh = await Navigator.push<bool>(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ChatPage(
+            userId: userId,
+            displayName: widget.openChatDisplayName ?? 'Chat',
+            photoUrl: widget.openChatPhotoUrl ?? '',
+          ),
+        ),
+      );
+
+      if (!mounted) return;
+
+      if (shouldRefresh == true) {
+        await _loadUnreadStatus();
+      }
+    });
+  }
+
+
   @override
   void initState() {
     super.initState();
+
+    _selectedIndex = widget.initialIndex;
     _loadUnreadStatus();
 
     _pages = [
@@ -42,7 +87,10 @@ class _MainNavigationState extends State<MainNavigation> {
       ),
       const ProfileTab(),
     ];
+
+    _openNotificationChatIfNeeded();
   }
+
 
 
   void _onItemTapped(int index) {

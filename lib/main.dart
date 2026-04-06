@@ -8,10 +8,12 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'services/auth_service.dart';
+import 'main_navigation.dart';
+
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-void _openChatFromMessage(RemoteMessage message) {
+ void _openChatFromMessage(RemoteMessage message) {
   final data = message.data;
 
   if (data['type'] != 'message') return;
@@ -22,16 +24,19 @@ void _openChatFromMessage(RemoteMessage message) {
 
   if (senderUserId == null || senderUserId.isEmpty) return;
 
-  navigatorKey.currentState?.push(
+  navigatorKey.currentState?.pushAndRemoveUntil(
     MaterialPageRoute(
-      builder: (_) => ChatPage(
-        userId: senderUserId,
-        displayName: senderName,
-        photoUrl: senderPhotoUrl,
+      builder: (_) => MainNavigation(
+        initialIndex: 3,
+        openChatUserId: senderUserId,
+        openChatDisplayName: senderName,
+        openChatPhotoUrl: senderPhotoUrl,
       ),
     ),
+    (route) => false,
   );
 }
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
