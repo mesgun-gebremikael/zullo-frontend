@@ -3,10 +3,35 @@ import 'register_page.dart';
 import 'login_page.dart';
 import 'welcome_page.dart';
 import 'splash_page.dart';
+import 'chat_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'services/auth_service.dart';
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+void _openChatFromMessage(RemoteMessage message) {
+  final data = message.data;
+
+  if (data['type'] != 'message') return;
+
+  final senderUserId = data['senderUserId'];
+  final senderName = data['senderName'] ?? 'Chat';
+  final senderPhotoUrl = data['senderPhotoUrl'] ?? '';
+
+  if (senderUserId == null || senderUserId.isEmpty) return;
+
+  navigatorKey.currentState?.push(
+    MaterialPageRoute(
+      builder: (_) => ChatPage(
+        userId: senderUserId,
+        displayName: senderName,
+        photoUrl: senderPhotoUrl,
+      ),
+    ),
+  );
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,12 +57,43 @@ void main() async {
   runApp(const ZulloApp());
 }
 
-class ZulloApp extends StatelessWidget {
+class ZulloApp extends StatefulWidget {
   const ZulloApp({super.key});
+
+  @override
+  State<ZulloApp> createState() => _ZulloAppState();
+}
+
+class _ZulloAppState extends State<ZulloApp> {
+  String? _lastOpenedMessageId;
+
+  @override
+  void initState() {
+    super.initState();
+    _setupNotificationTapHandling();
+  }
+
+  Future<void> _setupNotificationTapHandling() async {
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      if (_lastOpenedMessageId == message.messageId) return;
+      _lastOpenedMessageId = message.messageId;
+      _openChatFromMessage(message);
+    });
+
+    final initialMessage = await FirebaseMessaging.instance.getInitialMessage();
+    if (initialMessage != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_lastOpenedMessageId == initialMessage.messageId) return;
+        _lastOpenedMessageId = initialMessage.messageId;
+        _openChatFromMessage(initialMessage);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
@@ -125,4 +181,3 @@ class WelcomeScreen extends StatelessWidget {
     );
   }
 }
-
