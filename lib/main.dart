@@ -1,42 +1,59 @@
 import 'package:flutter/material.dart';
 import 'register_page.dart';
 import 'login_page.dart';
-import 'welcome_page.dart';
 import 'splash_page.dart';
-import 'chat_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'services/auth_service.dart';
 import 'main_navigation.dart';
 
-
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
- void _openChatFromMessage(RemoteMessage message) {
-  final data = message.data;
+class NotificationLaunchData {
+  final String userId;
+  final String displayName;
+  final String photoUrl;
 
-  if (data['type'] != 'message') return;
+  const NotificationLaunchData({
+    required this.userId,
+    required this.displayName,
+    required this.photoUrl,
+  });
+}
+
+NotificationLaunchData? _parseNotificationLaunch(RemoteMessage? message) {
+  if (message == null) return null;
+
+  final data = message.data;
+  if (data['type'] != 'message') return null;
 
   final senderUserId = data['senderUserId'];
-  final senderName = data['senderName'] ?? 'Chat';
-  final senderPhotoUrl = data['senderPhotoUrl'] ?? '';
+  if (senderUserId == null || senderUserId.isEmpty) return null;
 
-  if (senderUserId == null || senderUserId.isEmpty) return;
+  return NotificationLaunchData(
+    userId: senderUserId,
+    displayName: data['senderName'] ?? 'Chat',
+    photoUrl: data['senderPhotoUrl'] ?? '',
+  );
+}
+
+void _openChatFromMessage(RemoteMessage message) {
+  final parsed = _parseNotificationLaunch(message);
+  if (parsed == null) return;
 
   navigatorKey.currentState?.pushAndRemoveUntil(
     MaterialPageRoute(
       builder: (_) => MainNavigation(
         initialIndex: 3,
-        openChatUserId: senderUserId,
-        openChatDisplayName: senderName,
-        openChatPhotoUrl: senderPhotoUrl,
+        openChatUserId: parsed.userId,
+        openChatDisplayName: parsed.displayName,
+        openChatPhotoUrl: parsed.photoUrl,
       ),
     ),
     (route) => false,
   );
 }
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -59,11 +76,23 @@ void main() async {
     }
   }
 
-  runApp(const ZulloApp());
+  final initialMessage = await FirebaseMessaging.instance.getInitialMessage();
+  final launchFromNotification = _parseNotificationLaunch(initialMessage);
+
+  runApp(
+    ZulloApp(
+      launchFromNotification: launchFromNotification,
+    ),
+  );
 }
 
 class ZulloApp extends StatefulWidget {
-  const ZulloApp({super.key});
+  final NotificationLaunchData? launchFromNotification;
+
+  const ZulloApp({
+    super.key,
+    this.launchFromNotification,
+  });
 
   @override
   State<ZulloApp> createState() => _ZulloAppState();
@@ -84,19 +113,19 @@ class _ZulloAppState extends State<ZulloApp> {
       _lastOpenedMessageId = message.messageId;
       _openChatFromMessage(message);
     });
-
-    final initialMessage = await FirebaseMessaging.instance.getInitialMessage();
-    if (initialMessage != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (_lastOpenedMessageId == initialMessage.messageId) return;
-        _lastOpenedMessageId = initialMessage.messageId;
-        _openChatFromMessage(initialMessage);
-      });
-    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final initialHome = widget.launchFromNotification != null
+        ? MainNavigation(
+            initialIndex: 3,
+            openChatUserId: widget.launchFromNotification!.userId,
+            openChatDisplayName: widget.launchFromNotification!.displayName,
+            openChatPhotoUrl: widget.launchFromNotification!.photoUrl,
+          )
+        : const SplashPage();
+
     return MaterialApp(
       navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
@@ -119,7 +148,7 @@ class _ZulloAppState extends State<ZulloApp> {
           ),
         ),
       ),
-      home: const SplashPage(),
+      home: initialHome,
     );
   }
 }
@@ -186,3 +215,5 @@ class WelcomeScreen extends StatelessWidget {
     );
   }
 }
+
+
