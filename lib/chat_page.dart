@@ -181,12 +181,10 @@ print("TIMEZONE offset: ${DateTime.now().timeZoneOffset}");
    
 if (!silent) {
   setState(() {
-    if (_messages.isEmpty) {
-      _isLoading = true;
-    }
+    //  visa inte loading om vi redan har UI
     _error = null;
   });
-}  
+} 
 
 
     try {
@@ -548,7 +546,7 @@ child: widget.photoUrl.isEmpty
                     },
                   ),
           ),
-          if (_isLoading)
+  if (_isLoading && _messages.isEmpty)
   const Positioned(
     top: 10,
     left: 0,
