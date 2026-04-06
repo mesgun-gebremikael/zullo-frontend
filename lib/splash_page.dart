@@ -6,9 +6,13 @@ import 'services/auth_service.dart';
 import 'create_profile_page.dart';
 import 'main_navigation.dart';
 
-
 class SplashPage extends StatefulWidget {
-  const SplashPage({super.key});
+  final bool skipNavigation;
+
+  const SplashPage({
+    super.key,
+    this.skipNavigation = false,
+  });
 
   @override
   State<SplashPage> createState() => _SplashPageState();
@@ -20,43 +24,45 @@ class _SplashPageState extends State<SplashPage> {
   @override
   void initState() {
     super.initState();
+
+    if (widget.skipNavigation) return;
+
     _checkLogin();
   }
 
- Future<void> _checkLogin() async {
-  await Future.delayed(const Duration(seconds: 2));
+  Future<void> _checkLogin() async {
+    await Future.delayed(const Duration(seconds: 2));
 
-  final token = await _storage.getToken();
-  final AuthService _authService = AuthService();
+    final token = await _storage.getToken();
+    final AuthService _authService = AuthService();
 
-  if (!mounted) return;
+    if (!mounted) return;
 
-  if (token == null) {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const WelcomePage()),
-    );
-    return;
+    if (token == null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const WelcomePage()),
+      );
+      return;
+    }
+
+    // token finns → kolla om profil finns
+    final exists = await _authService.hasProfile();
+
+    if (!mounted) return;
+
+    if (exists) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const MainNavigation()),
+      );
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const CreateProfilePage()),
+      );
+    }
   }
-
-  // token finns → kolla om profil finns
-  final exists = await _authService.hasProfile();
-
-  if (!mounted) return;
-
-  if (exists) {
-  Navigator.pushReplacement(
-    context,
-    MaterialPageRoute(builder: (_) => const MainNavigation()),
-  );
-} else {
-  Navigator.pushReplacement(
-    context,
-    MaterialPageRoute(builder: (_) => const CreateProfilePage()),
-  );
-}
-}
-
 
   @override
   Widget build(BuildContext context) {
