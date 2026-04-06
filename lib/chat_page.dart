@@ -74,12 +74,15 @@ class _ChatPageState extends State<ChatPage> {
     }
 
     // 1) Ladda tråd (inkl smart markRead om behövs)
+       // 1) Ladda tråd en gång
     await _loadThread();
 
-//  EXTRA: säkerställ att vi markerar som läst direkt när chat öppnas
-   await _messagesService.markRead(widget.userId);
-    //  Ladda igen så UI + unread blir korrekt direkt
-   await _loadThread(silent: true);
+    // 2) Markera som läst direkt, men ladda inte om hela tråden igen här
+    try {
+      await _messagesService.markRead(widget.userId);
+    } catch (_) {
+      // ignore i MVP
+    }
 
     // 2) Poll (MVP): bara hämta tråd
     _pollTimer = Timer.periodic(const Duration(seconds: 5), (_) {
