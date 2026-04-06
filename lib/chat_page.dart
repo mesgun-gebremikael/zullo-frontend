@@ -492,56 +492,65 @@ child: widget.photoUrl.isEmpty
       body: Column(
         children: [
           Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _error != null
-                    ? Center(child: Text(_error!))
-                    : RefreshIndicator(
-                        onRefresh: () async {
-                          await _loadThread();
-                        },
-                        child: _messages.isEmpty
-                            ? ListView(
-                                physics: const AlwaysScrollableScrollPhysics(),
-                                children: const [
-                                  SizedBox(height: 140),
-                                  Center(child: Text("Säg hej 👋")),
-                                ],
-                              )
-                            : ListView.builder(
-                                controller: _scroll,
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 10),
-                                itemCount: _messages.length,
-                                itemBuilder: (context, i) {
-                                  final m = _messages[i];
+             child: _error != null
+    ? Center(child: Text(_error!))
+    : Stack(
+        children: [
+          RefreshIndicator(
+            onRefresh: () async {
+              await _loadThread();
+            },
+            child: _messages.isEmpty
+                ? ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    children: const [
+                      SizedBox(height: 140),
+                      Center(child: Text("Säg hej 👋")),
+                    ],
+                  )
+                : ListView.builder(
+                    controller: _scroll,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 10),
+                    itemCount: _messages.length,
+                    itemBuilder: (context, i) {
+                      final m = _messages[i];
 
-                                  final showDateChip = i == 0
-                                      ? true
-                                      : !_isSameDay(
-                                          _messages[i - 1].timeLocal, m.timeLocal);
+                      final showDateChip = i == 0
+                          ? true
+                          : !_isSameDay(
+                              _messages[i - 1].timeLocal,
+                              m.timeLocal,
+                            );
 
-                                  return Column(
-                                    children: [
-                                      if (showDateChip) ...[
-                                        const SizedBox(height: 8),
-                                        _DateChip(text: _formatDateSw(m.timeLocal)),
-                                        const SizedBox(height: 8),
-                                      ],
-                                      _MessageBubble(
-                                        text: m.text,
-                                        isMe: m.isMe,
-                                        timeText: _formatTime(m.timeLocal),
-                                        pending: m.pending,
-                                        failed: m.failed,
-                                        readAtLocal: m.readAtLocal,
-                                      ),
-                                    ],
-                                  );
-                                },
-                              ),
-                      ),
+                      return Column(
+                        children: [
+                          if (showDateChip) ...[
+                            const SizedBox(height: 8),
+                            _DateChip(text: _formatDateSw(m.timeLocal)),
+                            const SizedBox(height: 8),
+                          ],
+                          _MessageBubble(
+                            text: m.text,
+                            isMe: m.isMe,
+                            timeText: _formatTime(m.timeLocal),
+                            pending: m.pending,
+                            failed: m.failed,
+                            readAtLocal: m.readAtLocal,
+                          ),
+                        ],
+                      );
+                    },
+                  ),
           ),
+          if (_isLoading && _messages.isEmpty)
+            const Center(
+              child: CircularProgressIndicator(),
+            ),
+        ],
+    ),
+      ),
+
           SafeArea(
             top: false,
             child: Padding(

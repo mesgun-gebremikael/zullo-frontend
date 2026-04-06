@@ -39,21 +39,42 @@ NotificationLaunchData? _parseNotificationLaunch(RemoteMessage? message) {
 }
 
 void _openChatFromMessage(RemoteMessage message) {
-  final parsed = _parseNotificationLaunch(message);
-  if (parsed == null) return;
+  final data = message.data;
 
+  if (data['type'] != 'message') return;
+
+  final senderUserId = data['senderUserId'];
+  final senderName = data['senderName'] ?? 'Chat';
+  final senderPhotoUrl = data['senderPhotoUrl'] ?? '';
+
+  if (senderUserId == null || senderUserId.isEmpty) return;
+
+  // 👇 1. visa svart sida direkt (ingen blink)
   navigatorKey.currentState?.pushAndRemoveUntil(
     MaterialPageRoute(
-      builder: (_) => MainNavigation(
-        initialIndex: 3,
-        openChatUserId: parsed.userId,
-        openChatDisplayName: parsed.displayName,
-        openChatPhotoUrl: parsed.photoUrl,
+      builder: (_) => const Scaffold(
+        backgroundColor: Colors.black,
       ),
     ),
     (route) => false,
   );
+
+  // 👇 2. direkt till chat efter en frame
+  Future.delayed(const Duration(milliseconds: 50), () {
+    navigatorKey.currentState?.pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (_) => MainNavigation(
+          initialIndex: 3,
+          openChatUserId: senderUserId,
+          openChatDisplayName: senderName,
+          openChatPhotoUrl: senderPhotoUrl,
+        ),
+      ),
+      (route) => false,
+    );
+  });
 }
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
