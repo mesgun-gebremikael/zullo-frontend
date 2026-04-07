@@ -218,24 +218,7 @@ class _ZulloAppState extends State<ZulloApp> {
               .toString()
               .trim();
 
-      flutterLocalNotificationsPlugin.show(
-        0,
-        launch.displayName,
-        messageText.isEmpty ? 'Skickade ett meddelande' : messageText,
-        NotificationDetails(
-          android: AndroidNotificationDetails(
-            channel.id,
-            channel.name,
-            channelDescription: channel.description,
-            importance: Importance.max,
-            priority: Priority.high,
-            visibility: NotificationVisibility.public,
-            icon: '@mipmap/ic_launcher',
-          ),
-        ),
-      );
-
-      _showInAppMessageOverlay(
+            _showInAppMessageOverlay(
         launch: launch,
         messageText: messageText,
       );
