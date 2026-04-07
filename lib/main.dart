@@ -108,7 +108,7 @@ void _showInAppMessageOverlay({
 
   overlayState.insert(_activeMessageOverlay!);
 
-  Future.delayed(const Duration(seconds: 4), () {
+   Future.delayed(const Duration(seconds: 4), () {
     _hideInAppMessageOverlay();
   });
 }
@@ -328,9 +328,12 @@ class _FloatingMessageBanner extends StatefulWidget {
 class _FloatingMessageBannerState extends State<_FloatingMessageBanner>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
-  late final Animation<Offset> _slideAnimation;
-  late final Animation<double> _fadeAnimation;
-  late final Animation<double> _scaleAnimation;
+  late final Animation<Offset> _enterSlideAnimation;
+  late final Animation<double> _enterFadeAnimation;
+  late final Animation<double> _enterScaleAnimation;
+
+  double _dragOffsetY = 0;
+  bool _isClosing = false;
 
   @override
   void initState() {
@@ -338,22 +341,22 @@ class _FloatingMessageBannerState extends State<_FloatingMessageBanner>
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 260),
+      duration: const Duration(milliseconds: 280),
     );
 
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, -0.16),
+    _enterSlideAnimation = Tween<Offset>(
+      begin: const Offset(0, -0.14),
       end: Offset.zero,
     ).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
     );
 
-    _fadeAnimation = CurvedAnimation(
+    _enterFadeAnimation = CurvedAnimation(
       parent: _controller,
       curve: Curves.easeOut,
     );
 
-    _scaleAnimation = Tween<double>(
+    _enterScaleAnimation = Tween<double>(
       begin: 0.992,
       end: 1,
     ).animate(
@@ -369,151 +372,210 @@ class _FloatingMessageBannerState extends State<_FloatingMessageBanner>
     super.dispose();
   }
 
-  void _handleDismiss(DismissDirection direction) {
+  Future<void> _dismissBanner() async {
+    if (_isClosing) return;
+    _isClosing = true;
+
+    await _controller.reverse();
     widget.onClose();
+  }
+
+  void _handleVerticalDragUpdate(DragUpdateDetails details) {
+    final nextOffset = _dragOffsetY + details.delta.dy;
+
+    // Bara uppåt eller väldigt lite neråt
+    setState(() {
+      _dragOffsetY = nextOffset.clamp(-160.0, 16.0);
+    });
+  }
+
+  void _handleVerticalDragEnd(DragEndDetails details) {
+    final velocity = details.primaryVelocity ?? 0;
+    final shouldDismiss = _dragOffsetY < -42 || velocity < -420;
+
+    if (shouldDismiss) {
+      _dismissBanner();
+      return;
+    }
+
+    setState(() {
+      _dragOffsetY = 0;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final dragProgress = (_dragOffsetY.abs() / 120).clamp(0.0, 1.0);
+    final dynamicOpacity = 1 - (dragProgress * 0.22);
+    final dynamicScale = 1 - (dragProgress * 0.025);
+
     return FadeTransition(
-      opacity: _fadeAnimation,
+      opacity: _enterFadeAnimation,
       child: SlideTransition(
-        position: _slideAnimation,
+        position: _enterSlideAnimation,
         child: ScaleTransition(
-          scale: _scaleAnimation,
-          child: Dismissible(
-            key: ValueKey('${widget.senderName}-${widget.messageText}'),
-            direction: DismissDirection.up,
-            onDismissed: _handleDismiss,
-            resizeDuration: null,
-            movementDuration: const Duration(milliseconds: 220),
-            child: Material(
-              color: Colors.transparent,
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 520),
-                  child: InkWell(
-                    onTap: widget.onOpen,
-                    borderRadius: BorderRadius.circular(22),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(22),
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
-                        child: Container(
-                          decoration: BoxDecoration(
+          scale: _enterScaleAnimation,
+          child: AnimatedSlide(
+            duration: const Duration(milliseconds: 240),
+            curve: Curves.easeOutBack,
+            offset: Offset(0, _dragOffsetY / 220),
+            child: AnimatedScale(
+              duration: const Duration(milliseconds: 240),
+              curve: Curves.easeOutCubic,
+              scale: dynamicScale,
+              child: AnimatedOpacity(
+                duration: const Duration(milliseconds: 180),
+                opacity: dynamicOpacity,
+                child: Material(
+                  color: Colors.transparent,
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 520),
+                      child: GestureDetector(
+                        onVerticalDragUpdate: _handleVerticalDragUpdate,
+                        onVerticalDragEnd: _handleVerticalDragEnd,
+                        child: InkWell(
+                          onTap: widget.onOpen,
+                          borderRadius: BorderRadius.circular(22),
+                          child: ClipRRect(
                             borderRadius: BorderRadius.circular(22),
-                            color: const Color(0xCC111111),
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.14),
-                              width: 0.9,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.22),
-                                blurRadius: 22,
-                                offset: const Offset(0, 10),
-                              ),
-                            ],
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(12, 11, 12, 11),
-                            child: Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(1.8),
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    gradient: const LinearGradient(
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                      colors: [
-                                        Color(0xFFFF5A5F),
-                                        Color(0xFFFF7A59),
-                                      ],
+                            child: BackdropFilter(
+                              filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(22),
+                                  color: const Color(0xCC101114),
+                                  border: Border.all(
+                                    color: Colors.white.withOpacity(0.15),
+                                    width: 0.9,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.24),
+                                      blurRadius: 24,
+                                      offset: const Offset(0, 10),
                                     ),
-                                  ),
-                                  child: CircleAvatar(
-                                    radius: 21,
-                                    backgroundColor: const Color(0xFF1A1A1A),
-                                    backgroundImage: widget.photoUrl.isNotEmpty
-                                        ? NetworkImage(widget.photoUrl)
-                                        : null,
-                                    child: widget.photoUrl.isEmpty
-                                        ? const Icon(
-                                            Icons.person,
-                                            color: Colors.white70,
-                                            size: 20,
-                                          )
-                                        : null,
-                                  ),
+                                  ],
                                 ),
-                                const SizedBox(width: 11),
-                                Expanded(
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                child: Padding(
+                                  padding:
+                                      const EdgeInsets.fromLTRB(12, 11, 12, 11),
+                                  child: Row(
                                     children: [
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: Text(
-                                              widget.senderName,
+                                      Container(
+                                        padding: const EdgeInsets.all(1.8),
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          gradient: const LinearGradient(
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                            colors: [
+                                              Color(0xFFFF5A5F),
+                                              Color(0xFFFF7A59),
+                                            ],
+                                          ),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: const Color(0xFFFF5A5F)
+                                                  .withOpacity(0.18),
+                                              blurRadius: 8,
+                                              offset: const Offset(0, 2),
+                                            ),
+                                          ],
+                                        ),
+                                        child: CircleAvatar(
+                                          radius: 21,
+                                          backgroundColor:
+                                              const Color(0xFF17181A),
+                                          backgroundImage:
+                                              widget.photoUrl.isNotEmpty
+                                                  ? NetworkImage(widget.photoUrl)
+                                                  : null,
+                                          child: widget.photoUrl.isEmpty
+                                              ? const Icon(
+                                                  Icons.person,
+                                                  color: Colors.white70,
+                                                  size: 20,
+                                                )
+                                              : null,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 11),
+                                      Expanded(
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                Expanded(
+                                                  child: Text(
+                                                    widget.senderName,
+                                                    maxLines: 1,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 15,
+                                                      fontWeight:
+                                                          FontWeight.w800,
+                                                      height: 1.05,
+                                                      letterSpacing: 0.05,
+                                                    ),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 6),
+                                                Container(
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                    horizontal: 7,
+                                                    vertical: 3,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.white
+                                                        .withOpacity(0.08),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            999),
+                                                    border: Border.all(
+                                                      color: Colors.white
+                                                          .withOpacity(0.09),
+                                                      width: 0.8,
+                                                    ),
+                                                  ),
+                                                  child: const Text(
+                                                    'Nu',
+                                                    style: TextStyle(
+                                                      color: Colors.white70,
+                                                      fontSize: 10,
+                                                      fontWeight:
+                                                          FontWeight.w700,
+                                                      height: 1,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              widget.messageText,
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
                                               style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 15,
-                                                fontWeight: FontWeight.w800,
-                                                height: 1.05,
-                                                letterSpacing: 0.05,
+                                                color: Color(0xFFECECEC),
+                                                fontSize: 13.2,
+                                                fontWeight: FontWeight.w500,
+                                                height: 1.15,
                                               ),
                                             ),
-                                          ),
-                                          const SizedBox(width: 6),
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 7,
-                                              vertical: 3,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color:
-                                                  Colors.white.withOpacity(0.08),
-                                              borderRadius:
-                                                  BorderRadius.circular(999),
-                                              border: Border.all(
-                                                color: Colors.white
-                                                    .withOpacity(0.09),
-                                                width: 0.8,
-                                              ),
-                                            ),
-                                            child: const Text(
-                                              'Nu',
-                                              style: TextStyle(
-                                                color: Colors.white70,
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.w700,
-                                                height: 1,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        widget.messageText,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          color: Color(0xFFECECEC),
-                                          fontSize: 13.2,
-                                          fontWeight: FontWeight.w500,
-                                          height: 1.15,
+                                          ],
                                         ),
                                       ),
                                     ],
                                   ),
                                 ),
-                              ],
+                              ),
                             ),
                           ),
                         ),
