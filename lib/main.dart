@@ -7,6 +7,7 @@ import 'chat_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'services/auth_service.dart';
 import 'services/current_chat.dart';
 import 'main_navigation.dart';
@@ -17,6 +18,16 @@ final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
     GlobalKey<ScaffoldMessengerState>();
 
 OverlayEntry? _activeMessageOverlay;
+
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
+
+const AndroidNotificationChannel channel = AndroidNotificationChannel(
+  'messages',
+  'Messages',
+  description: 'Chat messages',
+  importance: Importance.max,
+);
 
 Route<T> _instantRoute<T>(Widget page) {
   return PageRouteBuilder<T>(
@@ -127,6 +138,17 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
+    await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>()
+      ?.createNotificationChannel(channel);
+
+  await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+    alert: true,
+    badge: true,
+    sound: true,
+  );
+
   await FirebaseMessaging.instance.requestPermission();
 
   final fcmToken = await FirebaseMessaging.instance.getToken();
@@ -183,7 +205,7 @@ class _ZulloAppState extends State<ZulloApp> {
       _openChatFromLaunch(launch);
     });
 
-          FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+            FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       final launch = _parseNotificationLaunch(message);
       if (launch == null) return;
 
@@ -195,6 +217,23 @@ class _ZulloAppState extends State<ZulloApp> {
           (message.data['messageText'] ?? message.notification?.body ?? '')
               .toString()
               .trim();
+
+      flutterLocalNotificationsPlugin.show(
+        0,
+        launch.displayName,
+        messageText.isEmpty ? 'Skickade ett meddelande' : messageText,
+        NotificationDetails(
+          android: AndroidNotificationDetails(
+            channel.id,
+            channel.name,
+            channelDescription: channel.description,
+            importance: Importance.max,
+            priority: Priority.high,
+            visibility: NotificationVisibility.public,
+            icon: '@mipmap/ic_launcher',
+          ),
+        ),
+      );
 
       _showInAppMessageOverlay(
         launch: launch,
