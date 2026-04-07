@@ -6,6 +6,9 @@ import '../services/auth_storage.dart';
 import '../services/auth_service.dart';
 import '../services/block_service.dart';
 import '../services/current_chat.dart';
+import 'package:app_badge_plus/app_badge_plus.dart';
+import '../services/badge_service.dart';
+
 
 class ChatPage extends StatefulWidget {
   final String userId; // other user id
@@ -55,16 +58,18 @@ class _ChatPageState extends State<ChatPage> {
   bool _markReadInFlight = false;
   DateTime? _lastMarkReadAtUtc;
 
-    @override
-  void initState() {
-    super.initState();
-    _messagesService = MessagesService(_baseApiUrl, AuthStorage());
+  @override
+void initState() {
+  super.initState();
 
-    CurrentChat.openUserId = widget.userId;
+  // 🔥 reset badge när chat öppnas
+  
 
-    // 0) Hämta meId först, sen load
-    _init();
-  }
+  _messagesService = MessagesService(_baseApiUrl, AuthStorage());
+  CurrentChat.openUserId = widget.userId;
+
+  _init();
+}
 
   Future<void> _init() async {
    _meUserId = await AuthStorage().getUserId();
@@ -78,16 +83,17 @@ class _ChatPageState extends State<ChatPage> {
       return;
     }
 
-    // 1) Ladda tråd (inkl smart markRead om behövs)
-       // 1) Ladda tråd en gång
+    // 1) Ladda tråd en gång
     await _loadThread();
 
     // 2) Markera som läst direkt, men ladda inte om hela tråden igen här
     try {
       await _messagesService.markRead(widget.userId);
+      await BadgeService.refreshUnreadBadge();
     } catch (_) {
       // ignore i MVP
     }
+
 
     // 2) Poll (MVP): bara hämta tråd
     _pollTimer = Timer.periodic(const Duration(seconds: 5), (_) {

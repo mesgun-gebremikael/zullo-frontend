@@ -10,6 +10,8 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'services/auth_service.dart';
 import 'services/current_chat.dart';
+import 'package:app_badge_plus/app_badge_plus.dart';
+import 'services/badge_service.dart';
 import 'main_navigation.dart';
 
 
@@ -162,6 +164,8 @@ void main() async {
       print("Could not save device token: $e");
     }
   }
+   await BadgeService.refreshUnreadBadge();
+
 
   final initialMessage = await FirebaseMessaging.instance.getInitialMessage();
   final launchFromNotification = _parseNotificationLaunch(initialMessage);
@@ -205,7 +209,7 @@ class _ZulloAppState extends State<ZulloApp> {
       _openChatFromLaunch(launch);
     });
 
-            FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+            FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
       final launch = _parseNotificationLaunch(message);
       if (launch == null) return;
 
@@ -217,6 +221,12 @@ class _ZulloAppState extends State<ZulloApp> {
           (message.data['messageText'] ?? message.notification?.body ?? '')
               .toString()
               .trim();
+
+              try {
+await BadgeService.refreshUnreadBadge();
+} catch (e) {
+  print("Badge error: $e");
+}
 
             _showInAppMessageOverlay(
         launch: launch,
