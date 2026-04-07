@@ -369,6 +369,10 @@ class _FloatingMessageBannerState extends State<_FloatingMessageBanner>
     super.dispose();
   }
 
+  void _handleDismiss(DismissDirection direction) {
+    widget.onClose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return FadeTransition(
@@ -377,154 +381,140 @@ class _FloatingMessageBannerState extends State<_FloatingMessageBanner>
         position: _slideAnimation,
         child: ScaleTransition(
           scale: _scaleAnimation,
-          child: Material(
-            color: Colors.transparent,
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 520),
-                child: InkWell(
-                  onTap: widget.onOpen,
-                  borderRadius: BorderRadius.circular(22),
-                  child: ClipRRect(
+          child: Dismissible(
+            key: ValueKey('${widget.senderName}-${widget.messageText}'),
+            direction: DismissDirection.up,
+            onDismissed: _handleDismiss,
+            resizeDuration: null,
+            movementDuration: const Duration(milliseconds: 220),
+            child: Material(
+              color: Colors.transparent,
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 520),
+                  child: InkWell(
+                    onTap: widget.onOpen,
                     borderRadius: BorderRadius.circular(22),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(22),
-                          color: const Color(0xCC111111),
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.14),
-                            width: 0.9,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.22),
-                              blurRadius: 22,
-                              offset: const Offset(0, 10),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(22),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(22),
+                            color: const Color(0xCC111111),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.14),
+                              width: 0.9,
                             ),
-                          ],
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(12, 11, 10, 11),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(1.8),
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  gradient: const LinearGradient(
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                    colors: [
-                                      Color(0xFFFF5A5F),
-                                      Color(0xFFFF7A59),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.22),
+                                blurRadius: 22,
+                                offset: const Offset(0, 10),
+                              ),
+                            ],
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(12, 11, 12, 11),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(1.8),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    gradient: const LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: [
+                                        Color(0xFFFF5A5F),
+                                        Color(0xFFFF7A59),
+                                      ],
+                                    ),
+                                  ),
+                                  child: CircleAvatar(
+                                    radius: 21,
+                                    backgroundColor: const Color(0xFF1A1A1A),
+                                    backgroundImage: widget.photoUrl.isNotEmpty
+                                        ? NetworkImage(widget.photoUrl)
+                                        : null,
+                                    child: widget.photoUrl.isEmpty
+                                        ? const Icon(
+                                            Icons.person,
+                                            color: Colors.white70,
+                                            size: 20,
+                                          )
+                                        : null,
+                                  ),
+                                ),
+                                const SizedBox(width: 11),
+                                Expanded(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              widget.senderName,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.w800,
+                                                height: 1.05,
+                                                letterSpacing: 0.05,
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 7,
+                                              vertical: 3,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color:
+                                                  Colors.white.withOpacity(0.08),
+                                              borderRadius:
+                                                  BorderRadius.circular(999),
+                                              border: Border.all(
+                                                color: Colors.white
+                                                    .withOpacity(0.09),
+                                                width: 0.8,
+                                              ),
+                                            ),
+                                            child: const Text(
+                                              'Nu',
+                                              style: TextStyle(
+                                                color: Colors.white70,
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.w700,
+                                                height: 1,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        widget.messageText,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          color: Color(0xFFECECEC),
+                                          fontSize: 13.2,
+                                          fontWeight: FontWeight.w500,
+                                          height: 1.15,
+                                        ),
+                                      ),
                                     ],
                                   ),
                                 ),
-                                child: CircleAvatar(
-                                  radius: 21,
-                                  backgroundColor: const Color(0xFF1A1A1A),
-                                  backgroundImage: widget.photoUrl.isNotEmpty
-                                      ? NetworkImage(widget.photoUrl)
-                                      : null,
-                                  child: widget.photoUrl.isEmpty
-                                      ? const Icon(
-                                          Icons.person,
-                                          color: Colors.white70,
-                                          size: 20,
-                                        )
-                                      : null,
-                                ),
-                              ),
-                              const SizedBox(width: 11),
-                              Expanded(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            widget.senderName,
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.w800,
-                                              height: 1.05,
-                                              letterSpacing: 0.05,
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 6),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 7,
-                                            vertical: 3,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: Colors.white.withOpacity(0.08),
-                                            borderRadius:
-                                                BorderRadius.circular(999),
-                                            border: Border.all(
-                                              color:
-                                                  Colors.white.withOpacity(0.09),
-                                              width: 0.8,
-                                            ),
-                                          ),
-                                          child: const Text(
-                                            'Nu',
-                                            style: TextStyle(
-                                              color: Colors.white70,
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.w700,
-                                              height: 1,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      widget.messageText,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        color: Color(0xFFECECEC),
-                                        fontSize: 13.2,
-                                        fontWeight: FontWeight.w500,
-                                        height: 1.15,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              GestureDetector(
-                                onTap: widget.onClose,
-                                behavior: HitTestBehavior.opaque,
-                                child: Container(
-                                  width: 32,
-                                  height: 32,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.white.withOpacity(0.06),
-                                    border: Border.all(
-                                      color: Colors.white.withOpacity(0.09),
-                                      width: 0.8,
-                                    ),
-                                  ),
-                                  child: const Icon(
-                                    Icons.close_rounded,
-                                    size: 17,
-                                    color: Colors.white70,
-                                  ),
-                                ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
