@@ -7,7 +7,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'services/auth_service.dart';
+import 'services/current_chat.dart';
 import 'main_navigation.dart';
+
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
@@ -74,8 +76,8 @@ void _showInAppMessageOverlay({
   required NotificationLaunchData launch,
   required String messageText,
 }) {
-  final context = navigatorKey.currentContext;
-  if (context == null) return;
+  final overlayState = navigatorKey.currentState?.overlay;
+  if (overlayState == null) return;
 
   _hideInAppMessageOverlay();
 
@@ -103,7 +105,7 @@ void _showInAppMessageOverlay({
     },
   );
 
-  Overlay.of(context, rootOverlay: true).insert(_activeMessageOverlay!);
+  overlayState.insert(_activeMessageOverlay!);
 
   Future.delayed(const Duration(seconds: 4), () {
     _hideInAppMessageOverlay();
@@ -180,9 +182,13 @@ class _ZulloAppState extends State<ZulloApp> {
       _openChatFromLaunch(launch);
     });
 
-       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+          FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       final launch = _parseNotificationLaunch(message);
       if (launch == null) return;
+
+      if (CurrentChat.openUserId == launch.userId) {
+        return;
+      }
 
       final messageText =
           (message.data['messageText'] ?? message.notification?.body ?? '')

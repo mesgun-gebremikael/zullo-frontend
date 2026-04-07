@@ -5,6 +5,7 @@ import '../services/messages_service.dart';
 import '../services/auth_storage.dart';
 import '../services/auth_service.dart';
 import '../services/block_service.dart';
+import '../services/current_chat.dart';
 
 class ChatPage extends StatefulWidget {
   final String userId; // other user id
@@ -54,10 +55,12 @@ class _ChatPageState extends State<ChatPage> {
   bool _markReadInFlight = false;
   DateTime? _lastMarkReadAtUtc;
 
-  @override
+    @override
   void initState() {
     super.initState();
     _messagesService = MessagesService(_baseApiUrl, AuthStorage());
+
+    CurrentChat.openUserId = widget.userId;
 
     // 0) Hämta meId först, sen load
     _init();
@@ -99,8 +102,12 @@ print("TIMEZONE offset: ${DateTime.now().timeZoneOffset}");
 });
   }
 
-  @override
+    @override
   void dispose() {
+    if (CurrentChat.openUserId == widget.userId) {
+      CurrentChat.openUserId = null;
+    }
+
     _controller.dispose();
     _scroll.dispose();
     _pollTimer?.cancel();
