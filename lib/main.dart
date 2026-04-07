@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'register_page.dart';
 import 'login_page.dart';
 import 'splash_page.dart';
+import 'dart:ui';
 import 'chat_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -329,6 +330,7 @@ class _FloatingMessageBannerState extends State<_FloatingMessageBanner>
   late final AnimationController _controller;
   late final Animation<Offset> _slideAnimation;
   late final Animation<double> _fadeAnimation;
+  late final Animation<double> _scaleAnimation;
 
   @override
   void initState() {
@@ -336,11 +338,11 @@ class _FloatingMessageBannerState extends State<_FloatingMessageBanner>
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 260),
+      duration: const Duration(milliseconds: 300),
     );
 
     _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, -0.18),
+      begin: const Offset(0, -0.22),
       end: Offset.zero,
     ).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
@@ -349,6 +351,13 @@ class _FloatingMessageBannerState extends State<_FloatingMessageBanner>
     _fadeAnimation = CurvedAnimation(
       parent: _controller,
       curve: Curves.easeOut,
+    );
+
+    _scaleAnimation = Tween<double>(
+      begin: 0.985,
+      end: 1,
+    ).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
     );
 
     _controller.forward();
@@ -366,107 +375,169 @@ class _FloatingMessageBannerState extends State<_FloatingMessageBanner>
       opacity: _fadeAnimation,
       child: SlideTransition(
         position: _slideAnimation,
-        child: Material(
-          color: Colors.transparent,
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 520),
-              child: InkWell(
-                onTap: widget.onOpen,
-                borderRadius: BorderRadius.circular(24),
-                child: Ink(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(24),
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        const Color(0xFF2A1D17).withOpacity(0.94),
-                        const Color(0xFF140F0C).withOpacity(0.90),
+        child: ScaleTransition(
+          scale: _scaleAnimation,
+          child: Material(
+            color: Colors.transparent,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 520),
+                child: InkWell(
+                  onTap: widget.onOpen,
+                  borderRadius: BorderRadius.circular(26),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(26),
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          const Color(0xCC2B201B),
+                          const Color(0xCC17110E),
+                        ],
+                      ),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.10),
+                        width: 1,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.28),
+                          blurRadius: 24,
+                          offset: const Offset(0, 10),
+                        ),
                       ],
                     ),
-                    border: Border.all(
-                      color: const Color(0xFFE8B06A).withOpacity(0.18),
-                      width: 1,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.30),
-                        blurRadius: 22,
-                        offset: const Offset(0, 10),
-                      ),
-                    ],
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
-                    child: Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 22,
-                          backgroundColor: const Color(0xFF2B211C),
-                          backgroundImage: widget.photoUrl.isNotEmpty
-                              ? NetworkImage(widget.photoUrl)
-                              : null,
-                          child: widget.photoUrl.isEmpty
-                              ? const Icon(
-                                  Icons.person,
-                                  color: Colors.white70,
-                                )
-                              : null,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(26),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
+                          child: Row(
                             children: [
-                              Text(
-                                widget.senderName,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 15.5,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: 0.1,
+                              Container(
+                                padding: const EdgeInsets.all(2),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  gradient: const LinearGradient(
+                                    colors: [
+                                      Color(0xFFFF5864),
+                                      Color(0xFFFF8A5B),
+                                    ],
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xFFFF5864)
+                                          .withOpacity(0.18),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ],
+                                ),
+                                child: CircleAvatar(
+                                  radius: 22,
+                                  backgroundColor: const Color(0xFF221915),
+                                  backgroundImage: widget.photoUrl.isNotEmpty
+                                      ? NetworkImage(widget.photoUrl)
+                                      : null,
+                                  child: widget.photoUrl.isEmpty
+                                      ? const Icon(
+                                          Icons.person,
+                                          color: Colors.white70,
+                                        )
+                                      : null,
                                 ),
                               ),
-                              const SizedBox(height: 3),
-                              Text(
-                                widget.messageText,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  color: Color(0xFFE7D7CF),
-                                  fontSize: 13.5,
-                                  fontWeight: FontWeight.w500,
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Flexible(
+                                          child: Text(
+                                            widget.senderName,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 15.5,
+                                              fontWeight: FontWeight.w800,
+                                              letterSpacing: 0.1,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 3,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color:
+                                                Colors.white.withOpacity(0.08),
+                                            borderRadius:
+                                                BorderRadius.circular(999),
+                                            border: Border.all(
+                                              color: Colors.white
+                                                  .withOpacity(0.08),
+                                            ),
+                                          ),
+                                          child: const Text(
+                                            'Nu',
+                                            style: TextStyle(
+                                              color: Colors.white70,
+                                              fontSize: 10.5,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      widget.messageText,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        color: Color(0xFFE9DCD4),
+                                        fontSize: 13.5,
+                                        fontWeight: FontWeight.w500,
+                                        height: 1.15,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              GestureDetector(
+                                onTap: widget.onClose,
+                                behavior: HitTestBehavior.opaque,
+                                child: Container(
+                                  width: 34,
+                                  height: 34,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.white.withOpacity(0.07),
+                                    border: Border.all(
+                                      color: Colors.white.withOpacity(0.08),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: const Icon(
+                                    Icons.close_rounded,
+                                    size: 18,
+                                    color: Colors.white70,
+                                  ),
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        const SizedBox(width: 10),
-                        InkWell(
-                          onTap: widget.onClose,
-                          borderRadius: BorderRadius.circular(999),
-                          child: Container(
-                            width: 34,
-                            height: 34,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.white.withOpacity(0.06),
-                              border: Border.all(
-                                color: Colors.white.withOpacity(0.08),
-                              ),
-                            ),
-                            child: const Icon(
-                              Icons.close,
-                              size: 18,
-                              color: Colors.white70,
-                            ),
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
@@ -478,5 +549,4 @@ class _FloatingMessageBannerState extends State<_FloatingMessageBanner>
     );
   }
 }
-
 
