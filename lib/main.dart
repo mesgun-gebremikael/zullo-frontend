@@ -338,11 +338,11 @@ class _FloatingMessageBannerState extends State<_FloatingMessageBanner>
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 260),
     );
 
     _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, -0.22),
+      begin: const Offset(0, -0.16),
       end: Offset.zero,
     ).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
@@ -354,7 +354,7 @@ class _FloatingMessageBannerState extends State<_FloatingMessageBanner>
     );
 
     _scaleAnimation = Tween<double>(
-      begin: 0.985,
+      begin: 0.992,
       end: 1,
     ).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
@@ -384,60 +384,47 @@ class _FloatingMessageBannerState extends State<_FloatingMessageBanner>
                 constraints: const BoxConstraints(maxWidth: 520),
                 child: InkWell(
                   onTap: widget.onOpen,
-                  borderRadius: BorderRadius.circular(26),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(26),
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          const Color(0xCC2B201B),
-                          const Color(0xCC17110E),
-                        ],
-                      ),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.10),
-                        width: 1,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.28),
-                          blurRadius: 24,
-                          offset: const Offset(0, 10),
+                  borderRadius: BorderRadius.circular(22),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(22),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(22),
+                          color: const Color(0xCC111111),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.14),
+                            width: 0.9,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.22),
+                              blurRadius: 22,
+                              offset: const Offset(0, 10),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(26),
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
                         child: Padding(
-                          padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
+                          padding: const EdgeInsets.fromLTRB(12, 11, 10, 11),
                           child: Row(
                             children: [
                               Container(
-                                padding: const EdgeInsets.all(2),
+                                padding: const EdgeInsets.all(1.8),
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   gradient: const LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
                                     colors: [
-                                      Color(0xFFFF5864),
-                                      Color(0xFFFF8A5B),
+                                      Color(0xFFFF5A5F),
+                                      Color(0xFFFF7A59),
                                     ],
                                   ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(0xFFFF5864)
-                                          .withOpacity(0.18),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 3),
-                                    ),
-                                  ],
                                 ),
                                 child: CircleAvatar(
-                                  radius: 22,
-                                  backgroundColor: const Color(0xFF221915),
+                                  radius: 21,
+                                  backgroundColor: const Color(0xFF1A1A1A),
                                   backgroundImage: widget.photoUrl.isNotEmpty
                                       ? NetworkImage(widget.photoUrl)
                                       : null,
@@ -445,11 +432,12 @@ class _FloatingMessageBannerState extends State<_FloatingMessageBanner>
                                       ? const Icon(
                                           Icons.person,
                                           color: Colors.white70,
+                                          size: 20,
                                         )
                                       : null,
                                 ),
                               ),
-                              const SizedBox(width: 12),
+                              const SizedBox(width: 11),
                               Expanded(
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
@@ -457,41 +445,43 @@ class _FloatingMessageBannerState extends State<_FloatingMessageBanner>
                                   children: [
                                     Row(
                                       children: [
-                                        Flexible(
+                                        Expanded(
                                           child: Text(
                                             widget.senderName,
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                             style: const TextStyle(
                                               color: Colors.white,
-                                              fontSize: 15.5,
+                                              fontSize: 15,
                                               fontWeight: FontWeight.w800,
-                                              letterSpacing: 0.1,
+                                              height: 1.05,
+                                              letterSpacing: 0.05,
                                             ),
                                           ),
                                         ),
-                                        const SizedBox(width: 8),
+                                        const SizedBox(width: 6),
                                         Container(
                                           padding: const EdgeInsets.symmetric(
-                                            horizontal: 8,
+                                            horizontal: 7,
                                             vertical: 3,
                                           ),
                                           decoration: BoxDecoration(
-                                            color:
-                                                Colors.white.withOpacity(0.08),
+                                            color: Colors.white.withOpacity(0.08),
                                             borderRadius:
                                                 BorderRadius.circular(999),
                                             border: Border.all(
-                                              color: Colors.white
-                                                  .withOpacity(0.08),
+                                              color:
+                                                  Colors.white.withOpacity(0.09),
+                                              width: 0.8,
                                             ),
                                           ),
                                           child: const Text(
                                             'Nu',
                                             style: TextStyle(
                                               color: Colors.white70,
-                                              fontSize: 10.5,
+                                              fontSize: 10,
                                               fontWeight: FontWeight.w700,
+                                              height: 1,
                                             ),
                                           ),
                                         ),
@@ -503,8 +493,8 @@ class _FloatingMessageBannerState extends State<_FloatingMessageBanner>
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                       style: const TextStyle(
-                                        color: Color(0xFFE9DCD4),
-                                        fontSize: 13.5,
+                                        color: Color(0xFFECECEC),
+                                        fontSize: 13.2,
                                         fontWeight: FontWeight.w500,
                                         height: 1.15,
                                       ),
@@ -512,24 +502,24 @@ class _FloatingMessageBannerState extends State<_FloatingMessageBanner>
                                   ],
                                 ),
                               ),
-                              const SizedBox(width: 10),
+                              const SizedBox(width: 8),
                               GestureDetector(
                                 onTap: widget.onClose,
                                 behavior: HitTestBehavior.opaque,
                                 child: Container(
-                                  width: 34,
-                                  height: 34,
+                                  width: 32,
+                                  height: 32,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color: Colors.white.withOpacity(0.07),
+                                    color: Colors.white.withOpacity(0.06),
                                     border: Border.all(
-                                      color: Colors.white.withOpacity(0.08),
-                                      width: 1,
+                                      color: Colors.white.withOpacity(0.09),
+                                      width: 0.8,
                                     ),
                                   ),
                                   child: const Icon(
                                     Icons.close_rounded,
-                                    size: 18,
+                                    size: 17,
                                     color: Colors.white70,
                                   ),
                                 ),
@@ -549,4 +539,3 @@ class _FloatingMessageBannerState extends State<_FloatingMessageBanner>
     );
   }
 }
-
