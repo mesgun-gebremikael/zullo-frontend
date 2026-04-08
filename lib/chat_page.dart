@@ -81,22 +81,7 @@ class _ChatPageState extends State<ChatPage> {
  Future<void> _init() async {
   _meUserId = await AuthStorage().getUserId();
 
-  // 1. Kolla cache först
-  final cached = ChatCacheService.getMessages(widget.userId);
-
-  if (cached != null && cached.isNotEmpty) {
-    setState(() {
-      _messages
-        ..clear()
-        ..addAll(cached.cast<_UiMessage>());
-
-      _hasLoadedInitialThread = true;
-      _isLoading = false;
-      _error = null;
-    });
-  }
-
-  // Om meId saknas betyder det att user inte är inloggad korrekt
+  // 1) Om meId saknas betyder det att user inte är inloggad korrekt
   if (_meUserId == null || _meUserId!.isEmpty) {
     setState(() {
       _isLoading = false;
@@ -105,7 +90,20 @@ class _ChatPageState extends State<ChatPage> {
     return;
   }
 
-  // 2) Koppla listeners direkt
+  // 2) Visa cache direkt om den finns
+  final cached = ChatCacheService.getMessages(widget.userId);
+  if (cached != null && cached.isNotEmpty) {
+    setState(() {
+      _messages
+        ..clear()
+        ..addAll(cached.cast<_UiMessage>());
+      _hasLoadedInitialThread = true;
+      _isLoading = false;
+      _error = null;
+    });
+  }
+
+  // 3) Koppla listeners först
   _signalRService.messagesStream.listen((data) {
     _appendIncomingSignalRMessage(data);
   });
@@ -115,34 +113,36 @@ class _ChatPageState extends State<ChatPage> {
     _applyLiveReadReceipt(data);
   });
 
-  // 3) Kör första trådladdningen i bakgrunden
-  Future(() async {
-    try {
-      await _loadThread(silent: true);
-    } catch (_) {
-      // ignore i MVP
-    }
-  });
-
-  // 4) Kör SignalR connect i bakgrunden
-  Future(() async {
+  // 4) Starta SignalR i bakgrunden
+  unawaited(Future(() async {
     try {
       await _signalRService.connect();
     } catch (_) {
       // ignore i MVP
     }
-  });
+  }));
 
-  // 5) MarkRead + badge i bakgrunden så chat öppnas snabbare
-  Future(() async {
+  // 5) Ladda första tråden i bakgrunden
+  unawaited(Future(() async {
+    try {
+      await _loadThread(silent: true);
+    } catch (_) {
+      // ignore i MVP
+    }
+  }));
+
+  // 6) MarkRead + badge i bakgrunden
+  unawaited(Future(() async {
     try {
       await _messagesService.markRead(widget.userId);
       await BadgeService.refreshUnreadBadge();
     } catch (_) {
       // ignore i MVP
     }
-  });
+  }));
 }
+
+
 
 
 
@@ -269,13 +269,6 @@ if (!silent) {
 
       if (!mounted) return;
 
-      setState(() {
-        _messages
-          ..clear()
-          ..addAll(parsed);
-        _isLoading = false;
-        _error = null;
-      });
 
       setState(() {
   _messages
@@ -371,14 +364,38 @@ ChatCacheService.setMessages(widget.userId, List.from(parsed));
 
     _scrollToBottom();
 
-    try {
-      await _messagesService.sendMessage(
+     try {
+      final sent = await _messagesService.sendMessage(
         toUserId: widget.userId,
         text: text,
       );
 
-      await _loadThread();
+      final sentCreatedAtLocal =
+          _parseUtcStringToLocal(sent['createdAtUtc']) ?? DateTime.now();
+
+      if (!mounted) return;
+
+      setState(() {
+        final idx = _messages.lastIndexWhere((m) => identical(m, optimistic));
+        if (idx != -1) {
+          _messages[idx] = _UiMessage(
+            text: text,
+            isMe: true,
+            timeLocal: sentCreatedAtLocal,
+            readAtLocal: sent['readAtUtc'] != null
+                ? _parseUtcStringToLocal(sent['readAtUtc'])
+                : null,
+            pending: false,
+            failed: false,
+          );
+        }
+      });
+
+      ChatCacheService.setMessages(widget.userId, List.from(_messages));
+      _scrollToBottom();
     } catch (e) {
+
+
       if (!mounted) return;
 
       setState(() {
