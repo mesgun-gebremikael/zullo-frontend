@@ -34,31 +34,34 @@ class MessagesService {
     throw Exception('Thread failed: ${res.statusCode} ${res.body}');
   }
 
-  Future<Map<String, dynamic>> sendMessage({
-    required String toUserId,
-    required String text,
-  }) async {
-    final token = await _storage.getToken();
+ Future<Map<String, dynamic>> sendMessage({
+  required String toUserId,
+  required String text,
+  required String clientMessageId,
+}) async {
+  final token = await _storage.getToken();
 
-    final res = await http.post(
-      Uri.parse('$baseApiUrl/messages/send'),
-      headers: {
-        'Content-Type': 'application/json',
-        if (token != null) 'Authorization': 'Bearer $token',
-      },
-      body: jsonEncode({
-        'toUserId': toUserId,
-        'text': text,
-      }),
-    );
+  final res = await http.post(
+    Uri.parse('$baseApiUrl/messages/send'),
+    headers: {
+      'Content-Type': 'application/json',
+      if (token != null) 'Authorization': 'Bearer $token',
+    },
+    body: jsonEncode({
+      'toUserId': toUserId,
+      'text': text,
+      'clientMessageId': clientMessageId,
+    }),
+  );
 
-    if (res.statusCode == 200) {
-      final decoded = jsonDecode(res.body);
-      return (decoded as Map).cast<String, dynamic>();
-    }
-
-    throw Exception('Send failed: ${res.statusCode} ${res.body}');
+  if (res.statusCode == 200) {
+    final decoded = jsonDecode(res.body);
+    return (decoded as Map).cast<String, dynamic>();
   }
+
+  throw Exception('Send failed: ${res.statusCode} ${res.body}');
+}
+
 
   Future<void> markRead(String otherUserId) async {
     final token = await _storage.getToken();

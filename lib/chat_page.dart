@@ -232,16 +232,18 @@ void dispose() {
 }
 
 
-      parsed.add(
-        _UiMessage(
-          text: text,
-          isMe: fromUserId == meId,
-          timeLocal: createdLocal,
-          readAtLocal: readAtLocal,
-          pending: false,
-          failed: false,
-        ),
-      );
+     parsed.add(
+  _UiMessage(
+    text: text,
+    isMe: fromUserId == meId,
+    timeLocal: createdLocal,
+    readAtLocal: readAtLocal,
+    pending: false,
+    failed: false,
+    clientMessageId: (m['clientMessageId'] ?? '').toString(),
+  ),
+);
+
     }
 
     parsed.sort((a, b) => a.timeLocal.compareTo(b.timeLocal));
@@ -342,79 +344,89 @@ ChatCacheService.setMessages(widget.userId, List.from(parsed));
 
 
   Future<void> _send() async {
-    final text = _controller.text.trim();
-    if (text.isEmpty || _isSending) return;
+  final text = _controller.text.trim();
+  if (text.isEmpty || _isSending) return;
 
-    _controller.clear();
+  _controller.clear();
 
-    // 1) Optimistic (Tinder-känsla)
-    final optimistic = _UiMessage(
+  // 🔥 skapa unikt id
+  final clientMessageId = DateTime.now().microsecondsSinceEpoch.toString();
+
+  final optimistic = _UiMessage(
+    text: text,
+    isMe: true,
+    timeLocal: DateTime.now(),
+    readAtLocal: null,
+    pending: true,
+    failed: false,
+    clientMessageId: clientMessageId,
+  );
+
+  setState(() {
+    _isSending = true;
+    _messages.add(optimistic);
+  });
+
+  _scrollToBottom();
+
+  try {
+    final sent = await _messagesService.sendMessage(
+      toUserId: widget.userId,
       text: text,
-      isMe: true,
-      timeLocal: DateTime.now(),
-      readAtLocal: null,
-      pending: true,
-      failed: false,
+      clientMessageId: clientMessageId,
     );
 
+    final sentCreatedAtLocal =
+        _parseUtcStringToLocal(sent['createdAtUtc']) ?? DateTime.now();
+
+    if (!mounted) return;
+
     setState(() {
-      _isSending = true;
-      _messages.add(optimistic);
+      final idx = _messages.indexWhere(
+        (m) => m.clientMessageId == clientMessageId,
+      );
+
+      if (idx != -1) {
+        _messages[idx] = _UiMessage(
+          text: text,
+          isMe: true,
+          timeLocal: sentCreatedAtLocal,
+          readAtLocal: sent['readAtUtc'] != null
+              ? _parseUtcStringToLocal(sent['readAtUtc'])
+              : null,
+          pending: false,
+          failed: false,
+          clientMessageId: clientMessageId,
+        );
+      }
     });
 
+    ChatCacheService.setMessages(widget.userId, List.from(_messages));
     _scrollToBottom();
+  } catch (e) {
+    if (!mounted) return;
 
-     try {
-      final sent = await _messagesService.sendMessage(
-        toUserId: widget.userId,
-        text: text,
+    setState(() {
+      final idx = _messages.indexWhere(
+        (m) => m.clientMessageId == clientMessageId,
       );
 
-      final sentCreatedAtLocal =
-          _parseUtcStringToLocal(sent['createdAtUtc']) ?? DateTime.now();
-
-      if (!mounted) return;
-
-      setState(() {
-        final idx = _messages.lastIndexWhere((m) => identical(m, optimistic));
-        if (idx != -1) {
-          _messages[idx] = _UiMessage(
-            text: text,
-            isMe: true,
-            timeLocal: sentCreatedAtLocal,
-            readAtLocal: sent['readAtUtc'] != null
-                ? _parseUtcStringToLocal(sent['readAtUtc'])
-                : null,
-            pending: false,
-            failed: false,
-          );
-        }
-      });
-
-      ChatCacheService.setMessages(widget.userId, List.from(_messages));
-      _scrollToBottom();
-    } catch (e) {
-
-
-      if (!mounted) return;
-
-      setState(() {
-        final idx = _messages.lastIndexWhere((m) => identical(m, optimistic));
-        if (idx != -1) {
-          _messages[idx] =
-              _messages[idx].copyWith(pending: false, failed: true);
-        }
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Kunde inte skicka: $e")),
-      );
-    } finally {
-      if (mounted) {
-        setState(() => _isSending = false);
+      if (idx != -1) {
+        _messages[idx] =
+            _messages[idx].copyWith(pending: false, failed: true);
       }
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Kunde inte skicka: $e")),
+    );
+  } finally {
+    if (mounted) {
+      setState(() => _isSending = false);
     }
   }
+}
+
 
 Future<void> _blockUser() async {
   try {
@@ -561,15 +573,17 @@ Future<void> _showReportDialog() async {
 
     setState(() {
       _messages.add(
-        _UiMessage(
-          text: text,
-          isMe: false,
-          timeLocal: createdAtLocal,
-          readAtLocal: null,
-          pending: false,
-          failed: false,
-        ),
-      );
+  _UiMessage(
+    text: text,
+    isMe: false,
+    timeLocal: createdAtLocal,
+    readAtLocal: null,
+    pending: false,
+    failed: false,
+    clientMessageId: (data['clientMessageId'] ?? '').toString(),
+  ),
+);
+
       _messages.sort((a, b) => a.timeLocal.compareTo(b.timeLocal));
       _error = null;
       _isLoading = false;
@@ -809,6 +823,9 @@ class _UiMessage {
   final bool pending;
   final bool failed;
 
+  // 🔥 NYTT – kopplar message till backend
+  final String clientMessageId;
+
   const _UiMessage({
     required this.text,
     required this.isMe,
@@ -816,9 +833,14 @@ class _UiMessage {
     required this.readAtLocal,
     required this.pending,
     required this.failed,
+    required this.clientMessageId,
   });
 
-  _UiMessage copyWith({bool? pending, bool? failed, DateTime? readAtLocal}) =>
+  _UiMessage copyWith({
+    bool? pending,
+    bool? failed,
+    DateTime? readAtLocal,
+  }) =>
       _UiMessage(
         text: text,
         isMe: isMe,
@@ -826,8 +848,10 @@ class _UiMessage {
         readAtLocal: readAtLocal ?? this.readAtLocal,
         pending: pending ?? this.pending,
         failed: failed ?? this.failed,
+        clientMessageId: clientMessageId,
       );
 }
+
 
 class _DateChip extends StatelessWidget {
   final String text;
