@@ -233,6 +233,8 @@ class _MatchesPageState extends State<MatchesPage> {
         final name = (m["displayName"] ?? "").toString();
         final photoUrl = (m["photoUrl"] ?? "").toString();
         final hasUnread = (m["hasUnread"] == true);
+        final unreadCount = (m["unreadMessageCount"] as num?)?.toInt() ?? 0;
+
 
         return InkWell(
           onTap: () => _openChat(m),
@@ -252,18 +254,30 @@ class _MatchesPageState extends State<MatchesPage> {
                       width: 2,
                     ),
                   ),
-                  child: CircleAvatar(
-                    radius: 30,
-                    backgroundColor: cs.surfaceContainerHighest,
-                    backgroundImage:
-                        photoUrl.isNotEmpty ? NetworkImage(photoUrl) : null,
-                    child: photoUrl.isEmpty
-                        ? Icon(
-                            Icons.person,
-                            color: cs.onSurface.withValues(alpha: 0.7),
-                          )
-                        : null,
-                  ),
+                 child: Stack(
+  clipBehavior: Clip.none,
+  children: [
+    CircleAvatar(
+      radius: 30,
+      backgroundColor: cs.surfaceContainerHighest,
+      backgroundImage:
+          photoUrl.isNotEmpty ? NetworkImage(photoUrl) : null,
+      child: photoUrl.isEmpty
+          ? Icon(
+              Icons.person,
+              color: cs.onSurface.withValues(alpha: 0.7),
+            )
+          : null,
+    ),
+    if (unreadCount > 0)
+      Positioned(
+        right: -4,
+        top: -2,
+        child: _UnreadCountBadge(count: unreadCount),
+      ),
+  ],
+),
+
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -300,6 +314,8 @@ const SizedBox(height: 10),
                           final photoUrl =
                               (m["photoUrl"] ?? "").toString();
                           final hasUnread = (m["hasUnread"] == true);
+                          final unreadCount = (m["unreadMessageCount"] as num?)?.toInt() ?? 0;
+
 
                           final lastText =
                               (m['lastMessageText'] ?? '').toString().trim();
@@ -344,23 +360,13 @@ const SizedBox(height: 10),
                                           )
                                         : null,
                                   ),
-                                  if (hasUnread)
-                                    Positioned(
-                                      right: -2,
-                                      bottom: -2,
-                                      child: Container(
-                                        width: 12,
-                                        height: 12,
-                                        decoration: BoxDecoration(
-                                          color: cs.primary,
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: cs.surface,
-                                            width: 2,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
+                                 if (unreadCount > 0)
+  Positioned(
+    right: -6,
+    bottom: -4,
+    child: _UnreadCountBadge(count: unreadCount),
+  ),
+
                                 ],
                               ),
                               title: Text(
@@ -396,6 +402,48 @@ const SizedBox(height: 10),
                       ],
                     ],
                   ),
+      ),
+    );
+  }
+}
+
+class _UnreadCountBadge extends StatelessWidget {
+  final int count;
+
+  const _UnreadCountBadge({required this.count});
+
+  @override
+  Widget build(BuildContext context) {
+    final displayText = count > 99 ? '99+' : count.toString();
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFF4458),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.surface,
+          width: 2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.14),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Center(
+        child: Text(
+          displayText,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 10.5,
+            fontWeight: FontWeight.w800,
+            height: 1,
+          ),
+        ),
       ),
     );
   }
