@@ -65,18 +65,18 @@ class _ChatPageState extends State<ChatPage> {
   bool _markReadInFlight = false;
   DateTime? _lastMarkReadAtUtc;
 
-  @override
-void initState() {
+ void initState() {
   super.initState();
-
-  // 🔥 reset badge när chat öppnas
-  
 
   _messagesService = MessagesService(_baseApiUrl, AuthStorage());
   CurrentChat.openUserId = widget.userId;
 
+  //  VIKTIGT: starta utan loading-block
+  _isLoading = false;
+
   _init();
 }
+
 
  Future<void> _init() async {
   _meUserId = await AuthStorage().getUserId();
