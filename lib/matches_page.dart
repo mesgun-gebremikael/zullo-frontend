@@ -1,8 +1,10 @@
-import 'dart:async';
+ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'services/auth_service.dart';
+import 'services/signalr_service.dart';
 import 'chat_page.dart';
 import 'premium_page.dart';
+
 
 class MatchesPage extends StatefulWidget {
   final ValueChanged<bool>? onUnreadChanged;
@@ -19,33 +21,62 @@ class MatchesPage extends StatefulWidget {
 
 class _MatchesPageState extends State<MatchesPage> {
   final AuthService _auth = AuthService();
+  final SignalRService _signalRService = SignalRService();
 
   Timer? _pollTimer;
+  StreamSubscription<Map<String, dynamic>>? _messageSubscription;
+  bool _signalRConnected = false;
 
   bool isLoading = true;
   String? error;
   List<dynamic> matches = [];
   List<dynamic> likesReceived = [];
 
-    @override
+
+   @override
   void initState() {
     super.initState();
     loadMatches();
-
-    
 
     // Pollar chatlistan så senaste meddelande/unread uppdateras utan manuell refresh
     _pollTimer = Timer.periodic(const Duration(seconds: 4), (_) {
       if (!mounted) return;
       loadMatches(silent: true);
     });
+
+    // SignalR kopplas bara för riktiga chattlistan,
+    // inte för temp-MatchesPage som används i andra tabs
+    if (widget.onUnreadChanged != null) {
+      _setupSignalR();
+    }
   }
+
+    Future<void> _setupSignalR() async {
+    await _signalRService.connect();
+    _signalRConnected = true;
+
+    _messageSubscription = _signalRService.messagesStream.listen((data) async {
+      if (!mounted) return;
+
+      await loadMatches(silent: true);
+    });
+  }
+
+
+
 
     @override
   void dispose() {
     _pollTimer?.cancel();
+    _messageSubscription?.cancel();
+
+    if (_signalRConnected) {
+      _signalRService.disconnect();
+    }
+
     super.dispose();
   }
+
 
   DateTime? _tryParseUtc(dynamic v) {
     if (v == null) return null;
