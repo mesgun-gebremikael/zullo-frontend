@@ -7,11 +7,19 @@ class BadgeService {
     try {
       final matches = await AuthService().getMatches();
 
-      final unreadChats = matches
-          .where((m) => m['hasUnread'] == true)
-          .length;
+      int unreadTotal = 0;
 
-      await AppBadgePlus.updateBadge(unreadChats);
+      for (final m in matches) {
+        final value = m['unreadMessageCount'];
+
+        if (value is int) {
+          unreadTotal += value;
+        } else if (value is String) {
+          unreadTotal += int.tryParse(value) ?? 0;
+        }
+      }
+
+      await AppBadgePlus.updateBadge(unreadTotal);
     } catch (e) {
       print('Badge refresh error: $e');
     }
