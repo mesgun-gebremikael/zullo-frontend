@@ -41,8 +41,9 @@ class _ChatPageState extends State<ChatPage> {
   final _scroll = ScrollController();
   
 
-  Timer? _pollTimer;
-  DateTime? _lastLoadedAt; // debug/insyn
+  DateTime? _lastLoadedAt;
+ // debug/insyn
+
   final SignalRService _signalRService = SignalRService();
 
 
@@ -97,16 +98,7 @@ void initState() {
     // ignore i MVP
   }
 
-  // 3) Poll (MVP): bara hämta tråd
-  _pollTimer = Timer.periodic(const Duration(seconds: 5), (_) {
-    if (_isThreadFetchInFlight) return;
-    _loadThread(silent: true);
-
-    print("NOW local: ${DateTime.now()}");
-    print("TIMEZONE name: ${DateTime.now().timeZoneName}");
-    print("TIMEZONE offset: ${DateTime.now().timeZoneOffset}");
-  });
-
+ 
   // 4) SignalR live-lyssning
   await _signalRService.connect();
 
@@ -134,10 +126,10 @@ void initState() {
 
     _controller.dispose();
     _scroll.dispose();
-    _pollTimer?.cancel();
-       _signalRService.disconnect();
+    _signalRService.disconnect();
     super.dispose();
   }
+
 
     void _handleBackNavigation() {
     if (widget.openChatsListOnExit) {
