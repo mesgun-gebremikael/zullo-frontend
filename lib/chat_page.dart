@@ -48,7 +48,7 @@ class _ChatPageState extends State<ChatPage> {
    StreamSubscription<Map<String, dynamic>>? _messagesReadSubscription;
 
 
-    bool _isLoading = true;
+    bool _isLoading = false;
   bool _isSending = false;
   String? _error;
   bool _isThreadFetchInFlight = false;
@@ -89,7 +89,8 @@ void initState() {
   }
 
   // 1) Ladda tråd en gång
-  await _loadThread();
+  await _loadThread(silent: true);
+
 
   // 2) Markera som läst direkt, men ladda inte om hela tråden igen här
   try {
@@ -622,14 +623,23 @@ child: widget.photoUrl.isEmpty
             onRefresh: () async {
               await _loadThread();
             },
-                                 child: _messages.isEmpty
-                ? ListView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    children: const [
-                      SizedBox(height: 140),
-                      Center(child: Text("Säg hej 👋")),
-                    ],
+                                child: _messages.isEmpty
+    ? ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: [
+          const SizedBox(height: 140),
+          Center(
+            child: _isLoading
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
                   )
+                : const Text("Säg hej 👋"),
+          ),
+        ],
+      )
+
                 : ListView.builder(
                     controller: _scroll,
                     reverse: true,
