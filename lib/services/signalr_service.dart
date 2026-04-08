@@ -6,9 +6,14 @@ class SignalRService {
   HubConnection? _connection;
 
   // Stream för inkommande meddelanden
-  final _messageController = StreamController<Map<String, dynamic>>.broadcast();
+final _messageController = StreamController<Map<String, dynamic>>.broadcast();
+final _messagesReadController =
+        StreamController<Map<String, dynamic>>.broadcast();
 
   Stream<Map<String, dynamic>> get messagesStream => _messageController.stream;
+  Stream<Map<String, dynamic>> get messagesReadStream =>
+    _messagesReadController.stream;
+
 
   Future<void> connect() async {
     final token = await AuthStorage().getToken();
@@ -32,6 +37,13 @@ class SignalRService {
         _messageController.add(data);
       }
     });
+    _connection!.on("MessagesRead", (args) {
+  if (args != null && args.isNotEmpty) {
+    final data = Map<String, dynamic>.from(args[0] as Map);
+    _messagesReadController.add(data);
+  }
+});
+
 
     await _connection!.start();
     print("SignalR connected");
