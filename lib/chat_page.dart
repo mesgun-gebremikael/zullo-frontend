@@ -88,33 +88,39 @@ void initState() {
     return;
   }
 
-  // 1) Ladda tråd en gång
+  // 1) Ladda tråd först så UI kan visas snabbt
   await _loadThread(silent: true);
 
+  // 2) Koppla listeners direkt
+  _signalRService.messagesStream.listen((data) {
+    _appendIncomingSignalRMessage(data);
+  });
 
-  // 2) Markera som läst direkt, men ladda inte om hela tråden igen här
-  try {
-    await _messagesService.markRead(widget.userId);
-    await BadgeService.refreshUnreadBadge();
-  } catch (_) {
-    // ignore i MVP
-  }
+  _messagesReadSubscription =
+      _signalRService.messagesReadStream.listen((data) {
+    _applyLiveReadReceipt(data);
+  });
 
- 
-  // 4) SignalR live-lyssning
-  await _signalRService.connect();
+  // 3) Kör SignalR connect i bakgrunden
+  Future(() async {
+    try {
+      await _signalRService.connect();
+    } catch (_) {
+      // ignore i MVP
+    }
+  });
 
-_signalRService.messagesStream.listen((data) {
-  _appendIncomingSignalRMessage(data);
-});
-
-_messagesReadSubscription =
-    _signalRService.messagesReadStream.listen((data) {
-  _applyLiveReadReceipt(data);
-});
-
-
+  // 4) MarkRead + badge i bakgrunden så chat öppnas snabbare
+  Future(() async {
+    try {
+      await _messagesService.markRead(widget.userId);
+      await BadgeService.refreshUnreadBadge();
+    } catch (_) {
+      // ignore i MVP
+    }
+  });
 }
+
 
 
    @override
