@@ -5,6 +5,7 @@ import '../services/messages_service.dart';
 import '../services/auth_storage.dart';
 import '../services/auth_service.dart';
 import '../services/block_service.dart';
+import '../services/signalr_service.dart';
 import '../services/current_chat.dart';
 import 'package:app_badge_plus/app_badge_plus.dart';
 import '../services/badge_service.dart';
@@ -42,6 +43,8 @@ class _ChatPageState extends State<ChatPage> {
 
   Timer? _pollTimer;
   DateTime? _lastLoadedAt; // debug/insyn
+  final SignalRService _signalRService = SignalRService();
+
 
     bool _isLoading = true;
   bool _isSending = false;
@@ -72,41 +75,56 @@ void initState() {
 }
 
   Future<void> _init() async {
-   _meUserId = await AuthStorage().getUserId();
+  _meUserId = await AuthStorage().getUserId();
 
-    // Om meId saknas betyder det att user inte är inloggad korrekt
-    if (_meUserId == null || _meUserId!.isEmpty) {
-      setState(() {
-        _isLoading = false;
-        _error = "Du är inte inloggad (meUserId saknas). Logga in igen.";
-      });
-      return;
-    }
-
-    // 1) Ladda tråd en gång
-    await _loadThread();
-
-    // 2) Markera som läst direkt, men ladda inte om hela tråden igen här
-    try {
-      await _messagesService.markRead(widget.userId);
-      await BadgeService.refreshUnreadBadge();
-    } catch (_) {
-      // ignore i MVP
-    }
-
-
-    // 2) Poll (MVP): bara hämta tråd
-    _pollTimer = Timer.periodic(const Duration(seconds: 5), (_) {
-      if (_isThreadFetchInFlight) return;
-      _loadThread(silent: true);
-
-
-  print("NOW local: ${DateTime.now()}");
-print("TIMEZONE name: ${DateTime.now().timeZoneName}");
-print("TIMEZONE offset: ${DateTime.now().timeZoneOffset}");
-
-});
+  // Om meId saknas betyder det att user inte är inloggad korrekt
+  if (_meUserId == null || _meUserId!.isEmpty) {
+    setState(() {
+      _isLoading = false;
+      _error = "Du är inte inloggad (meUserId saknas). Logga in igen.";
+    });
+    return;
   }
+
+  // 1) Ladda tråd en gång
+  await _loadThread();
+
+  // 2) Markera som läst direkt, men ladda inte om hela tråden igen här
+  try {
+    await _messagesService.markRead(widget.userId);
+    await BadgeService.refreshUnreadBadge();
+  } catch (_) {
+    // ignore i MVP
+  }
+
+  // 3) Poll (MVP): bara hämta tråd
+  _pollTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+    if (_isThreadFetchInFlight) return;
+    _loadThread(silent: true);
+
+    print("NOW local: ${DateTime.now()}");
+    print("TIMEZONE name: ${DateTime.now().timeZoneName}");
+    print("TIMEZONE offset: ${DateTime.now().timeZoneOffset}");
+  });
+
+  // 4) SignalR live-lyssning
+  await _signalRService.connect();
+
+  _signalRService.messagesStream.listen((data) async {
+    final fromUserId = (data['fromUserId'] ?? '').toString();
+    final toUserId = (data['toUserId'] ?? '').toString();
+
+    final isThisChat =
+        (fromUserId == widget.userId && toUserId == (_meUserId ?? '')) ||
+        (fromUserId == (_meUserId ?? '') && toUserId == widget.userId);
+
+    if (!isThisChat) return;
+    if (_isThreadFetchInFlight) return;
+
+    await _loadThread(silent: true);
+  });
+}
+
 
     @override
   void dispose() {
@@ -117,6 +135,7 @@ print("TIMEZONE offset: ${DateTime.now().timeZoneOffset}");
     _controller.dispose();
     _scroll.dispose();
     _pollTimer?.cancel();
+       _signalRService.disconnect();
     super.dispose();
   }
 
