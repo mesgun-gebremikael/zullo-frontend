@@ -13,7 +13,8 @@ class SignalRService {
   Future<void> connect() async {
     final token = await AuthStorage().getToken();
 
-    final hubUrl = "http://10.0.2.2:5125/chatHub";
+    final hubUrl = "http://10.0.2.2:5125/hubs/chat";
+
 
     _connection = HubConnectionBuilder()
         .withUrl(
@@ -25,7 +26,7 @@ class SignalRService {
         .build();
 
     // När vi får nytt meddelande från backend
-    _connection!.on("ReceiveMessage", (args) {
+      _connection!.on("MessageReceived", (args) { 
       if (args != null && args.isNotEmpty) {
         final data = args[0] as Map<String, dynamic>;
         _messageController.add(data);
