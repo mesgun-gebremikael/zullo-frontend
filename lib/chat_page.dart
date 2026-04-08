@@ -629,75 +629,69 @@ child: widget.photoUrl.isEmpty
             onRefresh: () async {
               await _loadThread();
             },
-                                child: _messages.isEmpty
+                               child: !_hasLoadedInitialThread
     ? ListView(
         physics: const AlwaysScrollableScrollPhysics(),
-        children: [
-          const SizedBox(height: 140),
+        children: const [
+          SizedBox(height: 140),
           Center(
-            child: _isLoading
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Text("Säg hej 👋"),
+            child: SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
           ),
         ],
       )
+    : _messages.isEmpty
+        ? ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            children: const [
+              SizedBox(height: 140),
+              Center(child: Text("Säg hej 👋")),
+            ],
+          )
+        : ListView.builder(
+            controller: _scroll,
+            reverse: true,
+            padding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 10,
+            ),
+            itemCount: _messages.length,
+            itemBuilder: (context, i) {
+              final reversedIndex = _messages.length - 1 - i;
+              final m = _messages[reversedIndex];
 
-                : ListView.builder(
-                    controller: _scroll,
-                    reverse: true,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 10,
-                    ),
-                    itemCount: _messages.length,
-                    itemBuilder: (context, i) {
-                      final reversedIndex = _messages.length - 1 - i;
-                      final m = _messages[reversedIndex];
+              final showDateChip = reversedIndex == 0
+                  ? true
+                  : !_isSameDay(
+                      _messages[reversedIndex - 1].timeLocal,
+                      m.timeLocal,
+                    );
 
-                      final showDateChip = reversedIndex == 0
-                          ? true
-                          : !_isSameDay(
-                              _messages[reversedIndex - 1].timeLocal,
-                              m.timeLocal,
-                            );
-
-                      return Column(
-                        children: [
-                          _MessageBubble(
-                            text: m.text,
-                            isMe: m.isMe,
-                            timeText: _formatTime(m.timeLocal),
-                            pending: m.pending,
-                            failed: m.failed,
-                            readAtLocal: m.readAtLocal,
-                          ),
-                          if (showDateChip) ...[
-                            const SizedBox(height: 8),
-                            _DateChip(text: _formatDateSw(m.timeLocal)),
-                            const SizedBox(height: 8),
-                          ],
-                        ],
-                      );
-                    },
+              return Column(
+                children: [
+                  _MessageBubble(
+                    text: m.text,
+                    isMe: m.isMe,
+                    timeText: _formatTime(m.timeLocal),
+                    pending: m.pending,
+                    failed: m.failed,
+                    readAtLocal: m.readAtLocal,
                   ),
+                  if (showDateChip) ...[
+                    const SizedBox(height: 8),
+                    _DateChip(text: _formatDateSw(m.timeLocal)),
+                    const SizedBox(height: 8),
+                  ],
+                ],
+              );
+            },
           ),
-  if (_isLoading && _messages.isEmpty)
-  const Positioned(
-    top: 10,
-    left: 0,
-    right: 0,
-    child: Center(
-      child: SizedBox(
-        width: 18,
-        height: 18,
-        child: CircularProgressIndicator(strokeWidth: 2),
-      ),
-    ),
-  ),
+
+          ),
+  
 
         ],
     ),
