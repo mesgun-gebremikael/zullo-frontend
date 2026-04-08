@@ -23,9 +23,9 @@ class _MatchesPageState extends State<MatchesPage> {
   final AuthService _auth = AuthService();
   final SignalRService _signalRService = SignalRService();
 
-  Timer? _pollTimer;
   StreamSubscription<Map<String, dynamic>>? _messageSubscription;
   bool _signalRConnected = false;
+
 
   bool isLoading = true;
   String? error;
@@ -38,11 +38,7 @@ class _MatchesPageState extends State<MatchesPage> {
     super.initState();
     loadMatches();
 
-    // Pollar chatlistan så senaste meddelande/unread uppdateras utan manuell refresh
-    _pollTimer = Timer.periodic(const Duration(seconds: 4), (_) {
-      if (!mounted) return;
-      loadMatches(silent: true);
-    });
+ 
 
     // SignalR kopplas bara för riktiga chattlistan,
     // inte för temp-MatchesPage som används i andra tabs
@@ -67,7 +63,6 @@ class _MatchesPageState extends State<MatchesPage> {
 
     @override
   void dispose() {
-    _pollTimer?.cancel();
     _messageSubscription?.cancel();
 
     if (_signalRConnected) {
@@ -76,6 +71,7 @@ class _MatchesPageState extends State<MatchesPage> {
 
     super.dispose();
   }
+
 
 
   DateTime? _tryParseUtc(dynamic v) {

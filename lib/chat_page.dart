@@ -234,7 +234,10 @@ if (!silent) {
       final data = await _messagesService.getThread(widget.userId);
       final parsed = _parseThread(data);
 
-      await _markReadIfNeeded(parsed);
+      final didMarkRead = await _markReadIfNeeded(parsed);
+      if (didMarkRead) {
+        await BadgeService.refreshUnreadBadge();
+      }
 
       if (!mounted) return;
 
@@ -245,6 +248,7 @@ if (!silent) {
         _isLoading = false;
         _error = null;
       });
+
 
       
                final shouldStickToBottom = !_hasLoadedInitialThread || _isNearBottom();
