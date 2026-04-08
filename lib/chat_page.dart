@@ -48,6 +48,7 @@ class _ChatPageState extends State<ChatPage> {
 
   final SignalRService _signalRService = SignalRService();
    StreamSubscription<Map<String, dynamic>>? _messagesReadSubscription;
+   StreamSubscription<Map<String, dynamic>>? _messagesSubscription;
 
 
     bool _isLoading = false;
@@ -104,14 +105,16 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   // 3) Koppla listeners först
-  _signalRService.messagesStream.listen((data) {
-    _appendIncomingSignalRMessage(data);
-  });
+_messagesSubscription =
+    _signalRService.messagesStream.listen((data) {
+  _appendIncomingSignalRMessage(data);
+});
 
-  _messagesReadSubscription =
-      _signalRService.messagesReadStream.listen((data) {
-    _applyLiveReadReceipt(data);
-  });
+_messagesReadSubscription =
+    _signalRService.messagesReadStream.listen((data) {
+  _applyLiveReadReceipt(data);
+});
+
 
   // 4) Starta SignalR i bakgrunden
   unawaited(Future(() async {
@@ -153,11 +156,13 @@ void dispose() {
     CurrentChat.openUserId = null;
   }
 
-  _messagesReadSubscription?.cancel();
-  _controller.dispose();
-  _scroll.dispose();
-  _signalRService.disconnect();
-  super.dispose();
+  _messagesSubscription?.cancel();
+_messagesReadSubscription?.cancel();
+_controller.dispose();
+_scroll.dispose();
+_signalRService.disconnect();
+super.dispose();
+
 }
 
 
@@ -232,7 +237,7 @@ void dispose() {
 }
 
 
-     parsed.add(
+    parsed.add(
   _UiMessage(
     text: text,
     isMe: fromUserId == meId,
@@ -549,59 +554,63 @@ Future<void> _showReportDialog() async {
     return parsed?.toLocal();
   }
     
-     void _appendIncomingSignalRMessage(Map<String, dynamic> data) {
-    final fromUserId = (data['fromUserId'] ?? '').toString();
-    final toUserId = (data['toUserId'] ?? '').toString();
-    final text = (data['text'] ?? '').toString().trim();
+    void _appendIncomingSignalRMessage(Map<String, dynamic> data) {
+  final fromUserId = (data['fromUserId'] ?? '').toString();
+  final toUserId = (data['toUserId'] ?? '').toString();
+  final text = (data['text'] ?? '').toString().trim();
+  final clientMessageId = (data['clientMessageId'] ?? '').toString();
 
-    if (text.isEmpty) return;
+  if (text.isEmpty) return;
 
-    final isIncoming =
-        fromUserId == widget.userId && toUserId == (_meUserId ?? '');
+  final isIncoming =
+      fromUserId == widget.userId && toUserId == (_meUserId ?? '');
 
-    if (!isIncoming) return;
+  if (!isIncoming) return;
 
-    final createdAtLocal =
-        _parseUtcStringToLocal(data['createdAtUtc']) ?? DateTime.now();
+  final createdAtLocal =
+      _parseUtcStringToLocal(data['createdAtUtc']) ?? DateTime.now();
 
-    final alreadyExists = _messages.any((m) =>
-        !m.isMe &&
-        m.text == text &&
-        m.timeLocal.difference(createdAtLocal).inSeconds.abs() <= 1);
+  final alreadyExists = clientMessageId.isNotEmpty
+      ? _messages.any((m) => m.clientMessageId == clientMessageId)
+      : _messages.any((m) =>
+          !m.isMe &&
+          m.text == text &&
+          m.timeLocal.difference(createdAtLocal).inSeconds.abs() <= 1);
 
-    if (alreadyExists) return;
+  if (alreadyExists) return;
 
-    setState(() {
-      _messages.add(
-  _UiMessage(
-    text: text,
-    isMe: false,
-    timeLocal: createdAtLocal,
-    readAtLocal: null,
-    pending: false,
-    failed: false,
-    clientMessageId: (data['clientMessageId'] ?? '').toString(),
-  ),
-);
+  setState(() {
+    _messages.add(
+      _UiMessage(
+        text: text,
+        isMe: false,
+        timeLocal: createdAtLocal,
+        readAtLocal: null,
+        pending: false,
+        failed: false,
+        clientMessageId: clientMessageId,
+      ),
+    );
+    _messages.sort((a, b) => a.timeLocal.compareTo(b.timeLocal));
+    _error = null;
+    _isLoading = false;
+  });
 
-      _messages.sort((a, b) => a.timeLocal.compareTo(b.timeLocal));
-      _error = null;
-      _isLoading = false;
-    });
+  ChatCacheService.setMessages(widget.userId, List.from(_messages));
+  _scrollToBottom();
 
-    _scrollToBottom();
+  Future(() async {
+    try {
+      await _messagesService.markRead(widget.userId);
+      await BadgeService.refreshUnreadBadge();
+    } catch (_) {
+      // ignore i MVP
+    }
+  });
+}
 
-    Future(() async {
-      try {
-        await _messagesService.markRead(widget.userId);
-        await BadgeService.refreshUnreadBadge();
-      } catch (_) {
-        // ignore i MVP
-      }
-    });
-  }
 
-   void _applyLiveReadReceipt(Map<String, dynamic> data) {
+ void _applyLiveReadReceipt(Map<String, dynamic> data) {
   final chatUserId = (data['chatUserId'] ?? '').toString();
 
   if (chatUserId != widget.userId) return;
@@ -618,7 +627,10 @@ Future<void> _showReportDialog() async {
       }
     }
   });
+
+  ChatCacheService.setMessages(widget.userId, List.from(_messages));
 }
+
 
 
   @override
