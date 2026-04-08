@@ -9,6 +9,8 @@ import '../services/signalr_service.dart';
 import '../services/current_chat.dart';
 import 'package:app_badge_plus/app_badge_plus.dart';
 import '../services/badge_service.dart';
+import 'services/chat_cache_service.dart';
+
 
 
 class ChatPage extends StatefulWidget {
@@ -76,8 +78,23 @@ void initState() {
   _init();
 }
 
-  Future<void> _init() async {
+ Future<void> _init() async {
   _meUserId = await AuthStorage().getUserId();
+
+  // 1. Kolla cache först
+  final cached = ChatCacheService.getMessages(widget.userId);
+
+  if (cached != null && cached.isNotEmpty) {
+    setState(() {
+      _messages
+        ..clear()
+        ..addAll(cached.cast<_UiMessage>());
+
+      _hasLoadedInitialThread = true;
+      _isLoading = false;
+      _error = null;
+    });
+  }
 
   // Om meId saknas betyder det att user inte är inloggad korrekt
   if (_meUserId == null || _meUserId!.isEmpty) {
@@ -87,9 +104,6 @@ void initState() {
     });
     return;
   }
-
-  // 1) Ladda tråd först så UI kan visas snabbt
-  await _loadThread(silent: true);
 
   // 2) Koppla listeners direkt
   _signalRService.messagesStream.listen((data) {
@@ -101,7 +115,16 @@ void initState() {
     _applyLiveReadReceipt(data);
   });
 
-  // 3) Kör SignalR connect i bakgrunden
+  // 3) Kör första trådladdningen i bakgrunden
+  Future(() async {
+    try {
+      await _loadThread(silent: true);
+    } catch (_) {
+      // ignore i MVP
+    }
+  });
+
+  // 4) Kör SignalR connect i bakgrunden
   Future(() async {
     try {
       await _signalRService.connect();
@@ -110,7 +133,7 @@ void initState() {
     }
   });
 
-  // 4) MarkRead + badge i bakgrunden så chat öppnas snabbare
+  // 5) MarkRead + badge i bakgrunden så chat öppnas snabbare
   Future(() async {
     try {
       await _messagesService.markRead(widget.userId);
@@ -120,6 +143,7 @@ void initState() {
     }
   });
 }
+
 
 
 
@@ -252,6 +276,18 @@ if (!silent) {
         _isLoading = false;
         _error = null;
       });
+
+      setState(() {
+  _messages
+    ..clear()
+    ..addAll(parsed);
+  _isLoading = false;
+  _error = null;
+});
+
+//  CACHE SAVE (lägg exakt här)
+ChatCacheService.setMessages(widget.userId, List.from(parsed));
+
 
       if (didMarkRead) {
         Future(() async {

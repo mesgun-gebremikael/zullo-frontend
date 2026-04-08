@@ -143,16 +143,19 @@ class _MatchesPageState extends State<MatchesPage> {
     final name = (m["displayName"] ?? "").toString();
     final photoUrl = (m["photoUrl"] ?? "").toString();
 
-    final shouldRefresh = await Navigator.push<bool>(
-      context,
-      MaterialPageRoute(
-        builder: (_) => ChatPage(
-          userId: userId,
-          displayName: name,
-          photoUrl: photoUrl,
-        ),
-      ),
-    );
+   final shouldRefresh = await Navigator.push<bool>(
+  context,
+  PageRouteBuilder(
+    pageBuilder: (_, __, ___) => ChatPage(
+      userId: userId,
+      displayName: name,
+      photoUrl: photoUrl,
+    ),
+    transitionDuration: Duration.zero,
+    reverseTransitionDuration: Duration.zero,
+  ),
+);
+
 
     if (shouldRefresh == true) {
       await loadMatches();
