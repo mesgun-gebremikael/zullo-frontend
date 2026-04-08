@@ -235,9 +235,6 @@ if (!silent) {
       final parsed = _parseThread(data);
 
       final didMarkRead = await _markReadIfNeeded(parsed);
-      if (didMarkRead) {
-        await BadgeService.refreshUnreadBadge();
-      }
 
       if (!mounted) return;
 
@@ -248,6 +245,13 @@ if (!silent) {
         _isLoading = false;
         _error = null;
       });
+
+      if (didMarkRead) {
+        Future(() async {
+          await BadgeService.refreshUnreadBadge();
+        });
+      }
+
 
 
       
