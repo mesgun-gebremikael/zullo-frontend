@@ -433,6 +433,29 @@ Future<void> updateFilterProfile({
   }
 }
 
+Future<bool> canOpenChat(String otherUserId) async {
+  final token = await _storage.getToken();
+  if (token == null || token.isEmpty) {
+    return false;
+  }
+
+  final url = Uri.parse('$baseApiUrl/messages/thread?otherUserId=$otherUserId');
+
+  try {
+    final res = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    return res.statusCode == 200;
+  } catch (_) {
+    return false;
+  }
+}
+
 Future<void> saveDeviceToken(String token) async {
   final authToken = await _storage.getToken();
   if (authToken == null || authToken.isEmpty) {

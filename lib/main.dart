@@ -75,10 +75,10 @@ NotificationLaunchData? _parseNotificationLaunch(RemoteMessage? message) {
 }
 
 Future<void> _openChatFromLaunch(NotificationLaunchData launch) async {
-  final token = await AuthStorage().getToken();
+  final storage = AuthStorage();
+  final token = await storage.getToken();
 
   if (token == null || token.isEmpty) {
-    // 🔥 inte inloggad → skicka till login
     navigatorKey.currentState?.pushAndRemoveUntil(
       _instantRoute(const WelcomeScreen()),
       (route) => false,
@@ -86,7 +86,22 @@ Future<void> _openChatFromLaunch(NotificationLaunchData launch) async {
     return;
   }
 
-  // ✅ inloggad → öppna chat korrekt via MainNavigation
+  final authService = AuthService();
+  final canOpen = await authService.canOpenChat(launch.userId);
+
+  if (!canOpen) {
+    // Trygg fallback:
+    // användaren är inloggad, men just denna notis/chat är inte längre giltig
+    // i nuvarande auth-context. Gå då till chattar istället för att visa rå 401/403.
+    navigatorKey.currentState?.pushAndRemoveUntil(
+      _instantRoute(
+        const MainNavigation(initialIndex: 3),
+      ),
+      (route) => false,
+    );
+    return;
+  }
+
   navigatorKey.currentState?.pushAndRemoveUntil(
     _instantRoute(
       MainNavigation(
