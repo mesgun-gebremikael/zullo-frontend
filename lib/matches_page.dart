@@ -4,6 +4,7 @@ import 'services/auth_service.dart';
 import 'services/signalr_service.dart';
 import 'chat_page.dart';
 import 'premium_page.dart';
+import 'services/unread_sync_service.dart';
 
 
 class MatchesPage extends StatefulWidget {
@@ -22,9 +23,9 @@ class MatchesPage extends StatefulWidget {
 class _MatchesPageState extends State<MatchesPage> {
   final AuthService _auth = AuthService();
   final SignalRService _signalRService = SignalRService();
-
+  StreamSubscription<String>? _openedChatSubscription;
   StreamSubscription<Map<String, dynamic>>? _messageSubscription;
-StreamSubscription<Map<String, dynamic>>? _messagesReadSubscription;
+//StreamSubscription<Map<String, dynamic>>? _messagesReadSubscription;
 bool _signalRConnected = false;
 
 
@@ -39,7 +40,11 @@ bool _signalRConnected = false;
     super.initState();
     loadMatches();
 
- 
+     _openedChatSubscription =
+    UnreadSyncService.instance.openedChatStream.listen((userId) {
+  if (!mounted) return;
+  _clearUnreadLocally(userId);
+});
 
     // SignalR kopplas bara för riktiga chattlistan,
     // inte för temp-MatchesPage som används i andra tabs
@@ -57,19 +62,19 @@ bool _signalRConnected = false;
     await loadMatches(silent: true);
   });
 
-  _messagesReadSubscription = _signalRService.messagesReadStream.listen((data) async {
-    if (!mounted) return;
-    await loadMatches(silent: true);
-  });
+ // _messagesReadSubscription = _signalRService.messagesReadStream.listen((data) async {
+   // if (!mounted) return;
+   // await loadMatches(silent: true);
+ // });
 }
 
 
 
 
-   @override
+@override
 void dispose() {
+  _openedChatSubscription?.cancel(); // NYTT
   _messageSubscription?.cancel();
-  _messagesReadSubscription?.cancel();
 
   if (_signalRConnected) {
     _signalRService.disconnect();
@@ -144,10 +149,38 @@ void dispose() {
     }
   }
 
-  Future<void> _openChat(dynamic m) async {
-    final userId = (m["userId"] ?? "").toString();
-    final name = (m["displayName"] ?? "").toString();
-    final photoUrl = (m["photoUrl"] ?? "").toString();
+  void _clearUnreadLocally(String userId) {
+  bool changed = false;
+
+  for (final m in matches) {
+    final currentUserId = (m["userId"] ?? "").toString();
+    if (currentUserId != userId) continue;
+
+    if (m["hasUnread"] == true || ((m["unreadMessageCount"] as num?)?.toInt() ?? 0) > 0) {
+      m["hasUnread"] = false;
+      m["unreadMessageCount"] = 0;
+      changed = true;
+    }
+  }
+
+  if (!changed) return;
+
+  final hasUnreadAny = matches.any((m) => m["hasUnread"] == true);
+
+  setState(() {});
+  widget.onUnreadChanged?.call(hasUnreadAny);
+}
+
+   Future<void> _openChat(dynamic m) async {
+  final userId = (m["userId"] ?? "").toString();
+  final name = (m["displayName"] ?? "").toString();
+  final photoUrl = (m["photoUrl"] ?? "").toString();
+
+  // Viktigt:
+  // unread-badge ska bort direkt när användaren öppnar chatten,
+  // utan att vänta på backend/signalr/refresh.
+  UnreadSyncService.instance.markChatOpened(userId);
+  _clearUnreadLocally(userId);
 
    final shouldRefresh = await Navigator.push<bool>(
   context,

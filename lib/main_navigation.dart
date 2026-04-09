@@ -6,7 +6,7 @@ import 'home_page.dart';
 import 'matches_page.dart';
 import 'services/auth_service.dart';
 import 'chat_page.dart';
-
+import 'services/unread_sync_service.dart';
 
 
 
@@ -44,6 +44,7 @@ class _MainNavigationState extends State<MainNavigation> {
  Future<void> _openNotificationChatIfNeeded() async {
     final userId = widget.openChatUserId;
     if (userId == null || userId.isEmpty) return;
+     UnreadSyncService.instance.markChatOpened(userId);
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
