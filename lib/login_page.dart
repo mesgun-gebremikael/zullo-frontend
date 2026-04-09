@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'services/auth_service.dart';
 import 'register_page.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'home_page.dart';
 import 'create_profile_page.dart';
 import 'main_navigation.dart';
@@ -46,9 +47,20 @@ class _LoginPageState extends State<LoginPage> {
     try {
       await _authService.login(email: email, password: password);
 
-      if (!mounted) return;
+// Viktigt:
+// direkt efter login försöker vi koppla aktuell FCM-token till rätt konto.
+try {
+  final fcmToken = await FirebaseMessaging.instance.getToken();
+  if (fcmToken != null && fcmToken.isNotEmpty) {
+    await _authService.saveDeviceToken(fcmToken);
+  }
+} catch (_) {
+  // Login ska fortfarande fungera även om token-save misslyckar just här.
+}
 
-      final hasProfile = await _authService.hasProfile();
+if (!mounted) return;
+
+final hasProfile = await _authService.hasProfile();
 
       if (!mounted) return;
 

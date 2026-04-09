@@ -180,7 +180,17 @@ void main() async {
     }
   }
    await BadgeService.refreshUnreadBadge();
+   
+   FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {
+  if (newToken.isEmpty) return;
 
+  try {
+    await AuthService().saveDeviceToken(newToken);
+    print("Refreshed device token saved to backend");
+  } catch (e) {
+    print("Could not save refreshed device token: $e");
+  }
+});
 
   final initialMessage = await FirebaseMessaging.instance.getInitialMessage();
   final launchFromNotification = _parseNotificationLaunch(initialMessage);
