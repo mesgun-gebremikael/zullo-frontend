@@ -24,7 +24,8 @@ class _MatchesPageState extends State<MatchesPage> {
   final SignalRService _signalRService = SignalRService();
 
   StreamSubscription<Map<String, dynamic>>? _messageSubscription;
-  bool _signalRConnected = false;
+StreamSubscription<Map<String, dynamic>>? _messagesReadSubscription;
+bool _signalRConnected = false;
 
 
   bool isLoading = true;
@@ -47,30 +48,35 @@ class _MatchesPageState extends State<MatchesPage> {
     }
   }
 
-    Future<void> _setupSignalR() async {
-    await _signalRService.connect();
-    _signalRConnected = true;
+   Future<void> _setupSignalR() async {
+  await _signalRService.connect();
+  _signalRConnected = true;
 
-    _messageSubscription = _signalRService.messagesStream.listen((data) async {
-      if (!mounted) return;
+  _messageSubscription = _signalRService.messagesStream.listen((data) async {
+    if (!mounted) return;
+    await loadMatches(silent: true);
+  });
 
-      await loadMatches(silent: true);
-    });
+  _messagesReadSubscription = _signalRService.messagesReadStream.listen((data) async {
+    if (!mounted) return;
+    await loadMatches(silent: true);
+  });
+}
+
+
+
+
+   @override
+void dispose() {
+  _messageSubscription?.cancel();
+  _messagesReadSubscription?.cancel();
+
+  if (_signalRConnected) {
+    _signalRService.disconnect();
   }
 
-
-
-
-    @override
-  void dispose() {
-    _messageSubscription?.cancel();
-
-    if (_signalRConnected) {
-      _signalRService.disconnect();
-    }
-
-    super.dispose();
-  }
+  super.dispose();
+}
 
 
 

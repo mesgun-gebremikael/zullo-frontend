@@ -62,8 +62,13 @@ class _MainNavigationState extends State<MainNavigation> {
       if (!mounted) return;
 
       if (shouldRefresh == true) {
-        await _loadUnreadStatus();
-      }
+  await _loadUnreadStatus();
+
+  if (!mounted) return;
+  setState(() {
+    _selectedIndex = 3;
+  });
+}
     });
   }
 
