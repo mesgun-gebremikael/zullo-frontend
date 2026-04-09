@@ -13,6 +13,8 @@ import 'services/current_chat.dart';
 import 'package:app_badge_plus/app_badge_plus.dart';
 import 'services/badge_service.dart';
 import 'main_navigation.dart';
+import 'services/auth_storage.dart';
+
 
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -72,19 +74,32 @@ NotificationLaunchData? _parseNotificationLaunch(RemoteMessage? message) {
   );
 }
 
-void _openChatFromLaunch(NotificationLaunchData launch) {
+Future<void> _openChatFromLaunch(NotificationLaunchData launch) async {
+  final token = await AuthStorage().getToken();
+
+  if (token == null || token.isEmpty) {
+    // 🔥 inte inloggad → skicka till login
+    navigatorKey.currentState?.pushAndRemoveUntil(
+      _instantRoute(const WelcomeScreen()),
+      (route) => false,
+    );
+    return;
+  }
+
+  // ✅ inloggad → öppna chat korrekt via MainNavigation
   navigatorKey.currentState?.pushAndRemoveUntil(
     _instantRoute(
-      ChatPage(
-        userId: launch.userId,
-        displayName: launch.displayName,
-        photoUrl: launch.photoUrl,
-        openChatsListOnExit: true,
+      MainNavigation(
+        initialIndex: 3,
+        openChatUserId: launch.userId,
+        openChatDisplayName: launch.displayName,
+        openChatPhotoUrl: launch.photoUrl,
       ),
     ),
     (route) => false,
   );
 }
+
 
 void _showInAppMessageOverlay({
   required NotificationLaunchData launch,
@@ -237,14 +252,8 @@ await BadgeService.refreshUnreadBadge();
 
   @override
   Widget build(BuildContext context) {
-     final initialHome = widget.launchFromNotification != null
-    ? ChatPage(
-        userId: widget.launchFromNotification!.userId,
-        displayName: widget.launchFromNotification!.displayName,
-        photoUrl: widget.launchFromNotification!.photoUrl,
-        openChatsListOnExit: true,
-      )
-    : const SplashPage(skipNavigation: false);
+     final initialHome = const SplashPage(skipNavigation: false);
+
 
 
         return MaterialApp(

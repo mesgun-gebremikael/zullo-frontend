@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'services/auth_service.dart';
-import 'services/auth_storage.dart';
 import 'models/swipe_profile.dart';
 import 'premium_page.dart';
 import 'welcome_page.dart';
@@ -24,7 +23,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   final AuthService _authService = AuthService();
-  final AuthStorage _storage = AuthStorage();
+ 
   
   List<SwipeProfile> profiles = [];
  List<SwipeProfile> _prefetchedProfiles = [];
@@ -249,7 +248,7 @@ static const double _activeCardLift = 0;
   }
 
   Future<void> _logout() async {
-  await _storage.clearAuth();
+  await _authService.logout();
 
   if (!mounted) return;
 

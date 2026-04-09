@@ -42,6 +42,7 @@ class _ChatPageState extends State<ChatPage> {
   final _controller = TextEditingController();
   final _scroll = ScrollController();
   
+bool _isReady = false;
 
   DateTime? _lastLoadedAt;
  // debug/insyn
@@ -117,13 +118,10 @@ _messagesReadSubscription =
 
 
   // 4) Starta SignalR i bakgrunden
-  unawaited(Future(() async {
-    try {
-      await _signalRService.connect();
-    } catch (_) {
-      // ignore i MVP
-    }
-  }));
+ try {
+  await _signalRService.connect();
+} catch (_) {}
+
 
   // 5) Ladda första tråden i bakgrunden
   unawaited(Future(() async {
@@ -143,6 +141,10 @@ _messagesReadSubscription =
       // ignore i MVP
     }
   }));
+  setState(() {
+  _isReady = true;
+});
+
 }
 
 
@@ -348,9 +350,12 @@ ChatCacheService.setMessages(widget.userId, List.from(parsed));
   }
 
 
-  Future<void> _send() async {
+ Future<void> _send() async {
+  if (!_isReady) return;
+
   final text = _controller.text.trim();
   if (text.isEmpty || _isSending) return;
+
 
   _controller.clear();
 
@@ -386,25 +391,28 @@ ChatCacheService.setMessages(widget.userId, List.from(parsed));
 
     if (!mounted) return;
 
-    setState(() {
-      final idx = _messages.indexWhere(
-        (m) => m.clientMessageId == clientMessageId,
-      );
+   setState(() {
+  final idx = _messages.indexWhere(
+    (m) => m.clientMessageId == clientMessageId,
+  );
 
-      if (idx != -1) {
-        _messages[idx] = _UiMessage(
-          text: text,
-          isMe: true,
-          timeLocal: sentCreatedAtLocal,
-          readAtLocal: sent['readAtUtc'] != null
-              ? _parseUtcStringToLocal(sent['readAtUtc'])
-              : null,
-          pending: false,
-          failed: false,
-          clientMessageId: clientMessageId,
-        );
-      }
-    });
+  if (idx != -1) {
+    final existing = _messages[idx];
+
+    _messages[idx] = _UiMessage(
+      text: text,
+      isMe: true,
+      timeLocal: sentCreatedAtLocal,
+      readAtLocal: sent['readAtUtc'] != null
+          ? _parseUtcStringToLocal(sent['readAtUtc'])
+          : existing.readAtLocal,
+      pending: false,
+      failed: false,
+      clientMessageId: clientMessageId,
+    );
+  }
+});
+
 
     ChatCacheService.setMessages(widget.userId, List.from(_messages));
     _scrollToBottom();
@@ -805,7 +813,8 @@ child: widget.photoUrl.isEmpty
                     height: 46,
                     width: 46,
                     child: ElevatedButton(
-                      onPressed: _isSending ? null : _send,
+                     onPressed: (_isSending || !_isReady) ? null : _send,
+
                       style: ElevatedButton.styleFrom(
                         shape: const CircleBorder(),
                         padding: EdgeInsets.zero,

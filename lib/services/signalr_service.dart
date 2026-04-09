@@ -21,14 +21,31 @@ final _messagesReadController =
     final hubUrl = "http://10.0.2.2:5125/hubs/chat";
 
 
-    _connection = HubConnectionBuilder()
-        .withUrl(
-          hubUrl,
-          options: HttpConnectionOptions(
-            accessTokenFactory: () async => token ?? "",
-          ),
-        )
-        .build();
+   _connection = HubConnectionBuilder()
+    .withUrl(
+      hubUrl,
+      options: HttpConnectionOptions(
+        accessTokenFactory: () async => token ?? "",
+      ),
+    )
+    .withAutomaticReconnect()
+    .build();
+
+    
+ _connection!.onreconnecting(({error}) {
+  print("SignalR reconnecting...");
+});
+
+_connection!.onreconnected(({connectionId}) {
+  print("SignalR reconnected");
+});
+
+_connection!.onclose(({error}) {
+  print("SignalR closed");
+});
+
+
+
 
     // När vi får nytt meddelande från backend
       _connection!.on("MessageReceived", (args) { 

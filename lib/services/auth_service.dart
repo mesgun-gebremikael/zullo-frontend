@@ -64,9 +64,29 @@ class AuthService {
     throw Exception('Register failed: ${response.statusCode} ${response.body}');
   }
 
-  Future<void> logout() async {
-    await _storage.clearAuth();
+Future<void> logout() async {
+  final authToken = await _storage.getToken();
+
+  // Viktigt:
+  // försök först släppa device token i backend medan JWT fortfarande finns kvar.
+  if (authToken != null && authToken.isNotEmpty) {
+    try {
+      final url = Uri.parse('$baseApiUrl/me/device-token/clear');
+
+      await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $authToken',
+        },
+      );
+    } catch (_) {
+      // Logout ska ändå kunna fortsätta lokalt även om backend-clear misslyckar.
+    }
   }
+
+  await _storage.clearAuth();
+}
 
   // ---------- PROFILE CHECK ----------
 
@@ -413,27 +433,34 @@ Future<void> updateFilterProfile({
   }
 }
 
- Future<void> saveDeviceToken(String token) async {
-    final authToken = await _storage.getToken();
-    if (authToken == null || authToken.isEmpty) {
-      throw Exception('No auth token found');
-    }
-
-    final url = Uri.parse('$baseApiUrl/me/device-token');
-
-    final res = await http.post(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $authToken',
-      },
-      body: jsonEncode(token),
-    );
-
-    if (res.statusCode != 200) {
-      throw Exception('Save device token failed: ${res.statusCode} ${res.body}');
-    }
+Future<void> saveDeviceToken(String token) async {
+  final authToken = await _storage.getToken();
+  if (authToken == null || authToken.isEmpty) {
+    throw Exception('No auth token found');
   }
+
+  final trimmedToken = token.trim();
+  if (trimmedToken.isEmpty) {
+    throw Exception('Device token is empty');
+  }
+
+  final url = Uri.parse('$baseApiUrl/me/device-token');
+
+  final res = await http.post(
+    url,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $authToken',
+    },
+    body: jsonEncode({
+      'token': trimmedToken,
+    }),
+  );
+
+  if (res.statusCode != 200) {
+    throw Exception('Save device token failed: ${res.statusCode} ${res.body}');
+  }
+}
 
 
 
