@@ -7,21 +7,22 @@ import 'matches_page.dart';
 import 'services/auth_service.dart';
 import 'chat_page.dart';
 import 'services/unread_sync_service.dart';
+import 'services/chat_coordinator.dart';
+import 'models/chat_open_request.dart';
+import 'services/messages_service.dart';
+import 'services/auth_storage.dart';
+
 
 
 
 class MainNavigation extends StatefulWidget {
   final int initialIndex;
-  final String? openChatUserId;
-  final String? openChatDisplayName;
-  final String? openChatPhotoUrl;
+ 
 
   const MainNavigation({
     super.key,
     this.initialIndex = 0,
-    this.openChatUserId,
-    this.openChatDisplayName,
-    this.openChatPhotoUrl,
+    
   });
 
   @override
@@ -38,45 +39,20 @@ class _MainNavigationState extends State<MainNavigation> {
 
   
  late final List<Widget> _pages;
-
-
+ late final MessagesService _messagesService;
+StreamSubscription<ChatOpenRequest>? _openChatSubscription;
+bool _isOpeningChat = false;
  
- Future<void> _openNotificationChatIfNeeded() async {
-    final userId = widget.openChatUserId;
-    if (userId == null || userId.isEmpty) return;
-     UnreadSyncService.instance.markChatOpened(userId);
 
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (!mounted) return;
-
-      final shouldRefresh = await Navigator.push<bool>(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ChatPage(
-            userId: userId,
-            displayName: widget.openChatDisplayName ?? 'Chat',
-            photoUrl: widget.openChatPhotoUrl ?? '',
-          ),
-        ),
-      );
-
-      if (!mounted) return;
-
-      if (shouldRefresh == true) {
-  await _loadUnreadStatus();
-
-  if (!mounted) return;
-  setState(() {
-    _selectedIndex = 3;
-  });
-}
-    });
-  }
 
 
   @override
   void initState() {
     super.initState();
+    _messagesService = MessagesService(
+  AuthService.baseApiUrl,
+  AuthStorage(),
+);
 
     _selectedIndex = widget.initialIndex;
     _loadUnreadStatus();
@@ -96,7 +72,18 @@ class _MainNavigationState extends State<MainNavigation> {
       const ProfileTab(),
     ];
 
-        _openNotificationChatIfNeeded();
+    _openChatSubscription =
+    ChatCoordinator.instance.openChatStream.listen((request) async {
+  await _handleOpenChatRequest(request);
+});
+
+final pendingRequest = ChatCoordinator.instance.consumePendingRequest();
+if (pendingRequest != null) {
+  WidgetsBinding.instance.addPostFrameCallback((_) async {
+    await _handleOpenChatRequest(pendingRequest);
+  });
+}
+
 
     // Pollar unread-status så chat-dot i bottom nav hålls mer uppdaterad
     _unreadPollTimer = Timer.periodic(const Duration(seconds: 4), (_) {
@@ -105,11 +92,12 @@ class _MainNavigationState extends State<MainNavigation> {
     });
   }
 
-    @override
-  void dispose() {
-    _unreadPollTimer?.cancel();
-    super.dispose();
-  }
+   @override
+void dispose() {
+  _openChatSubscription?.cancel();
+  _unreadPollTimer?.cancel();
+  super.dispose();
+}
 
 
   void _onItemTapped(int index) {
@@ -137,6 +125,53 @@ class _MainNavigationState extends State<MainNavigation> {
     }
   }
 
+Future<void> _handleOpenChatRequest(ChatOpenRequest request) async {
+  if (!mounted) return;
+  if (_isOpeningChat) return;
+  if (!request.isValid) return;
+
+  _isOpeningChat = true;
+
+  try {
+    setState(() {
+      _selectedIndex = 3;
+    });
+
+    final threadData = await _messagesService.getThread(request.userId);
+
+    if (!mounted) return;
+
+    final shouldRefresh = await Navigator.push<bool>(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (_, __, ___) => ChatPage(
+          userId: request.userId,
+          displayName: request.displayName,
+          photoUrl: request.photoUrl,
+          openChatsListOnExit: request.openChatsListOnExit,
+          initialThreadData: threadData,
+        ),
+        transitionDuration: Duration.zero,
+        reverseTransitionDuration: Duration.zero,
+      ),
+    );
+
+    if (!mounted) return;
+
+    if (shouldRefresh == true) {
+      await _loadUnreadStatus();
+    }
+  } catch (e) {
+    debugPrint('Open chat failed: $e');
+    if (!mounted) return;
+
+    setState(() {
+      _selectedIndex = 3;
+    });
+  } finally {
+    _isOpeningChat = false;
+  }
+}
 
   @override
   Widget build(BuildContext context) {

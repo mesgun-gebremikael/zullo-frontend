@@ -18,14 +18,16 @@ class ChatPage extends StatefulWidget {
   final String displayName;
   final String photoUrl;
   final bool openChatsListOnExit;
+  final List<dynamic>? initialThreadData;
 
   const ChatPage({
-    super.key,
-    required this.userId,
-    required this.displayName,
-    required this.photoUrl,
-    this.openChatsListOnExit = false,
-  });
+  super.key,
+  required this.userId,
+  required this.displayName,
+  required this.photoUrl,
+  this.openChatsListOnExit = false,
+  this.initialThreadData,
+});
 
   @override
   State<ChatPage> createState() => _ChatPageState();
@@ -92,7 +94,24 @@ bool _isReady = false;
     return;
   }
 
-  // 2) Visa cache direkt om den finns
+  // 2) Visa initial thread direkt om den finns (bästa fallet)
+if (widget.initialThreadData != null &&
+    widget.initialThreadData!.isNotEmpty) {
+  final parsed = _parseThread(widget.initialThreadData!);
+
+  setState(() {
+    _messages
+      ..clear()
+      ..addAll(parsed);
+    _hasLoadedInitialThread = true;
+    _isLoading = false;
+    _error = null;
+  });
+
+  // Spara till cache också
+  ChatCacheService.setMessages(widget.userId, List.from(parsed));
+} else {
+  // fallback: visa cache om initial data saknas
   final cached = ChatCacheService.getMessages(widget.userId);
   if (cached != null && cached.isNotEmpty) {
     setState(() {
@@ -104,6 +123,7 @@ bool _isReady = false;
       _error = null;
     });
   }
+}
 
   // 3) Koppla listeners först
 _messagesSubscription =
@@ -117,20 +137,23 @@ _messagesReadSubscription =
 });
 
 
-  // 4) Starta SignalR i bakgrunden
- try {
-  await _signalRService.connect();
-} catch (_) {}
+ // 4) Starta första thread-load direkt
+unawaited(Future(() async {
+  try {
+    await _loadThread(silent: true);
+  } catch (_) {
+    // ignore i MVP
+  }
+}));
 
-
-  // 5) Ladda första tråden i bakgrunden
-  unawaited(Future(() async {
-    try {
-      await _loadThread(silent: true);
-    } catch (_) {
-      // ignore i MVP
-    }
-  }));
+// 5) Koppla SignalR i bakgrunden utan att blockera första öppningen
+unawaited(Future(() async {
+  try {
+    await _signalRService.connect();
+  } catch (_) {
+    // ignore i MVP
+  }
+}));
 
   // 6) MarkRead + badge i bakgrunden
   unawaited(Future(() async {
@@ -716,29 +739,16 @@ child: widget.photoUrl.isEmpty
             onRefresh: () async {
               await _loadThread();
             },
-                               child: !_hasLoadedInitialThread
+                               child: _messages.isEmpty
     ? ListView(
         physics: const AlwaysScrollableScrollPhysics(),
-        children: const [
-          SizedBox(height: 140),
-          Center(
-            child: SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
-          ),
+        children: [
+          const SizedBox(height: 140),
+          if (_hasLoadedInitialThread)
+            const Center(child: Text("Säg hej 👋")),
         ],
       )
-    : _messages.isEmpty
-        ? ListView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            children: const [
-              SizedBox(height: 140),
-              Center(child: Text("Säg hej 👋")),
-            ],
-          )
-        : ListView.builder(
+    : ListView.builder(
             controller: _scroll,
             reverse: true,
             padding: const EdgeInsets.symmetric(

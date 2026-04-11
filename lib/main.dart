@@ -14,6 +14,8 @@ import 'package:app_badge_plus/app_badge_plus.dart';
 import 'services/badge_service.dart';
 import 'main_navigation.dart';
 import 'services/auth_storage.dart';
+import 'services/chat_coordinator.dart';
+import 'models/chat_open_request.dart';
 
 
 
@@ -75,8 +77,7 @@ NotificationLaunchData? _parseNotificationLaunch(RemoteMessage? message) {
 }
 
 Future<void> _openChatFromLaunch(NotificationLaunchData launch) async {
-  final storage = AuthStorage();
-  final token = await storage.getToken();
+  final token = await AuthStorage().getToken();
 
   if (token == null || token.isEmpty) {
     navigatorKey.currentState?.pushAndRemoveUntil(
@@ -90,27 +91,25 @@ Future<void> _openChatFromLaunch(NotificationLaunchData launch) async {
   final canOpen = await authService.canOpenChat(launch.userId);
 
   if (!canOpen) {
-    // Trygg fallback:
-    // användaren är inloggad, men just denna notis/chat är inte längre giltig
-    // i nuvarande auth-context. Gå då till chattar istället för att visa rå 401/403.
     navigatorKey.currentState?.pushAndRemoveUntil(
-      _instantRoute(
-        const MainNavigation(initialIndex: 3),
-      ),
+      _instantRoute(const MainNavigation(initialIndex: 3)),
       (route) => false,
     );
     return;
   }
 
-  navigatorKey.currentState?.pushAndRemoveUntil(
-    _instantRoute(
-      MainNavigation(
-        initialIndex: 3,
-        openChatUserId: launch.userId,
-        openChatDisplayName: launch.displayName,
-        openChatPhotoUrl: launch.photoUrl,
-      ),
+  ChatCoordinator.instance.requestOpenChat(
+    ChatOpenRequest(
+      userId: launch.userId,
+      displayName: launch.displayName,
+      photoUrl: launch.photoUrl,
+      openChatsListOnExit: true,
+      fromNotification: true,
     ),
+  );
+
+  navigatorKey.currentState?.pushAndRemoveUntil(
+    _instantRoute(const MainNavigation(initialIndex: 3)),
     (route) => false,
   );
 }

@@ -5,6 +5,8 @@ import 'services/signalr_service.dart';
 import 'chat_page.dart';
 import 'premium_page.dart';
 import 'services/unread_sync_service.dart';
+import 'services/chat_coordinator.dart';
+import 'models/chat_open_request.dart';
 
 
 class MatchesPage extends StatefulWidget {
@@ -93,6 +95,27 @@ void dispose() {
     return DateTime.tryParse(s);
   }
 
+  void _applyLocalUnreadOverride(List<dynamic> list) {
+  for (final m in list) {
+    final userId = (m["userId"] ?? "").toString();
+    if (userId.isEmpty) continue;
+
+    final openedAt = UnreadSyncService.instance.getOpenedAt(userId);
+    if (openedAt == null) continue;
+
+    final lastMessageAt = _tryParseUtc(m["lastMessageAtUtc"]);
+    if (lastMessageAt == null) continue;
+
+    final lastMessageAtUtc =
+        lastMessageAt.isUtc ? lastMessageAt : lastMessageAt.toUtc();
+
+    if (!lastMessageAtUtc.isAfter(openedAt)) {
+      m["hasUnread"] = false;
+      m["unreadMessageCount"] = 0;
+    }
+  }
+}
+
   void _sortMatchesInUi(List<dynamic> list) {
     list.sort((a, b) {
       // final aUnread = (a['hasUnread'] == true);
@@ -119,12 +142,13 @@ void dispose() {
 
     try {
       final matchesData = await _auth.getMatches();
-      final matchesList = List<dynamic>.from(matchesData);
+final matchesList = List<dynamic>.from(matchesData);
 
-      _sortMatchesInUi(matchesList);
+_applyLocalUnreadOverride(matchesList);
+_sortMatchesInUi(matchesList);
 
-      final hasUnread = matchesList.any((m) => m['hasUnread'] == true);
-      widget.onUnreadChanged?.call(hasUnread);
+final hasUnread = matchesList.any((m) => m['hasUnread'] == true);
+widget.onUnreadChanged?.call(hasUnread);
 
       final likesData = await _auth.getLikesReceived();
       final likesList = List<dynamic>.from(likesData);
@@ -171,35 +195,25 @@ void dispose() {
   widget.onUnreadChanged?.call(hasUnreadAny);
 }
 
-   Future<void> _openChat(dynamic m) async {
+  Future<void> _openChat(dynamic m) async {
   final userId = (m["userId"] ?? "").toString();
   final name = (m["displayName"] ?? "").toString();
   final photoUrl = (m["photoUrl"] ?? "").toString();
 
-  // Viktigt:
-  // unread-badge ska bort direkt när användaren öppnar chatten,
-  // utan att vänta på backend/signalr/refresh.
-  UnreadSyncService.instance.markChatOpened(userId);
+  if (userId.isEmpty) return;
+
   _clearUnreadLocally(userId);
 
-   final shouldRefresh = await Navigator.push<bool>(
-  context,
-  PageRouteBuilder(
-    pageBuilder: (_, __, ___) => ChatPage(
+  ChatCoordinator.instance.requestOpenChat(
+    ChatOpenRequest(
       userId: userId,
-      displayName: name,
+      displayName: name.isEmpty ? 'Chat' : name,
       photoUrl: photoUrl,
+      openChatsListOnExit: false,
+      fromNotification: false,
     ),
-    transitionDuration: Duration.zero,
-    reverseTransitionDuration: Duration.zero,
-  ),
-);
-
-
-    if (shouldRefresh == true) {
-      await loadMatches();
-    }
-  }
+  );
+}
 
   @override
   Widget build(BuildContext context) {
