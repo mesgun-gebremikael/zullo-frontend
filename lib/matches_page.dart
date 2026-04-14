@@ -7,6 +7,10 @@ import 'premium_page.dart';
 import 'services/unread_sync_service.dart';
 import 'services/chat_coordinator.dart';
 import 'models/chat_open_request.dart';
+import 'services/matches_cache_service.dart';
+import 'services/matches_refresh_service.dart';
+import 'services/matches_cache_service.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 
 class MatchesPage extends StatefulWidget {
@@ -29,7 +33,7 @@ class _MatchesPageState extends State<MatchesPage> {
   StreamSubscription<Map<String, dynamic>>? _messageSubscription;
 //StreamSubscription<Map<String, dynamic>>? _messagesReadSubscription;
 bool _signalRConnected = false;
-
+StreamSubscription<void>? _refreshSubscription;
 
   bool isLoading = true;
   String? error;
@@ -37,23 +41,36 @@ bool _signalRConnected = false;
   List<dynamic> likesReceived = [];
 
 
-   @override
-  void initState() {
-    super.initState();
-    loadMatches();
+  @override
+void initState() {
+  super.initState();
 
-     _openedChatSubscription =
-    UnreadSyncService.instance.openedChatStream.listen((userId) {
+  final cachedMatches = MatchesCacheService.getMatches();
+  final cachedLikes = MatchesCacheService.getLikesReceived();
+
+  if (cachedMatches != null && cachedLikes != null) {
+    matches = List<dynamic>.from(cachedMatches);
+    likesReceived = List<dynamic>.from(cachedLikes);
+    isLoading = false;
+  }
+
+  loadMatches(silent: cachedMatches != null && cachedLikes != null);
+  _refreshSubscription =
+    MatchesRefreshService.instance.stream.listen((_) async {
   if (!mounted) return;
-  _clearUnreadLocally(userId);
+  await loadMatches(silent: true);
 });
 
-    // SignalR kopplas bara för riktiga chattlistan,
-    // inte för temp-MatchesPage som används i andra tabs
-    if (widget.onUnreadChanged != null) {
-      _setupSignalR();
-    }
+  _openedChatSubscription =
+      UnreadSyncService.instance.openedChatStream.listen((userId) {
+    if (!mounted) return;
+    _clearUnreadLocally(userId);
+  });
+
+  if (widget.onUnreadChanged != null) {
+    _setupSignalR();
   }
+}
 
    Future<void> _setupSignalR() async {
   await _signalRService.connect();
@@ -77,7 +94,7 @@ bool _signalRConnected = false;
 void dispose() {
   _openedChatSubscription?.cancel(); // NYTT
   _messageSubscription?.cancel();
-
+   _refreshSubscription?.cancel();
   if (_signalRConnected) {
     _signalRService.disconnect();
   }
@@ -130,6 +147,20 @@ void dispose() {
     });
   }
 
+  void _precacheMatchImages(List<dynamic> list) {
+  if (!mounted) return;
+
+  for (final m in list.take(12)) {
+    final photoUrl = (m["photoUrl"] ?? "").toString().trim();
+    if (photoUrl.isEmpty) continue;
+
+    precacheImage(
+      CachedNetworkImageProvider(photoUrl),
+      context,
+    );
+  }
+}
+
    Future<void> loadMatches({bool silent = false}) async {
     if (!silent) {
       setState(() {
@@ -153,14 +184,21 @@ widget.onUnreadChanged?.call(hasUnread);
       final likesData = await _auth.getLikesReceived();
       final likesList = List<dynamic>.from(likesData);
 
-      if (!mounted) return;
+     if (!mounted) return;
 
-      setState(() {
-        matches = matchesList;
-        likesReceived = likesList;
-        isLoading = false;
-        error = null;
-      });
+MatchesCacheService.setData(
+  matches: matchesList,
+  likesReceived: likesList,
+);
+
+setState(() {
+  matches = matchesList;
+  likesReceived = likesList;
+  isLoading = false;
+  error = null;
+});
+
+_precacheMatchImages(matchesList);
     } catch (e) {
       if (!mounted) return;
 
@@ -344,7 +382,7 @@ widget.onUnreadChanged?.call(hasUnread);
       radius: 30,
       backgroundColor: cs.surfaceContainerHighest,
       backgroundImage:
-          photoUrl.isNotEmpty ? NetworkImage(photoUrl) : null,
+    photoUrl.isNotEmpty ? CachedNetworkImageProvider(photoUrl) : null,
       child: photoUrl.isEmpty
           ? Icon(
               Icons.person,
@@ -432,8 +470,8 @@ const SizedBox(height: 10),
                                     backgroundColor:
                                         cs.surfaceContainerHighest,
                                     backgroundImage: photoUrl.isNotEmpty
-                                        ? NetworkImage(photoUrl)
-                                        : null,
+    ? CachedNetworkImageProvider(photoUrl)
+    : null,
                                     child: photoUrl.isEmpty
                                         ? Icon(
                                             Icons.person,

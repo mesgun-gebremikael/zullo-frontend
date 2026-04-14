@@ -10,7 +10,7 @@ import '../services/current_chat.dart';
 import 'package:app_badge_plus/app_badge_plus.dart';
 import '../services/badge_service.dart';
 import 'services/chat_cache_service.dart';
-
+import 'package:cached_network_image/cached_network_image.dart';
 
 
 class ChatPage extends StatefulWidget {
@@ -20,6 +20,7 @@ class ChatPage extends StatefulWidget {
   final bool openChatsListOnExit;
   final List<dynamic>? initialThreadData;
 
+
   const ChatPage({
   super.key,
   required this.userId,
@@ -27,6 +28,7 @@ class ChatPage extends StatefulWidget {
   required this.photoUrl,
   this.openChatsListOnExit = false,
   this.initialThreadData,
+
 });
 
   @override
@@ -69,16 +71,45 @@ bool _isReady = false;
   bool _markReadInFlight = false;
   DateTime? _lastMarkReadAtUtc;
 
- void initState() {
+ @override
+void initState() {
   super.initState();
 
   _messagesService = MessagesService(_baseApiUrl, AuthStorage());
   CurrentChat.openUserId = widget.userId;
 
-  //  VIKTIGT: starta utan loading-block
   _isLoading = false;
 
+  _hydrateInitialUiIfAvailable();
   _init();
+}
+
+void _hydrateInitialUiIfAvailable() {
+  if (widget.initialThreadData != null && widget.initialThreadData!.isNotEmpty) {
+    final parsed = _parseThread(widget.initialThreadData!);
+
+    _messages
+      ..clear()
+      ..addAll(parsed);
+
+    _hasLoadedInitialThread = true;
+    _isLoading = false;
+    _error = null;
+
+    ChatCacheService.setMessages(widget.userId, List.from(parsed));
+    return;
+  }
+
+  final cached = ChatCacheService.getMessages(widget.userId);
+  if (cached != null && cached.isNotEmpty) {
+    _messages
+      ..clear()
+      ..addAll(cached.cast<_UiMessage>());
+
+    _hasLoadedInitialThread = true;
+    _isLoading = false;
+    _error = null;
+  }
 }
 
 
@@ -94,36 +125,10 @@ bool _isReady = false;
     return;
   }
 
-  // 2) Visa initial thread direkt om den finns (bästa fallet)
-if (widget.initialThreadData != null &&
-    widget.initialThreadData!.isNotEmpty) {
-  final parsed = _parseThread(widget.initialThreadData!);
+  
 
-  setState(() {
-    _messages
-      ..clear()
-      ..addAll(parsed);
-    _hasLoadedInitialThread = true;
-    _isLoading = false;
-    _error = null;
-  });
+ 
 
-  // Spara till cache också
-  ChatCacheService.setMessages(widget.userId, List.from(parsed));
-} else {
-  // fallback: visa cache om initial data saknas
-  final cached = ChatCacheService.getMessages(widget.userId);
-  if (cached != null && cached.isNotEmpty) {
-    setState(() {
-      _messages
-        ..clear()
-        ..addAll(cached.cast<_UiMessage>());
-      _hasLoadedInitialThread = true;
-      _isLoading = false;
-      _error = null;
-    });
-  }
-}
 
   // 3) Koppla listeners först
 _messagesSubscription =
@@ -164,15 +169,12 @@ unawaited(Future(() async {
       // ignore i MVP
     }
   }));
+
   setState(() {
   _isReady = true;
 });
 
 }
-
-
-
-
 
 
    @override
@@ -301,8 +303,8 @@ if (!silent) {
 
       if (!mounted) return;
 
-
-      setState(() {
+      
+   setState(() {
   _messages
     ..clear()
     ..addAll(parsed);
@@ -713,7 +715,9 @@ Future<void> _showReportDialog() async {
             radius: 18,
             backgroundColor: scheme.surfaceContainerHighest,
            backgroundImage:
-    widget.photoUrl.isNotEmpty ? NetworkImage(widget.photoUrl) : null,
+    widget.photoUrl.isNotEmpty
+        ? CachedNetworkImageProvider(widget.photoUrl)
+        : null,
 child: widget.photoUrl.isEmpty
     ? Icon(Icons.person, color: scheme.onSurface.withValues(alpha: 0.75))
     : null,

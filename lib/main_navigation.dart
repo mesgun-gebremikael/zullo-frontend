@@ -11,7 +11,9 @@ import 'services/chat_coordinator.dart';
 import 'models/chat_open_request.dart';
 import 'services/messages_service.dart';
 import 'services/auth_storage.dart';
-
+import 'services/chat_cache_service.dart';
+import 'services/matches_cache_service.dart';
+import 'services/matches_refresh_service.dart';
 
 
 
@@ -137,9 +139,17 @@ Future<void> _handleOpenChatRequest(ChatOpenRequest request) async {
       _selectedIndex = 3;
     });
 
-    final threadData = await _messagesService.getThread(request.userId);
+    MatchesCacheService.clearUnreadForUser(request.userId);
 
-    if (!mounted) return;
+    final hasCachedChat =
+        ChatCacheService.getMessages(request.userId)?.isNotEmpty ?? false;
+
+    List<dynamic>? initialThreadData;
+
+    if (!hasCachedChat) {
+      initialThreadData = await _messagesService.getThread(request.userId);
+      if (!mounted) return;
+    }
 
     final shouldRefresh = await Navigator.push<bool>(
       context,
@@ -149,7 +159,7 @@ Future<void> _handleOpenChatRequest(ChatOpenRequest request) async {
           displayName: request.displayName,
           photoUrl: request.photoUrl,
           openChatsListOnExit: request.openChatsListOnExit,
-          initialThreadData: threadData,
+          initialThreadData: initialThreadData,
         ),
         transitionDuration: Duration.zero,
         reverseTransitionDuration: Duration.zero,
@@ -159,6 +169,7 @@ Future<void> _handleOpenChatRequest(ChatOpenRequest request) async {
     if (!mounted) return;
 
     if (shouldRefresh == true) {
+      MatchesRefreshService.instance.requestRefresh();
       await _loadUnreadStatus();
     }
   } catch (e) {
