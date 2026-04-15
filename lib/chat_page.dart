@@ -71,7 +71,7 @@ bool _isReady = false;
   bool _markReadInFlight = false;
   DateTime? _lastMarkReadAtUtc;
 
- @override
+@override
 void initState() {
   super.initState();
 
@@ -80,7 +80,6 @@ void initState() {
 
   _isLoading = false;
 
-  _hydrateInitialUiIfAvailable();
   _init();
 }
 
@@ -125,7 +124,7 @@ void _hydrateInitialUiIfAvailable() {
     return;
   }
 
-  
+    _hydrateInitialUiIfAvailable();
 
  
 
@@ -194,19 +193,9 @@ super.dispose();
 
 
 
-    void _handleBackNavigation() {
-    if (widget.openChatsListOnExit) {
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(
-          builder: (_) => const MainNavigation(initialIndex: 3),
-        ),
-        (route) => false,
-      );
-      return;
-    }
-
-    Navigator.pop(context, true);
-  }
+  void _handleBackNavigation() {
+  Navigator.pop(context, true);
+}
 
   Future<bool> _markReadIfNeeded(List<_UiMessage> parsed) async {
     // Finns inkommande olästa messages?

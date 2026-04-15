@@ -139,17 +139,11 @@ Future<void> _handleOpenChatRequest(ChatOpenRequest request) async {
       _selectedIndex = 3;
     });
 
-    MatchesCacheService.clearUnreadForUser(request.userId);
+   UnreadSyncService.instance.markChatOpened(request.userId);
+MatchesCacheService.clearUnreadForUser(request.userId);
 
-    final hasCachedChat =
-        ChatCacheService.getMessages(request.userId)?.isNotEmpty ?? false;
-
-    List<dynamic>? initialThreadData;
-
-    if (!hasCachedChat) {
-      initialThreadData = await _messagesService.getThread(request.userId);
-      if (!mounted) return;
-    }
+final initialThreadData = await _messagesService.getThread(request.userId);
+if (!mounted) return;
 
     final shouldRefresh = await Navigator.push<bool>(
       context,
