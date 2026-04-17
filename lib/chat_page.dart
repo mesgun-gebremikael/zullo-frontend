@@ -16,7 +16,7 @@ import 'services/matches_cache_service.dart';
 import 'services/matches_refresh_service.dart';
 import 'models/chat_message_item.dart';
 import 'services/chat_repository.dart';
-
+import 'services/chat_thread_cache_service.dart';
 
 class ChatPage extends StatefulWidget {
   final String userId; // other user id
@@ -111,20 +111,21 @@ void _hydrateInitialUiIfAvailable() {
   if (_meUserId == null || _meUserId!.isEmpty) return;
 
   if (widget.initialThreadData != null && widget.initialThreadData!.isNotEmpty) {
-    final parsed = _parseThread(widget.initialThreadData!);
+  final parsed = _parseThread(widget.initialThreadData!);
 
-    _messages
-      ..clear()
-      ..addAll(parsed);
+  _messages
+    ..clear()
+    ..addAll(parsed);
 
-    _hasLoadedInitialThread = true;
-    _isLoading = false;
-    _error = null;
+  _hasLoadedInitialThread = true;
+  _isLoading = false;
+  _error = null;
 
-    ChatCacheService.setMessages(widget.userId, List.from(parsed));
-     _pushCurrentMessagesToRepository();
-     return;
-  }
+  ChatThreadCacheService.setThread(widget.userId, widget.initialThreadData!);
+  ChatCacheService.setMessages(widget.userId, List.from(parsed));
+  _pushCurrentMessagesToRepository();
+  return;
+}
 
   final cached = ChatCacheService.getMessages(widget.userId);
   if (cached != null && cached.isNotEmpty) {
@@ -371,7 +372,8 @@ if (!silent) {
 
     try {
       final data = await _messagesService.getThread(widget.userId);
-      final parsed = _parseThread(data);
+   ChatThreadCacheService.setThread(widget.userId, data);
+     final parsed = _parseThread(data);
 
       final didMarkRead = await _markReadIfNeeded(parsed);
 
@@ -534,6 +536,7 @@ if (parsed.isNotEmpty) {
 
 
   ChatCacheService.setMessages(widget.userId, List.from(_messages));
+  ChatThreadCacheService.clearThread(widget.userId);
 _pushCurrentMessagesToRepository();
 _updateRepositoryLastMessage(
   text: text,
@@ -734,6 +737,7 @@ Future<void> _showReportDialog() async {
   });
 
 ChatCacheService.setMessages(widget.userId, List.from(_messages));
+ChatThreadCacheService.clearThread(widget.userId);
 _pushCurrentMessagesToRepository();
 _updateRepositoryLastMessage(
   text: text,
@@ -771,7 +775,8 @@ _scrollToBottom();
     }
   });
 
-  ChatCacheService.setMessages(widget.userId, List.from(_messages));
+ChatCacheService.setMessages(widget.userId, List.from(_messages));
+ChatThreadCacheService.clearThread(widget.userId);
 _pushCurrentMessagesToRepository();
 }
 
