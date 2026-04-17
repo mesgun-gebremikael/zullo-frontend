@@ -14,6 +14,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'services/unread_sync_service.dart';
 import 'services/matches_cache_service.dart';
 import 'services/matches_refresh_service.dart';
+import 'models/chat_message_item.dart';
+import 'services/chat_repository.dart';
 
 
 class ChatPage extends StatefulWidget {
@@ -57,7 +59,7 @@ bool _isReady = false;
   final SignalRService _signalRService = SignalRService();
    StreamSubscription<Map<String, dynamic>>? _messagesReadSubscription;
    StreamSubscription<Map<String, dynamic>>? _messagesSubscription;
-
+   StreamSubscription<ChatRepositoryState>? _repositorySubscription;
 
     bool _isLoading = false;
   bool _isSending = false;
@@ -82,9 +84,26 @@ void initState() {
   CurrentChat.openUserId = widget.userId;
 
   _isLoading = false;
-  _meUserId = widget.initialMeUserId;
 
-  _hydrateInitialUiIfAvailable();
+  _repositorySubscription =
+      ChatRepository.instance.stream.listen((state) {
+    if (!mounted) return;
+
+    final repoThread = ChatRepository.instance.threadFor(widget.userId);
+    if (repoThread.isEmpty) return;
+
+    final mapped = _mapRepositoryItemsToUi(repoThread);
+
+    setState(() {
+      _messages
+        ..clear()
+        ..addAll(mapped);
+      _hasLoadedInitialThread = true;
+      _isLoading = false;
+      _error = null;
+    });
+  });
+
   _init();
 }
 
@@ -103,7 +122,8 @@ void _hydrateInitialUiIfAvailable() {
     _error = null;
 
     ChatCacheService.setMessages(widget.userId, List.from(parsed));
-    return;
+     _pushCurrentMessagesToRepository();
+     return;
   }
 
   final cached = ChatCacheService.getMessages(widget.userId);
@@ -115,6 +135,8 @@ void _hydrateInitialUiIfAvailable() {
     _hasLoadedInitialThread = true;
     _isLoading = false;
     _error = null;
+
+    _pushCurrentMessagesToRepository();
   }
 }
 
@@ -194,8 +216,9 @@ void dispose() {
     CurrentChat.openUserId = null;
   }
 
-  _messagesSubscription?.cancel();
+ _messagesSubscription?.cancel();
 _messagesReadSubscription?.cancel();
+_repositorySubscription?.cancel();
 _controller.dispose();
 _scroll.dispose();
 _signalRService.disconnect();
@@ -283,6 +306,43 @@ super.dispose();
     return parsed;
   }
 
+  List<ChatMessageItem> _mapUiMessagesToRepositoryItems(List<_UiMessage> list) {
+  return list
+      .map(
+        (m) => ChatMessageItem(
+          text: m.text,
+          isMe: m.isMe,
+          timeLocal: m.timeLocal,
+          readAtLocal: m.readAtLocal,
+          pending: m.pending,
+          failed: m.failed,
+          clientMessageId: m.clientMessageId,
+        ),
+      )
+      .toList();
+}
+
+List<_UiMessage> _mapRepositoryItemsToUi(List<ChatMessageItem> list) {
+  return list
+      .map(
+        (m) => _UiMessage(
+          text: m.text,
+          isMe: m.isMe,
+          timeLocal: m.timeLocal,
+          readAtLocal: m.readAtLocal,
+          pending: m.pending,
+          failed: m.failed,
+          clientMessageId: m.clientMessageId,
+        ),
+      )
+      .toList();
+}
+
+void _pushCurrentMessagesToRepository() {
+  final repoItems = _mapUiMessagesToRepositoryItems(_messages);
+  ChatRepository.instance.setThread(widget.userId, repoItems);
+}
+
   Future<void> _loadThread({bool silent = false}) async {
       if (_isThreadFetchInFlight) return;
     _isThreadFetchInFlight = true; 
@@ -315,7 +375,10 @@ if (!silent) {
 
 //  CACHE SAVE (lägg exakt här)
 ChatCacheService.setMessages(widget.userId, List.from(parsed));
-
+ChatRepository.instance.setThread(
+  widget.userId,
+  _mapUiMessagesToRepositoryItems(parsed),
+);
 
       if (didMarkRead) {
         Future(() async {
@@ -403,6 +466,8 @@ ChatCacheService.setMessages(widget.userId, List.from(parsed));
     _messages.add(optimistic);
   });
 
+  _pushCurrentMessagesToRepository();
+
   _scrollToBottom();
 
   try {
@@ -441,25 +506,29 @@ ChatCacheService.setMessages(widget.userId, List.from(parsed));
 
 
     ChatCacheService.setMessages(widget.userId, List.from(_messages));
-    _scrollToBottom();
+_pushCurrentMessagesToRepository();
+_scrollToBottom();
   } catch (e) {
-    if (!mounted) return;
+  if (!mounted) return;
 
-    setState(() {
-      final idx = _messages.indexWhere(
-        (m) => m.clientMessageId == clientMessageId,
-      );
-
-      if (idx != -1) {
-        _messages[idx] =
-            _messages[idx].copyWith(pending: false, failed: true);
-      }
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Kunde inte skicka: $e")),
+  setState(() {
+    final idx = _messages.indexWhere(
+      (m) => m.clientMessageId == clientMessageId,
     );
-  } finally {
+
+    if (idx != -1) {
+      _messages[idx] =
+          _messages[idx].copyWith(pending: false, failed: true);
+    }
+  });
+
+  _pushCurrentMessagesToRepository();
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text("Kunde inte skicka: $e")),
+  );
+}
+  finally {
     if (mounted) {
       setState(() => _isSending = false);
     }
@@ -630,8 +699,9 @@ Future<void> _showReportDialog() async {
     _isLoading = false;
   });
 
-  ChatCacheService.setMessages(widget.userId, List.from(_messages));
-  _scrollToBottom();
+ ChatCacheService.setMessages(widget.userId, List.from(_messages));
+_pushCurrentMessagesToRepository();
+_scrollToBottom();
 
   Future(() async {
     try {
@@ -663,6 +733,7 @@ Future<void> _showReportDialog() async {
   });
 
   ChatCacheService.setMessages(widget.userId, List.from(_messages));
+_pushCurrentMessagesToRepository();
 }
 
 
