@@ -9,10 +9,14 @@ import 'services/chat_coordinator.dart';
 import 'models/chat_open_request.dart';
 import 'services/matches_cache_service.dart';
 import 'services/matches_refresh_service.dart';
-import 'services/matches_cache_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'models/chat_list_item.dart';
 import 'services/chat_repository.dart';
+import 'services/chat_thread_cache_service.dart';
+import 'services/messages_service.dart';
+import 'services/auth_storage.dart';
+
+
 
 
 class MatchesPage extends StatefulWidget {
@@ -29,6 +33,7 @@ class MatchesPage extends StatefulWidget {
 }
 
 class _MatchesPageState extends State<MatchesPage> {
+
   final AuthService _auth = AuthService();
   final SignalRService _signalRService = SignalRService();
   StreamSubscription<String>? _openedChatSubscription;
@@ -41,11 +46,16 @@ StreamSubscription<ChatRepositoryState>? _repositorySubscription;
   String? error;
   List<dynamic> matches = [];
   List<dynamic> likesReceived = [];
+  late final MessagesService _messagesService;
 
-
-  @override
+ @override
 void initState() {
   super.initState();
+
+  _messagesService = MessagesService(
+    AuthService.baseApiUrl,
+    AuthStorage(),
+  );
 
   final cachedMatches = MatchesCacheService.getMatches();
   final cachedLikes = MatchesCacheService.getLikesReceived();
@@ -54,6 +64,9 @@ void initState() {
   matches = List<dynamic>.from(cachedMatches);
   likesReceived = List<dynamic>.from(cachedLikes);
   isLoading = false;
+
+  final cachedItems = _mapMatchesToChatItems(matches);
+  ChatRepository.instance.setChatList(cachedItems);
 
   WidgetsBinding.instance.addPostFrameCallback((_) {
     if (!mounted) return;
@@ -70,7 +83,11 @@ void initState() {
 
   setState(() {
     matches = mapped;
+    isLoading = false;
+    error = null;
   });
+
+  _precacheMatchImages(mapped);
 
   widget.onUnreadChanged?.call(hasUnread);
 });
@@ -214,6 +231,26 @@ List<dynamic> _mapChatItemsToUi(List<ChatListItem> items) {
   }
 }
 
+Future<void> _warmTopChatThreads(List<dynamic> list) async {
+  final messageMatches = list.where((m) {
+    final lastText = (m['lastMessageText'] ?? '').toString().trim();
+    return lastText.isNotEmpty;
+  }).take(6);
+
+  for (final m in messageMatches) {
+    final userId = (m["userId"] ?? "").toString();
+    if (userId.isEmpty) continue;
+    if (ChatThreadCacheService.hasThread(userId)) continue;
+
+    try {
+      final thread = await _messagesService.getThread(userId);
+      ChatThreadCacheService.setThread(userId, thread);
+    } catch (_) {
+      // tyst
+    }
+  }
+}
+
    Future<void> loadMatches({bool silent = false}) async {
     if (!silent) {
       setState(() {
@@ -242,19 +279,23 @@ widget.onUnreadChanged?.call(hasUnread);
 
      if (!mounted) return;
 
+final mappedForUi = _mapChatItemsToUi(chatItems);
+
 MatchesCacheService.setData(
-  matches: matchesList,
+  matches: mappedForUi,
   likesReceived: likesList,
 );
 
 setState(() {
-  matches = matchesList;
+  matches = mappedForUi;
   likesReceived = likesList;
   isLoading = false;
   error = null;
 });
 
-_precacheMatchImages(matchesList);
+_precacheMatchImages(mappedForUi);
+_warmTopChatThreads(mappedForUi);
+
     } catch (e) {
       if (!mounted) return;
 
@@ -267,22 +308,13 @@ _precacheMatchImages(matchesList);
     }
   }
 
- void _clearUnreadLocally(String userId) {
+void _clearUnreadLocally(String userId) {
   ChatRepository.instance.clearUnreadForUser(userId);
-
   MatchesCacheService.clearUnreadForUser(userId);
 
-  final updated = matches.map((m) {
-    final currentUserId = (m["userId"] ?? "").toString();
-    if (currentUserId != userId) return m;
-
-    final next = Map<String, dynamic>.from(m);
-    next["hasUnread"] = false;
-    next["unreadMessageCount"] = 0;
-    return next;
-  }).toList();
-
-  final hasUnreadAny = updated.any((m) => m["hasUnread"] == true);
+  final updated = _mapChatItemsToUi(ChatRepository.instance.chatList);
+  final hasUnreadAny =
+      ChatRepository.instance.chatList.any((m) => m.hasUnread);
 
   setState(() {
     matches = updated;
