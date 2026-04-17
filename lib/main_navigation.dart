@@ -139,22 +139,21 @@ Future<void> _handleOpenChatRequest(ChatOpenRequest request) async {
       _selectedIndex = 3;
     });
 
-   UnreadSyncService.instance.markChatOpened(request.userId);
-MatchesCacheService.clearUnreadForUser(request.userId);
-
-final initialThreadData = await _messagesService.getThread(request.userId);
-if (!mounted) return;
+    final initialThreadData = await _messagesService.getThread(request.userId);
+    final meUserId = await AuthStorage().getUserId();
+    if (!mounted) return;
 
     final shouldRefresh = await Navigator.push<bool>(
       context,
       PageRouteBuilder(
-        pageBuilder: (_, __, ___) => ChatPage(
-          userId: request.userId,
-          displayName: request.displayName,
-          photoUrl: request.photoUrl,
-          openChatsListOnExit: request.openChatsListOnExit,
-          initialThreadData: initialThreadData,
-        ),
+       pageBuilder: (_, __, ___) => ChatPage(
+  userId: request.userId,
+  displayName: request.displayName,
+  photoUrl: request.photoUrl,
+  openChatsListOnExit: request.openChatsListOnExit,
+  initialThreadData: initialThreadData,
+  initialMeUserId: meUserId,
+),
         transitionDuration: Duration.zero,
         reverseTransitionDuration: Duration.zero,
       ),

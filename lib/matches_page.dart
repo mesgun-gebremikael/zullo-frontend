@@ -11,6 +11,8 @@ import 'services/matches_cache_service.dart';
 import 'services/matches_refresh_service.dart';
 import 'services/matches_cache_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'models/chat_list_item.dart';
+import 'services/chat_repository.dart';
 
 
 class MatchesPage extends StatefulWidget {
@@ -34,7 +36,7 @@ class _MatchesPageState extends State<MatchesPage> {
 //StreamSubscription<Map<String, dynamic>>? _messagesReadSubscription;
 bool _signalRConnected = false;
 StreamSubscription<void>? _refreshSubscription;
-
+StreamSubscription<ChatRepositoryState>? _repositorySubscription;
   bool isLoading = true;
   String? error;
   List<dynamic> matches = [];
@@ -48,11 +50,30 @@ void initState() {
   final cachedMatches = MatchesCacheService.getMatches();
   final cachedLikes = MatchesCacheService.getLikesReceived();
 
-  if (cachedMatches != null && cachedLikes != null) {
-    matches = List<dynamic>.from(cachedMatches);
-    likesReceived = List<dynamic>.from(cachedLikes);
-    isLoading = false;
-  }
+ if (cachedMatches != null && cachedLikes != null) {
+  matches = List<dynamic>.from(cachedMatches);
+  likesReceived = List<dynamic>.from(cachedLikes);
+  isLoading = false;
+
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (!mounted) return;
+    _precacheMatchImages(matches);
+  });
+}
+
+ _repositorySubscription =
+    ChatRepository.instance.stream.listen((state) {
+  if (!mounted) return;
+
+  final mapped = _mapChatItemsToUi(state.chatList);
+  final hasUnread = state.chatList.any((m) => m.hasUnread);
+
+  setState(() {
+    matches = mapped;
+  });
+
+  widget.onUnreadChanged?.call(hasUnread);
+});
 
   loadMatches(silent: cachedMatches != null && cachedLikes != null);
   _refreshSubscription =
@@ -95,6 +116,7 @@ void dispose() {
   _openedChatSubscription?.cancel(); // NYTT
   _messageSubscription?.cancel();
    _refreshSubscription?.cancel();
+   _repositorySubscription?.cancel();
   if (_signalRConnected) {
     _signalRService.disconnect();
   }
@@ -147,6 +169,37 @@ void dispose() {
     });
   }
 
+  List<ChatListItem> _mapMatchesToChatItems(List<dynamic> list) {
+  final items = list
+      .map((m) => ChatListItem.fromJson(Map<String, dynamic>.from(m)))
+      .toList();
+
+  items.sort((a, b) {
+    final aTime =
+        a.lastMessageAtUtc ?? DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
+    final bTime =
+        b.lastMessageAtUtc ?? DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
+    return bTime.compareTo(aTime);
+  });
+
+  return items;
+}
+
+List<dynamic> _mapChatItemsToUi(List<ChatListItem> items) {
+  return items
+      .map((item) => {
+            "userId": item.userId,
+            "displayName": item.displayName,
+            "photoUrl": item.photoUrl,
+            "age": item.age,
+            "lastMessageText": item.lastMessageText,
+            "lastMessageAtUtc": item.lastMessageAtUtc?.toIso8601String(),
+            "hasUnread": item.hasUnread,
+            "unreadMessageCount": item.unreadMessageCount,
+          })
+      .toList();
+}
+
   void _precacheMatchImages(List<dynamic> list) {
   if (!mounted) return;
 
@@ -172,13 +225,16 @@ void dispose() {
     }
 
     try {
-      final matchesData = await _auth.getMatches();
-final matchesList = List<dynamic>.from(matchesData);
+     final matchesData = await _auth.getMatches();
+    final matchesList = List<dynamic>.from(matchesData);
 
 _applyLocalUnreadOverride(matchesList);
 _sortMatchesInUi(matchesList);
 
-final hasUnread = matchesList.any((m) => m['hasUnread'] == true);
+final chatItems = _mapMatchesToChatItems(matchesList);
+ChatRepository.instance.setChatList(chatItems);
+
+final hasUnread = chatItems.any((m) => m.hasUnread);
 widget.onUnreadChanged?.call(hasUnread);
 
       final likesData = await _auth.getLikesReceived();
@@ -211,28 +267,29 @@ _precacheMatchImages(matchesList);
     }
   }
 
-  void _clearUnreadLocally(String userId) {
-  bool changed = false;
+ void _clearUnreadLocally(String userId) {
+  ChatRepository.instance.clearUnreadForUser(userId);
 
-  for (final m in matches) {
+  MatchesCacheService.clearUnreadForUser(userId);
+
+  final updated = matches.map((m) {
     final currentUserId = (m["userId"] ?? "").toString();
-    if (currentUserId != userId) continue;
+    if (currentUserId != userId) return m;
 
-    if (m["hasUnread"] == true || ((m["unreadMessageCount"] as num?)?.toInt() ?? 0) > 0) {
-      m["hasUnread"] = false;
-      m["unreadMessageCount"] = 0;
-      changed = true;
-    }
-  }
+    final next = Map<String, dynamic>.from(m);
+    next["hasUnread"] = false;
+    next["unreadMessageCount"] = 0;
+    return next;
+  }).toList();
 
-  if (!changed) return;
+  final hasUnreadAny = updated.any((m) => m["hasUnread"] == true);
 
-  final hasUnreadAny = matches.any((m) => m["hasUnread"] == true);
+  setState(() {
+    matches = updated;
+  });
 
-  setState(() {});
   widget.onUnreadChanged?.call(hasUnreadAny);
 }
-
   Future<void> _openChat(dynamic m) async {
   final userId = (m["userId"] ?? "").toString();
   final name = (m["displayName"] ?? "").toString();

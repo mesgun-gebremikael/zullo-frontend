@@ -11,6 +11,9 @@ import 'package:app_badge_plus/app_badge_plus.dart';
 import '../services/badge_service.dart';
 import 'services/chat_cache_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'services/unread_sync_service.dart';
+import 'services/matches_cache_service.dart';
+import 'services/matches_refresh_service.dart';
 
 
 class ChatPage extends StatefulWidget {
@@ -19,7 +22,7 @@ class ChatPage extends StatefulWidget {
   final String photoUrl;
   final bool openChatsListOnExit;
   final List<dynamic>? initialThreadData;
-
+  final String? initialMeUserId;
 
   const ChatPage({
   super.key,
@@ -28,7 +31,7 @@ class ChatPage extends StatefulWidget {
   required this.photoUrl,
   this.openChatsListOnExit = false,
   this.initialThreadData,
-
+  this.initialMeUserId,
 });
 
   @override
@@ -79,11 +82,15 @@ void initState() {
   CurrentChat.openUserId = widget.userId;
 
   _isLoading = false;
+  _meUserId = widget.initialMeUserId;
 
+  _hydrateInitialUiIfAvailable();
   _init();
 }
 
 void _hydrateInitialUiIfAvailable() {
+  if (_meUserId == null || _meUserId!.isEmpty) return;
+
   if (widget.initialThreadData != null && widget.initialThreadData!.isNotEmpty) {
     final parsed = _parseThread(widget.initialThreadData!);
 
@@ -124,7 +131,10 @@ void _hydrateInitialUiIfAvailable() {
     return;
   }
 
-    _hydrateInitialUiIfAvailable();
+
+  UnreadSyncService.instance.markChatOpened(widget.userId);
+  MatchesCacheService.clearUnreadForUser(widget.userId);
+  MatchesRefreshService.instance.requestRefresh();
 
  
 
@@ -142,13 +152,15 @@ _messagesReadSubscription =
 
 
  // 4) Starta första thread-load direkt
-unawaited(Future(() async {
-  try {
-    await _loadThread(silent: true);
-  } catch (_) {
-    // ignore i MVP
-  }
-}));
+if (!_hasLoadedInitialThread) {
+  unawaited(Future(() async {
+    try {
+      await _loadThread(silent: true);
+    } catch (_) {
+      // ignore i MVP
+    }
+  }));
+}
 
 // 5) Koppla SignalR i bakgrunden utan att blockera första öppningen
 unawaited(Future(() async {
@@ -737,8 +749,11 @@ child: widget.photoUrl.isEmpty
         physics: const AlwaysScrollableScrollPhysics(),
         children: [
           const SizedBox(height: 140),
-          if (_hasLoadedInitialThread)
-            const Center(child: Text("Säg hej 👋")),
+          Center(
+            child: _hasLoadedInitialThread
+                ? const Text("Säg hej 👋")
+                : const SizedBox.shrink(),
+          ),
         ],
       )
     : ListView.builder(
