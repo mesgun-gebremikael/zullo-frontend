@@ -16,7 +16,7 @@ import 'services/matches_cache_service.dart';
 import 'services/matches_refresh_service.dart';
 import 'services/chat_repository.dart';
 import 'models/chat_message_item.dart';
-
+import 'services/chat_thread_cache_service.dart';
 
 class MainNavigation extends StatefulWidget {
   final int initialIndex;
@@ -187,20 +187,23 @@ Future<void> _handleOpenChatRequest(ChatOpenRequest request) async {
     MatchesCacheService.clearUnreadForUser(request.userId);
     MatchesRefreshService.instance.requestRefresh();
 
-    List<dynamic>? initialThreadData;
-    final repoThread = ChatRepository.instance.threadFor(request.userId);
+   List<dynamic>? initialThreadData =
+    ChatThreadCacheService.getThread(request.userId);
 
-    if (repoThread.isNotEmpty) {
-      initialThreadData = null;
-    } else {
-      initialThreadData = await _messagesService.getThread(request.userId);
-      if (!mounted) return;
+final repoThread = ChatRepository.instance.threadFor(request.userId);
 
-      final repoItems =
-          _mapThreadJsonToRepositoryItems(initialThreadData, meUserId);
+if ((initialThreadData == null || initialThreadData.isEmpty) &&
+    repoThread.isEmpty) {
+  initialThreadData = await _messagesService.getThread(request.userId);
+  if (!mounted) return;
 
-      ChatRepository.instance.setThread(request.userId, repoItems);
-    }
+  ChatThreadCacheService.setThread(request.userId, initialThreadData);
+
+  final repoItems =
+      _mapThreadJsonToRepositoryItems(initialThreadData, meUserId);
+
+  ChatRepository.instance.setThread(request.userId, repoItems);
+}
 
     final shouldRefresh = await Navigator.push<bool>(
       context,
