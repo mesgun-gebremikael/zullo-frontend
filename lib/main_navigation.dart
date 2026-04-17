@@ -14,7 +14,8 @@ import 'services/auth_storage.dart';
 import 'services/chat_cache_service.dart';
 import 'services/matches_cache_service.dart';
 import 'services/matches_refresh_service.dart';
-
+import 'services/chat_repository.dart';
+import 'models/chat_message_item.dart';
 
 
 class MainNavigation extends StatefulWidget {
@@ -127,6 +128,44 @@ void dispose() {
     }
   }
 
+  List<ChatMessageItem> _mapThreadJsonToRepositoryItems(List<dynamic> data, String meUserId) {
+  DateTime? parseUtcToLocal(dynamic raw) {
+    if (raw == null) return null;
+
+    var s = raw.toString().trim();
+    if (s.isEmpty) return null;
+
+    final hasTimezone =
+        s.endsWith('Z') || s.contains('+') || RegExp(r'-\d{2}:\d{2}$').hasMatch(s);
+
+    if (!hasTimezone) {
+      s = '${s}Z';
+    }
+
+    final parsed = DateTime.tryParse(s);
+    return parsed?.toLocal();
+  }
+
+  return data.map((m) {
+    final fromUserId = (m['fromUserId'] ?? '').toString();
+    final text = (m['text'] ?? '').toString();
+    final createdLocal =
+        parseUtcToLocal(m['createdAtUtc']) ?? DateTime.now();
+    final readAtLocal = parseUtcToLocal(m['readAtUtc']);
+    final clientMessageId = (m['clientMessageId'] ?? '').toString();
+
+    return ChatMessageItem(
+      text: text,
+      isMe: fromUserId == meUserId,
+      timeLocal: createdLocal,
+      readAtLocal: readAtLocal,
+      pending: false,
+      failed: false,
+      clientMessageId: clientMessageId,
+    );
+  }).toList();
+}
+
 Future<void> _handleOpenChatRequest(ChatOpenRequest request) async {
   if (!mounted) return;
   if (_isOpeningChat) return;
@@ -139,21 +178,41 @@ Future<void> _handleOpenChatRequest(ChatOpenRequest request) async {
       _selectedIndex = 3;
     });
 
-    final initialThreadData = await _messagesService.getThread(request.userId);
     final meUserId = await AuthStorage().getUserId();
     if (!mounted) return;
+    if (meUserId == null || meUserId.isEmpty) return;
+
+    UnreadSyncService.instance.markChatOpened(request.userId);
+    ChatRepository.instance.clearUnreadForUser(request.userId);
+    MatchesCacheService.clearUnreadForUser(request.userId);
+    MatchesRefreshService.instance.requestRefresh();
+
+    List<dynamic>? initialThreadData;
+    final repoThread = ChatRepository.instance.threadFor(request.userId);
+
+    if (repoThread.isNotEmpty) {
+      initialThreadData = null;
+    } else {
+      initialThreadData = await _messagesService.getThread(request.userId);
+      if (!mounted) return;
+
+      final repoItems =
+          _mapThreadJsonToRepositoryItems(initialThreadData, meUserId);
+
+      ChatRepository.instance.setThread(request.userId, repoItems);
+    }
 
     final shouldRefresh = await Navigator.push<bool>(
       context,
       PageRouteBuilder(
-       pageBuilder: (_, __, ___) => ChatPage(
-  userId: request.userId,
-  displayName: request.displayName,
-  photoUrl: request.photoUrl,
-  openChatsListOnExit: request.openChatsListOnExit,
-  initialThreadData: initialThreadData,
-  initialMeUserId: meUserId,
-),
+        pageBuilder: (_, __, ___) => ChatPage(
+          userId: request.userId,
+          displayName: request.displayName,
+          photoUrl: request.photoUrl,
+          openChatsListOnExit: request.openChatsListOnExit,
+          initialThreadData: initialThreadData,
+          initialMeUserId: meUserId,
+        ),
         transitionDuration: Duration.zero,
         reverseTransitionDuration: Duration.zero,
       ),
