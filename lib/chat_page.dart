@@ -343,6 +343,19 @@ void _pushCurrentMessagesToRepository() {
   ChatRepository.instance.setThread(widget.userId, repoItems);
 }
 
+void _updateRepositoryLastMessage({
+  required String text,
+  required DateTime messageTimeLocal,
+  required bool incrementUnread,
+}) {
+  ChatRepository.instance.updateLastMessage(
+    userId: widget.userId,
+    text: text,
+    messageTimeUtc: messageTimeLocal.toUtc(),
+    incrementUnread: incrementUnread,
+  );
+}
+
   Future<void> _loadThread({bool silent = false}) async {
       if (_isThreadFetchInFlight) return;
     _isThreadFetchInFlight = true; 
@@ -379,6 +392,16 @@ ChatRepository.instance.setThread(
   widget.userId,
   _mapUiMessagesToRepositoryItems(parsed),
 );
+
+if (parsed.isNotEmpty) {
+  final lastMessage = parsed.last;
+  ChatRepository.instance.updateLastMessage(
+    userId: widget.userId,
+    text: lastMessage.text,
+    messageTimeUtc: lastMessage.timeLocal.toUtc(),
+    incrementUnread: false,
+  );
+}
 
       if (didMarkRead) {
         Future(() async {
@@ -467,6 +490,11 @@ ChatRepository.instance.setThread(
   });
 
   _pushCurrentMessagesToRepository();
+  _updateRepositoryLastMessage(
+  text: text,
+  messageTimeLocal: optimistic.timeLocal,
+  incrementUnread: false,
+);
 
   _scrollToBottom();
 
@@ -505,9 +533,15 @@ ChatRepository.instance.setThread(
 });
 
 
-    ChatCacheService.setMessages(widget.userId, List.from(_messages));
+  ChatCacheService.setMessages(widget.userId, List.from(_messages));
 _pushCurrentMessagesToRepository();
+_updateRepositoryLastMessage(
+  text: text,
+  messageTimeLocal: sentCreatedAtLocal,
+  incrementUnread: false,
+);
 _scrollToBottom();
+
   } catch (e) {
   if (!mounted) return;
 
@@ -699,8 +733,13 @@ Future<void> _showReportDialog() async {
     _isLoading = false;
   });
 
- ChatCacheService.setMessages(widget.userId, List.from(_messages));
+ChatCacheService.setMessages(widget.userId, List.from(_messages));
 _pushCurrentMessagesToRepository();
+_updateRepositoryLastMessage(
+  text: text,
+  messageTimeLocal: createdAtLocal,
+  incrementUnread: true,
+);
 _scrollToBottom();
 
   Future(() async {
