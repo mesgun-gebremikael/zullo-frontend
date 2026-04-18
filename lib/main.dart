@@ -16,6 +16,7 @@ import 'main_navigation.dart';
 import 'services/auth_storage.dart';
 import 'services/chat_coordinator.dart';
 import 'models/chat_open_request.dart';
+import 'services/chat_thread_cache_service.dart';
 
 
 
@@ -98,20 +99,22 @@ Future<void> _openChatFromLaunch(NotificationLaunchData launch) async {
     return;
   }
 
-  ChatCoordinator.instance.requestOpenChat(
-    ChatOpenRequest(
-      userId: launch.userId,
-      displayName: launch.displayName,
-      photoUrl: launch.photoUrl,
-      openChatsListOnExit: true,
-      fromNotification: true,
-    ),
-  );
+  final existingThread = ChatThreadCacheService.getThread(launch.userId);
 
-  navigatorKey.currentState?.pushAndRemoveUntil(
-    _instantRoute(const MainNavigation(initialIndex: 3)),
-    (route) => false,
-  );
+ChatCoordinator.instance.requestOpenChat(
+  ChatOpenRequest(
+    userId: launch.userId,
+    displayName: launch.displayName,
+    photoUrl: launch.photoUrl,
+    openChatsListOnExit: true,
+    fromNotification: true,
+  ),
+);
+
+navigatorKey.currentState?.pushAndRemoveUntil(
+  _instantRoute(const MainNavigation(initialIndex: 3)),
+  (route) => false,
+);
 }
 
 
