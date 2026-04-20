@@ -64,6 +64,7 @@ bool _isReady = false;
     bool _isLoading = false;
   bool _isSending = false;
   String? _error;
+  bool _showInitialPlaceholder = false;
   bool _isThreadFetchInFlight = false;
   bool _hasLoadedInitialThread = false;
 
@@ -103,6 +104,7 @@ _repositorySubscription =
     _hasLoadedInitialThread = true;
     _isLoading = false;
     _error = null;
+    _showInitialPlaceholder = false;
   });
 });
 
@@ -113,21 +115,22 @@ void _hydrateInitialUiIfAvailable() {
   if (_meUserId == null || _meUserId!.isEmpty) return;
 
   if (widget.initialThreadData != null && widget.initialThreadData!.isNotEmpty) {
-  final parsed = _parseThread(widget.initialThreadData!);
+    final parsed = _parseThread(widget.initialThreadData!);
 
-  _messages
-    ..clear()
-    ..addAll(parsed);
+    _messages
+      ..clear()
+      ..addAll(parsed);
 
-  _hasLoadedInitialThread = true;
-  _isLoading = false;
-  _error = null;
+    _hasLoadedInitialThread = true;
+    _isLoading = false;
+    _error = null;
+    _showInitialPlaceholder = false;
 
-  ChatThreadCacheService.setThread(widget.userId, widget.initialThreadData!);
-  ChatCacheService.setMessages(widget.userId, List.from(parsed));
-  _pushCurrentMessagesToRepository();
-  return;
-}
+    ChatThreadCacheService.setThread(widget.userId, widget.initialThreadData!);
+    ChatCacheService.setMessages(widget.userId, List.from(parsed));
+    _pushCurrentMessagesToRepository();
+    return;
+  }
 
   final cached = ChatCacheService.getMessages(widget.userId);
   if (cached != null && cached.isNotEmpty) {
@@ -138,9 +141,13 @@ void _hydrateInitialUiIfAvailable() {
     _hasLoadedInitialThread = true;
     _isLoading = false;
     _error = null;
+    _showInitialPlaceholder = false;
 
     _pushCurrentMessagesToRepository();
+    return;
   }
+
+  _showInitialPlaceholder = true;
 }
 
 
@@ -401,18 +408,20 @@ if (!silent) {
       if (!mounted) return;
 
       
- if (!_sameUiMessages(_messages, parsed)) {
+if (!_sameUiMessages(_messages, parsed)) {
   setState(() {
     _messages
       ..clear()
       ..addAll(parsed);
     _isLoading = false;
     _error = null;
+    _showInitialPlaceholder = false;
   });
 } else {
   setState(() {
     _isLoading = false;
     _error = null;
+    _showInitialPlaceholder = false;
   });
 }
 
@@ -887,15 +896,21 @@ child: widget.photoUrl.isEmpty
             onRefresh: () async {
               await _loadThread();
             },
-                               child: _messages.isEmpty
+        child: _messages.isEmpty
     ? ListView(
         physics: const AlwaysScrollableScrollPhysics(),
         children: [
           const SizedBox(height: 140),
           Center(
-            child: _hasLoadedInitialThread
-                ? const Text("Säg hej 👋")
-                : const SizedBox.shrink(),
+            child: _showInitialPlaceholder
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : _hasLoadedInitialThread
+                    ? const Text("Säg hej 👋")
+                    : const SizedBox.shrink(),
           ),
         ],
       )
