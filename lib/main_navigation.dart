@@ -80,6 +80,10 @@ bool _isOpeningChat = false;
   await _handleOpenChatRequest(request);
 });
 
+ChatRepository.instance.stream.listen((state) {
+  _syncUnreadFromRepository();
+});
+
 final pendingRequest = ChatCoordinator.instance.consumePendingRequest();
 if (pendingRequest != null) {
   WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -113,20 +117,40 @@ void dispose() {
 
 
 
-  Future<void> _loadUnreadStatus() async {
-    try {
-      final matches = await _authService.getMatches();
+Future<void> _loadUnreadStatus() async {
+  try {
+    final repoHasUnread = ChatRepository.instance.chatList.any((m) => m.hasUnread);
 
+    if (ChatRepository.instance.chatList.isNotEmpty) {
       if (!mounted) return;
-
-      final hasUnread = matches.any((m) => m['hasUnread'] == true);
       setState(() {
-        _hasUnreadMessages = hasUnread;
+        _hasUnreadMessages = repoHasUnread;
       });
-    } catch (_) {
-      // Behåll tyst här just nu
+      return;
     }
+
+    final matches = await _authService.getMatches();
+
+    if (!mounted) return;
+
+    final hasUnread = matches.any((m) => m['hasUnread'] == true);
+    setState(() {
+      _hasUnreadMessages = hasUnread;
+    });
+  } catch (_) {
+    // Behåll tyst här just nu
   }
+}
+
+  void _syncUnreadFromRepository() {
+  final hasUnread = ChatRepository.instance.chatList.any((m) => m.hasUnread);
+
+  if (!mounted) return;
+
+  setState(() {
+    _hasUnreadMessages = hasUnread;
+  });
+}
 
   List<ChatMessageItem> _mapThreadJsonToRepositoryItems(List<dynamic> data, String meUserId) {
   DateTime? parseUtcToLocal(dynamic raw) {
@@ -166,6 +190,22 @@ void dispose() {
   }).toList();
 }
 
+List<dynamic>? _threadJsonFromRepository(String userId) {
+  final repoThread = ChatRepository.instance.threadFor(userId);
+  if (repoThread.isEmpty) return null;
+
+  return repoThread.map((m) {
+    return {
+      "text": m.text,
+      "fromUserId": m.isMe ? "me" : userId,
+      "toUserId": m.isMe ? userId : "me",
+      "createdAtUtc": m.timeLocal.toUtc().toIso8601String(),
+      "readAtUtc": m.readAtLocal?.toUtc().toIso8601String(),
+      "clientMessageId": m.clientMessageId,
+    };
+  }).toList();
+}
+
 Future<void> _handleOpenChatRequest(ChatOpenRequest request) async {
   if (!mounted) return;
   if (_isOpeningChat) return;
@@ -186,14 +226,14 @@ Future<void> _handleOpenChatRequest(ChatOpenRequest request) async {
     ChatRepository.instance.clearUnreadForUser(request.userId);
     MatchesCacheService.clearUnreadForUser(request.userId);
     MatchesRefreshService.instance.requestRefresh();
+    _syncUnreadFromRepository();
 
-   List<dynamic>? initialThreadData =
+ List<dynamic>? initialThreadData =
     ChatThreadCacheService.getThread(request.userId);
 
-final repoThread = ChatRepository.instance.threadFor(request.userId);
+initialThreadData ??= _threadJsonFromRepository(request.userId);
 
-if ((initialThreadData == null || initialThreadData.isEmpty) &&
-    repoThread.isEmpty) {
+if (initialThreadData == null || initialThreadData.isEmpty) {
   initialThreadData = await _messagesService.getThread(request.userId);
   if (!mounted) return;
 

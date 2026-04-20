@@ -85,24 +85,26 @@ void initState() {
 
   _isLoading = false;
 
-  _repositorySubscription =
-      ChatRepository.instance.stream.listen((state) {
-    if (!mounted) return;
+_repositorySubscription =
+    ChatRepository.instance.stream.listen((state) {
+  if (!mounted) return;
 
-    final repoThread = ChatRepository.instance.threadFor(widget.userId);
-    if (repoThread.isEmpty) return;
+  final repoThread = ChatRepository.instance.threadFor(widget.userId);
+  if (repoThread.isEmpty) return;
 
-    final mapped = _mapRepositoryItemsToUi(repoThread);
+  final mapped = _mapRepositoryItemsToUi(repoThread);
 
-    setState(() {
-      _messages
-        ..clear()
-        ..addAll(mapped);
-      _hasLoadedInitialThread = true;
-      _isLoading = false;
-      _error = null;
-    });
+  if (_sameUiMessages(_messages, mapped)) return;
+
+  setState(() {
+    _messages
+      ..clear()
+      ..addAll(mapped);
+    _hasLoadedInitialThread = true;
+    _isLoading = false;
+    _error = null;
   });
+});
 
   _init();
 }
@@ -339,6 +341,25 @@ List<_UiMessage> _mapRepositoryItemsToUi(List<ChatMessageItem> list) {
       .toList();
 }
 
+bool _sameUiMessages(List<_UiMessage> a, List<_UiMessage> b) {
+  if (a.length != b.length) return false;
+
+  for (var i = 0; i < a.length; i++) {
+    final x = a[i];
+    final y = b[i];
+
+    if (x.text != y.text) return false;
+    if (x.isMe != y.isMe) return false;
+    if (x.clientMessageId != y.clientMessageId) return false;
+    if (x.timeLocal != y.timeLocal) return false;
+    if (x.readAtLocal != y.readAtLocal) return false;
+    if (x.pending != y.pending) return false;
+    if (x.failed != y.failed) return false;
+  }
+
+  return true;
+}
+
 void _pushCurrentMessagesToRepository() {
   final repoItems = _mapUiMessagesToRepositoryItems(_messages);
   ChatRepository.instance.setThread(widget.userId, repoItems);
@@ -380,13 +401,20 @@ if (!silent) {
       if (!mounted) return;
 
       
-   setState(() {
-  _messages
-    ..clear()
-    ..addAll(parsed);
-  _isLoading = false;
-  _error = null;
-});
+ if (!_sameUiMessages(_messages, parsed)) {
+  setState(() {
+    _messages
+      ..clear()
+      ..addAll(parsed);
+    _isLoading = false;
+    _error = null;
+  });
+} else {
+  setState(() {
+    _isLoading = false;
+    _error = null;
+  });
+}
 
 //  CACHE SAVE (lägg exakt här)
 ChatCacheService.setMessages(widget.userId, List.from(parsed));
