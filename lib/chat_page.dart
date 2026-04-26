@@ -108,7 +108,8 @@ _repositorySubscription =
   });
 });
 
-  _init();
+ 
+_init();
 }
 
 void _hydrateInitialUiIfAvailable() {
@@ -150,7 +151,6 @@ void _hydrateInitialUiIfAvailable() {
   _showInitialPlaceholder = true;
 }
 
-
  Future<void> _init() async {
   _meUserId = await AuthStorage().getUserId();
 
@@ -162,6 +162,7 @@ void _hydrateInitialUiIfAvailable() {
     });
     return;
   }
+  _hydrateInitialUiIfAvailable();
 
 
   UnreadSyncService.instance.markChatOpened(widget.userId);
@@ -184,15 +185,13 @@ _messagesReadSubscription =
 
 
  // 4) Starta första thread-load direkt
-if (!_hasLoadedInitialThread) {
-  unawaited(Future(() async {
-    try {
-      await _loadThread(silent: true);
-    } catch (_) {
-      // ignore i MVP
-    }
-  }));
-}
+unawaited(Future(() async {
+  try {
+    await _loadThread(silent: true);
+  } catch (_) {
+    // ignore i MVP
+  }
+}));
 
 // 5) Koppla SignalR i bakgrunden utan att blockera första öppningen
 unawaited(Future(() async {

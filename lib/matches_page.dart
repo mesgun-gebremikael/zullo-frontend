@@ -326,6 +326,9 @@ void _clearUnreadLocally(String userId) {
   final userId = (m["userId"] ?? "").toString();
   final name = (m["displayName"] ?? "").toString();
   final photoUrl = (m["photoUrl"] ?? "").toString();
+  final hasUnread = (m["hasUnread"] == true);
+final unreadCount = (m["unreadMessageCount"] as num?)?.toInt() ?? 0;
+final forceRefreshThread = hasUnread || unreadCount > 0;
 
   if (userId.isEmpty) return;
 
@@ -338,6 +341,7 @@ void _clearUnreadLocally(String userId) {
       photoUrl: photoUrl,
       openChatsListOnExit: false,
       fromNotification: false,
+      forceRefreshThread: forceRefreshThread,
     ),
   );
 }

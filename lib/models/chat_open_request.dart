@@ -6,6 +6,7 @@ class ChatOpenRequest {
   final String photoUrl;
   final bool openChatsListOnExit;
   final bool fromNotification;
+  final bool forceRefreshThread;
 
   const ChatOpenRequest({
     required this.userId,
@@ -13,6 +14,7 @@ class ChatOpenRequest {
     required this.photoUrl,
     this.openChatsListOnExit = false,
     this.fromNotification = false,
+    this.forceRefreshThread = false,
   });
 
   bool get isValid => userId.trim().isNotEmpty;

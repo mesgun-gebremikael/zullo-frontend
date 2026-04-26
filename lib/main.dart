@@ -108,6 +108,7 @@ ChatCoordinator.instance.requestOpenChat(
     photoUrl: launch.photoUrl,
     openChatsListOnExit: true,
     fromNotification: true,
+    forceRefreshThread: true,
   ),
 );
 

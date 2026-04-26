@@ -228,17 +228,14 @@ Future<void> _handleOpenChatRequest(ChatOpenRequest request) async {
     MatchesRefreshService.instance.requestRefresh();
     _syncUnreadFromRepository();
 
- List<dynamic>? initialThreadData =
+   List<dynamic>? initialThreadData =
     ChatThreadCacheService.getThread(request.userId);
 
 initialThreadData ??= _threadJsonFromRepository(request.userId);
 
-if (initialThreadData == null || initialThreadData.isEmpty) {
-  initialThreadData = await _messagesService.getThread(request.userId);
-  if (!mounted) return;
-
-  ChatThreadCacheService.setThread(request.userId, initialThreadData);
-
+// Om vi redan har data lokalt, öppnar vi direkt.
+// Om inget finns, skickar vi null och låter ChatPage visa neutral loading.
+if (initialThreadData != null && initialThreadData.isNotEmpty) {
   final repoItems =
       _mapThreadJsonToRepositoryItems(initialThreadData, meUserId);
 
