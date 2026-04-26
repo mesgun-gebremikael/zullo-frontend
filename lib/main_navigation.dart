@@ -206,6 +206,38 @@ List<dynamic>? _threadJsonFromRepository(String userId) {
   }).toList();
 }
 
+List<dynamic>? _injectPreviewMessage({
+  required List<dynamic>? thread,
+  required ChatOpenRequest request,
+  required String meUserId,
+}) {
+  final text = request.previewMessageText?.trim() ?? '';
+  if (text.isEmpty) return thread;
+
+  final next = List<dynamic>.from(thread ?? []);
+
+  final alreadyExists = next.any((m) {
+    final existingText = (m["text"] ?? "").toString().trim();
+    final fromUserId = (m["fromUserId"] ?? "").toString();
+    return existingText == text && fromUserId == request.userId;
+  });
+
+  if (alreadyExists) return next;
+
+  next.add({
+    "fromUserId": request.userId,
+    "toUserId": meUserId,
+    "text": text,
+    "createdAtUtc": (request.previewMessageAtUtc?.isNotEmpty == true)
+        ? request.previewMessageAtUtc
+        : DateTime.now().toUtc().toIso8601String(),
+    "readAtUtc": null,
+    "clientMessageId": "preview-${DateTime.now().microsecondsSinceEpoch}",
+  });
+
+  return next;
+}
+
 Future<void> _handleOpenChatRequest(ChatOpenRequest request) async {
   if (!mounted) return;
   if (_isOpeningChat) return;
@@ -233,9 +265,16 @@ Future<void> _handleOpenChatRequest(ChatOpenRequest request) async {
 
 initialThreadData ??= _threadJsonFromRepository(request.userId);
 
-// Om vi redan har data lokalt, öppnar vi direkt.
-// Om inget finns, skickar vi null och låter ChatPage visa neutral loading.
+// Visa preview-meddelande direkt om chat öppnas från notis/unread
+initialThreadData = _injectPreviewMessage(
+  thread: initialThreadData,
+  request: request,
+  meUserId: meUserId,
+);
+
 if (initialThreadData != null && initialThreadData.isNotEmpty) {
+  ChatThreadCacheService.setThread(request.userId, initialThreadData);
+
   final repoItems =
       _mapThreadJsonToRepositoryItems(initialThreadData, meUserId);
 

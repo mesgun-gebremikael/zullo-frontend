@@ -8,6 +8,10 @@ class ChatOpenRequest {
   final bool fromNotification;
   final bool forceRefreshThread;
 
+  // Preview-message används för att visa nytt meddelande direkt vid öppning
+  final String? previewMessageText;
+  final String? previewMessageAtUtc;
+
   const ChatOpenRequest({
     required this.userId,
     required this.displayName,
@@ -15,6 +19,8 @@ class ChatOpenRequest {
     this.openChatsListOnExit = false,
     this.fromNotification = false,
     this.forceRefreshThread = false,
+    this.previewMessageText,
+    this.previewMessageAtUtc,
   });
 
   bool get isValid => userId.trim().isNotEmpty;

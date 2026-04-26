@@ -329,20 +329,24 @@ void _clearUnreadLocally(String userId) {
   final hasUnread = (m["hasUnread"] == true);
 final unreadCount = (m["unreadMessageCount"] as num?)?.toInt() ?? 0;
 final forceRefreshThread = hasUnread || unreadCount > 0;
+final lastText = (m["lastMessageText"] ?? "").toString();
+final lastMessageAtUtc = (m["lastMessageAtUtc"] ?? "").toString();
 
   if (userId.isEmpty) return;
 
   _clearUnreadLocally(userId);
 
   ChatCoordinator.instance.requestOpenChat(
-    ChatOpenRequest(
-      userId: userId,
-      displayName: name.isEmpty ? 'Chat' : name,
-      photoUrl: photoUrl,
-      openChatsListOnExit: false,
-      fromNotification: false,
-      forceRefreshThread: forceRefreshThread,
-    ),
+  ChatOpenRequest(
+  userId: userId,
+  displayName: name.isEmpty ? 'Chat' : name,
+  photoUrl: photoUrl,
+  openChatsListOnExit: false,
+  fromNotification: false,
+  forceRefreshThread: forceRefreshThread,
+  previewMessageText: forceRefreshThread ? lastText : null,
+  previewMessageAtUtc: forceRefreshThread ? lastMessageAtUtc : null,
+),
   );
 }
 

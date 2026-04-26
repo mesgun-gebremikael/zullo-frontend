@@ -50,15 +50,17 @@ void _hideInAppMessageOverlay() {
 }
 
 class NotificationLaunchData {
-  final String userId;
-  final String displayName;
-  final String photoUrl;
+ final String userId;
+final String displayName;
+final String photoUrl;
+final String messageText;
 
-  const NotificationLaunchData({
-    required this.userId,
-    required this.displayName,
-    required this.photoUrl,
-  });
+ const NotificationLaunchData({
+  required this.userId,
+  required this.displayName,
+  required this.photoUrl,
+  required this.messageText,
+});
 }
 
 NotificationLaunchData? _parseNotificationLaunch(RemoteMessage? message) {
@@ -70,11 +72,12 @@ NotificationLaunchData? _parseNotificationLaunch(RemoteMessage? message) {
   final senderUserId = data['senderUserId'];
   if (senderUserId == null || senderUserId.isEmpty) return null;
 
-  return NotificationLaunchData(
-    userId: senderUserId,
-    displayName: data['senderName'] ?? 'Chat',
-    photoUrl: data['senderPhotoUrl'] ?? '',
-  );
+ return NotificationLaunchData(
+  userId: senderUserId,
+  displayName: data['senderName'] ?? 'Chat',
+  photoUrl: data['senderPhotoUrl'] ?? '',
+  messageText: (data['messageText'] ?? message.notification?.body ?? '').toString(),
+);
 }
 
 Future<void> _openChatFromLaunch(NotificationLaunchData launch) async {
@@ -102,14 +105,16 @@ Future<void> _openChatFromLaunch(NotificationLaunchData launch) async {
   final existingThread = ChatThreadCacheService.getThread(launch.userId);
 
 ChatCoordinator.instance.requestOpenChat(
-  ChatOpenRequest(
-    userId: launch.userId,
-    displayName: launch.displayName,
-    photoUrl: launch.photoUrl,
-    openChatsListOnExit: true,
-    fromNotification: true,
-    forceRefreshThread: true,
-  ),
+ ChatOpenRequest(
+  userId: launch.userId,
+  displayName: launch.displayName,
+  photoUrl: launch.photoUrl,
+  openChatsListOnExit: true,
+  fromNotification: true,
+  forceRefreshThread: true,
+  previewMessageText: launch.messageText,
+  previewMessageAtUtc: DateTime.now().toUtc().toIso8601String(),
+),
 );
 
 navigatorKey.currentState?.pushAndRemoveUntil(
