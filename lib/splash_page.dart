@@ -31,23 +31,23 @@ class _SplashPageState extends State<SplashPage> {
   }
 
   Future<void> _checkLogin() async {
-    await Future.delayed(const Duration(seconds: 2));
+  await Future.delayed(const Duration(seconds: 2));
 
-    final token = await _storage.getToken();
-    final AuthService _authService = AuthService();
+  final token = await _storage.getToken();
+  final AuthService authService = AuthService();
 
-    if (!mounted) return;
+  if (!mounted) return;
 
-    if (token == null) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const WelcomePage()),
-      );
-      return;
-    }
+  if (token == null || token.isEmpty) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const WelcomePage()),
+    );
+    return;
+  }
 
-    // token finns → kolla om profil finns
-    final exists = await _authService.hasProfile();
+  try {
+    final exists = await authService.hasProfile();
 
     if (!mounted) return;
 
@@ -62,7 +62,17 @@ class _SplashPageState extends State<SplashPage> {
         MaterialPageRoute(builder: (_) => const CreateProfilePage()),
       );
     }
+  } catch (_) {
+    await _storage.clearAuth();
+
+    if (!mounted) return;
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const WelcomePage()),
+    );
   }
+}
 
   @override
   Widget build(BuildContext context) {
