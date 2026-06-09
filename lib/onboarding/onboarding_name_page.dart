@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'onboarding_data.dart';
 import 'onboarding_shell.dart';
+import 'onboarding_birthdate_page.dart';
 
 class OnboardingNamePage extends StatefulWidget {
   final OnboardingData data;
@@ -38,10 +39,15 @@ class _OnboardingNamePageState extends State<OnboardingNamePage> {
       subtitle: '',
       canContinue: _controller.text.trim().isNotEmpty,
       onNext: () {
-        widget.data.displayName = _controller.text.trim();
+  widget.data.displayName = _controller.text.trim();
 
-        print(widget.data.displayName);
-      },
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => OnboardingBirthdatePage(data: widget.data),
+    ),
+  );
+},
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
