@@ -8,6 +8,8 @@ import 'package:image_picker/image_picker.dart';
 import 'services/auth_storage.dart';
 import 'services/cloudinary_service.dart';
 import 'main_navigation.dart';
+import 'services/auth_storage.dart';
+import 'welcome_page.dart';
 
 class CreateProfilePage extends StatefulWidget {
   const CreateProfilePage({super.key});
@@ -179,7 +181,25 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Skapa profil")),
+      appBar: AppBar(
+  title: const Text("Skapa profil"),
+  actions: [
+    TextButton(
+      onPressed: () async {
+        await AuthStorage().clearAuth();
+
+        if (!context.mounted) return;
+
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const WelcomePage()),
+          (route) => false,
+        );
+      },
+      child: const Text("Logga ut"),
+    ),
+  ],
+),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
