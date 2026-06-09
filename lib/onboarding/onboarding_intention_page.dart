@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'onboarding_data.dart';
 import 'onboarding_shell.dart';
+import 'onboarding_religion_page.dart';
 
 class OnboardingIntentionPage extends StatefulWidget {
   final OnboardingData data;
@@ -103,9 +104,15 @@ class _OnboardingIntentionPageState extends State<OnboardingIntentionPage> {
           'Välj det som passar dig bäst. Du kan ändra detta senare.',
       canContinue: _selected.isNotEmpty,
       onNext: () {
-        widget.data.intention = _selected;
-        print(widget.data.intention);
-      },
+  widget.data.intention = _selected;
+
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => OnboardingReligionPage(data: widget.data),
+    ),
+  );
+},
       child: ListView(
         padding: EdgeInsets.zero,
         children: _options.map(_option).toList(),

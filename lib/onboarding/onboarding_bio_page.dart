@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'onboarding_data.dart';
+import 'onboarding_photos_page.dart';
 
 class OnboardingBioPage extends StatefulWidget {
-  final Map<String, dynamic> data;
+  final OnboardingData data;
 
   const OnboardingBioPage({
     super.key,
@@ -95,7 +97,16 @@ class _OnboardingBioPageState
                           BorderRadius.circular(40),
                     ),
                   ),
-                  onPressed: () {},
+                  onPressed: () {
+  widget.data.bio = _bioController.text.trim();
+
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => OnboardingPhotosPage(data: widget.data),
+    ),
+  );
+},
                   child: const Text(
                     "Nästa",
                     style: TextStyle(

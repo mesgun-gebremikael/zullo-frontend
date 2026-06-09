@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'onboarding_data.dart';
 import 'onboarding_shell.dart';
+import 'onboarding_interested_in_page.dart';
 
 class OnboardingGenderPage extends StatefulWidget {
   final OnboardingData data;
@@ -75,9 +76,15 @@ class _OnboardingGenderPageState extends State<OnboardingGenderPage> {
           'Välj det som stämmer bäst. Detta hjälper oss visa din profil för rätt personer.',
       canContinue: _selected.isNotEmpty,
       onNext: () {
-        widget.data.gender = _selected;
-        print(widget.data.gender);
-      },
+  widget.data.gender = _selected;
+
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => OnboardingInterestedInPage(data: widget.data),
+    ),
+  );
+},
       child: Column(
         children: [
           _option('Man'),

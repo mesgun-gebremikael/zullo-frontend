@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'onboarding_data.dart';
 import 'onboarding_shell.dart';
+import 'onboarding_distance_page.dart';
 
 class OnboardingReligionPage extends StatefulWidget {
   final OnboardingData data;
@@ -81,10 +82,16 @@ class _OnboardingReligionPageState extends State<OnboardingReligionPage> {
       title: 'Vad är din\nreligion?',
       subtitle: 'Du kan välja Privat om du inte vill visa detta.',
       canContinue: _selected.isNotEmpty,
-      onNext: () {
-        widget.data.religion = _selected;
-        print(widget.data.religion);
-      },
+     onNext: () {
+  widget.data.religion = _selected;
+
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => OnboardingDistancePage(data: widget.data),
+    ),
+  );
+},
       child: ListView(
         padding: EdgeInsets.zero,
         children: options.map(_option).toList(),

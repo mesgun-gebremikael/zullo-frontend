@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'onboarding_data.dart';
+import 'onboarding_bio_page.dart';
 
 class OnboardingDistancePage extends StatefulWidget {
-  final Map<String, dynamic> data;
+ final OnboardingData data;
 
   const OnboardingDistancePage({
     super.key,
@@ -114,10 +116,14 @@ class _OnboardingDistancePageState
                     ),
                   ),
                   onPressed: () {
-                    widget.data["distanceKm"] =
-                        _distanceKm.round();
+                    widget.data.distanceKm = _distanceKm.round();
 
-                    print(widget.data["distanceKm"]);
+Navigator.push(
+  context,
+  MaterialPageRoute(
+    builder: (_) => OnboardingBioPage(data: widget.data),
+  ),
+);
                   },
                   child: const Text(
                     "Nästa",

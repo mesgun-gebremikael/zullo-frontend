@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'onboarding_data.dart';
 import 'onboarding_shell.dart';
+import 'onboarding_intention_page.dart';
 
 class OnboardingInterestedInPage extends StatefulWidget {
   final OnboardingData data;
@@ -76,9 +77,15 @@ class _OnboardingInterestedInPageState
           'Välj vem du vill träffa så visar vi rätt profiler.',
       canContinue: _selected.isNotEmpty,
       onNext: () {
-        widget.data.interestedIn = _selected;
-        print(widget.data.interestedIn);
-      },
+  widget.data.interestedIn = _selected;
+
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => OnboardingIntentionPage(data: widget.data),
+    ),
+  );
+},
       child: Column(
         children: [
           _option('Män'),

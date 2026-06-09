@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'onboarding_data.dart';
 
 class OnboardingPhotosPage extends StatefulWidget {
-  final Map<String, dynamic> data;
+  final OnboardingData data;
 
   const OnboardingPhotosPage({
     super.key,
