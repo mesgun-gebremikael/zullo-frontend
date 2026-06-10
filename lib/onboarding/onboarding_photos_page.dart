@@ -240,9 +240,7 @@ class _OnboardingPhotosPageState extends State<OnboardingPhotosPage> {
                   ),
                 onPressed: canContinue
     ? () async {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('1. Knappen fungerar')),
-        );
+        
 
         if (widget.data.birthDate == null) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -253,9 +251,7 @@ class _OnboardingPhotosPageState extends State<OnboardingPhotosPage> {
 
         final age = _calculateAge(widget.data.birthDate!);
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('3. Ålder räknad: $age')),
-        );
+       
 
         try {
           await AuthService().saveProfile(
@@ -274,9 +270,7 @@ class _OnboardingPhotosPageState extends State<OnboardingPhotosPage> {
 
           if (!context.mounted) return;
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('4. Profil sparad')),
-          );
+        
 
           Navigator.pushAndRemoveUntil(
             context,
