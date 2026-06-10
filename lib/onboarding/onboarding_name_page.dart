@@ -38,8 +38,12 @@ class _OnboardingNamePageState extends State<OnboardingNamePage> {
       title: 'Vad heter du\ni förnamn?',
       subtitle: '',
       canContinue: _controller.text.trim().isNotEmpty,
-      onNext: () {
-  widget.data.displayName = _controller.text.trim();
+     onNext: () {
+  final name = _controller.text.trim();
+
+  if (name.isEmpty) return;
+
+  widget.data.displayName = name;
 
   Navigator.push(
     context,

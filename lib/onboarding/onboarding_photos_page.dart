@@ -238,11 +238,24 @@ class _OnboardingPhotosPageState extends State<OnboardingPhotosPage> {
                       borderRadius: BorderRadius.circular(40),
                     ),
                   ),
-                 onPressed: canContinue
+                onPressed: canContinue
     ? () async {
-        if (widget.data.birthDate == null) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('1. Knappen fungerar')),
+        );
+
+        if (widget.data.birthDate == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('2. STOPP: birthDate saknas')),
+          );
+          return;
+        }
 
         final age = _calculateAge(widget.data.birthDate!);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('3. Ålder räknad: $age')),
+        );
 
         try {
           await AuthService().saveProfile(
@@ -261,6 +274,10 @@ class _OnboardingPhotosPageState extends State<OnboardingPhotosPage> {
 
           if (!context.mounted) return;
 
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('4. Profil sparad')),
+          );
+
           Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(
@@ -273,7 +290,7 @@ class _OnboardingPhotosPageState extends State<OnboardingPhotosPage> {
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Kunde inte spara profil: $e'),
+              content: Text('ERROR saveProfile: $e'),
             ),
           );
         }

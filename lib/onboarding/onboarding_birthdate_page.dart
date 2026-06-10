@@ -64,7 +64,9 @@ class _OnboardingBirthdatePageState extends State<OnboardingBirthdatePage> {
       title: 'När föddes du?',
       subtitle: '',
       canContinue: _canContinue,
-      onNext: () {
+     onNext: () {
+  if (_birthDate == null) return;
+
   widget.data.birthDate = _birthDate;
 
   Navigator.push(
