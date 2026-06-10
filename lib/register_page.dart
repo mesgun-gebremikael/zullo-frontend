@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'services/auth_service.dart';
-import 'create_profile_page.dart';
+import 'onboarding/onboarding_start_page.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -109,10 +109,10 @@ class _RegisterPageState extends State<RegisterPage> {
 
   if (!mounted) return;
 
-  Navigator.pushReplacement(
-    context,
-    MaterialPageRoute(builder: (_) => const CreateProfilePage()),
-  );
+ Navigator.pushReplacement(
+  context,
+  MaterialPageRoute(builder: (_) => const OnboardingStartPage()),
+);
 } catch (e) {
   if (!mounted) return;
 
