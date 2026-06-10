@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/cloudinary_service.dart';
 import 'onboarding_data.dart';
+import '../services/auth_service.dart';
+import '../main_navigation.dart';
 
 class OnboardingPhotosPage extends StatefulWidget {
   final OnboardingData data;
@@ -61,6 +63,19 @@ class _OnboardingPhotosPageState extends State<OnboardingPhotosPage> {
       widget.data.photoUrls.removeAt(index);
     });
   }
+
+  int _calculateAge(DateTime birthDate) {
+  final today = DateTime.now();
+
+  var age = today.year - birthDate.year;
+
+  if (today.month < birthDate.month ||
+      (today.month == birthDate.month && today.day < birthDate.day)) {
+    age--;
+  }
+
+  return age;
+}
 
   @override
   Widget build(BuildContext context) {
@@ -223,11 +238,47 @@ class _OnboardingPhotosPageState extends State<OnboardingPhotosPage> {
                       borderRadius: BorderRadius.circular(40),
                     ),
                   ),
-                  onPressed: canContinue
-                      ? () {
-                          print(widget.data.photoUrls);
-                        }
-                      : null,
+                 onPressed: canContinue
+    ? () async {
+        if (widget.data.birthDate == null) return;
+
+        final age = _calculateAge(widget.data.birthDate!);
+
+        try {
+          await AuthService().saveProfile(
+            displayName: widget.data.displayName,
+            age: age,
+            gender: widget.data.gender,
+            bio: widget.data.bio,
+            photoUrls: widget.data.photoUrls,
+            interests: const [],
+            intention: widget.data.intention,
+            religion: widget.data.religion,
+            workout: 'Sometimes',
+            smoking: 'No',
+            pets: 'No',
+          );
+
+          if (!context.mounted) return;
+
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const MainNavigation(),
+            ),
+            (route) => false,
+          );
+        } catch (e) {
+          if (!context.mounted) return;
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Kunde inte spara profil: $e'),
+            ),
+          );
+        }
+      }
+    : null,
                   child: const Text(
                     "Nästa",
                     style: TextStyle(
