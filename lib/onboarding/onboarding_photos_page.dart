@@ -255,18 +255,30 @@ class _OnboardingPhotosPageState extends State<OnboardingPhotosPage> {
 
         try {
           await AuthService().saveProfile(
-            displayName: widget.data.displayName,
-            age: age,
-            gender: widget.data.gender,
-            bio: widget.data.bio,
-            photoUrls: widget.data.photoUrls,
-            interests: const [],
-            intention: widget.data.intention,
-            religion: widget.data.religion,
-            workout: 'Sometimes',
-            smoking: 'No',
-            pets: 'No',
-          );
+  displayName: widget.data.displayName,
+  age: age,
+  gender: widget.data.gender,
+  bio: widget.data.bio,
+  photoUrls: widget.data.photoUrls,
+  interests: const [],
+  intention: widget.data.intention,
+  religion: widget.data.religion,
+  workout: widget.data.workout,
+  smoking: widget.data.smoking,
+  pets: widget.data.pets,
+  heightCm: widget.data.heightCm,
+  relationshipHistory: widget.data.relationshipHistory,
+  zodiacSign: widget.data.zodiacSign,
+  childrenCount: widget.data.childrenCount,
+  wantChildren: widget.data.wantChildren,
+  workStatus: widget.data.workStatus,
+  studyPlace: widget.data.studyPlace,
+  studySubject: widget.data.studySubject,
+  workPlace: widget.data.workPlace,
+  jobTitle: widget.data.jobTitle,
+  livePlace: widget.data.livePlace,
+  originPlace: widget.data.originPlace,
+);
 
           if (!context.mounted) return;
 
