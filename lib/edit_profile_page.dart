@@ -95,6 +95,13 @@ _originPlace.dispose();
     try {
       final profile = await _authService.getMyProfile();
 
+      print("EDIT PROFILE DATA: $profile");
+print("WORKOUT: ${profile["workout"]}");
+print("SMOKING: ${profile["smoking"]}");
+print("RELATIONSHIP: ${profile["relationshipHistory"]}");
+print("CHILDREN COUNT: ${profile["childrenCount"]}");
+print("WANT CHILDREN: ${profile["wantChildren"]}");
+
       _displayName.text = (profile["displayName"] ?? "").toString();
 _age.text = (profile["age"] ?? "").toString();
 _gender.text = (profile["gender"] ?? "").toString();
@@ -712,30 +719,30 @@ Widget _buildLifestyleSection() {
         children: [
           _buildChoiceChip(
             label: "Aldrig",
-            selected: _workout == "Never",
+            selected: _workout == "Aldrig",
             onTap: () {
               setState(() {
-                _workout = "Never";
+                _workout = "Aldrig";
                 _cachedPreviewProfile = null;
               });
             },
           ),
           _buildChoiceChip(
             label: "Ibland",
-            selected: _workout == "Sometimes",
+            selected: _workout == "Ibland",
             onTap: () {
               setState(() {
-                _workout = "Sometimes";
+                _workout = "Ibland";
                 _cachedPreviewProfile = null;
               });
             },
           ),
           _buildChoiceChip(
             label: "Ofta",
-            selected: _workout == "Often",
+            selected: _workout == "Ofta",
             onTap: () {
               setState(() {
-                _workout = "Often";
+                _workout = "Ofta";
                 _cachedPreviewProfile = null;
               });
             },
@@ -756,40 +763,40 @@ Widget _buildLifestyleSection() {
         children: [
           _buildChoiceChip(
             label: "Har husdjur",
-            selected: _pets == "Have",
+            selected: _pets == "Har husdjur",
             onTap: () {
               setState(() {
-                _pets = "Have";
+                _pets = "Har husdjur";
                 _cachedPreviewProfile = null;
               });
             },
           ),
           _buildChoiceChip(
             label: "Vill ha husdjur",
-            selected: _pets == "Want",
+            selected: _pets == "Vill ha husdjur",
             onTap: () {
               setState(() {
-                _pets = "Want";
+                _pets = "Vill ha husdjur";
                 _cachedPreviewProfile = null;
               });
             },
           ),
           _buildChoiceChip(
             label: "Vill inte ha",
-            selected: _pets == "No",
+            selected: _pets == "Vill inte ha",
             onTap: () {
               setState(() {
-                _pets = "No";
+                _pets = "Vill inte ha";
                 _cachedPreviewProfile = null;
               });
             },
           ),
           _buildChoiceChip(
             label: "Allergisk",
-            selected: _pets == "Allergic",
+            selected: _pets == "Allergisk",
             onTap: () {
               setState(() {
-                _pets = "Allergic";
+                _pets = "Allergisk";
                 _cachedPreviewProfile = null;
               });
             },
@@ -810,30 +817,30 @@ Widget _buildLifestyleSection() {
         children: [
           _buildChoiceChip(
             label: "Nej",
-            selected: _smoking == "No",
+            selected: _smoking == "Nej",
             onTap: () {
               setState(() {
-                _smoking = "No";
+                _smoking = "Nej";
                 _cachedPreviewProfile = null;
               });
             },
           ),
           _buildChoiceChip(
             label: "Ibland",
-            selected: _smoking == "Sometimes",
+            selected: _smoking == "Ibland",
             onTap: () {
               setState(() {
-                _smoking = "Sometimes";
+                _smoking = "Ibland";
                 _cachedPreviewProfile = null;
               });
             },
           ),
           _buildChoiceChip(
             label: "Ja",
-            selected: _smoking == "Yes",
+            selected: _smoking == "Ja",
             onTap: () {
               setState(() {
-                _smoking = "Yes";
+                _smoking = "Ja";
                 _cachedPreviewProfile = null;
               });
             },
@@ -842,7 +849,7 @@ Widget _buildLifestyleSection() {
       ),
     ],
   );
-}  
+}
 
 
 Widget _buildRelationshipHistorySection() {
@@ -860,30 +867,31 @@ Widget _buildRelationshipHistorySection() {
         children: [
           _buildChoiceChip(
             label: "Varit i ett förhållande",
-            selected: _relationshipHistory == "relationship",
+            selected: _relationshipHistory == "Varit i ett förhållande",
             onTap: () {
               setState(() {
-                _relationshipHistory = "relationship";
+                _relationshipHistory = "Varit i ett förhållande";
                 _cachedPreviewProfile = null;
               });
             },
           ),
           _buildChoiceChip(
             label: "Inget seriöst",
-            selected: _relationshipHistory == "casual",
+            selected: _relationshipHistory == "Inget seriöst",
             onTap: () {
               setState(() {
-                _relationshipHistory = "casual";
+                _relationshipHistory = "Inget seriöst";
                 _cachedPreviewProfile = null;
               });
             },
           ),
           _buildChoiceChip(
             label: "Aldrig haft ett förhållande",
-            selected: _relationshipHistory == "never",
+            selected:
+                _relationshipHistory == "Aldrig haft ett förhållande",
             onTap: () {
               setState(() {
-                _relationshipHistory = "never";
+                _relationshipHistory = "Aldrig haft ett förhållande";
                 _cachedPreviewProfile = null;
               });
             },
@@ -1367,50 +1375,50 @@ Widget _buildChildrenCountSection() {
         children: [
           _buildChoiceChip(
             label: "Jag har inga barn",
-            selected: _childrenCount == "0",
+            selected: _childrenCount == "Jag har inga barn",
             onTap: () {
               setState(() {
-                _childrenCount = "0";
+                _childrenCount = "Jag har inga barn";
                 _cachedPreviewProfile = null;
               });
             },
           ),
           _buildChoiceChip(
             label: "1 barn",
-            selected: _childrenCount == "1",
+            selected: _childrenCount == "1 barn",
             onTap: () {
               setState(() {
-                _childrenCount = "1";
+                _childrenCount = "1 barn";
                 _cachedPreviewProfile = null;
               });
             },
           ),
           _buildChoiceChip(
             label: "2 barn",
-            selected: _childrenCount == "2",
+            selected: _childrenCount == "2 barn",
             onTap: () {
               setState(() {
-                _childrenCount = "2";
+                _childrenCount = "2 barn";
                 _cachedPreviewProfile = null;
               });
             },
           ),
           _buildChoiceChip(
             label: "3 barn",
-            selected: _childrenCount == "3",
+            selected: _childrenCount == "3 barn",
             onTap: () {
               setState(() {
-                _childrenCount = "3";
+                _childrenCount = "3 barn";
                 _cachedPreviewProfile = null;
               });
             },
           ),
           _buildChoiceChip(
             label: "4 eller fler",
-            selected: _childrenCount == "4+",
+            selected: _childrenCount == "4 eller fler",
             onTap: () {
               setState(() {
-                _childrenCount = "4+";
+                _childrenCount = "4 eller fler";
                 _cachedPreviewProfile = null;
               });
             },
@@ -1436,30 +1444,30 @@ Widget _buildWantChildrenSection() {
         children: [
           _buildChoiceChip(
             label: "Jag vill ha barn",
-            selected: _wantChildren == "yes",
+            selected: _wantChildren == "Jag vill ha barn",
             onTap: () {
               setState(() {
-                _wantChildren = "yes";
+                _wantChildren = "Jag vill ha barn";
                 _cachedPreviewProfile = null;
               });
             },
           ),
           _buildChoiceChip(
             label: "Inte säker än",
-            selected: _wantChildren == "maybe",
+            selected: _wantChildren == "Inte säker än",
             onTap: () {
               setState(() {
-                _wantChildren = "maybe";
+                _wantChildren = "Inte säker än";
                 _cachedPreviewProfile = null;
               });
             },
           ),
           _buildChoiceChip(
             label: "Jag vill inte ha barn",
-            selected: _wantChildren == "no",
+            selected: _wantChildren == "Jag vill inte ha barn",
             onTap: () {
               setState(() {
-                _wantChildren = "no";
+                _wantChildren = "Jag vill inte ha barn";
                 _cachedPreviewProfile = null;
               });
             },

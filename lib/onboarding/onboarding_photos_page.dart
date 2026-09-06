@@ -254,6 +254,15 @@ class _OnboardingPhotosPageState extends State<OnboardingPhotosPage> {
        
 
         try {
+
+         print('=== ONBOARDING FINAL DATA ===');
+print('workout: ${widget.data.workout}');
+print('smoking: ${widget.data.smoking}');
+print('relationshipHistory: ${widget.data.relationshipHistory}');
+print('childrenCount: ${widget.data.childrenCount}');
+print('wantChildren: ${widget.data.wantChildren}');
+print('=============================');
+
           await AuthService().saveProfile(
   displayName: widget.data.displayName,
   age: age,
