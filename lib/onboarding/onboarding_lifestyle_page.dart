@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import 'onboarding_choice_page.dart';
 import 'onboarding_data.dart';
 import 'onboarding_family_page.dart';
 import 'onboarding_shell.dart';
@@ -6,94 +8,298 @@ import 'onboarding_shell.dart';
 class OnboardingLifestylePage extends StatefulWidget {
   final OnboardingData data;
 
-  const OnboardingLifestylePage({super.key, required this.data});
+  const OnboardingLifestylePage({
+    super.key,
+    required this.data,
+  });
 
   @override
-  State<OnboardingLifestylePage> createState() => _OnboardingLifestylePageState();
+  State<OnboardingLifestylePage> createState() =>
+      _OnboardingLifestylePageState();
 }
 
-class _OnboardingLifestylePageState extends State<OnboardingLifestylePage> {
-  double _heightCm = 170;
-  String _workout = 'Ibland';
-  String _pets = 'Vill inte ha';
-  String _smoking = 'Nej';
-  String _relationshipHistory = 'Varit i ett förhållande';
-  String _zodiacSign = 'Vattuman';
+class _OnboardingLifestylePageState
+    extends State<OnboardingLifestylePage> {
+  int _step = 0;
+
+  late int _heightCm;
+  late String _workout;
+  late String _pets;
+  late String _smoking;
+  late String _relationshipHistory;
+  late String _zodiacSign;
 
   @override
-  Widget build(BuildContext context) {
-    return OnboardingShell(
-      progress: 0.78,
-      title: 'Berätta mer om dig',
-      subtitle: 'Du kan ändra detta senare i Redigera Info.',
-      canContinue: true,
-      onNext: () {
-        widget.data.heightCm = _heightCm.round();
-        widget.data.workout = _workout;
-        widget.data.pets = _pets;
-        widget.data.smoking = _smoking;
-        widget.data.relationshipHistory = _relationshipHistory;
-        widget.data.zodiacSign = _zodiacSign;
+  void initState() {
+    super.initState();
 
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => OnboardingFamilyPage(data: widget.data),
-          ),
-        );
-      },
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          _section('Hur lång är du? ${_heightCm.round()} cm'),
-          Slider(
-            value: _heightCm,
-            min: 140,
-            max: 220,
-            activeColor: const Color(0xFFE91E63),
-            onChanged: (v) => setState(() => _heightCm = v),
-          ),
-          _chips('Tränar du?', ['Aldrig', 'Ibland', 'Ofta'], _workout, (v) => _workout = v),
-          _chips('Husdjur', ['Har husdjur', 'Vill ha husdjur', 'Vill inte ha', 'Allergisk'], _pets, (v) => _pets = v),
-          _chips('Använder du nikotin?', ['Nej', 'Ibland', 'Ja'], _smoking, (v) => _smoking = v),
-          _chips('Har du varit i en relation?', ['Varit i ett förhållande', 'Inget seriöst', 'Aldrig haft ett förhållande'], _relationshipHistory, (v) => _relationshipHistory = v),
-          _chips('Vad är ditt stjärntecken?', ['Vattuman', 'Vädur', 'Kräfta', 'Stenbock', 'Tvilling', 'Lejon', 'Våg', 'Fisk', 'Skytt', 'Skorpion', 'Oxe', 'Jungfru'], _zodiacSign, (v) => _zodiacSign = v),
-        ],
+    _heightCm =
+    (widget.data.heightCm ?? 0) > 0
+        ? widget.data.heightCm!
+        : 170;
+
+    _workout = widget.data.workout.isNotEmpty
+        ? widget.data.workout
+        : 'Ibland';
+
+    _pets =
+        widget.data.pets.isNotEmpty ? widget.data.pets : 'Vill inte ha';
+
+    _smoking =
+        widget.data.smoking.isNotEmpty ? widget.data.smoking : 'Nej';
+
+    _relationshipHistory =
+        widget.data.relationshipHistory.isNotEmpty
+            ? widget.data.relationshipHistory
+            : 'Varit i ett förhållande';
+
+    _zodiacSign =
+        widget.data.zodiacSign.isNotEmpty
+            ? widget.data.zodiacSign
+            : 'Vattuman';
+  }
+
+  void _nextStep() {
+    if (_step < 5) {
+      setState(() {
+        _step++;
+      });
+      return;
+    }
+
+    widget.data.heightCm = _heightCm;
+    widget.data.workout = _workout;
+    widget.data.pets = _pets;
+    widget.data.smoking = _smoking;
+    widget.data.relationshipHistory = _relationshipHistory;
+    widget.data.zodiacSign = _zodiacSign;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => OnboardingFamilyPage(
+          data: widget.data,
+        ),
       ),
     );
   }
 
-  Widget _section(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 14, bottom: 12),
-      child: Text(title, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900)),
-    );
+  void _previousStep() {
+  if (_step > 0) {
+    setState(() {
+      _step--;
+    });
+    return;
   }
 
-  Widget _chips(String title, List<String> values, String current, ValueChanged<String> onSelect) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 24),
+  Navigator.pop(context);
+}
+
+ @override
+Widget build(BuildContext context) {
+  Widget page;
+
+  switch (_step) {
+    case 0:
+      page = _buildHeightPage();
+      break;
+
+    case 1:
+      page = OnboardingChoicePage(
+        progress: 0.72,
+        title: 'Tränar du?',
+        subtitle: 'Välj det alternativ som passar dig bäst.',
+        options: const [
+          'Aldrig',
+          'Ibland',
+          'Ofta',
+        ],
+        selectedValue: _workout,
+        onSelected: (value) {
+          setState(() {
+            _workout = value;
+          });
+        },
+        onNext: _nextStep,
+      );
+      break;
+
+    case 2:
+      page = OnboardingChoicePage(
+        progress: 0.75,
+        title: 'Har du husdjur?',
+        subtitle: 'Berätta lite mer om din livsstil.',
+        options: const [
+          'Har husdjur',
+          'Vill ha husdjur',
+          'Vill inte ha',
+          'Allergisk',
+        ],
+        selectedValue: _pets,
+        onSelected: (value) {
+          setState(() {
+            _pets = value;
+          });
+        },
+        onNext: _nextStep,
+      );
+      break;
+
+    case 3:
+      page = OnboardingChoicePage(
+        progress: 0.78,
+        title: 'Använder du nikotin?',
+        subtitle: 'Välj det alternativ som passar dig.',
+        options: const [
+          'Nej',
+          'Ibland',
+          'Ja',
+        ],
+        selectedValue: _smoking,
+        onSelected: (value) {
+          setState(() {
+            _smoking = value;
+          });
+        },
+        onNext: _nextStep,
+      );
+      break;
+
+    case 4:
+      page = OnboardingChoicePage(
+        progress: 0.81,
+        title: 'Har du varit i en relation?',
+        subtitle: 'Välj det som beskriver dig bäst.',
+        options: const [
+          'Varit i ett förhållande',
+          'Inget seriöst',
+          'Aldrig haft ett förhållande',
+        ],
+        selectedValue: _relationshipHistory,
+        onSelected: (value) {
+          setState(() {
+            _relationshipHistory = value;
+          });
+        },
+        onNext: _nextStep,
+      );
+      break;
+
+    case 5:
+    default:
+      page = OnboardingChoicePage(
+        progress: 0.84,
+        title: 'Vad är ditt stjärntecken?',
+        subtitle: 'Välj ditt stjärntecken.',
+        options: const [
+          'Vattuman',
+          'Vädur',
+          'Kräfta',
+          'Stenbock',
+          'Tvilling',
+          'Lejon',
+          'Våg',
+          'Fisk',
+          'Skytt',
+          'Skorpion',
+          'Oxe',
+          'Jungfru',
+        ],
+        selectedValue: _zodiacSign,
+        onSelected: (value) {
+          setState(() {
+            _zodiacSign = value;
+          });
+        },
+        onNext: _nextStep,
+      );
+      break;
+  }
+
+  return PopScope(
+    canPop: _step == 0,
+    onPopInvokedWithResult: (didPop, result) {
+      if (didPop) {
+        return;
+      }
+
+      _previousStep();
+    },
+    child: page,
+  );
+}
+
+  Widget _buildHeightPage() {
+    return OnboardingShell(
+      progress: 0.69,
+      title: 'Hur lång är du?',
+      subtitle: 'Du kan ändra detta senare i Redigera Info.',
+      canContinue: true,
+      onNext: _nextStep,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _section(title),
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: values.map((v) {
-              final selected = current == v;
-              return ChoiceChip(
-                label: Text(v),
-                selected: selected,
-                selectedColor: const Color(0xFFE91E63),
-                labelStyle: TextStyle(
-                  color: selected ? Colors.white : const Color(0xFF20242C),
-                  fontWeight: FontWeight.w800,
-                ),
-                onSelected: (_) => setState(() => onSelect(v)),
-              );
-            }).toList(),
+          const Spacer(),
+
+          Text(
+            '$_heightCm',
+            style: const TextStyle(
+              fontSize: 72,
+              height: 1,
+              fontWeight: FontWeight.w900,
+              color: Color(0xFF20242C),
+            ),
           ),
+
+          const SizedBox(height: 6),
+
+          Text(
+            'cm',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: Colors.grey.shade600,
+            ),
+          ),
+
+          const SizedBox(height: 40),
+
+          Slider(
+            value: _heightCm.toDouble(),
+            min: 140,
+            max: 220,
+            divisions: 80,
+            activeColor: const Color(0xFFE91E63),
+            onChanged: (value) {
+              setState(() {
+                _heightCm = value.round();
+              });
+            },
+          ),
+
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '140 cm',
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                Text(
+                  '220 cm',
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const Spacer(flex: 2),
         ],
       ),
     );
