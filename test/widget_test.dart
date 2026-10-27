@@ -1,3 +1,4 @@
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -13,6 +14,7 @@ void main() {
       'account switch hides the previous account match screen and cache',
       (tester) async {
     SharedPreferences.setMockInitialValues({});
+    FlutterSecureStorage.setMockInitialValues({});
     final storage = AuthStorage();
     await storage.saveAuth(token: 'A', userId: 'A');
     MatchesCacheService.setData(matches: [

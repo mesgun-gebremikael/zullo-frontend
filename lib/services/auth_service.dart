@@ -7,6 +7,14 @@ import 'auth_storage.dart';
 import '../models/swipe_profile.dart';
 
 
+class AuthRateLimitException implements Exception {
+  final int retryAfterSeconds;
+  AuthRateLimitException(this.retryAfterSeconds);
+
+  @override
+  String toString() => 'För många försök. Vänta $retryAfterSeconds sekunder och försök igen.';
+}
+
 class AuthService {
   //static const String baseAuthUrl = 'http://localhost:5125/api/auth';
   static const String baseAuthUrl = 'http://10.0.2.2:5125/api/auth';
@@ -19,6 +27,13 @@ class AuthService {
   int _generation = AccountSession.generation;
   late final http.Client _client = SessionHttpClient(_transport, generation: () => _generation);
   AuthService({http.Client? client}) : _transport = client ?? _sharedTransport;
+
+  void _checkRateLimit(http.Response response) {
+    if (response.statusCode == 429) {
+      final seconds = int.tryParse(response.headers['retry-after'] ?? '') ?? 60;
+      throw AuthRateLimitException(seconds.clamp(1, 3600).toInt());
+    }
+  }
 
   // ---------- AUTH ----------
 
@@ -36,6 +51,7 @@ class AuthService {
   );
 
   AccountSession.check(generation);
+  _checkRateLimit(response);
   if (response.statusCode == 200) {
     final decoded = jsonDecode(response.body);
     final token = (decoded['token'] ?? '').toString();
@@ -67,6 +83,7 @@ class AuthService {
       body: jsonEncode({'name': name, 'email': email, 'password': password}),
     );
 
+    _checkRateLimit(response);
     if (response.statusCode == 200 || response.statusCode == 201) {
       return;
     }
