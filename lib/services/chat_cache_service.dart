@@ -9,6 +9,8 @@ class ChatCacheService {
     _cache[userId] = messages;
   }
 
+  static void clearAll() => _cache.clear();
+
   static void clear(String userId) {
     _cache.remove(userId);
   }

@@ -1,3 +1,4 @@
+import 'services/account_session.dart';
  import 'dart:async';
 import 'package:flutter/material.dart';
 import 'services/auth_service.dart';
@@ -21,10 +22,12 @@ import 'services/auth_storage.dart';
 
 class MatchesPage extends StatefulWidget {
   final ValueChanged<bool>? onUnreadChanged;
+  final AuthService? authService;
 
   const MatchesPage({
     super.key,
     this.onUnreadChanged,
+    this.authService,
   });
 
 
@@ -33,8 +36,12 @@ class MatchesPage extends StatefulWidget {
 }
 
 class _MatchesPageState extends State<MatchesPage> {
+  StreamSubscription<int>? _sessionChanges;
+  final int _sessionGeneration = AccountSession.generation;
+  bool get _sessionActive => AccountSession.isCurrent(_sessionGeneration);
 
-  final AuthService _auth = AuthService();
+
+  late final AuthService _auth = widget.authService ?? AuthService();
   final SignalRService _signalRService = SignalRService();
   StreamSubscription<String>? _openedChatSubscription;
   StreamSubscription<Map<String, dynamic>>? _messageSubscription;
@@ -51,6 +58,9 @@ StreamSubscription<ChatRepositoryState>? _repositorySubscription;
  @override
 void initState() {
   super.initState();
+  _sessionChanges = AccountSession.changes.listen((_) {
+    if (mounted) setState(() {});
+  });
 
   _messagesService = MessagesService(
     AuthService.baseApiUrl,
@@ -69,14 +79,14 @@ void initState() {
   ChatRepository.instance.setChatList(cachedItems);
 
   WidgetsBinding.instance.addPostFrameCallback((_) {
-    if (!mounted) return;
+    if (!mounted || !_sessionActive) return;
     _precacheMatchImages(matches);
   });
 }
 
  _repositorySubscription =
     ChatRepository.instance.stream.listen((state) {
-  if (!mounted) return;
+  if (!mounted || !_sessionActive) return;
 
   final mapped = _mapChatItemsToUi(state.chatList);
   final hasUnread = state.chatList.any((m) => m.hasUnread);
@@ -95,13 +105,13 @@ void initState() {
   loadMatches(silent: cachedMatches != null && cachedLikes != null);
   _refreshSubscription =
     MatchesRefreshService.instance.stream.listen((_) async {
-  if (!mounted) return;
+  if (!mounted || !_sessionActive) return;
   await loadMatches(silent: true);
 });
 
   _openedChatSubscription =
       UnreadSyncService.instance.openedChatStream.listen((userId) {
-    if (!mounted) return;
+    if (!mounted || !_sessionActive) return;
     _clearUnreadLocally(userId);
   });
 
@@ -111,16 +121,17 @@ void initState() {
 }
 
    Future<void> _setupSignalR() async {
+  if (!_sessionActive) return;
   await _signalRService.connect();
   _signalRConnected = true;
 
   _messageSubscription = _signalRService.messagesStream.listen((data) async {
-    if (!mounted) return;
+    if (!mounted || !_sessionActive) return;
     await loadMatches(silent: true);
   });
 
  // _messagesReadSubscription = _signalRService.messagesReadStream.listen((data) async {
-   // if (!mounted) return;
+   // if (!mounted || !_sessionActive) return;
    // await loadMatches(silent: true);
  // });
 }
@@ -130,6 +141,7 @@ void initState() {
 
 @override
 void dispose() {
+  _sessionChanges?.cancel();
   _openedChatSubscription?.cancel(); // NYTT
   _messageSubscription?.cancel();
    _refreshSubscription?.cancel();
@@ -218,7 +230,7 @@ List<dynamic> _mapChatItemsToUi(List<ChatListItem> items) {
 }
 
   void _precacheMatchImages(List<dynamic> list) {
-  if (!mounted) return;
+  if (!mounted || !_sessionActive) return;
 
   for (final m in list.take(12)) {
     final photoUrl = (m["photoUrl"] ?? "").toString().trim();
@@ -232,18 +244,21 @@ List<dynamic> _mapChatItemsToUi(List<ChatListItem> items) {
 }
 
 Future<void> _warmTopChatThreads(List<dynamic> list) async {
+  if (!_sessionActive) return;
   final messageMatches = list.where((m) {
     final lastText = (m['lastMessageText'] ?? '').toString().trim();
     return lastText.isNotEmpty;
   }).take(6);
 
   for (final m in messageMatches) {
+    if (!mounted || !_sessionActive) return;
     final userId = (m["userId"] ?? "").toString();
     if (userId.isEmpty) continue;
     if (ChatThreadCacheService.hasThread(userId)) continue;
 
     try {
       final thread = await _messagesService.getThread(userId);
+      if (!mounted || !_sessionActive) return;
       ChatThreadCacheService.setThread(userId, thread);
     } catch (_) {
       // tyst
@@ -252,6 +267,7 @@ Future<void> _warmTopChatThreads(List<dynamic> list) async {
 }
 
    Future<void> loadMatches({bool silent = false}) async {
+    if (!mounted || !_sessionActive) return;
     if (!silent) {
       setState(() {
         if (matches.isEmpty && likesReceived.isEmpty) {
@@ -263,6 +279,7 @@ Future<void> _warmTopChatThreads(List<dynamic> list) async {
 
     try {
      final matchesData = await _auth.getMatches();
+    if (!mounted || !_sessionActive) return;
     final matchesList = List<dynamic>.from(matchesData);
 
 _applyLocalUnreadOverride(matchesList);
@@ -277,7 +294,7 @@ widget.onUnreadChanged?.call(hasUnread);
       final likesData = await _auth.getLikesReceived();
       final likesList = List<dynamic>.from(likesData);
 
-     if (!mounted) return;
+     if (!mounted || !_sessionActive) return;
 
 final mappedForUi = _mapChatItemsToUi(chatItems);
 
@@ -297,7 +314,7 @@ _precacheMatchImages(mappedForUi);
 _warmTopChatThreads(mappedForUi);
 
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted || !_sessionActive) return;
 
       if (!silent) {
         setState(() {
@@ -323,6 +340,7 @@ void _clearUnreadLocally(String userId) {
   widget.onUnreadChanged?.call(hasUnreadAny);
 }
   Future<void> _openChat(dynamic m) async {
+  if (!_sessionActive) return;
   final userId = (m["userId"] ?? "").toString();
   final name = (m["displayName"] ?? "").toString();
   final photoUrl = (m["photoUrl"] ?? "").toString();
@@ -352,6 +370,7 @@ final lastMessageAtUtc = (m["lastMessageAtUtc"] ?? "").toString();
 
   @override
   Widget build(BuildContext context) {
+    if (!_sessionActive) return const SizedBox.shrink();
     final cs = Theme.of(context).colorScheme;
 
     final newMatches = matches.where((m) {
