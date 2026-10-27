@@ -1,3 +1,4 @@
+import 'services/account_session.dart';
 import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
@@ -34,6 +35,11 @@ class MainNavigation extends StatefulWidget {
 
 
 class _MainNavigationState extends State<MainNavigation> {
+  StreamSubscription<ChatRepositoryState>? _repositorySubscription;
+  StreamSubscription<int>? _sessionChanges;
+  final int _sessionGeneration = AccountSession.generation;
+  bool get _sessionActive => AccountSession.isCurrent(_sessionGeneration);
+
   late int _selectedIndex;
 
   final AuthService _authService = AuthService();
@@ -52,6 +58,9 @@ bool _isOpeningChat = false;
   @override
   void initState() {
     super.initState();
+  _sessionChanges = AccountSession.changes.listen((_) {
+    if (mounted) setState(() {});
+  });
     _messagesService = MessagesService(
   AuthService.baseApiUrl,
   AuthStorage(),
@@ -66,7 +75,7 @@ bool _isOpeningChat = false;
       const MatchesPage(), // Likes tillfällig
       MatchesPage(
         onUnreadChanged: (hasUnread) {
-          if (!mounted) return;
+          if (!mounted || !_sessionActive) return;
           setState(() {
             _hasUnreadMessages = hasUnread;
           });
@@ -80,7 +89,7 @@ bool _isOpeningChat = false;
   await _handleOpenChatRequest(request);
 });
 
-ChatRepository.instance.stream.listen((state) {
+_repositorySubscription = ChatRepository.instance.stream.listen((state) {
   _syncUnreadFromRepository();
 });
 
@@ -94,13 +103,15 @@ if (pendingRequest != null) {
 
     // Pollar unread-status så chat-dot i bottom nav hålls mer uppdaterad
     _unreadPollTimer = Timer.periodic(const Duration(seconds: 4), (_) {
-      if (!mounted) return;
+      if (!mounted || !_sessionActive) return;
       _loadUnreadStatus();
     });
   }
 
    @override
 void dispose() {
+  _sessionChanges?.cancel();
+  _repositorySubscription?.cancel();
   _openChatSubscription?.cancel();
   _unreadPollTimer?.cancel();
   super.dispose();
@@ -118,11 +129,12 @@ void dispose() {
 
 
 Future<void> _loadUnreadStatus() async {
+  if (!_sessionActive) return;
   try {
     final repoHasUnread = ChatRepository.instance.chatList.any((m) => m.hasUnread);
 
     if (ChatRepository.instance.chatList.isNotEmpty) {
-      if (!mounted) return;
+      if (!mounted || !_sessionActive) return;
       setState(() {
         _hasUnreadMessages = repoHasUnread;
       });
@@ -131,7 +143,7 @@ Future<void> _loadUnreadStatus() async {
 
     final matches = await _authService.getMatches();
 
-    if (!mounted) return;
+    if (!mounted || !_sessionActive) return;
 
     final hasUnread = matches.any((m) => m['hasUnread'] == true);
     setState(() {
@@ -145,7 +157,7 @@ Future<void> _loadUnreadStatus() async {
   void _syncUnreadFromRepository() {
   final hasUnread = ChatRepository.instance.chatList.any((m) => m.hasUnread);
 
-  if (!mounted) return;
+  if (!mounted || !_sessionActive) return;
 
   setState(() {
     _hasUnreadMessages = hasUnread;
@@ -239,7 +251,8 @@ List<dynamic>? _injectPreviewMessage({
 }
 
 Future<void> _handleOpenChatRequest(ChatOpenRequest request) async {
-  if (!mounted) return;
+  if (!_sessionActive) return;
+  if (!mounted || !_sessionActive) return;
   if (_isOpeningChat) return;
   if (!request.isValid) return;
 
@@ -251,7 +264,7 @@ Future<void> _handleOpenChatRequest(ChatOpenRequest request) async {
     });
 
     final meUserId = await AuthStorage().getUserId();
-    if (!mounted) return;
+    if (!mounted || !_sessionActive) return;
     if (meUserId == null || meUserId.isEmpty) return;
 
     UnreadSyncService.instance.markChatOpened(request.userId);
@@ -297,7 +310,7 @@ if (initialThreadData != null && initialThreadData.isNotEmpty) {
       ),
     );
 
-    if (!mounted) return;
+    if (!mounted || !_sessionActive) return;
 
     if (shouldRefresh == true) {
       MatchesRefreshService.instance.requestRefresh();
@@ -305,7 +318,7 @@ if (initialThreadData != null && initialThreadData.isNotEmpty) {
     }
   } catch (e) {
     debugPrint('Open chat failed: $e');
-    if (!mounted) return;
+    if (!mounted || !_sessionActive) return;
 
     setState(() {
       _selectedIndex = 3;
@@ -317,6 +330,7 @@ if (initialThreadData != null && initialThreadData.isNotEmpty) {
 
   @override
   Widget build(BuildContext context) {
+    if (!_sessionActive) return const SizedBox.shrink();
     return Scaffold(
       extendBody: true,
      body: IndexedStack(

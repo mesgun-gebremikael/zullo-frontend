@@ -1,3 +1,6 @@
+import 'services/notification_access.dart';
+import 'dart:async';
+import 'services/account_session.dart';
 import 'package:flutter/material.dart';
 import 'register_page.dart';
 import 'login_page.dart';
@@ -13,7 +16,6 @@ import 'services/current_chat.dart';
 import 'package:app_badge_plus/app_badge_plus.dart';
 import 'services/badge_service.dart';
 import 'main_navigation.dart';
-import 'services/auth_storage.dart';
 import 'services/chat_coordinator.dart';
 import 'models/chat_open_request.dart';
 import 'services/chat_thread_cache_service.dart';
@@ -51,12 +53,14 @@ void _hideInAppMessageOverlay() {
 
 class NotificationLaunchData {
  final String userId;
+ final String recipientUserId;
 final String displayName;
 final String photoUrl;
 final String messageText;
 
  const NotificationLaunchData({
   required this.userId,
+  required this.recipientUserId,
   required this.displayName,
   required this.photoUrl,
   required this.messageText,
@@ -69,11 +73,14 @@ NotificationLaunchData? _parseNotificationLaunch(RemoteMessage? message) {
   final data = message.data;
   if (data['type'] != 'message') return null;
 
+  final recipientUserId = data['recipientUserId'];
+  if (recipientUserId == null || recipientUserId.isEmpty) return null;
   final senderUserId = data['senderUserId'];
   if (senderUserId == null || senderUserId.isEmpty) return null;
 
  return NotificationLaunchData(
   userId: senderUserId,
+  recipientUserId: recipientUserId,
   displayName: data['senderName'] ?? 'Chat',
   photoUrl: data['senderPhotoUrl'] ?? '',
   messageText: (data['messageText'] ?? message.notification?.body ?? '').toString(),
@@ -81,26 +88,11 @@ NotificationLaunchData? _parseNotificationLaunch(RemoteMessage? message) {
 }
 
 Future<void> _openChatFromLaunch(NotificationLaunchData launch) async {
-  final token = await AuthStorage().getToken();
+  final generation = AccountSession.generation;
+  final canOpen = await NotificationAccess.canOpen(launch.userId, launch.recipientUserId);
+  if (!AccountSession.isCurrent(generation)) return;
 
-  if (token == null || token.isEmpty) {
-    navigatorKey.currentState?.pushAndRemoveUntil(
-      _instantRoute(const WelcomeScreen()),
-      (route) => false,
-    );
-    return;
-  }
-
-  final authService = AuthService();
-  final canOpen = await authService.canOpenChat(launch.userId);
-
-  if (!canOpen) {
-    navigatorKey.currentState?.pushAndRemoveUntil(
-      _instantRoute(const MainNavigation(initialIndex: 3)),
-      (route) => false,
-    );
-    return;
-  }
+  if (!canOpen) return;
 
   final existingThread = ChatThreadCacheService.getThread(launch.userId);
 
@@ -192,7 +184,7 @@ void main() async {
   await FirebaseMessaging.instance.requestPermission();
 
   final fcmToken = await FirebaseMessaging.instance.getToken();
-  print("TOKEN: $fcmToken");
+
 
   if (fcmToken != null && fcmToken.isNotEmpty) {
     try {
@@ -239,10 +231,23 @@ class ZulloApp extends StatefulWidget {
 
 class _ZulloAppState extends State<ZulloApp> {
   String? _lastOpenedMessageId;
+  StreamSubscription<int>? _sessionSubscription;
+
+  @override
+  void dispose() {
+    _sessionSubscription?.cancel();
+    super.dispose();
+  }
 
   @override
   void initState() {
     super.initState();
+    _sessionSubscription = AccountSession.changes.listen((_) {
+      _hideInAppMessageOverlay();
+      _lastOpenedMessageId = null;
+      unawaited(flutterLocalNotificationsPlugin.cancelAll().catchError((Object _) {}));
+      unawaited(AppBadgePlus.updateBadge(0).catchError((Object _) {}));
+    });
     _setupNotificationTapHandling();
   }
 
@@ -258,8 +263,11 @@ class _ZulloAppState extends State<ZulloApp> {
     });
 
             FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
+      final generation = AccountSession.generation;
       final launch = _parseNotificationLaunch(message);
       if (launch == null) return;
+      final allowed = await NotificationAccess.canOpen(launch.userId, launch.recipientUserId);
+      if (!allowed || !AccountSession.isCurrent(generation)) return;
 
       if (CurrentChat.openUserId == launch.userId) {
         return;
@@ -276,6 +284,7 @@ await BadgeService.refreshUnreadBadge();
   print("Badge error: $e");
 }
 
+            if (!AccountSession.isCurrent(generation)) return;
             _showInAppMessageOverlay(
         launch: launch,
         messageText: messageText,

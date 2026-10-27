@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'account_session.dart';
+import 'session_http_client.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'auth_storage.dart';
@@ -11,6 +14,11 @@ class AuthService {
  // static const String baseApiUrl = 'http://localhost:5125';
 
   final AuthStorage _storage = AuthStorage();
+  static final http.Client _sharedTransport = http.Client();
+  final http.Client _transport;
+  int _generation = AccountSession.generation;
+  late final http.Client _client = SessionHttpClient(_transport, generation: () => _generation);
+  AuthService({http.Client? client}) : _transport = client ?? _sharedTransport;
 
   // ---------- AUTH ----------
 
@@ -18,14 +26,16 @@ class AuthService {
   required String email,
   required String password,
 }) async {
+  final generation = AccountSession.generation;
   final url = Uri.parse('$baseAuthUrl/login');
 
-  final response = await http.post(
+  final response = await _transport.post(
     url,
     headers: {'Content-Type': 'application/json'},
     body: jsonEncode({'email': email, 'password': password}),
   );
 
+  AccountSession.check(generation);
   if (response.statusCode == 200) {
     final decoded = jsonDecode(response.body);
     final token = (decoded['token'] ?? '').toString();
@@ -33,9 +43,9 @@ class AuthService {
 
     if (token.isNotEmpty && userId.isNotEmpty) {
       await _storage.saveAuth(token: token, userId: userId);
-    } else if (token.isNotEmpty) {
-      // fallback om backend någon gång inte skickar userId
-      await _storage.saveToken(token);
+      _generation = AccountSession.generation;
+    } else {
+      throw StateError('Login response is missing token or userId');
     }
 
     return;
@@ -51,7 +61,7 @@ class AuthService {
   }) async {
     final url = Uri.parse('$baseAuthUrl/register');
 
-    final response = await http.post(
+    final response = await _client.post(
       url,
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'name': name, 'email': email, 'password': password}),
@@ -65,27 +75,26 @@ class AuthService {
   }
 
 Future<void> logout() async {
+  AccountSession.check(_generation);
+  final generation = AccountSession.generation;
   final authToken = await _storage.getToken();
-
-  // Viktigt:
-  // försök först släppa device token i backend medan JWT fortfarande finns kvar.
-  if (authToken != null && authToken.isNotEmpty) {
-    try {
-      final url = Uri.parse('$baseApiUrl/me/device-token/clear');
-
-      await http.post(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $authToken',
-        },
-      );
-    } catch (_) {
-      // Logout ska ändå kunna fortsätta lokalt även om backend-clear misslyckar.
-    }
-  }
-
+  AccountSession.check(generation);
+  // Invalidate local work before waiting for the network. Only the old JWT is used.
   await _storage.clearAuth();
+  if (authToken != null && authToken.isNotEmpty) {
+    unawaited(_clearDeviceToken(authToken));
+  }
+}
+
+Future<void> _clearDeviceToken(String oldToken) async {
+  try {
+    await _transport.post(
+      Uri.parse('$baseApiUrl/me/device-token/clear'),
+      headers: {'Authorization': 'Bearer $oldToken'},
+    ).timeout(const Duration(seconds: 5));
+  } catch (_) {
+    // Local logout remains complete even when offline.
+  }
 }
 
   // ---------- PROFILE CHECK ----------
@@ -93,7 +102,7 @@ Future<void> logout() async {
   Future<bool> hasProfile() async {
     final token = await _storage.getToken();
 
-    final res = await http.get(
+    final res = await _client.get(
       Uri.parse('$baseApiUrl/me/profile'),
       headers: {
         'Content-Type': 'application/json',
@@ -107,7 +116,7 @@ Future<void> logout() async {
   Future<Map<String, dynamic>> getMyProfile() async {
   final token = await _storage.getToken();
 
-  final res = await http.get(
+  final res = await _client.get(
     Uri.parse('$baseApiUrl/me/profile'),
     headers: {
       'Content-Type': 'application/json',
@@ -134,7 +143,7 @@ Future<Map<String, dynamic>> getSwipeFeed({
 }) async {
   final token = await _storage.getToken();
 
-  final response = await http.get(
+  final response = await _client.get(
     Uri.parse(
       '$baseApiUrl/swipe/feed?minAge=$minAge&maxAge=$maxAge',
     ),
@@ -179,7 +188,7 @@ Future<Map<String, dynamic>> getSwipeFeed({
   Future<bool> like(String targetUserId) async {
     final token = await _storage.getToken();
 
-    final res = await http.post(
+    final res = await _client.post(
       Uri.parse('$baseApiUrl/swipe/like'),
       headers: {
         'Content-Type': 'application/json',
@@ -204,7 +213,7 @@ throw Exception('Like failed: ${res.statusCode} ${res.body}');
   Future<void> skip(String targetUserId) async {
     final token = await _storage.getToken();
 
-    final res = await http.post(
+    final res = await _client.post(
       Uri.parse('$baseApiUrl/swipe/skip'),
       headers: {
         'Content-Type': 'application/json',
@@ -224,7 +233,7 @@ throw Exception('Like failed: ${res.statusCode} ${res.body}');
   final url = Uri.parse('$baseApiUrl/matches');
   final token = await _storage.getToken();
 
-  final res = await http.get(
+  final res = await _client.get(
     url,
     headers: {
       'Content-Type': 'application/json',
@@ -246,7 +255,7 @@ Future<List<dynamic>> getLikesReceived() async {
   final url = Uri.parse('$baseApiUrl/likes/received');
   final token = await _storage.getToken();
 
-  final res = await http.get(
+  final res = await _client.get(
     url,
     headers: {
       'Content-Type': 'application/json',
@@ -331,7 +340,7 @@ final body = {
 };
 print('SAVE PROFILE request body: ${jsonEncode(body)}');
 
-  final res = await http.post(
+  final res = await _client.post(
     url,
     headers: {
       'Content-Type': 'application/json',
@@ -355,7 +364,7 @@ Future<void> reportUser({
 }) async {
   final token = await _storage.getToken();
 
-  final res = await http.post(
+  final res = await _client.post(
     Uri.parse('$baseApiUrl/reports'),
     headers: {
       'Content-Type': 'application/json',
@@ -375,7 +384,7 @@ Future<void> reportUser({
  Future<int> updateRadius(int km) async {
   final token = await _storage.getToken();
 
-  final res = await http.post(
+  final res = await _client.post(
     Uri.parse('$baseApiUrl/me/radius'),
     headers: {
       'Content-Type': 'application/json',
@@ -419,7 +428,7 @@ Future<void> updateFilterProfile({
     "countryCode": me["countryCode"] ?? ""
   };
 
-  final res = await http.post(
+  final res = await _client.post(
     Uri.parse('$baseApiUrl/me/profile'),
     headers: {
       'Content-Type': 'application/json',
@@ -442,7 +451,7 @@ Future<bool> canOpenChat(String otherUserId) async {
   final url = Uri.parse('$baseApiUrl/messages/thread?otherUserId=$otherUserId');
 
   try {
-    final res = await http.get(
+    final res = await _client.get(
       url,
       headers: {
         'Content-Type': 'application/json',
@@ -469,7 +478,7 @@ Future<void> saveDeviceToken(String token) async {
 
   final url = Uri.parse('$baseApiUrl/me/device-token');
 
-  final res = await http.post(
+  final res = await _client.post(
     url,
     headers: {
       'Content-Type': 'application/json',

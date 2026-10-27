@@ -1,3 +1,5 @@
+import 'account_session.dart';
+import 'session_http_client.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
@@ -7,7 +9,15 @@ class MessagesService {
   final String baseApiUrl;
   final AuthStorage _storage;
 
-  MessagesService(this.baseApiUrl, this._storage);
+  static final http.Client _sharedTransport = http.Client();
+  final http.Client _client;
+  MessagesService(this.baseApiUrl, this._storage, {http.Client? client})
+      : _client = _sessionClient(client ?? _sharedTransport);
+
+  static http.Client _sessionClient(http.Client client) {
+    final generation = AccountSession.generation;
+    return SessionHttpClient(client, generation: () => generation);
+  }
 
   // ✅ använd i ChatPage för att veta vem "jag" är
   Future<String?> getMeUserId() => _storage.getUserId();
@@ -18,7 +28,7 @@ class MessagesService {
     final uri = Uri.parse('$baseApiUrl/messages/thread')
         .replace(queryParameters: {'otherUserId': otherUserId});
 
-    final res = await http.get(
+    final res = await _client.get(
       uri,
       headers: {
         'Content-Type': 'application/json',
@@ -41,7 +51,7 @@ class MessagesService {
 }) async {
   final token = await _storage.getToken();
 
-  final res = await http.post(
+  final res = await _client.post(
     Uri.parse('$baseApiUrl/messages/send'),
     headers: {
       'Content-Type': 'application/json',
@@ -69,7 +79,7 @@ class MessagesService {
     final uri = Uri.parse('$baseApiUrl/messages/mark-read')
         .replace(queryParameters: {'otherUserId': otherUserId});
 
-    final res = await http.post(
+    final res = await _client.post(
       uri,
       headers: {
         'Content-Type': 'application/json',

@@ -19,6 +19,8 @@ class UnreadSyncService {
     _openedChatController.add(trimmed);
   }
 
+  void clear() => _openedAtByUserId.clear();
+
   DateTime? getOpenedAt(String userId) {
     return _openedAtByUserId[userId.trim()];
   }

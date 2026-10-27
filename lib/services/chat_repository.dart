@@ -103,6 +103,11 @@ class ChatRepository {
     _emit();
   }
 
+  void clear() {
+    _state = ChatRepositoryState.empty;
+    _emit();
+  }
+
   void _emit() {
     _stateController.add(_state);
   }

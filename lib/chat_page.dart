@@ -1,3 +1,4 @@
+import 'services/account_session.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'main_navigation.dart';
@@ -41,6 +42,10 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
+  StreamSubscription<int>? _sessionChanges;
+  final int _sessionGeneration = AccountSession.generation;
+  bool get _sessionActive => AccountSession.isCurrent(_sessionGeneration);
+
   // ✅ Endast HTTP (inte https:7015)
   static const String _baseApiUrl = 'http://10.0.2.2:5125';
 
@@ -80,6 +85,9 @@ bool _isReady = false;
 @override
 void initState() {
   super.initState();
+  _sessionChanges = AccountSession.changes.listen((_) {
+    if (mounted) setState(() {});
+  });
 
   _messagesService = MessagesService(_baseApiUrl, AuthStorage());
   CurrentChat.openUserId = widget.userId;
@@ -88,7 +96,7 @@ void initState() {
 
 _repositorySubscription =
     ChatRepository.instance.stream.listen((state) {
-  if (!mounted) return;
+  if (!mounted || !_sessionActive) return;
 
   final repoThread = ChatRepository.instance.threadFor(widget.userId);
   if (repoThread.isEmpty) return;
@@ -113,6 +121,7 @@ _init();
 }
 
 void _hydrateInitialUiIfAvailable() {
+  if (!mounted || !_sessionActive) return;
   if (_meUserId == null || _meUserId!.isEmpty) return;
 
   if (widget.initialThreadData != null && widget.initialThreadData!.isNotEmpty) {
@@ -152,7 +161,13 @@ void _hydrateInitialUiIfAvailable() {
 }
 
  Future<void> _init() async {
-  _meUserId = await AuthStorage().getUserId();
+  if (!_sessionActive) return;
+  try {
+    _meUserId = await AuthStorage().getUserId();
+  } on SessionChangedException {
+    return;
+  }
+  if (!mounted || !_sessionActive) return;
 
   // 1) Om meId saknas betyder det att user inte är inloggad korrekt
   if (_meUserId == null || _meUserId!.isEmpty) {
@@ -221,6 +236,7 @@ unawaited(Future(() async {
 
    @override
 void dispose() {
+  _sessionChanges?.cancel();
   if (CurrentChat.openUserId == widget.userId) {
     CurrentChat.openUserId = null;
   }
@@ -367,6 +383,7 @@ bool _sameUiMessages(List<_UiMessage> a, List<_UiMessage> b) {
 }
 
 void _pushCurrentMessagesToRepository() {
+  if (!mounted || !_sessionActive) return;
   final repoItems = _mapUiMessagesToRepositoryItems(_messages);
   ChatRepository.instance.setThread(widget.userId, repoItems);
 }
@@ -376,6 +393,7 @@ void _updateRepositoryLastMessage({
   required DateTime messageTimeLocal,
   required bool incrementUnread,
 }) {
+  if (!mounted || !_sessionActive) return;
   ChatRepository.instance.updateLastMessage(
     userId: widget.userId,
     text: text,
@@ -385,6 +403,7 @@ void _updateRepositoryLastMessage({
 }
 
   Future<void> _loadThread({bool silent = false}) async {
+    if (!mounted || !_sessionActive) return;
       if (_isThreadFetchInFlight) return;
     _isThreadFetchInFlight = true; 
 
@@ -399,12 +418,13 @@ if (!silent) {
 
     try {
       final data = await _messagesService.getThread(widget.userId);
+    if (!mounted || !_sessionActive) return;
    ChatThreadCacheService.setThread(widget.userId, data);
      final parsed = _parseThread(data);
 
       final didMarkRead = await _markReadIfNeeded(parsed);
 
-      if (!mounted) return;
+      if (!mounted || !_sessionActive) return;
 
       
 if (!_sameUiMessages(_messages, parsed)) {
@@ -461,7 +481,7 @@ if (parsed.isNotEmpty) {
       _hasLoadedInitialThread = true;
 
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted || !_sessionActive) return;
       setState(() {
         _error = "Kunde inte ladda chat: $e";
         _isLoading = false;
@@ -501,6 +521,7 @@ if (parsed.isNotEmpty) {
 
 
  Future<void> _send() async {
+  if (!_sessionActive) return;
   if (!_isReady) return;
 
   final text = _controller.text.trim();
@@ -546,7 +567,7 @@ if (parsed.isNotEmpty) {
     final sentCreatedAtLocal =
         _parseUtcStringToLocal(sent['createdAtUtc']) ?? DateTime.now();
 
-    if (!mounted) return;
+    if (!mounted || !_sessionActive) return;
 
    setState(() {
   final idx = _messages.indexWhere(
@@ -582,7 +603,7 @@ _updateRepositoryLastMessage(
 _scrollToBottom();
 
   } catch (e) {
-  if (!mounted) return;
+  if (!mounted || !_sessionActive) return;
 
   setState(() {
     final idx = _messages.indexWhere(
@@ -610,10 +631,11 @@ _scrollToBottom();
 
 
 Future<void> _blockUser() async {
+  if (!_sessionActive) return;
   try {
     await _blockService.blockUser(widget.userId);
 
-    if (!mounted) return;
+    if (!mounted || !_sessionActive) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text("Användaren blockerades.")),
@@ -621,7 +643,7 @@ Future<void> _blockUser() async {
 
     Navigator.pop(context, true);
   } catch (e) {
-    if (!mounted) return;
+    if (!mounted || !_sessionActive) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text("Kunde inte blockera: $e")),
@@ -630,6 +652,7 @@ Future<void> _blockUser() async {
 }
 
 Future<void> _showReportDialog() async {
+  if (!_sessionActive) return;
   final reasons = [
     "Spam",
     "Otrevlig",
@@ -685,12 +708,12 @@ Future<void> _showReportDialog() async {
       reason: result,
     );
 
-    if (!mounted) return;
+    if (!mounted || !_sessionActive) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text("Användaren har rapporterats.")),
     );
   } catch (e) {
-    if (!mounted) return;
+    if (!mounted || !_sessionActive) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text("Kunde inte rapportera: $e")),
     );
@@ -731,6 +754,7 @@ Future<void> _showReportDialog() async {
   }
     
     void _appendIncomingSignalRMessage(Map<String, dynamic> data) {
+  if (!mounted || !_sessionActive) return;
   final fromUserId = (data['fromUserId'] ?? '').toString();
   final toUserId = (data['toUserId'] ?? '').toString();
   final text = (data['text'] ?? '').toString().trim();
@@ -794,6 +818,7 @@ _scrollToBottom();
 
 
  void _applyLiveReadReceipt(Map<String, dynamic> data) {
+  if (!mounted || !_sessionActive) return;
   final chatUserId = (data['chatUserId'] ?? '').toString();
 
   if (chatUserId != widget.userId) return;
@@ -820,6 +845,7 @@ _pushCurrentMessagesToRepository();
 
   @override
    Widget build(BuildContext context) {
+    if (!_sessionActive) return const SizedBox.shrink();
   // bara för att inte “unused”-varnas
   final _ = _lastLoadedAt;
 
