@@ -3,7 +3,7 @@ import 'services/auth_service.dart';
 import 'register_page.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'home_page.dart';
-import 'create_profile_page.dart';
+import 'onboarding/onboarding_start_page.dart';
 import 'main_navigation.dart';
 
 
@@ -69,7 +69,7 @@ final hasProfile = await _authService.hasProfile();
         MaterialPageRoute(
           builder: (_) => hasProfile
            ? const MainNavigation()
-           : const CreateProfilePage(),
+           : const OnboardingStartPage(),
         ),
       );
     } catch (e) {

@@ -1,3 +1,4 @@
+import '../onboarding/onboarding_data.dart';
 import 'dart:async';
 import 'account_session.dart';
 import 'session_http_client.dart';
@@ -6,6 +7,11 @@ import 'package:http/http.dart' as http;
 import 'auth_storage.dart';
 import '../models/swipe_profile.dart';
 
+
+class ProfileSessionExpiredException implements Exception {
+  @override
+  String toString() => 'Din session har gått ut. Logga in igen.';
+}
 
 class AuthRateLimitException implements Exception {
   final int retryAfterSeconds;
@@ -127,7 +133,10 @@ Future<void> _clearDeviceToken(String oldToken) async {
       },
     );
 
-    return res.statusCode == 200;
+    if (res.statusCode == 200) return true;
+    if (res.statusCode == 404) return false;
+    if (res.statusCode == 401) throw ProfileSessionExpiredException();
+    throw Exception('Kunde inte kontrollera profilen. Försök igen.');
   }
 
   Future<Map<String, dynamic>> getMyProfile() async {
@@ -141,8 +150,6 @@ Future<void> _clearDeviceToken(String oldToken) async {
     },
   );
 
-  print("MY PROFILE status: ${res.statusCode}");
-  print("MY PROFILE body: ${res.body}");
 
   if (res.statusCode == 200) {
     final decoded = jsonDecode(res.body) as Map<String, dynamic>;
@@ -169,8 +176,6 @@ Future<Map<String, dynamic>> getSwipeFeed({
       if (token != null) 'Authorization': 'Bearer $token',
     },
   );
-    print("Feed status: ${response.statusCode}");
-    print("Feed body: ${response.body}");
 
   if (response.statusCode == 200) {
     final decoded = jsonDecode(response.body);
@@ -306,57 +311,71 @@ Future<void> saveProfile({
   required String pets,
 
   int? heightCm,
-  String relationshipHistory = "",
-  String zodiacSign = "",
-  String alcohol = "",
-  String cannabis = "",
-  String childrenCount = "",
-  String wantChildren = "",
-  String workStatus = "",
-  String studyPlace = "",
-  String studySubject = "",
-  String workPlace = "",
-  String jobTitle = "",
-  String livePlace = "",
-  String originPlace = "",
+  bool clearHeight = false,
+  double? lat,
+  double? lng,
+  String? countryCode,
+  String? interestedIn,
+  int? matchRadiusKm,
+  String? relationshipHistory,
+  String? zodiacSign,
+  String? alcohol,
+  String? cannabis,
+  String? childrenCount,
+  String? wantChildren,
+  String? workStatus,
+  String? studyPlace,
+  String? studySubject,
+  String? workPlace,
+  String? jobTitle,
+  String? livePlace,
+  String? originPlace,
 }) async {
-
-  final token = await _storage.getToken();
-  if (token == null || token.isEmpty) {
-    throw Exception('No token found. Please login again.');
-  }
-
-  final url = Uri.parse('$baseApiUrl/me/profile');
 
 final body = {
   'displayName': displayName,
   'age': age,
   'gender': gender,
-  'bio': bio ?? '',
-  'photoUrls': photoUrls ?? [],
-  'interests': interests ?? [],
-  'intention': intention ?? '',
-  'religion': religion ?? '',
-  'workout': workout ?? '',
-  'smoking': smoking ?? '',
-  'pets': pets ?? '',
-  'heightCm': heightCm,
-  'relationshipHistory': relationshipHistory ?? '',
-  'zodiacSign': zodiacSign ?? '',
-  'alcohol': alcohol ?? '',
-  'cannabis': cannabis ?? '',
-  'childrenCount': childrenCount ?? '',
-  'wantChildren': wantChildren ?? '',
-  'workStatus': workStatus ?? '',
-  'studyPlace': studyPlace ?? '',
-  'studySubject': studySubject ?? '',
-  'workPlace': workPlace ?? '',
-  'jobTitle': jobTitle ?? '',
-  'livePlace': livePlace ?? '',
-  'originPlace': originPlace ?? '',
+  'bio': bio,
+  'photoUrls': photoUrls,
+  'interests': interests,
+  'intention': intention,
+  'religion': religion,
+  'workout': workout,
+  'smoking': smoking,
+  'pets': pets,
+  if (heightCm != null || clearHeight) 'heightCm': heightCm,
+  if (lat != null) 'lat': lat,
+  if (lng != null) 'lng': lng,
+  if (countryCode != null) 'countryCode': countryCode,
+  if (interestedIn != null) 'interestedIn': interestedIn,
+  if (matchRadiusKm != null) 'matchRadiusKm': matchRadiusKm,
+  if (relationshipHistory != null) 'relationshipHistory': relationshipHistory,
+  if (zodiacSign != null) 'zodiacSign': zodiacSign,
+  if (alcohol != null) 'alcohol': alcohol,
+  if (cannabis != null) 'cannabis': cannabis,
+  if (childrenCount != null) 'childrenCount': childrenCount,
+  if (wantChildren != null) 'wantChildren': wantChildren,
+  if (workStatus != null) 'workStatus': workStatus,
+  if (studyPlace != null) 'studyPlace': studyPlace,
+  if (studySubject != null) 'studySubject': studySubject,
+  if (workPlace != null) 'workPlace': workPlace,
+  if (jobTitle != null) 'jobTitle': jobTitle,
+  if (livePlace != null) 'livePlace': livePlace,
+  if (originPlace != null) 'originPlace': originPlace,
 };
-print('SAVE PROFILE request body: ${jsonEncode(body)}');
 
+
+  await _saveProfileBody(body);
+}
+
+Future<void> saveOnboardingProfile(OnboardingData data, {DateTime? today}) =>
+    _saveProfileBody(data.toProfileUpdate(today: today));
+
+Future<void> _saveProfileBody(Map<String, dynamic> body) async {
+  final token = await _storage.getToken();
+  if (token == null || token.isEmpty) throw StateError('Logga in igen.');
+  final url = Uri.parse('$baseApiUrl/me/profile');
   final res = await _client.post(
     url,
     headers: {
@@ -366,14 +385,12 @@ print('SAVE PROFILE request body: ${jsonEncode(body)}');
     body: jsonEncode(body),
   );
 
-  print('SAVE PROFILE status: ${res.statusCode}');
-  print('SAVE PROFILE body: ${res.body}');
+
 
   if (res.statusCode == 200 || res.statusCode == 201) return;
 
   throw Exception('Save profile failed: ${res.statusCode} ${res.body}');
 }
-
 
 Future<void> reportUser({
   required String reportedUserId,
@@ -423,38 +440,22 @@ Future<void> reportUser({
 Future<void> updateFilterProfile({
   required String intention,
   required String religion,
+  int? matchRadiusKm,
 }) async {
   final token = await _storage.getToken();
-
-  final me = await getMyProfile();
-
-  final body = {
-    "displayName": me["displayName"] ?? "",
-    "age": me["age"] ?? 18,
-    "gender": me["gender"] ?? "",
-    "bio": me["bio"] ?? "",
-    "intention": intention,
-    "religion": religion,
-    "workout": me["workout"] ?? "Sometimes",
-    "smoking": me["smoking"] ?? "No",
-    "pets": me["pets"] ?? "Want",
-    "interests": me["interests"] ?? [],
-    "photoUrls": me["photoUrls"] ?? [],
-    "lat": me["lat"] ?? 0,
-    "lng": me["lng"] ?? 0,
-    "countryCode": me["countryCode"] ?? ""
-  };
-
-  final res = await _client.post(
+  final res = await _client.patch(
     Uri.parse('$baseApiUrl/me/profile'),
     headers: {
       'Content-Type': 'application/json',
       if (token != null) 'Authorization': 'Bearer $token',
     },
-    body: jsonEncode(body),
+    body: jsonEncode({
+      'intention': intention,
+      'religion': religion,
+      if (matchRadiusKm != null) 'matchRadiusKm': matchRadiusKm,
+    }),
   );
-
-  if (res.statusCode != 200 && res.statusCode != 201) {
+  if (res.statusCode != 200) {
     throw Exception('Update filter profile failed: ${res.statusCode} ${res.body}');
   }
 }

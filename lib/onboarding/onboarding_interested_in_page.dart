@@ -18,7 +18,7 @@ class OnboardingInterestedInPage extends StatefulWidget {
 
 class _OnboardingInterestedInPageState
     extends State<OnboardingInterestedInPage> {
-  String _selected = '';
+  late String _selected = widget.data.interestedIn;
 
   Widget _option(String value) {
     final isSelected = _selected == value;
