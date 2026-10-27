@@ -143,6 +143,7 @@ static const double _activeCardLift = 0;
   Future<void> loadMyPhoto() async {
     try {
       final me = await _authService.getMyProfile();
+      if (!mounted) return;
       final photos = (me["photoUrls"] ?? []) as List;
       if (photos.isNotEmpty && mounted) {
         setState(() {
@@ -714,14 +715,14 @@ static const double _activeCardLift = 0;
                                 Navigator.pop(context);
 
                                 try {
-                                  final savedKm =
-                                      await _authService.updateRadius(tempRadius.round());
-
+                                  final savedKm = tempRadius.round();
                                   await _authService.updateFilterProfile(
+                                    matchRadiusKm: savedKm,
                                     intention: tempIntention,
                                     religion: tempReligion,
                                   );
 
+                                  if (!mounted) return;
                                   setState(() {
                                     _radiusKm = savedKm.toDouble();
                                     _selectedIntention = tempIntention;
@@ -841,7 +842,7 @@ static const double _activeCardLift = 0;
                               child: Slider(
                                 value: tempRadius,
                                 min: 1,
-                                max: 200,
+                                max: 300,
                                 divisions: 199,
                                 onChanged: (value) {
                                   setModalState(() {

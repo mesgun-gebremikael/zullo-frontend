@@ -21,3 +21,11 @@ Androids automatiska appbackup stängs av (`allowBackup=false`) för att undvika
 Lagringstesterna använder pluginets minnesdubbel och injicerade plattformsfel. De verifierar migrering, korrupta värden, utloggning under pågående migrering och att vanliga kontobyten fortfarande fungerar. Dessa tester verifierar inte Android Keystore/iOS Keychain på fysisk enhet.
 
 Vid HTTP 429 visar klienten väntetiden från Retry-After (med säkert reservvärde). Inga automatiska login-retries görs. JWT-livslängd och serverstyrd återkallelse ändras inte i denna PR.
+
+## Profilflöde och sparade preferenser
+
+`profile_update_test.dart` täcker komplett onboardingpayload (inklusive födelsedagsgräns, svenska värden, urvalspreferens och avstånd), bevarande av utelämnade fält, explicit borttagning av längd, ett enda filter-PATCH, sent svar efter kontobyte och skillnaden mellan saknad profil (404), utgången session (401) och tillfälligt serverfel.
+
+Widgettesterna monterar den riktiga onboardingfrågan och profilredigeringen: sparat Män/Kvinnor/Alla återställs och saknad längd blir inte automatiskt 170 cm. Startvyn erbjuder återförsök vid tillfälliga fel utan att radera inloggningen eller öppna onboarding. Inloggade användare utan profil får samma onboardingflöde som nya konton.
+
+Backendens profiluppdatering och datamigrering måste driftsättas före den nya klienten. Radie och profilfilter sparas tillsammans. Ortstext är fortfarande inte en verifierad geografisk position; klienten skickar inte påhittade koordinater. Verklig geolokalisering och belastningstester återstår som separata steg före publik lansering.

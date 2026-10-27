@@ -21,6 +21,7 @@ class OnboardingPhotosPage extends StatefulWidget {
 class _OnboardingPhotosPageState extends State<OnboardingPhotosPage> {
   final ImagePicker _picker = ImagePicker();
   bool _isUploading = false;
+  bool _isSaving = false;
   String? _error;
 
   Future<void> _pickAndUploadImage() async {
@@ -64,22 +65,9 @@ class _OnboardingPhotosPageState extends State<OnboardingPhotosPage> {
     });
   }
 
-  int _calculateAge(DateTime birthDate) {
-  final today = DateTime.now();
-
-  var age = today.year - birthDate.year;
-
-  if (today.month < birthDate.month ||
-      (today.month == birthDate.month && today.day < birthDate.day)) {
-    age--;
-  }
-
-  return age;
-}
-
   @override
   Widget build(BuildContext context) {
-    final canContinue = widget.data.photoUrls.length >= 2 && !_isUploading;
+    final canContinue = widget.data.photoUrls.length >= 2 && !_isUploading && !_isSaving;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -240,6 +228,7 @@ class _OnboardingPhotosPageState extends State<OnboardingPhotosPage> {
                   ),
                 onPressed: canContinue
     ? () async {
+        if (_isSaving) return;
         
 
         if (widget.data.birthDate == null) {
@@ -249,45 +238,14 @@ class _OnboardingPhotosPageState extends State<OnboardingPhotosPage> {
           return;
         }
 
-        final age = _calculateAge(widget.data.birthDate!);
+
 
        
 
+        setState(() => _isSaving = true);
         try {
 
-         print('=== ONBOARDING FINAL DATA ===');
-print('workout: ${widget.data.workout}');
-print('smoking: ${widget.data.smoking}');
-print('relationshipHistory: ${widget.data.relationshipHistory}');
-print('childrenCount: ${widget.data.childrenCount}');
-print('wantChildren: ${widget.data.wantChildren}');
-print('=============================');
-
-          await AuthService().saveProfile(
-  displayName: widget.data.displayName,
-  age: age,
-  gender: widget.data.gender,
-  bio: widget.data.bio,
-  photoUrls: widget.data.photoUrls,
-  interests: const [],
-  intention: widget.data.intention,
-  religion: widget.data.religion,
-  workout: widget.data.workout,
-  smoking: widget.data.smoking,
-  pets: widget.data.pets,
-  heightCm: widget.data.heightCm,
-  relationshipHistory: widget.data.relationshipHistory,
-  zodiacSign: widget.data.zodiacSign,
-  childrenCount: widget.data.childrenCount,
-  wantChildren: widget.data.wantChildren,
-  workStatus: widget.data.workStatus,
-  studyPlace: widget.data.studyPlace,
-  studySubject: widget.data.studySubject,
-  workPlace: widget.data.workPlace,
-  jobTitle: widget.data.jobTitle,
-  livePlace: widget.data.livePlace,
-  originPlace: widget.data.originPlace,
-);
+          await AuthService().saveOnboardingProfile(widget.data);
 
           if (!context.mounted) return;
 
@@ -308,6 +266,8 @@ print('=============================');
               content: Text('ERROR saveProfile: $e'),
             ),
           );
+        } finally {
+          if (mounted) setState(() => _isSaving = false);
         }
       }
     : null,

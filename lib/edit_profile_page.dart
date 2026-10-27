@@ -11,10 +11,12 @@ import 'package:flutter/cupertino.dart';
 
 class EditProfilePage extends StatefulWidget {
   final bool startInPreviewMode;
+  final AuthService? authService;
 
   const EditProfilePage({
     super.key,
     this.startInPreviewMode = false,
+    this.authService,
   });
 
   @override
@@ -22,7 +24,7 @@ class EditProfilePage extends StatefulWidget {
 }
 
 class _EditProfilePageState extends State<EditProfilePage> {
-  final AuthService _authService = AuthService();
+  late final AuthService _authService = widget.authService ?? AuthService();
    SwipeProfile? _cachedPreviewProfile;
   final _displayName = TextEditingController();
   final _age = TextEditingController();
@@ -56,7 +58,8 @@ final _originPlace = TextEditingController();
 
 
 
-int _heightCm = 170;
+int? _heightCm;
+String _interestedIn = "Alla";
 
 bool _isUploadingPhoto = false;
 
@@ -94,13 +97,7 @@ _originPlace.dispose();
 
     try {
       final profile = await _authService.getMyProfile();
-
-      print("EDIT PROFILE DATA: $profile");
-print("WORKOUT: ${profile["workout"]}");
-print("SMOKING: ${profile["smoking"]}");
-print("RELATIONSHIP: ${profile["relationshipHistory"]}");
-print("CHILDREN COUNT: ${profile["childrenCount"]}");
-print("WANT CHILDREN: ${profile["wantChildren"]}");
+      if (!mounted) return;
 
       _displayName.text = (profile["displayName"] ?? "").toString();
 _age.text = (profile["age"] ?? "").toString();
@@ -120,7 +117,9 @@ _religion = (profile["religion"] ?? "").toString();
 _workout = (profile["workout"] ?? "").toString();
 _smoking = (profile["smoking"] ?? "").toString();
 _pets = (profile["pets"] ?? "").toString();
-_heightCm = (profile["heightCm"] as num?)?.toInt() ?? 170;
+_heightCm = (profile["heightCm"] as num?)?.toInt();
+_interestedIn = (profile["interestedIn"] ?? "").toString();
+if (_interestedIn.isEmpty) _interestedIn = "Alla";
 
 _relationshipHistory = (profile["relationshipHistory"] ?? "").toString();
 _zodiacSign = (profile["zodiacSign"] ?? "").toString();
@@ -241,22 +240,6 @@ void _removePhotoAt(int index) {
     });
 
     try {
-
-            print('EDIT PROFILE values before save:');
-      print('heightCm=$_heightCm');
-      print('relationshipHistory=$_relationshipHistory');
-      print('zodiacSign=$_zodiacSign');
-      print('alcohol=$_alcohol');
-      print('cannabis=$_cannabis');
-      print('childrenCount=$_childrenCount');
-      print('wantChildren=$_wantChildren');
-      print('workStatus=$_workStatus');
-      print('studyPlace=${_studyPlace.text}');
-      print('studySubject=${_studySubject.text}');
-      print('workPlace=${_workPlace.text}');
-      print('jobTitle=${_jobTitle.text}');
-      print('livePlace=${_livePlace.text}');
-      print('originPlace=${_originPlace.text}');
   await _authService.saveProfile(
   displayName: _displayName.text,
   age: int.parse(_age.text),
@@ -272,6 +255,8 @@ void _removePhotoAt(int index) {
 
   // 🔥 NYA FÄLT (DETTA VAR BUGGEN)
   heightCm: _heightCm,
+  clearHeight: _heightCm == null,
+  interestedIn: _interestedIn,
   relationshipHistory: _relationshipHistory,
   zodiacSign: _zodiacSign,
   alcohol: _alcohol,
@@ -491,6 +476,20 @@ Widget _buildQuestionTitle({
           ),
         ],
       ),
+    ],
+  );
+}
+
+Widget _buildInterestedInSection() {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      _buildQuestionTitle(icon: Icons.people_outline, title: 'Vem är du intresserad av?', subtitle: 'Välj vilka profiler du vill se.'),
+      const SizedBox(height: 12),
+      Wrap(spacing: 8, children: ['Män', 'Kvinnor', 'Alla'].map((value) => ChoiceChip(
+        label: Text(value), selected: _interestedIn == value,
+        onSelected: (_) => setState(() => _interestedIn = value),
+      )).toList()),
     ],
   );
 }
@@ -1042,11 +1041,12 @@ Widget _buildZodiacSection() {
 }
 
 String _heightDisplayCm() {
-  return "$_heightCm cm";
+  return _heightCm == null ? "Ej angivet" : "$_heightCm cm";
 }
 
 String _heightDisplayFt() {
-  final totalInches = (_heightCm / 2.54).round();
+  if (_heightCm == null) return "";
+  final totalInches = (_heightCm! / 2.54).round();
   final feet = totalInches ~/ 12;
   final inches = totalInches % 12;
   return "$feet'$inches\"";
@@ -1068,10 +1068,10 @@ int _feetAndInchesToCm(int feet, int inches) {
 }
 
 Future<void> _openHeightPicker() async {
-  int tempCm = _heightCm;
+  int tempCm = _heightCm ?? 170;
 
-  int tempFeet = _cmToFeet(_heightCm);
-  int tempInches = _cmToInchesPart(_heightCm);
+  int tempFeet = _cmToFeet(_heightCm ?? 170);
+  int tempInches = _cmToInchesPart(_heightCm ?? 170);
 
   final cmController = FixedExtentScrollController(
     initialItem: math.max(0, tempCm - 140),
@@ -1340,13 +1340,17 @@ Widget _buildHeightSection() {
             children: [
               Expanded(
                 child: Text(
-                  "${_heightDisplayCm()} • ${_heightDisplayFt()}",
+                  _heightCm == null ? 'Ej angivet' : "${_heightDisplayCm()} • ${_heightDisplayFt()}",
                   style: const TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w700,
                     color: Colors.black87,
                   ),
                 ),
+              ),
+              if (_heightCm != null) IconButton(
+                tooltip: 'Ta bort längd', icon: const Icon(Icons.close),
+                onPressed: () => setState(() => _heightCm = null),
               ),
               const Icon(
                 Icons.unfold_more_rounded,
@@ -1815,6 +1819,8 @@ const SizedBox(height: 24),
 _buildOriginPlaceSection(),
 const SizedBox(height: 24),
 
+ _buildInterestedInSection(),
+ const SizedBox(height: 20),
  _buildIntentionSection(),
 const SizedBox(height: 24),
 
