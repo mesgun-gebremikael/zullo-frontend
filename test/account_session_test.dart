@@ -1,3 +1,4 @@
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:zullo_app/services/notification_access.dart';
 import 'dart:async';
 import 'dart:convert';
@@ -25,6 +26,7 @@ void main() {
 
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
+    FlutterSecureStorage.setMockInitialValues({});
     await storage.clearAuth();
     await storage.saveAuth(token: 'token-A', userId: 'A');
   });

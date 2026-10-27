@@ -73,8 +73,9 @@ final hasProfile = await _authService.hasProfile();
         ),
       );
     } catch (e) {
+      if (!mounted) return;
       setState(() {
-        _errorMessage = 'Login failed: $e';
+        _errorMessage = e is AuthRateLimitException ? e.toString() : 'Login failed: $e';
       });
     } finally {
       if (mounted) setState(() => _isLoading = false);
