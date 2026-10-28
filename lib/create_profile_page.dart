@@ -1,3 +1,4 @@
+import 'services/auth_service.dart';
 import 'dart:convert';
 import 'dart:io';
 
@@ -8,7 +9,6 @@ import 'package:image_picker/image_picker.dart';
 import 'services/auth_storage.dart';
 import 'services/cloudinary_service.dart';
 import 'main_navigation.dart';
-import 'services/auth_storage.dart';
 import 'welcome_page.dart';
 
 class CreateProfilePage extends StatefulWidget {
@@ -137,7 +137,7 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
       }
 
       final res = await http.post(
-        Uri.parse("http://10.0.2.2:5125/me/profile"),
+        Uri.parse("${AuthService.baseApiUrl}/me/profile"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",

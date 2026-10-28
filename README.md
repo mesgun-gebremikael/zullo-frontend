@@ -35,13 +35,13 @@ ZULLO är en dejtingapplikation utvecklad med Flutter och Dart. Användare kan s
 Du behöver Flutter SDK med Dart 3, en kompatibel emulator eller enhet samt en fungerande [ZULLO-backend](https://github.com/mesgun-gebremikael/zullo-backend).
 
 1. Klona projektet.
-2. Kontrollera backendadressen i `lib/config.dart`.
+2. Ange backendadressen med `--dart-define=ZULLO_API_URL=https://din-api-domän`. Releasebyggen kräver HTTPS. Standardadressen för utveckling är `http://10.0.2.2:5125`.
 3. Konfigurera Firebase för den plattform du använder.
 4. Kör:
 
 ```bash
 flutter pub get
-flutter run
+flutter run --dart-define=ZULLO_API_URL=http://10.0.2.2:5125
 ```
 
 Observera att `localhost` i en emulator inte alltid pekar på utvecklingsdatorn.
@@ -53,7 +53,9 @@ Projektet har en `test/`-mapp. Befintliga Flutter-tester kan köras med:
 flutter test
 ```
 
-Detta är inte en garanti för att testerna är godkända; testresultat behöver verifieras separat.
+GitHub-kontrollen kör tester och `python3 .ci/check_analysis.py`. Analyskontrollen nekar nya anmärkningar och alla analysfel; 128 befintliga anmärkningar är dokumenterade i `.ci/analysis_baseline.json`.
+
+Se [chattens verifiering och införande](docs/chat-verification.md) för testresultat, beroendet till backendändringen och kvarvarande mobilprovning.
 
 ## Backend
 [ZULLO – Backend API](https://github.com/mesgun-gebremikael/zullo-backend)

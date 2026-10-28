@@ -1,4 +1,6 @@
 class ChatMessageItem {
+  final String? serverId;
+  final int? sequence;
   final String text;
   final bool isMe;
   final DateTime timeLocal;
@@ -8,6 +10,8 @@ class ChatMessageItem {
   final String clientMessageId;
 
   const ChatMessageItem({
+    this.serverId,
+    this.sequence,
     required this.text,
     required this.isMe,
     required this.timeLocal,
@@ -18,6 +22,8 @@ class ChatMessageItem {
   });
 
   ChatMessageItem copyWith({
+    String? serverId,
+    int? sequence,
     String? text,
     bool? isMe,
     DateTime? timeLocal,
@@ -27,6 +33,8 @@ class ChatMessageItem {
     String? clientMessageId,
   }) {
     return ChatMessageItem(
+      serverId: serverId ?? this.serverId,
+      sequence: sequence ?? this.sequence,
       text: text ?? this.text,
       isMe: isMe ?? this.isMe,
       timeLocal: timeLocal ?? this.timeLocal,

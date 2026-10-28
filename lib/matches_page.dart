@@ -1,9 +1,8 @@
+import 'services/refresh_coordinator.dart';
 import 'services/account_session.dart';
  import 'dart:async';
 import 'package:flutter/material.dart';
 import 'services/auth_service.dart';
-import 'services/signalr_service.dart';
-import 'chat_page.dart';
 import 'premium_page.dart';
 import 'services/unread_sync_service.dart';
 import 'services/chat_coordinator.dart';
@@ -42,11 +41,11 @@ class _MatchesPageState extends State<MatchesPage> {
 
 
   late final AuthService _auth = widget.authService ?? AuthService();
-  final SignalRService _signalRService = SignalRService();
+  final _refresh = RefreshCoordinator();
   StreamSubscription<String>? _openedChatSubscription;
-  StreamSubscription<Map<String, dynamic>>? _messageSubscription;
+
 //StreamSubscription<Map<String, dynamic>>? _messagesReadSubscription;
-bool _signalRConnected = false;
+
 StreamSubscription<void>? _refreshSubscription;
 StreamSubscription<ChatRepositoryState>? _repositorySubscription;
   bool isLoading = true;
@@ -106,7 +105,7 @@ void initState() {
   _refreshSubscription =
     MatchesRefreshService.instance.stream.listen((_) async {
   if (!mounted || !_sessionActive) return;
-  await loadMatches(silent: true);
+  await loadMatches(silent: true, invalidate: true);
 });
 
   _openedChatSubscription =
@@ -115,40 +114,16 @@ void initState() {
     _clearUnreadLocally(userId);
   });
 
-  if (widget.onUnreadChanged != null) {
-    _setupSignalR();
-  }
 }
-
-   Future<void> _setupSignalR() async {
-  if (!_sessionActive) return;
-  await _signalRService.connect();
-  _signalRConnected = true;
-
-  _messageSubscription = _signalRService.messagesStream.listen((data) async {
-    if (!mounted || !_sessionActive) return;
-    await loadMatches(silent: true);
-  });
-
- // _messagesReadSubscription = _signalRService.messagesReadStream.listen((data) async {
-   // if (!mounted || !_sessionActive) return;
-   // await loadMatches(silent: true);
- // });
-}
-
-
-
 
 @override
 void dispose() {
   _sessionChanges?.cancel();
   _openedChatSubscription?.cancel(); // NYTT
-  _messageSubscription?.cancel();
+
    _refreshSubscription?.cancel();
    _repositorySubscription?.cancel();
-  if (_signalRConnected) {
-    _signalRService.disconnect();
-  }
+
 
   super.dispose();
 }
@@ -248,7 +223,7 @@ Future<void> _warmTopChatThreads(List<dynamic> list) async {
   final messageMatches = list.where((m) {
     final lastText = (m['lastMessageText'] ?? '').toString().trim();
     return lastText.isNotEmpty;
-  }).take(6);
+  }).take(2);
 
   for (final m in messageMatches) {
     if (!mounted || !_sessionActive) return;
@@ -257,7 +232,7 @@ Future<void> _warmTopChatThreads(List<dynamic> list) async {
     if (ChatThreadCacheService.hasThread(userId)) continue;
 
     try {
-      final thread = await _messagesService.getThread(userId);
+      final thread = await ChatThreadCacheService.loadOnce(userId, () async => (await _messagesService.getThreadPage(userId)).messages);
       if (!mounted || !_sessionActive) return;
       ChatThreadCacheService.setThread(userId, thread);
     } catch (_) {
@@ -266,7 +241,10 @@ Future<void> _warmTopChatThreads(List<dynamic> list) async {
   }
 }
 
-   Future<void> loadMatches({bool silent = false}) async {
+   Future<void> loadMatches({bool silent = false, bool invalidate = false}) =>
+       _refresh.run(() => _performLoadMatches(silent: silent || !isLoading), invalidate: invalidate);
+
+   Future<void> _performLoadMatches({bool silent = false}) async {
     if (!mounted || !_sessionActive) return;
     if (!silent) {
       setState(() {

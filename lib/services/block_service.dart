@@ -1,9 +1,10 @@
+import 'api_config.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'auth_storage.dart';
 
 class BlockService {
-  static const String _baseUrl = "http://localhost:5125";
+  static final String _baseUrl = ApiConfig.baseUrl;
 
   final AuthStorage _storage = AuthStorage();
 
