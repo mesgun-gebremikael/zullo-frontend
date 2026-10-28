@@ -24,7 +24,7 @@
   "[\"warning\", \"Unused import: 'chat_page.dart'\", \"lib/main.dart\", \"unused_import\"]": 1,
   "[\"warning\", \"The value of the local variable 'existingThread' isn't used\", \"lib/main.dart\", \"unused_local_variable\"]": 1,
   "[\"warning\", \"The declaration '_openChatFromMessage' isn't referenced\", \"lib/main.dart\", \"unused_element\"]": 1,
-  "[\"info\", \"Don't invoke 'print' in production code\", \"lib/main.dart\", \"avoid_print\"]": 5,
+  "[\"info\", \"Don't invoke 'print' in production code\", \"lib/main.dart\", \"avoid_print\"]": 1,
   "[\"info\", \"'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss\", \"lib/main.dart\", \"deprecated_member_use\"]": 5,
   "[\"info\", \"'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss\", \"lib/main_navigation.dart\", \"deprecated_member_use\"]": 5,
   "[\"warning\", \"The declaration '_ProfileTabPlaceholder' isn't referenced\", \"lib/main_navigation.dart\", \"unused_element\"]": 1,

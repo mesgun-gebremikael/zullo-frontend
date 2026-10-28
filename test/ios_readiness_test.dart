@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:zullo_app/firebase_options.dart';
+import 'package:zullo_app/services/api_config.dart';
 import 'package:zullo_app/services/ios_firebase_options.dart';
 import 'package:zullo_app/services/push_token_service.dart';
 
@@ -57,6 +58,18 @@ void main() {
   test('iOS reports missing configuration instead of unsupported platform', () {
     debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
     expect(() => DefaultFirebaseOptions.currentPlatform, throwsStateError);
+  });
+  test(
+      'iPhone requires a backend address instead of the Android emulator alias',
+      () {
+    expect(
+        () => ApiConfig.resolve('', requireExplicit: true), throwsStateError);
+    expect(ApiConfig.resolve('https://api.example.test', requireExplicit: true),
+        'https://api.example.test');
+  });
+  test('Android keeps its existing development address', () {
+    expect(
+        ApiConfig.resolve('', requireExplicit: false), 'http://10.0.2.2:5125');
   });
   test('Android fetches FCM without touching APNs', () async {
     final service = PushTokenService(
