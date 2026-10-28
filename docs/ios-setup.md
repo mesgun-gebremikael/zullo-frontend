@@ -10,7 +10,7 @@ Det går inte att dra slutsatsen att du saknar ett Apple-konto eller medlemskap.
 
 ## Förberett i koden
 
-- iOS 13 som lägsta version, CocoaPods Podfile och inkluderade Pods-inställningar i Debug/Release/Profile.
+- iOS 13 som lägsta version, CocoaPods Podfile och inkluderade Pods-inställningar i Debug/Release/Profile. Första Mac-bygget identifierade en äldre, icke-modulär Firebase-header i Messaging 14.x. En kompatibilitetsinställning för just den headerimporten används i Messaging-poden och Runner; SDK:ns huvudversion uppgraderas inte som en dold del av iOS-arbetet.
 - Bildbibliotekets användningsbeskrivning för befintligt val av profilbilder. Ingen kamera-/mikrofonbehörighet begärs för funktioner som appen inte använder.
 - Push-entitlement och remote-notification-bakgrundsläge. Debug använder APNs development och Release/Profile production; rätt signering/provisionering krävs fortfarande.
 - Validerade iOS-Firebase-klientinställningar från byggkonfiguration, utan påhittade registreringsvärden. Saknade inställningar ger ett tydligt fel. Android fortsätter använda tidigare Firebase-app.
