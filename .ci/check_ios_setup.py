@@ -2,6 +2,7 @@
 """Portable checks of iOS packaging prerequisites; not a substitute for Xcode."""
 from pathlib import Path
 import plistlib
+import json
 
 root = Path(__file__).resolve().parents[1]
 with (root / 'ios/Runner/Info.plist').open('rb') as stream:
@@ -20,4 +21,8 @@ for name in ['Debug', 'Release']:
     config = (root / f'ios/Flutter/{name}.xcconfig').read_text()
     assert 'Pods-Runner.' in config and 'Generated.xcconfig' in config
 assert "platform :ios, '13.0'" in (root / 'ios/Podfile').read_text()
-print('iOS packaging prerequisites OK; signing, Firebase registration and device tests remain separate.')
+registration = json.loads((root / 'config/ios.firebase.json').read_text())
+bundle = registration['ZULLO_IOS_BUNDLE_ID']
+assert project.count(f'PRODUCT_BUNDLE_IDENTIFIER = {bundle};') == 3, 'Runner must match the registered Firebase bundle ID'
+assert project.count(f'PRODUCT_BUNDLE_IDENTIFIER = {bundle}.RunnerTests;') == 3
+print('iOS packaging and registered bundle ID OK; Apple signing and device delivery remain separate.')

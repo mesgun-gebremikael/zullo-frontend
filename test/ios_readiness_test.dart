@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:zullo_app/firebase_options.dart';
@@ -7,6 +9,40 @@ import 'package:zullo_app/services/ios_firebase_options.dart';
 import 'package:zullo_app/services/push_token_service.dart';
 
 void main() {
+  test(
+      'uploaded iOS registration belongs to the existing Android Firebase project',
+      () {
+    final data =
+        (jsonDecode(File('config/ios.firebase.json').readAsStringSync())
+                as Map<String, dynamic>)
+            .cast<String, String>();
+    final options = IosFirebaseOptions.fromValues(data);
+    expect(options.projectId, DefaultFirebaseOptions.android.projectId);
+    expect(options.messagingSenderId,
+        DefaultFirebaseOptions.android.messagingSenderId);
+    expect(options.iosBundleId, 'com.mesgungebremikael.zullo');
+    expect(options.appId, '1:860454038998:ios:6a9d009a2d4b822b7e4877');
+    expect(options.appId, isNot(DefaultFirebaseOptions.android.appId));
+  });
+
+  test(
+      'all Runner configurations match the registered iPhone bundle identifier',
+      () {
+    final project =
+        File('ios/Runner.xcodeproj/project.pbxproj').readAsStringSync();
+    expect(
+        RegExp(r'PRODUCT_BUNDLE_IDENTIFIER = com\.mesgungebremikael\.zullo;')
+            .allMatches(project)
+            .length,
+        3);
+    expect(
+        RegExp(r'PRODUCT_BUNDLE_IDENTIFIER = com\.mesgungebremikael\.zullo\.RunnerTests;')
+            .allMatches(project)
+            .length,
+        3);
+    expect(project, isNot(contains('com.example.zulloApp')));
+  });
+
   Map<String, String> settings() => {
         'ZULLO_IOS_FIREBASE_API_KEY': 'test-public-client-key',
         'ZULLO_IOS_FIREBASE_APP_ID': '1:123456:ios:abcdef123456',
