@@ -1,14 +1,16 @@
+import 'dart:math';
+import 'services/chat_merge.dart';
+import 'services/thread_history.dart';
+import 'services/refresh_coordinator.dart';
 import 'services/account_session.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'main_navigation.dart';
 import '../services/messages_service.dart';
 import '../services/auth_storage.dart';
 import '../services/auth_service.dart';
 import '../services/block_service.dart';
 import '../services/signalr_service.dart';
 import '../services/current_chat.dart';
-import 'package:app_badge_plus/app_badge_plus.dart';
 import '../services/badge_service.dart';
 import 'services/chat_cache_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -26,6 +28,9 @@ class ChatPage extends StatefulWidget {
   final bool openChatsListOnExit;
   final List<dynamic>? initialThreadData;
   final String? initialMeUserId;
+  final MessagesService? messagesService;
+  final SignalRService? liveService;
+  final Future<void> Function()? refreshBadge;
 
   const ChatPage({
   super.key,
@@ -35,19 +40,22 @@ class ChatPage extends StatefulWidget {
   this.openChatsListOnExit = false,
   this.initialThreadData,
   this.initialMeUserId,
+  this.messagesService,
+  this.liveService,
+  this.refreshBadge,
 });
 
   @override
   State<ChatPage> createState() => _ChatPageState();
 }
 
-class _ChatPageState extends State<ChatPage> {
+class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   StreamSubscription<int>? _sessionChanges;
   final int _sessionGeneration = AccountSession.generation;
   bool get _sessionActive => AccountSession.isCurrent(_sessionGeneration);
 
   // ✅ Endast HTTP (inte https:7015)
-  static const String _baseApiUrl = 'http://10.0.2.2:5125';
+  static final String _baseApiUrl = AuthService.baseApiUrl;
 
   late final MessagesService _messagesService;
   final AuthService _authService = AuthService();
@@ -61,7 +69,14 @@ bool _isReady = false;
   DateTime? _lastLoadedAt;
  // debug/insyn
 
-  final SignalRService _signalRService = SignalRService();
+  late final SignalRService _signalRService = widget.liveService ?? SignalRService();
+  late final ThreadHistory _history;
+  final _threadRefresh = RefreshCoordinator();
+  final _readWatermark = ReadWatermark();
+  final _random = Random.secure();
+  bool _loadingOlder = false;
+  StreamSubscription<void>? _reconnectedSubscription;
+  Future<void> _refreshBadge() => widget.refreshBadge?.call() ?? BadgeService.refreshUnreadBadge();
    StreamSubscription<Map<String, dynamic>>? _messagesReadSubscription;
    StreamSubscription<Map<String, dynamic>>? _messagesSubscription;
    StreamSubscription<ChatRepositoryState>? _repositorySubscription;
@@ -89,7 +104,10 @@ void initState() {
     if (mounted) setState(() {});
   });
 
-  _messagesService = MessagesService(_baseApiUrl, AuthStorage());
+  WidgetsBinding.instance.addObserver(this);
+  _messagesService = widget.messagesService ?? MessagesService(_baseApiUrl, AuthStorage());
+  _history = ThreadHistory(_messagesService, widget.userId);
+  _reconnectedSubscription = _signalRService.reconnectedStream.listen((_) { unawaited(_loadThread(silent: true)); });
   CurrentChat.openUserId = widget.userId;
 
   _isLoading = false;
@@ -101,7 +119,7 @@ _repositorySubscription =
   final repoThread = ChatRepository.instance.threadFor(widget.userId);
   if (repoThread.isEmpty) return;
 
-  final mapped = _mapRepositoryItemsToUi(repoThread);
+  final mapped = _mapRepositoryItemsToUi(mergeChatItems(_mapUiMessagesToRepositoryItems(_messages), repoThread));
 
   if (_sameUiMessages(_messages, mapped)) return;
 
@@ -221,7 +239,8 @@ unawaited(Future(() async {
   unawaited(Future(() async {
     try {
       await _messagesService.markRead(widget.userId);
-      await BadgeService.refreshUnreadBadge();
+      MatchesRefreshService.instance.requestRefresh();
+      await _refreshBadge();
     } catch (_) {
       // ignore i MVP
     }
@@ -236,6 +255,8 @@ unawaited(Future(() async {
 
    @override
 void dispose() {
+  WidgetsBinding.instance.removeObserver(this);
+  _reconnectedSubscription?.cancel();
   _sessionChanges?.cancel();
   if (CurrentChat.openUserId == widget.userId) {
     CurrentChat.openUserId = null;
@@ -246,7 +267,7 @@ _messagesReadSubscription?.cancel();
 _repositorySubscription?.cancel();
 _controller.dispose();
 _scroll.dispose();
-_signalRService.disconnect();
+unawaited(_signalRService.dispose());
 super.dispose();
 
 }
@@ -298,11 +319,8 @@ super.dispose();
 
       // createdAtUtc -> local
       final createdUtcRaw = m['createdAtUtc'];
-      print("RAW createdAtUtc: $createdUtcRaw");
-      print("RAW readAtUtc: ${m['readAtUtc']}");
 
       final createdLocal = _parseUtcStringToLocal(createdUtcRaw) ?? DateTime.now();
-       print("PARSED createdLocal: $createdLocal");
 
 
       // readAtUtc -> local (valfri)
@@ -319,9 +337,10 @@ super.dispose();
     isMe: fromUserId == meId,
     timeLocal: createdLocal,
     readAtLocal: readAtLocal,
-    pending: false,
-    failed: false,
+    pending: m['pending'] == true,
+    failed: m['failed'] == true,
     clientMessageId: (m['clientMessageId'] ?? '').toString(),
+    serverId: m['id']?.toString(), sequence: (m['sequence'] as num?)?.toInt(),
   ),
 );
 
@@ -342,6 +361,7 @@ super.dispose();
           pending: m.pending,
           failed: m.failed,
           clientMessageId: m.clientMessageId,
+          serverId: m.serverId, sequence: m.sequence,
         ),
       )
       .toList();
@@ -358,6 +378,7 @@ List<_UiMessage> _mapRepositoryItemsToUi(List<ChatMessageItem> list) {
           pending: m.pending,
           failed: m.failed,
           clientMessageId: m.clientMessageId,
+          serverId: m.serverId, sequence: m.sequence,
         ),
       )
       .toList();
@@ -377,6 +398,7 @@ bool _sameUiMessages(List<_UiMessage> a, List<_UiMessage> b) {
     if (x.readAtLocal != y.readAtLocal) return false;
     if (x.pending != y.pending) return false;
     if (x.failed != y.failed) return false;
+    if (x.serverId != y.serverId || x.sequence != y.sequence) return false;
   }
 
   return true;
@@ -402,97 +424,83 @@ void _updateRepositoryLastMessage({
   );
 }
 
-  Future<void> _loadThread({bool silent = false}) async {
-    if (!mounted || !_sessionActive) return;
-      if (_isThreadFetchInFlight) return;
-    _isThreadFetchInFlight = true; 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && mounted && _sessionActive) {
+      unawaited(_signalRService.connect().catchError((Object _) {}));
+      unawaited(_loadThread(silent: true));
+    }
+  }
 
-   
-if (!silent) {
-  setState(() {
-    //  visa inte loading om vi redan har UI
-    _error = null;
-  });
-} 
+  Future<void> _loadThread({bool silent = false}) =>
+      _threadRefresh.run(() => _performLoadThread(silent: silent), invalidate: true);
 
-
+  Future<void> _loadOlder() async {
+    if (_loadingOlder || !mounted || !_sessionActive) return;
+    setState(() => _loadingOlder = true);
     try {
-      final data = await _messagesService.getThread(widget.userId);
-    if (!mounted || !_sessionActive) return;
-   ChatThreadCacheService.setThread(widget.userId, data);
-     final parsed = _parseThread(data);
-
-      final didMarkRead = await _markReadIfNeeded(parsed);
-
+      final rows = await _history.loadOlder();
       if (!mounted || !_sessionActive) return;
+      _mergeSnapshot(rows);
+    } catch (_) {
+      if (mounted && _sessionActive) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Kunde inte hämta äldre meddelanden. Försök igen.')));
+    } finally {
+      if (mounted && _sessionActive) setState(() => _loadingOlder = false);
+    }
+  }
 
-      
-if (!_sameUiMessages(_messages, parsed)) {
-  setState(() {
-    _messages
-      ..clear()
-      ..addAll(parsed);
-    _isLoading = false;
-    _error = null;
-    _showInitialPlaceholder = false;
-  });
-} else {
-  setState(() {
-    _isLoading = false;
-    _error = null;
-    _showInitialPlaceholder = false;
-  });
-}
+  List<_UiMessage> _mergeSnapshot(List<dynamic> rows) {
+    final merged = mergeChatItems(_mapUiMessagesToRepositoryItems(_messages),
+        _mapUiMessagesToRepositoryItems(_parseThread(rows)));
+    _readWatermark.accept(_history.outgoingReadThrough, _history.outgoingReadAtUtc);
+    final updated = merged.map(_readWatermark.apply).toList();
+    final parsed = _mapRepositoryItemsToUi(updated);
+    setState(() { _messages..clear()..addAll(parsed); });
+    ChatCacheService.setMessages(widget.userId, List.from(parsed));
+    ChatThreadCacheService.setThread(widget.userId, rows);
+    _pushCurrentMessagesToRepository();
+    return parsed;
+  }
 
-//  CACHE SAVE (lägg exakt här)
-ChatCacheService.setMessages(widget.userId, List.from(parsed));
-ChatRepository.instance.setThread(
-  widget.userId,
-  _mapUiMessagesToRepositoryItems(parsed),
-);
-
-if (parsed.isNotEmpty) {
-  final lastMessage = parsed.last;
-  ChatRepository.instance.updateLastMessage(
-    userId: widget.userId,
-    text: lastMessage.text,
-    messageTimeUtc: lastMessage.timeLocal.toUtc(),
-    incrementUnread: false,
-  );
-}
-
+  Future<void> _performLoadThread({bool silent = false}) async {
+    if (!mounted || !_sessionActive) return;
+    _isThreadFetchInFlight = true;
+    try {
+      final rows = await _history.synchronize();
+      if (!mounted || !_sessionActive) return;
+      final didMarkRead = await _markReadIfNeeded(_parseThread(rows));
+      if (!mounted || !_sessionActive) return;
+      // Merge after all awaits so a live arrival or pending send cannot be erased.
+      final shouldStick = !_hasLoadedInitialThread || _isNearBottom();
+      final parsed = _mergeSnapshot(rows);
+      setState(() {
+        _error = null;
+        _isLoading = false;
+        _showInitialPlaceholder = false;
+      });
+      if (parsed.isNotEmpty) {
+        final last = parsed.last;
+        _updateRepositoryLastMessage(text: last.text, messageTimeLocal: last.timeLocal, incrementUnread: false);
+      }
       if (didMarkRead) {
-        Future(() async {
-          await BadgeService.refreshUnreadBadge();
-        });
+        MatchesRefreshService.instance.requestRefresh();
+        unawaited(_refreshBadge().catchError((Object _) {}));
       }
-
-
-
-      
-               final shouldStickToBottom = !_hasLoadedInitialThread || _isNearBottom();
-
       _lastLoadedAt = DateTime.now();
-
-      if (shouldStickToBottom) {
-        _scrollToBottom(animated: _hasLoadedInitialThread);
-      }
-
+      if (shouldStick) _scrollToBottom(animated: _hasLoadedInitialThread);
       _hasLoadedInitialThread = true;
-
-    } catch (e) {
+    } catch (error) {
       if (!mounted || !_sessionActive) return;
       setState(() {
-        _error = "Kunde inte ladda chat: $e";
+        _error = error is ChatRequestException ? error.message : 'Kunde inte synkronisera chatten. Försök igen.';
         _isLoading = false;
+        if (error is ChatRequestException && (error.statusCode == 401 || error.statusCode == 403)) _isReady = false;
       });
     } finally {
       _isThreadFetchInFlight = false;
     }
-
   }
 
-  
    void _scrollToBottom({bool animated = true}) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_scroll.hasClients) return;
@@ -531,7 +539,7 @@ if (parsed.isNotEmpty) {
   _controller.clear();
 
   // 🔥 skapa unikt id
-  final clientMessageId = DateTime.now().microsecondsSinceEpoch.toString();
+  final clientMessageId = List<int>.generate(16, (_) => _random.nextInt(256)).map((n) => n.toRadixString(16).padLeft(2, '0')).join();
 
   final optimistic = _UiMessage(
     text: text,
@@ -557,6 +565,22 @@ if (parsed.isNotEmpty) {
 
   _scrollToBottom();
 
+  await _deliverMessage(clientMessageId, text);
+}
+
+Future<void> _retryMessage(_UiMessage message) async {
+  if (!_sessionActive || !mounted || !_isReady || _isSending || !message.failed) return;
+  final index = _messages.indexWhere((m) => m.isMe && m.clientMessageId == message.clientMessageId && m.failed);
+  if (index < 0) return;
+  setState(() {
+    _isSending = true;
+    _messages[index] = _messages[index].copyWith(pending: true, failed: false);
+  });
+  _pushCurrentMessagesToRepository();
+  await _deliverMessage(message.clientMessageId, message.text);
+}
+
+Future<void> _deliverMessage(String clientMessageId, String text) async {
   try {
     final sent = await _messagesService.sendMessage(
       toUserId: widget.userId,
@@ -578,12 +602,15 @@ if (parsed.isNotEmpty) {
     final existing = _messages[idx];
 
     _messages[idx] = _UiMessage(
+      serverId: sent['id']?.toString(), sequence: (sent['sequence'] as num?)?.toInt(),
       text: text,
       isMe: true,
       timeLocal: sentCreatedAtLocal,
       readAtLocal: sent['readAtUtc'] != null
           ? _parseUtcStringToLocal(sent['readAtUtc'])
-          : existing.readAtLocal,
+          : existing.readAtLocal ?? (((sent['sequence'] as num?)?.toInt() ?? 0) > 0 &&
+              _readWatermark.through != null && (sent['sequence'] as num).toInt() <= _readWatermark.through!
+              ? _readWatermark.at : null),
       pending: false,
       failed: false,
       clientMessageId: clientMessageId,
@@ -606,6 +633,7 @@ _scrollToBottom();
   if (!mounted || !_sessionActive) return;
 
   setState(() {
+    if (e is ChatRequestException && (e.statusCode == 401 || e.statusCode == 403)) _isReady = false;
     final idx = _messages.indexWhere(
       (m) => m.clientMessageId == clientMessageId,
     );
@@ -765,33 +793,24 @@ Future<void> _showReportDialog() async {
   final isIncoming =
       fromUserId == widget.userId && toUserId == (_meUserId ?? '');
 
-  if (!isIncoming) return;
+  final isOwn = fromUserId == (_meUserId ?? '') && toUserId == widget.userId;
+  if (!isIncoming && !isOwn) return;
 
   final createdAtLocal =
       _parseUtcStringToLocal(data['createdAtUtc']) ?? DateTime.now();
 
-  final alreadyExists = clientMessageId.isNotEmpty
-      ? _messages.any((m) => m.clientMessageId == clientMessageId)
-      : _messages.any((m) =>
-          !m.isMe &&
-          m.text == text &&
-          m.timeLocal.difference(createdAtLocal).inSeconds.abs() <= 1);
-
-  if (alreadyExists) return;
-
+  final serverId = data['id']?.toString();
+  if (_messages.any((m) => serverId != null && m.serverId == serverId && !m.pending)) return;
+  final message = _UiMessage(
+    serverId: serverId, sequence: (data['sequence'] as num?)?.toInt(),
+    text: text, isMe: isOwn, timeLocal: createdAtLocal,
+    readAtLocal: _parseUtcStringToLocal(data['readAtUtc']),
+    pending: false, failed: false, clientMessageId: clientMessageId,
+  );
+  final merged = mergeChatItems(_mapUiMessagesToRepositoryItems(_messages), _mapUiMessagesToRepositoryItems([message]))
+      .map(_readWatermark.apply).toList();
   setState(() {
-    _messages.add(
-      _UiMessage(
-        text: text,
-        isMe: false,
-        timeLocal: createdAtLocal,
-        readAtLocal: null,
-        pending: false,
-        failed: false,
-        clientMessageId: clientMessageId,
-      ),
-    );
-    _messages.sort((a, b) => a.timeLocal.compareTo(b.timeLocal));
+    _messages..clear()..addAll(_mapRepositoryItemsToUi(merged));
     _error = null;
     _isLoading = false;
   });
@@ -802,14 +821,16 @@ _pushCurrentMessagesToRepository();
 _updateRepositoryLastMessage(
   text: text,
   messageTimeLocal: createdAtLocal,
-  incrementUnread: true,
+  incrementUnread: false,
 );
 _scrollToBottom();
 
+  if (!isIncoming) return;
   Future(() async {
     try {
       await _messagesService.markRead(widget.userId);
-      await BadgeService.refreshUnreadBadge();
+      MatchesRefreshService.instance.requestRefresh();
+      await _refreshBadge();
     } catch (_) {
       // ignore i MVP
     }
@@ -826,12 +847,19 @@ _scrollToBottom();
   final readAtLocal =
       _parseUtcStringToLocal(data['readAtUtc']) ?? DateTime.now();
 
+  _readWatermark.accept((data['readThroughSequence'] as num?)?.toInt(), readAtLocal);
+  final serverIds = (data['messageIds'] as List?)?.map((id) => id.toString()).toSet();
+  final clientIds = (data['clientMessageIds'] as List?)?.map((id) => id.toString()).toSet();
   setState(() {
     for (var i = 0; i < _messages.length; i++) {
       final m = _messages[i];
 
-      if (m.isMe && m.readAtLocal == null) {
-        _messages[i] = m.copyWith(readAtLocal: readAtLocal);
+      final included = _readWatermark.through != null
+          ? m.sequence != null && m.sequence! <= _readWatermark.through!
+          : serverIds != null ? serverIds.contains(m.serverId) || (m.serverId == null && clientIds?.contains(m.clientMessageId) == true)
+          : !m.timeLocal.toUtc().isAfter(readAtLocal.toUtc());
+      if (m.isMe && m.readAtLocal == null && included) {
+        _messages[i] = m.copyWith(readAtLocal: _readWatermark.at ?? readAtLocal);
       }
     }
   });
@@ -946,8 +974,14 @@ child: widget.photoUrl.isEmpty
               horizontal: 12,
               vertical: 10,
             ),
-            itemCount: _messages.length,
+            itemCount: _messages.length + (_history.hasOlder ? 1 : 0),
             itemBuilder: (context, i) {
+              if (i == _messages.length) {
+                return TextButton(
+                onPressed: _loadingOlder || _isThreadFetchInFlight ? null : _loadOlder,
+                child: Text(_loadingOlder ? 'Hämtar…' : 'Visa äldre meddelanden'),
+              );
+              }
               final reversedIndex = _messages.length - 1 - i;
               final m = _messages[reversedIndex];
 
@@ -967,6 +1001,10 @@ child: widget.photoUrl.isEmpty
                     pending: m.pending,
                     failed: m.failed,
                     readAtLocal: m.readAtLocal,
+                  ),
+                  if (m.failed && m.isMe) TextButton(
+                    onPressed: _isSending || !_isReady ? null : () => _retryMessage(m),
+                    child: const Text('Skicka igen'),
                   ),
                   if (showDateChip) ...[
                     const SizedBox(height: 8),
@@ -1036,6 +1074,8 @@ child: widget.photoUrl.isEmpty
 }
 //--------------------------------------------------------
 class _UiMessage {
+  final String? serverId;
+  final int? sequence;
   final String text;
   final bool isMe;
   final DateTime timeLocal;
@@ -1049,6 +1089,8 @@ class _UiMessage {
   final String clientMessageId;
 
   const _UiMessage({
+    this.serverId,
+    this.sequence,
     required this.text,
     required this.isMe,
     required this.timeLocal,
@@ -1064,6 +1106,7 @@ class _UiMessage {
     DateTime? readAtLocal,
   }) =>
       _UiMessage(
+        serverId: serverId, sequence: sequence,
         text: text,
         isMe: isMe,
         timeLocal: timeLocal,

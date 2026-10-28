@@ -1,3 +1,6 @@
+import 'services/signalr_service.dart';
+import 'services/refresh_coordinator.dart';
+import 'models/chat_list_item.dart';
 import 'services/account_session.dart';
 import 'dart:async';
 import 'dart:ui';
@@ -10,9 +13,7 @@ import 'chat_page.dart';
 import 'services/unread_sync_service.dart';
 import 'services/chat_coordinator.dart';
 import 'models/chat_open_request.dart';
-import 'services/messages_service.dart';
 import 'services/auth_storage.dart';
-import 'services/chat_cache_service.dart';
 import 'services/matches_cache_service.dart';
 import 'services/matches_refresh_service.dart';
 import 'services/chat_repository.dart';
@@ -21,11 +22,17 @@ import 'services/chat_thread_cache_service.dart';
 
 class MainNavigation extends StatefulWidget {
   final int initialIndex;
+  final AuthService? authService;
+  final SignalRService? liveService;
+  final List<Widget>? pages;
  
 
   const MainNavigation({
     super.key,
     this.initialIndex = 0,
+    this.authService,
+    this.liveService,
+    this.pages,
     
   });
 
@@ -34,7 +41,7 @@ class MainNavigation extends StatefulWidget {
 }
 
 
-class _MainNavigationState extends State<MainNavigation> {
+class _MainNavigationState extends State<MainNavigation> with WidgetsBindingObserver {
   StreamSubscription<ChatRepositoryState>? _repositorySubscription;
   StreamSubscription<int>? _sessionChanges;
   final int _sessionGeneration = AccountSession.generation;
@@ -42,13 +49,18 @@ class _MainNavigationState extends State<MainNavigation> {
 
   late int _selectedIndex;
 
-  final AuthService _authService = AuthService();
-  Timer? _unreadPollTimer;
+  late final AuthService _authService = widget.authService ?? AuthService();
+  late final SignalRService _live = widget.liveService ?? SignalRService();
+  final _refresh = RefreshCoordinator();
+  final Set<int> _visited = {};
+  StreamSubscription<void>? _liveReconnect;
+  StreamSubscription<void>? _refreshEvents;
+  StreamSubscription<Map<String, dynamic>>? _liveMessages;
+  StreamSubscription<Map<String, dynamic>>? _liveReads;
   bool _hasUnreadMessages = false;
 
   
  late final List<Widget> _pages;
- late final MessagesService _messagesService;
 StreamSubscription<ChatOpenRequest>? _openChatSubscription;
 bool _isOpeningChat = false;
  
@@ -61,15 +73,18 @@ bool _isOpeningChat = false;
   _sessionChanges = AccountSession.changes.listen((_) {
     if (mounted) setState(() {});
   });
-    _messagesService = MessagesService(
-  AuthService.baseApiUrl,
-  AuthStorage(),
-);
 
+
+    WidgetsBinding.instance.addObserver(this);
+    _liveMessages = _live.messagesStream.listen((_) => MatchesRefreshService.instance.requestRefresh());
+    _liveReads = _live.messagesReadStream.listen((_) => MatchesRefreshService.instance.requestRefresh());
+    _liveReconnect = _live.reconnectedStream.listen((_) => MatchesRefreshService.instance.requestRefresh());
+    _refreshEvents = MatchesRefreshService.instance.stream.listen((_) { unawaited(_loadUnreadStatus(force: true)); });
+    unawaited(_connectLive());
     _selectedIndex = widget.initialIndex;
     _loadUnreadStatus();
 
-    _pages = [
+    _pages = widget.pages ?? [
       const HomePage(),
       const MatchesPage(), // Explore tillfällig
       const MatchesPage(), // Likes tillfällig
@@ -101,11 +116,7 @@ if (pendingRequest != null) {
 }
 
 
-    // Pollar unread-status så chat-dot i bottom nav hålls mer uppdaterad
-    _unreadPollTimer = Timer.periodic(const Duration(seconds: 4), (_) {
-      if (!mounted || !_sessionActive) return;
-      _loadUnreadStatus();
-    });
+
   }
 
    @override
@@ -113,7 +124,12 @@ void dispose() {
   _sessionChanges?.cancel();
   _repositorySubscription?.cancel();
   _openChatSubscription?.cancel();
-  _unreadPollTimer?.cancel();
+  WidgetsBinding.instance.removeObserver(this);
+  _liveMessages?.cancel();
+  _liveReads?.cancel();
+  _liveReconnect?.cancel();
+  _refreshEvents?.cancel();
+  unawaited(_live.dispose());
   super.dispose();
 }
 
@@ -128,30 +144,34 @@ void dispose() {
 
 
 
-Future<void> _loadUnreadStatus() async {
+Future<void> _connectLive() async {
   if (!_sessionActive) return;
-  try {
-    final repoHasUnread = ChatRepository.instance.chatList.any((m) => m.hasUnread);
+  try { await _live.connect(); } catch (_) { /* Resume retries after a disconnected start. */ }
+}
 
-    if (ChatRepository.instance.chatList.isNotEmpty) {
-      if (!mounted || !_sessionActive) return;
-      setState(() {
-        _hasUnreadMessages = repoHasUnread;
-      });
-      return;
-    }
-
-    final matches = await _authService.getMatches();
-
-    if (!mounted || !_sessionActive) return;
-
-    final hasUnread = matches.any((m) => m['hasUnread'] == true);
-    setState(() {
-      _hasUnreadMessages = hasUnread;
-    });
-  } catch (_) {
-    // Behåll tyst här just nu
+@override
+void didChangeAppLifecycleState(AppLifecycleState state) {
+  if (state == AppLifecycleState.resumed && mounted && _sessionActive) {
+    unawaited(_connectLive());
+    unawaited(_loadUnreadStatus(force: true));
   }
+}
+
+Future<void> _loadUnreadStatus({bool force = false}) {
+  if (!_sessionActive) return Future.value();
+  if (!force && ChatRepository.instance.hasLoadedList) {
+    _syncUnreadFromRepository();
+    return Future.value();
+  }
+  return _refresh.run(() async {
+    if (!mounted || !_sessionActive) return;
+    try {
+      final matches = await _authService.getMatches();
+      if (!mounted || !_sessionActive) return;
+      ChatRepository.instance.setChatList(matches.map((m) => ChatListItem.fromJson(Map<String, dynamic>.from(m as Map))).toList());
+      _syncUnreadFromRepository();
+    } catch (_) { /* Retain last successful state while offline. */ }
+  }, invalidate: force);
 }
 
   void _syncUnreadFromRepository() {
@@ -191,63 +211,34 @@ Future<void> _loadUnreadStatus() async {
     final clientMessageId = (m['clientMessageId'] ?? '').toString();
 
     return ChatMessageItem(
+      serverId: m['id']?.toString(), sequence: (m['sequence'] as num?)?.toInt(),
       text: text,
       isMe: fromUserId == meUserId,
       timeLocal: createdLocal,
       readAtLocal: readAtLocal,
-      pending: false,
-      failed: false,
+      pending: m["pending"] == true,
+      failed: m["failed"] == true,
       clientMessageId: clientMessageId,
     );
   }).toList();
 }
 
-List<dynamic>? _threadJsonFromRepository(String userId) {
+List<dynamic>? _threadJsonFromRepository(String userId, String meUserId) {
   final repoThread = ChatRepository.instance.threadFor(userId);
   if (repoThread.isEmpty) return null;
 
   return repoThread.map((m) {
     return {
       "text": m.text,
-      "fromUserId": m.isMe ? "me" : userId,
-      "toUserId": m.isMe ? userId : "me",
+      "pending": m.pending, "failed": m.failed,
+      "id": m.serverId, "sequence": m.sequence,
+      "fromUserId": m.isMe ? meUserId : userId,
+      "toUserId": m.isMe ? userId : meUserId,
       "createdAtUtc": m.timeLocal.toUtc().toIso8601String(),
       "readAtUtc": m.readAtLocal?.toUtc().toIso8601String(),
       "clientMessageId": m.clientMessageId,
     };
   }).toList();
-}
-
-List<dynamic>? _injectPreviewMessage({
-  required List<dynamic>? thread,
-  required ChatOpenRequest request,
-  required String meUserId,
-}) {
-  final text = request.previewMessageText?.trim() ?? '';
-  if (text.isEmpty) return thread;
-
-  final next = List<dynamic>.from(thread ?? []);
-
-  final alreadyExists = next.any((m) {
-    final existingText = (m["text"] ?? "").toString().trim();
-    final fromUserId = (m["fromUserId"] ?? "").toString();
-    return existingText == text && fromUserId == request.userId;
-  });
-
-  if (alreadyExists) return next;
-
-  next.add({
-    "fromUserId": request.userId,
-    "toUserId": meUserId,
-    "text": text,
-    "createdAtUtc": (request.previewMessageAtUtc?.isNotEmpty == true)
-        ? request.previewMessageAtUtc
-        : DateTime.now().toUtc().toIso8601String(),
-    "readAtUtc": null,
-    "clientMessageId": "preview-${DateTime.now().microsecondsSinceEpoch}",
-  });
-
-  return next;
 }
 
 Future<void> _handleOpenChatRequest(ChatOpenRequest request) async {
@@ -276,14 +267,8 @@ Future<void> _handleOpenChatRequest(ChatOpenRequest request) async {
    List<dynamic>? initialThreadData =
     ChatThreadCacheService.getThread(request.userId);
 
-initialThreadData ??= _threadJsonFromRepository(request.userId);
+initialThreadData ??= _threadJsonFromRepository(request.userId, meUserId);
 
-// Visa preview-meddelande direkt om chat öppnas från notis/unread
-initialThreadData = _injectPreviewMessage(
-  thread: initialThreadData,
-  request: request,
-  meUserId: meUserId,
-);
 
 if (initialThreadData != null && initialThreadData.isNotEmpty) {
   ChatThreadCacheService.setThread(request.userId, initialThreadData);
@@ -331,11 +316,12 @@ if (initialThreadData != null && initialThreadData.isNotEmpty) {
   @override
   Widget build(BuildContext context) {
     if (!_sessionActive) return const SizedBox.shrink();
+    _visited.add(_selectedIndex);
     return Scaffold(
       extendBody: true,
      body: IndexedStack(
   index: _selectedIndex,
-  children: _pages,
+  children: List<Widget>.generate(_pages.length, (i) => _visited.contains(i) ? _pages[i] : const SizedBox.shrink()),
 ),
 
       bottomNavigationBar: SafeArea(

@@ -1,3 +1,5 @@
+import 'conversation_cache_policy.dart';
+import 'chat_merge.dart';
 import 'dart:async';
 import '../models/chat_list_item.dart';
 import '../models/chat_message_item.dart';
@@ -34,6 +36,7 @@ class ChatRepository {
   final StreamController<ChatRepositoryState> _stateController =
       StreamController<ChatRepositoryState>.broadcast();
 
+  bool hasLoadedList = false;
   ChatRepositoryState _state = ChatRepositoryState.empty;
 
   Stream<ChatRepositoryState> get stream => _stateController.stream;
@@ -46,13 +49,14 @@ class ChatRepository {
   }
 
   void setChatList(List<ChatListItem> items) {
+    hasLoadedList = true;
     _state = _state.copyWith(chatList: List<ChatListItem>.from(items));
     _emit();
   }
 
   void setThread(String userId, List<ChatMessageItem> messages) {
     final nextThreads = Map<String, List<ChatMessageItem>>.from(_state.threads);
-    nextThreads[userId] = List<ChatMessageItem>.from(messages);
+    ConversationCachePolicy.put(nextThreads, userId, mergeChatItems(_state.threads[userId] ?? const [], messages));
 
     _state = _state.copyWith(threads: nextThreads);
     _emit();
@@ -104,6 +108,7 @@ class ChatRepository {
   }
 
   void clear() {
+    hasLoadedList = false;
     _state = ChatRepositoryState.empty;
     _emit();
   }

@@ -1,3 +1,4 @@
+import 'services/api_config.dart';
 import 'services/notification_access.dart';
 import 'dart:async';
 import 'services/account_session.dart';
@@ -165,6 +166,7 @@ void _openChatFromMessage(RemoteMessage message) {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  ApiConfig.validate();
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,

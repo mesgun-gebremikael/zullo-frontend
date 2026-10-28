@@ -4,7 +4,7 @@ import '../config.dart';
 
 
 class SwipeService {
-  static const String baseUrl = 'https://localhost:7015/swipe';
+  static final String baseUrl = '$apiBaseUrl/swipe';
 
   Future<List<dynamic>> getFeed() async {
     final url = Uri.parse('$baseUrl/feed');
