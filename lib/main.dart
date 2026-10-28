@@ -1,3 +1,4 @@
+import 'services/push_token_service.dart';
 import 'services/api_config.dart';
 import 'services/notification_access.dart';
 import 'dart:async';
@@ -164,6 +165,44 @@ void _openChatFromMessage(RemoteMessage message) {
   _openChatFromLaunch(launch);
 }
 
+Future<RemoteMessage?> _prepareNotifications() async {
+  try {
+    await flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(channel);
+    await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+      alert: true, badge: true, sound: true,
+    );
+    await FirebaseMessaging.instance.requestPermission();
+    // Subscribe before the first lookup: APNs may not be ready at startup.
+    FirebaseMessaging.instance.onTokenRefresh.listen((token) async {
+      if (token.isEmpty) return;
+      try {
+        await AuthService().saveDeviceToken(token).timeout(const Duration(seconds: 5));
+      } catch (_) {
+        debugPrint('Pushregistrering kunde inte uppdateras.');
+      }
+    });
+    final token = await PushTokenService.currentToken();
+    if (token != null) {
+      try {
+        await AuthService().saveDeviceToken(token).timeout(const Duration(seconds: 5));
+      } catch (_) {
+        // A signed-out user registers again after login.
+      }
+    }
+    try {
+      await BadgeService.refreshUnreadBadge().timeout(const Duration(seconds: 5));
+    } catch (_) {
+      // Refresh again after startup when the backend is reachable.
+    }
+    return await FirebaseMessaging.instance.getInitialMessage().timeout(const Duration(seconds: 5));
+  } catch (_) {
+    debugPrint('Push kunde inte initieras. Appen kan fortfarande användas.');
+    return null;
+  }
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   ApiConfig.validate();
@@ -172,44 +211,7 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-    await flutterLocalNotificationsPlugin
-      .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>()
-      ?.createNotificationChannel(channel);
-
-  await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
-    alert: true,
-    badge: true,
-    sound: true,
-  );
-
-  await FirebaseMessaging.instance.requestPermission();
-
-  final fcmToken = await FirebaseMessaging.instance.getToken();
-
-
-  if (fcmToken != null && fcmToken.isNotEmpty) {
-    try {
-      await AuthService().saveDeviceToken(fcmToken);
-      print("Device token saved to backend");
-    } catch (e) {
-      print("Could not save device token: $e");
-    }
-  }
-   await BadgeService.refreshUnreadBadge();
-   
-   FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {
-  if (newToken.isEmpty) return;
-
-  try {
-    await AuthService().saveDeviceToken(newToken);
-    print("Refreshed device token saved to backend");
-  } catch (e) {
-    print("Could not save refreshed device token: $e");
-  }
-});
-
-  final initialMessage = await FirebaseMessaging.instance.getInitialMessage();
+  final initialMessage = await _prepareNotifications();
   final launchFromNotification = _parseNotificationLaunch(initialMessage);
 
   runApp(
