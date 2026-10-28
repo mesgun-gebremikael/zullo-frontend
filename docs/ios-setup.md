@@ -59,3 +59,13 @@ GitHub-jobbet `ios-build` kör `flutter build ios --simulator --debug --no-codes
 ## Manuellt på telefon före lansering
 
 Prova registrering/inloggning, profilbilder (beviljat/nekat/avbrutet bildval), tangentbord, skärmkanter och både ljus/mörk vy. Prova matchning och chatt med två testkonton, nätavbrott, återanslutning och omsändning. Prova iPhone-push i förgrund, bakgrund och stängd app, tryck på notisen, nekad notisbehörighet samt kontobyte och blockering. Kontrollera även att Android fortfarande får notiser och kan välja bilder. Riktiga konto-/pushprov går inte att ersätta med ett kompileringsresultat.
+
+## Verifierat resultat för denna PR
+
+- 96 Fluttertester godkända, inklusive 19 nya tester för iOS-inställningar, APNs-ordning/tidsgränser och Androidregression.
+- Analyskontrollen godkänd med 124 äldre anmärkningar, inga nya och inga analysfel. Baslinjen har minskats från 128.
+- Verkliga Flutter-tjänster mot befintlig lokal backend/PostgreSQL klarade integrationstestet för matchningslista, meddelande/livehändelse, omsändning, läskvitto, återanslutning, obehörig åtkomst och blockering.
+- GitHub klarade tester, webb-releasebygge, paketeringskontroll och det osignerade iOS-simulatorbygget på macos-15 efter den avgränsade Firebase-headerkorrigeringen.
+- `ios/Podfile.lock` är hämtad från just det godkända Mac-bygget och dess checksumma stämmer med Podfile. Den låser de verkligt använda nativebiblioteken (inklusive Firebase SDK 10.25.0). CI nekar om ett nytt bygge ändrar låsfilen. Vid avsiktlig beroendeuppdatering ska låsfilen förnyas och granskas tillsammans med nytt Mac-byggresultat.
+
+Detta är bygg- och testverifiering. Ingen riktig iOS-Firebase-registrering, pushleverans till en iPhone, Apple-signering eller TestFlight-publicering har verifierats.

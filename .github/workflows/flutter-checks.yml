@@ -34,6 +34,7 @@ jobs:
           channel: stable
       - run: flutter pub get --enforce-lockfile
       - run: flutter build ios --simulator --debug --no-codesign --dart-define=ZULLO_API_URL=https://api.example.invalid
+      - run: git diff --exit-code -- ios/Podfile.lock
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:
