@@ -43,3 +43,10 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Local iOS client configuration and Apple signing material.
+/config/ios.firebase.local.json
+/ios/Runner/GoogleService-Info.plist
+*.p8
+*.p12
+*.mobileprovision
