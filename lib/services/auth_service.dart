@@ -1,4 +1,5 @@
 import 'api_config.dart';
+import 'push_token_service.dart';
 import 'matches_cache_service.dart';
 import '../onboarding/onboarding_data.dart';
 import 'dart:async';
@@ -8,7 +9,6 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'auth_storage.dart';
 import '../models/swipe_profile.dart';
-
 
 class ProfileSessionExpiredException implements Exception {
   @override
@@ -20,7 +20,15 @@ class AuthRateLimitException implements Exception {
   AuthRateLimitException(this.retryAfterSeconds);
 
   @override
-  String toString() => 'För många försök. Vänta $retryAfterSeconds sekunder och försök igen.';
+  String toString() =>
+      'För många försök. Vänta $retryAfterSeconds sekunder och försök igen.';
+}
+
+class AuthRequestException implements Exception {
+  final String message;
+  AuthRequestException(this.message);
+  @override
+  String toString() => message;
 }
 
 class AuthService {
@@ -31,8 +39,41 @@ class AuthService {
   static final http.Client _sharedTransport = http.Client();
   final http.Client _transport;
   int _generation = AccountSession.generation;
-  late final http.Client _client = SessionHttpClient(_transport, generation: () => _generation);
-  AuthService({http.Client? client}) : _transport = client ?? _sharedTransport;
+  late final http.Client _client =
+      SessionHttpClient(_transport, generation: () => _generation);
+  final Future<String?> Function() _pushTokenLoader;
+  AuthService(
+      {http.Client? client, Future<String?> Function()? pushTokenLoader})
+      : _transport = client ?? _sharedTransport,
+        _pushTokenLoader = pushTokenLoader ?? PushTokenService.currentToken;
+
+  Future<void> _acceptAuth(http.Response response) async {
+    final decoded = jsonDecode(response.body);
+    final token = (decoded['token'] ?? '').toString();
+    final userId = (decoded['userId'] ?? '').toString();
+    if (token.isEmpty || userId.isEmpty) {
+      throw StateError('Authentication response is missing token or userId');
+    }
+    await _storage.saveAuth(token: token, userId: userId);
+    _generation = AccountSession.generation;
+    unawaited(syncPushToken());
+  }
+
+  /// Best effort after both sign-in paths and resume. Never delays navigation.
+  Future<void> syncPushToken() async {
+    final generation = _generation;
+    try {
+      AccountSession.check(generation);
+      final token =
+          await _pushTokenLoader().timeout(const Duration(seconds: 5));
+      AccountSession.check(generation);
+      if (token != null && token.isNotEmpty) {
+        await saveDeviceToken(token).timeout(const Duration(seconds: 5));
+      }
+    } catch (_) {
+      // Token refresh and app resume retry without blocking authentication.
+    }
+  }
 
   void _checkRateLimit(http.Response response) {
     if (response.statusCode == 429) {
@@ -44,81 +85,98 @@ class AuthService {
   // ---------- AUTH ----------
 
   Future<void> login({
-  required String email,
-  required String password,
-}) async {
-  final generation = AccountSession.generation;
-  final url = Uri.parse('$baseAuthUrl/login');
+    required String email,
+    required String password,
+  }) async {
+    final generation = AccountSession.generation;
+    final url = Uri.parse('$baseAuthUrl/login');
 
-  final response = await _transport.post(
-    url,
-    headers: {'Content-Type': 'application/json'},
-    body: jsonEncode({'email': email, 'password': password}),
-  );
+    final response = await _transport
+        .post(
+          url,
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({'email': email, 'password': password}),
+        )
+        .timeout(const Duration(seconds: 90));
 
-  AccountSession.check(generation);
-  _checkRateLimit(response);
-  if (response.statusCode == 200) {
-    final decoded = jsonDecode(response.body);
-    final token = (decoded['token'] ?? '').toString();
-    final userId = (decoded['userId'] ?? '').toString();
+    AccountSession.check(generation);
+    _checkRateLimit(response);
+    if (response.statusCode == 200) {
+      await _acceptAuth(response);
 
-    if (token.isNotEmpty && userId.isNotEmpty) {
-      await _storage.saveAuth(token: token, userId: userId);
-      _generation = AccountSession.generation;
-    } else {
-      throw StateError('Login response is missing token or userId');
+      return;
     }
 
-    return;
+    throw Exception('Login failed: ${response.statusCode} ${response.body}');
   }
 
-  throw Exception('Login failed: ${response.statusCode} ${response.body}');
-}
+  Future<void> registerAndLogin(
+      {required String name,
+      required String email,
+      required String password}) async {
+    final response =
+        await _register(name: name, email: email, password: password);
+    await _acceptAuth(response);
+  }
 
-  Future<void> register({
+  Future<void> register(
+      {required String name,
+      required String email,
+      required String password}) async {
+    await _register(name: name, email: email, password: password);
+  }
+
+  Future<http.Response> _register({
     required String name,
     required String email,
     required String password,
   }) async {
     final url = Uri.parse('$baseAuthUrl/register');
 
-    final response = await _client.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'name': name, 'email': email, 'password': password}),
-    );
+    final response = await _client
+        .post(
+          url,
+          headers: {'Content-Type': 'application/json'},
+          body:
+              jsonEncode({'name': name, 'email': email, 'password': password}),
+        )
+        .timeout(const Duration(seconds: 90));
 
     _checkRateLimit(response);
     if (response.statusCode == 200 || response.statusCode == 201) {
-      return;
+      return response;
     }
 
-    throw Exception('Register failed: ${response.statusCode} ${response.body}');
+    if (response.statusCode == 400 &&
+        response.body.contains('User already exists')) {
+      throw AuthRequestException(
+          'E-postadressen används redan. Logga in i stället.');
+    }
+    throw AuthRequestException('Kunde inte skapa kontot. Försök igen senare.');
   }
 
-Future<void> logout() async {
-  AccountSession.check(_generation);
-  final generation = AccountSession.generation;
-  final authToken = await _storage.getToken();
-  AccountSession.check(generation);
-  // Invalidate local work before waiting for the network. Only the old JWT is used.
-  await _storage.clearAuth();
-  if (authToken != null && authToken.isNotEmpty) {
-    unawaited(_clearDeviceToken(authToken));
+  Future<void> logout() async {
+    AccountSession.check(_generation);
+    final generation = AccountSession.generation;
+    final authToken = await _storage.getToken();
+    AccountSession.check(generation);
+    // Invalidate local work before waiting for the network. Only the old JWT is used.
+    await _storage.clearAuth();
+    if (authToken != null && authToken.isNotEmpty) {
+      unawaited(_clearDeviceToken(authToken));
+    }
   }
-}
 
-Future<void> _clearDeviceToken(String oldToken) async {
-  try {
-    await _transport.post(
-      Uri.parse('$baseApiUrl/me/device-token/clear'),
-      headers: {'Authorization': 'Bearer $oldToken'},
-    ).timeout(const Duration(seconds: 5));
-  } catch (_) {
-    // Local logout remains complete even when offline.
+  Future<void> _clearDeviceToken(String oldToken) async {
+    try {
+      await _transport.post(
+        Uri.parse('$baseApiUrl/me/device-token/clear'),
+        headers: {'Authorization': 'Bearer $oldToken'},
+      ).timeout(const Duration(seconds: 5));
+    } catch (_) {
+      // Local logout remains complete even when offline.
+    }
   }
-}
 
   // ---------- PROFILE CHECK ----------
 

@@ -153,6 +153,7 @@ Future<void> _connectLive() async {
 void didChangeAppLifecycleState(AppLifecycleState state) {
   if (state == AppLifecycleState.resumed && mounted && _sessionActive) {
     unawaited(_connectLive());
+    unawaited(_authService.syncPushToken());
     unawaited(_loadUnreadStatus(force: true));
   }
 }
@@ -317,6 +318,7 @@ if (initialThreadData != null && initialThreadData.isNotEmpty) {
   Widget build(BuildContext context) {
     if (!_sessionActive) return const SizedBox.shrink();
     _visited.add(_selectedIndex);
+    if (widget.pages == null) _pages[0] = HomePage(active: _selectedIndex == 0);
     return Scaffold(
       extendBody: true,
      body: IndexedStack(
