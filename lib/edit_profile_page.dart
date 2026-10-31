@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'widgets/profile_basics_section.dart';
 import 'package:flutter/material.dart';
 import 'services/auth_service.dart';
 import 'package:image_picker/image_picker.dart';
@@ -1810,6 +1811,9 @@ Widget _buildPreviewChip(String text) {
 
                    const SizedBox(height: 20),
 
+                  ProfileBasicsSection(name: _displayName, age: _age,
+                    gender: _gender, bio: _bio),
+                  const SizedBox(height: 28),
                   _buildWorkStudySection(),
 const SizedBox(height: 24),
 
@@ -1849,39 +1853,6 @@ const SizedBox(height: 24),
 
 
                         
-
- TextField(
-                    controller: _displayName,
-                      decoration: const InputDecoration(
-                        labelText: "Namn (display)",
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-
-                    TextField(
-                      controller: _age,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: "Ålder",
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-
-                    TextField(
-                      controller: _gender,
-                      decoration: const InputDecoration(
-                        labelText: "Kön",
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-
-                    TextField(
-                      controller: _bio,
-                      maxLines: 3,
-                      decoration: const InputDecoration(
-                        labelText: "Om mig",
-                      ),
-                    ),
 
                     if (_error != null) ...[
                       const SizedBox(height: 12),

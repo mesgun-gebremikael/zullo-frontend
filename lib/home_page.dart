@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'services/account_session.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'services/auth_service.dart';
@@ -15,14 +17,33 @@ import 'widgets/swipe_profile_card.dart';
 enum SwipeDir { left, right, up }
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final bool active;
+  final AuthService? authService;
+  const HomePage({super.key, this.active = true, this.authService});
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin, WidgetsBindingObserver {
-  final AuthService _authService = AuthService();
+  late final AuthService _authService = widget.authService ?? AuthService();
+  final int _sessionGeneration = AccountSession.generation;
+  Timer? _emptyFeedTimer;
+  bool _feedRequestRunning = false;
+  bool _feedReloadPending = false;
+  bool _foreground = true;
+
+  void _refreshEmptyFeed() {
+    if (!mounted || !widget.active || !_foreground || _feedRequestRunning ||
+        !AccountSession.isCurrent(_sessionGeneration) || error == 'Kunde inte ladda feed') { return; }
+    if (currentIndex >= profiles.length) unawaited(loadFeed(background: true));
+  }
+
+  @override
+  void didUpdateWidget(covariant HomePage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.active && !oldWidget.active) _refreshEmptyFeed();
+  }
  
   
   List<SwipeProfile> profiles = [];
@@ -67,6 +88,7 @@ static const double _activeCardLift = 0;
       vsync: this,
       duration: const Duration(milliseconds: 200),
     );
+    _emptyFeedTimer = Timer.periodic(const Duration(seconds: 20), (_) => _refreshEmptyFeed());
     loadFeed();
     loadUnreadStatus();
     loadMyPhoto();
@@ -75,6 +97,7 @@ static const double _activeCardLift = 0;
 
   @override
   void dispose() {
+    _emptyFeedTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     _dragNotifier.dispose();
     _isDraggingNotifier.dispose();
@@ -84,16 +107,23 @@ static const double _activeCardLift = 0;
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
+    _foreground = state == AppLifecycleState.resumed;
+    if (_foreground) {
+      _refreshEmptyFeed();
       loadUnreadStatus();
     }
   }
 
-  Future<void> loadFeed() async {
-    setState(() {
-      isLoading = true;
-      error = null;
-    });
+  Future<void> loadFeed({bool background = false}) async {
+    if (!mounted || !AccountSession.isCurrent(_sessionGeneration)) return;
+    if (_feedRequestRunning) {
+      if (!background) _feedReloadPending = true;
+      return;
+    }
+    _feedRequestRunning = true;
+    if (!background) {
+      setState(() { isLoading = true; error = null; });
+    }
 
     try {
       final data = await _authService.getSwipeFeed(
@@ -101,6 +131,7 @@ static const double _activeCardLift = 0;
         maxAge: _maxAge,
       );
 
+      if (!mounted || !AccountSession.isCurrent(_sessionGeneration)) return;
       final loadedProfiles = List<SwipeProfile>.from(data['profiles']);
       final loadedRadius = (data['radiusKm'] as num).toDouble();
 
@@ -113,16 +144,22 @@ static const double _activeCardLift = 0;
       });
 
       _precacheNextProfile();
-      _prefetchMoreProfiles();
+      if (loadedProfiles.isNotEmpty) _prefetchMoreProfiles();
     } catch (e) {
+      if (!mounted || !AccountSession.isCurrent(_sessionGeneration) || background) return;
       debugPrint('LOAD FEED ERROR: $e');
 
       setState(() {
         error = "Kunde inte ladda feed";
         isLoading = false;
       });
+    } finally {
+      _feedRequestRunning = false;
+      if (_feedReloadPending) {
+        _feedReloadPending = false;
+        unawaited(loadFeed());
+      }
     }
-         
   }
 
   Future<void> loadUnreadStatus() async {
@@ -210,7 +247,7 @@ static const double _activeCardLift = 0;
       final fetchedProfiles = List<SwipeProfile>.from(data['profiles']);
       final loadedRadius = (data['radiusKm'] as num).toDouble();
 
-      if (!mounted) return;
+      if (!mounted || !AccountSession.isCurrent(_sessionGeneration)) return;
 
       final existingIds = profiles.map((p) => p.userId).toSet();
       final filteredProfiles = fetchedProfiles

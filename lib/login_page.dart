@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'services/auth_service.dart';
 import 'register_page.dart';
-import 'services/push_token_service.dart';
 import 'home_page.dart';
 import 'onboarding/onboarding_start_page.dart';
 import 'main_navigation.dart';
@@ -46,17 +45,6 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       await _authService.login(email: email, password: password);
-
-// Viktigt:
-// direkt efter login försöker vi koppla aktuell FCM-token till rätt konto.
-try {
-  final fcmToken = await PushTokenService.currentToken();
-  if (fcmToken != null && fcmToken.isNotEmpty) {
-    await _authService.saveDeviceToken(fcmToken).timeout(const Duration(seconds: 5));
-  }
-} catch (_) {
-  // Login ska fortfarande fungera även om token-save misslyckar just här.
-}
 
 if (!mounted) return;
 

@@ -282,11 +282,9 @@ class _ZulloAppState extends State<ZulloApp> {
               .toString()
               .trim();
 
-              try {
-await BadgeService.refreshUnreadBadge();
-} catch (e) {
-  print("Badge error: $e");
-}
+      // A slow unread-count request must not hide an arriving message banner.
+      unawaited(BadgeService.refreshUnreadBadge()
+          .timeout(const Duration(seconds: 5)).catchError((Object _) {}));
 
             if (!AccountSession.isCurrent(generation)) return;
             _showInAppMessageOverlay(
