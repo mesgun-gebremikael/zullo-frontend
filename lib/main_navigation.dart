@@ -316,7 +316,9 @@ if (initialThreadData != null && initialThreadData.isNotEmpty) {
 
   @override
   Widget build(BuildContext context) {
-    if (!_sessionActive) return const SizedBox.shrink();
+    if (!_sessionActive) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     _visited.add(_selectedIndex);
     if (widget.pages == null) _pages[0] = HomePage(active: _selectedIndex == 0);
     return Scaffold(

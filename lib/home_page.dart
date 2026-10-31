@@ -286,16 +286,16 @@ static const double _activeCardLift = 0;
   }
 
   Future<void> _logout() async {
-  await _authService.logout();
-
-  if (!mounted) return;
-
-  Navigator.pushAndRemoveUntil(
-    context,
-    MaterialPageRoute(builder: (_) => const WelcomePage()),
-    (route) => false,
-  );
-}
+    // Clearing auth removes this tab before its storage operation completes.
+    // The app navigator outlives the tab and owns the signed-out route.
+    final navigator = Navigator.of(context);
+    await _authService.logout();
+    if (!navigator.mounted) return;
+    navigator.pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const WelcomePage()),
+      (route) => false,
+    );
+  }
 
   Future<void> _openEditProfile() async {
     final changed = await Navigator.push<bool>(
