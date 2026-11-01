@@ -111,7 +111,7 @@ class AuthService {
   }
 
   Future<void> registerAndLogin(
-      {required String name,
+      {String name = '',
       required String email,
       required String password}) async {
     final response =
@@ -137,8 +137,11 @@ class AuthService {
         .post(
           url,
           headers: {'Content-Type': 'application/json'},
-          body:
-              jsonEncode({'name': name, 'email': email, 'password': password}),
+          body: jsonEncode({
+            if (name.trim().isNotEmpty) 'name': name,
+            'email': email,
+            'password': password,
+          }),
         )
         .timeout(const Duration(seconds: 90));
 
