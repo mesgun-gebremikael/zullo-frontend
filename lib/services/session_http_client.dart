@@ -15,6 +15,9 @@ class SessionHttpClient extends http.BaseClient {
     final response = await _inner.send(request);
     final bytes = await response.stream.toBytes();
     AccountSession.check(generation);
+    if (response.statusCode == 401 && request.headers.keys.any((key) => key.toLowerCase() == 'authorization') && !request.url.path.startsWith('/api/auth/')) {
+      AccountSession.notifyExpired(generation);
+    }
     return http.StreamedResponse(
       Stream.value(bytes),
       response.statusCode,

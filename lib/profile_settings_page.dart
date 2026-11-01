@@ -1,3 +1,4 @@
+import 'account_management_page.dart';
 import 'premium_page.dart';
 import 'services/commerce_service.dart';
 import 'blocked_profiles_page.dart';
@@ -19,7 +20,6 @@ late final AuthService _authService = widget.authService ?? AuthService();
 final int _generation = AccountSession.generation;
 
 String _emailText = 'Laddar...';
-String _userIdText = 'Laddar...';
 
   bool _showActivityStatus = true;
   bool _incognitoMode = false;
@@ -59,20 +59,17 @@ Future<void> _savePrivacy({bool? showActivity, bool? incognito}) async {
 Future<void> _loadAccountInfo() async {
   try {
     final profile = await _authService.getMyAccount();
-    final userId = profile["userId"]?.toString();
 
     if (!mounted || !AccountSession.isCurrent(_generation)) return;
 
     setState(() {
       _emailText = (profile["email"] ?? "Ingen e-post hittades").toString();
-      _userIdText = userId ?? "Ingen user id hittades";
     });
   } catch (e) {
     if (!mounted || !AccountSession.isCurrent(_generation)) return;
 
     setState(() {
       _emailText = "Kunde inte ladda e-post";
-      _userIdText = "Kunde inte ladda user id";
     });
   }
 }
@@ -146,18 +143,10 @@ const SizedBox(height: 8),
 _SettingsArrowRow(
   icon: Icons.delete_outline,
   title: 'Radera eller pausa konto',
-  subtitle: 'Kontohantering är inte tillgänglig ännu',
-  onTap: null,
+  subtitle: 'Ta en paus eller stäng ditt konto',
+  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AccountManagementPage())),
 ),
 const SizedBox(height: 28),
-Text(
-  'User ID: $_userIdText',
-  style: const TextStyle(
-    color: Colors.black38,
-    fontSize: 16,
-    fontWeight: FontWeight.w600,
-  ),
-),
 const SizedBox(height: 24),
           ],
         ),

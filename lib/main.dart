@@ -113,7 +113,7 @@ ChatCoordinator.instance.requestOpenChat(
 );
 
 navigatorKey.currentState?.pushAndRemoveUntil(
-  _instantRoute(const MainNavigation(initialIndex: 3)),
+  _instantRoute(const MainNavigation(initialIndex: AppTabs.chats)),
   (route) => false,
 );
 }

@@ -15,6 +15,17 @@ class SessionChangedException implements Exception {
 
 /// A new generation invalidates work even when the same account logs in again.
 class AccountSession {
+  static int? _expiredGeneration;
+  static final _expired = StreamController<void>.broadcast();
+  static Stream<void> get expiredStream => _expired.stream;
+  static void notifyExpired(int generation) {
+    if (!isCurrent(generation) || _expiredGeneration == generation) return;
+    _expiredGeneration = generation;
+    _expired.add(null);
+  }
+  static final _closed = StreamController<void>.broadcast();
+  static Stream<void> get closedStream => _closed.stream;
+  static void notifyClosed() => _closed.add(null);
   static int _generation = 0;
   static final _changes = StreamController<int>.broadcast(sync: true);
   static int get generation => _generation;

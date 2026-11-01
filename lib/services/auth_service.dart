@@ -255,6 +255,7 @@ Future<Map<String, dynamic>> getSwipeFeed({
 
     return {
       'radiusKm': radiusKm.toDouble(),
+      'isPaused': decoded['isPaused'] == true,
       'profiles': profiles,
     };
   }

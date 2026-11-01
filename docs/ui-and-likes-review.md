@@ -4,11 +4,11 @@ The owner started manual emulator testing and reported Likes showing chat conten
 
 ## Corrected in code
 
-- Likes is now a separate page which never reads matches, chat history or the chat repository. Chats no longer fetches incoming likes, so a likes request cannot break chat loading. Explore is its own discovery introduction rather than a second copy of Chats.
+- Likes is now a separate page which never reads matches, chat history or the chat repository. Chats no longer fetches incoming likes, so a likes request cannot break chat loading. Explore was separated from Chats and has since been removed from the main navigation.
 - The authenticated `/likes/received/summary` endpoint returns counts and view permission only. Free accounts see the actual locked count; names, IDs and photos remain server-gated. Both summary and identities exclude matched, blocked and invisible users. An ordinary like invalidates the recipient's view via an identity-free SignalR event. Request failures show retry, never a false zero.
 - Discovery interest uses large selectable rows, with a separate explicit save. Failed saving retains the open sheet and explains the error. Interest and radius are persisted on the backend. Age range is an account-scoped device preference, restored on restart; it is not a cross-device server preference. Nonfunctional location/global/relaxation controls were removed from this sheet.
 - Consistent white application bars, cards and navigation, a light Premium page, existing ZULLO profile cards, distinct Likes/Chats empty states. The profile no longer substitutes a stranger's stock photo when the user's own photo is missing.
-- Verification and account deletion/pause remain unimplemented and are labelled unavailable instead of offering dead actions. The marketing-consent switch only changed local state and was removed; this change does not grant marketing permission.
+- Verification is still unavailable. Account pause and a confirmed closure/erasure-request flow have since been added; see account-lifecycle.md for the external image follow-up that remains required. The marketing-consent switch only changed local state and was removed; this change does not grant marketing permission.
 
 ## Verification and limits
 

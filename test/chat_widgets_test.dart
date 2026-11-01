@@ -283,11 +283,12 @@ void main() {
                 home: MainNavigation(
               authService: auth,
               liveService: SignalRService(transport: transport),
-              pages: List.generate(5, (i) => _CountingPage(i, builds)),
+              pages: List.generate(4, (i) => _CountingPage(i, builds)),
             ))));
+    expect(find.text('Explore'), findsNothing);
     expect(builds, {0: 1});
     expect(calls, 1);
-    for (final title in ['Explore', 'Likes', 'Chattar', 'Explore']) {
+    for (final title in ['Likes', 'Chattar', 'Profil', 'Likes']) {
       await settleIo(tester, () => tester.tap(find.text(title)));
     }
     expect(builds, {0: 1, 1: 1, 2: 1, 3: 1});

@@ -1,5 +1,5 @@
+import 'welcome_page.dart';
 import 'likes_page.dart';
-import 'explore_page.dart';
 import 'services/commerce_service.dart';
 import 'services/relation_changes.dart';
 import 'services/signalr_service.dart';
@@ -23,6 +23,13 @@ import 'services/matches_refresh_service.dart';
 import 'services/chat_repository.dart';
 import 'models/chat_message_item.dart';
 import 'services/chat_thread_cache_service.dart';
+
+class AppTabs {
+  static const swipe = 0;
+  static const likes = 1;
+  static const chats = 2;
+  static const profile = 3;
+}
 
 class MainNavigation extends StatefulWidget {
   final int initialIndex;
@@ -50,6 +57,9 @@ class _MainNavigationState extends State<MainNavigation> with WidgetsBindingObse
   StreamSubscription<int>? _sessionChanges;
   Timer? _presenceTimer;
   StreamSubscription<void>? _openDiscovery;
+  StreamSubscription<void>? _accountClosed;
+  StreamSubscription<void>? _sessionExpired;
+  bool _endingSession = false;
   bool _inForeground = true;
   bool _presenceInFlight = false;
   final int _sessionGeneration = AccountSession.generation;
@@ -83,6 +93,8 @@ bool _isOpeningChat = false;
   });
 
 
+    _accountClosed = AccountSession.closedStream.listen((_) => _endSession('Kontot är stängt. Din raderingsbegäran behandlas.'));
+    _sessionExpired = AccountSession.expiredStream.listen((_) => _endSession('Inloggningen behöver förnyas. Logga in igen.'));
     _openDiscovery = CommerceEvents.openDiscoveryStream.listen((_) {
       if (mounted && _sessionActive) setState(() => _selectedIndex = 0);
     });
@@ -101,7 +113,6 @@ bool _isOpeningChat = false;
 
     _pages = widget.pages ?? [
       const HomePage(),
-      const ExplorePage(),
       const LikesPage(),
       MatchesPage(
         onUnreadChanged: (hasUnread) {
@@ -137,6 +148,8 @@ if (pendingRequest != null) {
    @override
 void dispose() {
   _openDiscovery?.cancel();
+  _accountClosed?.cancel();
+  _sessionExpired?.cancel();
   _presenceTimer?.cancel();
   _sessionChanges?.cancel();
   _repositorySubscription?.cancel();
@@ -170,6 +183,20 @@ Future<void> _pulsePresence() async {
     if (mounted && _sessionActive) MatchesRefreshService.instance.requestRefresh();
   } catch (_) { /* retry on resume or next foreground heartbeat */ }
   finally { _presenceInFlight = false; }
+}
+
+Future<void> _endSession(String message) async {
+  if (!mounted || !_sessionActive || _endingSession) return;
+  _endingSession = true;
+  final navigator = Navigator.of(context, rootNavigator: true);
+  final messenger = ScaffoldMessenger.of(context);
+  final expectedGeneration = _sessionGeneration + 1;
+  try { await _authService.logout(); }
+  on SessionChangedException { return; }
+  catch (_) { if (!AccountSession.isCurrent(expectedGeneration)) return; }
+  if (!AccountSession.isCurrent(expectedGeneration)) return;
+  if (navigator.mounted) navigator.pushAndRemoveUntil(MaterialPageRoute(builder: (_) => const WelcomePage()), (_) => false);
+  if (messenger.mounted) messenger.showSnackBar(SnackBar(content: Text(message)));
 }
 
 Future<void> _connectLive() async {
@@ -284,7 +311,7 @@ Future<void> _handleOpenChatRequest(ChatOpenRequest request) async {
 
   try {
     setState(() {
-      _selectedIndex = 3;
+      _selectedIndex = AppTabs.chats;
     });
 
     final meUserId = await AuthStorage().getUserId();
@@ -339,7 +366,7 @@ if (initialThreadData != null && initialThreadData.isNotEmpty) {
     if (!mounted || !_sessionActive) return;
 
     setState(() {
-      _selectedIndex = 3;
+      _selectedIndex = AppTabs.chats;
     });
   } finally {
     _isOpeningChat = false;
@@ -397,38 +424,30 @@ padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
               onTap: () => _onItemTapped(0),
             ),
             _NavItem(
-              icon: Icons.explore_outlined,
-              activeIcon: Icons.explore,
-              label: 'Explore',
-              isActive: _selectedIndex == 1,
-              activeColor: Colors.white,
-              onTap: () => _onItemTapped(1),
-            ),
-            _NavItem(
               icon: Icons.favorite_border,
               activeIcon: Icons.favorite,
               label: 'Likes',
-              isActive: _selectedIndex == 2,
+              isActive: _selectedIndex == AppTabs.likes,
               activeColor: Colors.white,
-              onTap: () => _onItemTapped(2),
+              onTap: () => _onItemTapped(AppTabs.likes),
             ),
             _NavItem(
   icon: Icons.chat_bubble_outline,
   activeIcon: Icons.chat_bubble,
   label: 'Chattar',
-  isActive: _selectedIndex == 3,
+  isActive: _selectedIndex == AppTabs.chats,
   activeColor: Colors.white,
   showDot: _hasUnreadMessages,
-  onTap: () => _onItemTapped(3),
+  onTap: () => _onItemTapped(AppTabs.chats),
 ),
 
             _NavItem(
               icon: Icons.person_outline,
               activeIcon: Icons.person,
               label: 'Profil',
-              isActive: _selectedIndex == 4,
+              isActive: _selectedIndex == AppTabs.profile,
               activeColor: Colors.white,
-              onTap: () => _onItemTapped(4),
+              onTap: () => _onItemTapped(AppTabs.profile),
             ),
           ],
         ),
