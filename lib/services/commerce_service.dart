@@ -9,12 +9,15 @@ import 'auth_storage.dart';
 import 'session_http_client.dart';
 
 class CommerceState {
-  final bool checkoutEnabled, premium, hideActivity, incognito;
+  final bool checkoutEnabled, premium, hideActivity, incognito, activityPrivacy;
+  bool get canHideActivity => premium || activityPrivacy;
   final int superLikes, boosts;
-  final DateTime? boostUntil, premiumUntil;
+  final DateTime? boostUntil, premiumUntil, activityPrivacyUntil;
   const CommerceState(
       {this.checkoutEnabled = false,
       this.premium = false,
+      this.activityPrivacy = false,
+      this.activityPrivacyUntil,
       this.hideActivity = false,
       this.incognito = false,
       this.superLikes = 0,
@@ -24,6 +27,9 @@ class CommerceState {
   factory CommerceState.fromJson(Map<String, dynamic> json) => CommerceState(
         checkoutEnabled: json['checkoutEnabled'] == true,
         premium: json['premium'] == true,
+        activityPrivacy: json['canHideActivity'] == true,
+        activityPrivacyUntil: DateTime.tryParse(
+            json['activityPrivacyUntilUtc']?.toString() ?? ''),
         hideActivity: json['hideActivity'] == true,
         incognito: json['incognito'] == true,
         superLikes: (json['superLikes'] as num?)?.toInt() ?? 0,
@@ -151,6 +157,7 @@ class RevenueCatBilling implements NativeBilling {
     return (offering?.availablePackages ?? [])
         .where((p) => const {
               'zullo_premium_monthly',
+              'zullo_hide_activity_monthly',
               'zullo_superlikes_5',
               'zullo_boost_1',
               'zullo_boosts_5'
@@ -187,7 +194,11 @@ class CommerceEvents {
   static final _walletEvents = StreamController<void>.broadcast();
   static final _openDiscovery = StreamController<void>.broadcast();
   static Stream<void> get openDiscoveryStream => _openDiscovery.stream;
-  static void openDiscovery() { _openDiscovery.add(null); refreshDiscovery(); }
+  static void openDiscovery() {
+    _openDiscovery.add(null);
+    refreshDiscovery();
+  }
+
   static Stream<void> get stream => _events.stream;
   static Stream<void> get walletStream => _walletEvents.stream;
   static void walletChanged() => _walletEvents.add(null);

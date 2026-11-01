@@ -50,7 +50,7 @@ Future<void> _savePrivacy({bool? showActivity, bool? incognito}) async {
     CommerceEvents.refreshDiscovery();
   } on CommerceException catch (error) {
     if (!mounted) return;
-    if (error.status == 402) { await Navigator.push(context, MaterialPageRoute(builder: (_) => const PremiumPage())); await _loadPrivacy(); }
+    if (error.status == 402) { await Navigator.push(context, MaterialPageRoute(builder: (_) => PremiumPage(activityOnly: showActivity == false && incognito != true))); await _loadPrivacy(); }
     else { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.message))); }
   } catch (_) {
     if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Kunde inte spara inställningen. Försök igen.')));
@@ -117,7 +117,7 @@ Future<void> _loadAccountInfo() async {
               icon: Icons.power_settings_new,
               title: 'Aktivitetsstatus',
               subtitle:
-                  'På: matchningar ser din aktivitet. Stäng av med ZULLO Premium för att dölja online och senast aktiv.',
+                  'På: matchningar ser din aktivitet. Stäng av med Dölj aktivitet eller ZULLO Premium för att dölja online och senast aktiv.',
               value: _showActivityStatus,
               onChanged: (value) => _savePrivacy(showActivity: value),
             ),

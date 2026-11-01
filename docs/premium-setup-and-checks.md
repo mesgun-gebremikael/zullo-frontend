@@ -10,14 +10,15 @@ The owner has confirmed no Google Play developer account yet; the previously dis
 
 | Identifier | Store type | Benefit |
 | --- | --- | --- |
-| zullo_premium_monthly | Monthly auto-renewing subscription | Premium entitlement `premium` |
+| zullo_premium_monthly | Monthly auto-renewing subscription | Premium entitlement `premium`, includes activity hiding |
+| zullo_hide_activity_monthly | Monthly auto-renewing subscription | Only activity hiding, entitlement `activity_privacy` |
 | zullo_superlikes_5 | Consumable / one-time product | 5 purchased Superlikes |
 | zullo_boost_1 | Consumable / one-time product | 1 purchased Boost |
 | zullo_boosts_5 | Consumable / one-time product | 5 purchased Boosts |
 
 Google subscription base-plan suffixes are normalized when matching the catalog. Configure a monthly base plan for the monthly product. Set actual local prices in App Store Connect / Google Play Console and put these packages in the current RevenueCat offering. The app displays the store's localized price, including currency. Previously discussed 59/29/19/79 SEK amounts were proposals, not activated prices.
 
-Premium includes three Superlikes per rolling seven-day allowance and one Boost per verified billing period. Included allowances do not stack. Purchased credits persist on the ZULLO account until consumed. A refund reverses the grant once; already consumed credits may leave a negative internal purchased balance, which is never displayed as spendable credit. Active membership is determined on the server, not by the phone. Subscription cancellation keeps access to the verified paid-through date; expiration/refund updates come through verified provider state.
+Premium includes three Superlikes per rolling seven-day allowance and one Boost per verified billing period. Included allowances do not stack. Purchased credits persist on the ZULLO account until consumed. A refund reverses the grant once; already consumed credits may leave a negative internal purchased balance, which is never displayed as spendable credit. Active membership is determined on the server, not by the phone. Standalone activity privacy does not grant Premium, incognito, rewind, included credits or ordinary-like quota bypass. It renews monthly at the store-configured price and can be restored. Buying it does not silently change the visibility switch: turn activity off in Mitt konto afterward. Do not buy it while Premium already includes the benefit; the app disables that redundant purchase. An existing standalone subscription does not automatically cancel when buying Premium: manage it in the store to avoid overlapping charges, as disclosed in the app. Validate cross-product upgrade/cancellation behavior before launch. Subscription cancellation keeps access to the verified paid-through date; expiration/refund updates come through verified provider state.
 
 ## Before enabling any real purchases
 
@@ -50,7 +51,7 @@ Without the server gate, matching public SDK key and legal URLs, there is no buy
 
 ## Deployment
 
-Deploy the backend first. Migration `AddPremiumCommerce` adds CommerceAccounts, PurchaseGrants and Likes.IsSuperLike; old likes default to ordinary likes. Apply it with the existing reviewed migration/staging startup process before using the new endpoints. Deploy/rebuild Flutter afterward. Keep checkout off until store configuration is ready. No real balances are seeded automatically, and there is no public grant/debug endpoint.
+Deploy the backend first. Migration `AddStandaloneActivityPrivacy` adds the nullable verified activity subscription expiry column. Deploy this backend migration before the corresponding new app. Migration `AddPremiumCommerce` adds CommerceAccounts, PurchaseGrants and Likes.IsSuperLike; old likes default to ordinary likes. Apply it with the existing reviewed migration/staging startup process before using the new endpoints. Deploy/rebuild Flutter afterward. Keep checkout off until store configuration is ready. No real balances are seeded automatically, and there is no public grant/debug endpoint.
 
 ## Required manual store/device tests
 
@@ -58,6 +59,7 @@ Deploy the backend first. Migration `AddPremiumCommerce` adds CommerceAccounts, 
 - Renewal, auto-renew cancellation with paid access retained, expiration, grace period, refund before and after spending, delayed/duplicate/out-of-order webhooks, provider outage/retry and sandbox rejection in production.
 - Superlike deducts once, appears blue with “Har supergillat dig” in eligible discovery and incoming likes, sends a notification when allowed, and still needs a reciprocal like before chat. A blocked target consumes no credit. Test foreground, background and cold-start notifications on both platforms.
 - Boost activation deducts once, shows a countdown, cannot activate twice concurrently, and expires after 30 minutes. Ranking still respects visibility, gender, age, distance, incognito and blocks. Priority affects fetched feeds; it does not guarantee views or matches or replace every already-cached card on other devices.
+- Test standalone activity purchase/restore, refund, grace, expiry, cancellation through the paid-through date, Premium inclusion and the redundant-purchase guard. Confirm no extra benefits are granted, both API timestamp responses are hidden and overlapping subscriptions are explicitly managed before launch.
 - Incognito is server-enforced; activity hiding removes the timestamp from both presence and match responses. Only unblocked matches can query activity. Foreground heartbeats run once per minute; “Online nu” is a recent-activity indicator with a 90-second freshness window, not proof of continuous human presence.
 - Incoming ordinary likes are server-gated to Premium; Superlikes remain visible to free recipients. Rewind cannot remove an existing match, refund a Superlike, or bypass blocks.
 
@@ -71,4 +73,4 @@ Native validation includes unsigned iOS simulator compilation and an Android deb
 
 Profile uses white rounded purchase cards, a blue Superlike star and ZULLO letter marks. There are no Top Picks or profile-completion promotional cards. The Likes tab is separate from Chats: incoming likes remain server-filtered; the empty free state opens Premium and the empty paid state opens discovery. No artificial profiles or counts are added.
 
-The activity toggle is under Profile → settings gear → Mitt konto → Aktivitetsstatus. On shows recent activity to unblocked matches; off requires active server-verified Premium and otherwise opens Premium without changing the saved setting. The server stops applying activity hiding when Premium expires. Existing privacy/presence authorization tests cover this; real-device confirmation remains pending. All earlier manual tests remain unperformed as confirmed again by the owner.
+The activity toggle is under Profile → settings gear → Mitt konto → Aktivitetsstatus. On shows recent activity to unblocked matches; off requires active server-verified Premium OR the standalone activity-privacy subscription. Without access, it opens a focused page offering just activity privacy or Premium, without changing the saved setting. The server stops applying activity hiding when neither subscription grants access. Existing privacy/presence authorization tests cover this; real-device confirmation remains pending. All earlier manual tests remain unperformed as confirmed again by the owner.

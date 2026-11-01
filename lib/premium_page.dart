@@ -8,9 +8,11 @@ import 'services/auth_storage.dart';
 import 'services/commerce_service.dart';
 
 class PremiumPage extends StatefulWidget {
+  final bool activityOnly;
   final CommerceClient? commerce;
   final NativeBilling? billing;
-  const PremiumPage({super.key, this.commerce, this.billing});
+  const PremiumPage(
+      {super.key, this.commerce, this.billing, this.activityOnly = false});
   @override
   State<PremiumPage> createState() => _PremiumPageState();
 }
@@ -127,6 +129,7 @@ class _PremiumPageState extends State<PremiumPage> {
       updated = await _commerce.sync();
       final confirmed = switch (offer.id) {
         'zullo_premium_monthly' => updated.premium,
+        'zullo_hide_activity_monthly' => updated.canHideActivity,
         'zullo_superlikes_5' => updated.superLikes >= before.superLikes + 5,
         'zullo_boost_1' => updated.boosts >= before.boosts + 1,
         'zullo_boosts_5' => updated.boosts >= before.boosts + 5,
@@ -152,12 +155,19 @@ class _PremiumPageState extends State<PremiumPage> {
     if (!AccountSession.isCurrent(_generation)) return const Scaffold();
     final state = _state;
     final boostActive = _boostTime.isNotEmpty;
+    final offers = _offers
+        .where((offer) =>
+            !widget.activityOnly ||
+            offer.id == 'zullo_hide_activity_monthly' ||
+            offer.id == 'zullo_premium_monthly')
+        .toList();
     return Scaffold(
       backgroundColor: const Color(0xFF0E1016),
       appBar: AppBar(
           backgroundColor: const Color(0xFF0E1016),
           foregroundColor: Colors.white,
-          title: const Text('ZULLO Premium')),
+          title:
+              Text(widget.activityOnly ? 'Dölj aktivitet' : 'ZULLO Premium')),
       body: state == null && _error == null
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
@@ -176,22 +186,28 @@ class _PremiumPageState extends State<PremiumPage> {
                             color: Color(0xFFFFD99D), size: 40),
                         const SizedBox(height: 12),
                         Text(
-                            state?.premium == true
-                                ? 'Din Premium är aktiv'
-                                : 'Mer av ZULLO',
+                            widget.activityOnly
+                                ? (state?.canHideActivity == true
+                                    ? 'Dölj aktivitet ingår för dig'
+                                    : 'Din aktivitet, ditt val')
+                                : (state?.premium == true
+                                    ? 'Din Premium är aktiv'
+                                    : 'Mer av ZULLO'),
                             style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 28,
                                 fontWeight: FontWeight.w800)),
                         const SizedBox(height: 8),
-                        const Text(
-                            'Upptäck fler möjligheter. Matchning och chatt finns kvar gratis.',
-                            style:
-                                TextStyle(color: Colors.white70, height: 1.5)),
+                        Text(
+                            widget.activityOnly
+                                ? 'Dölj Online nu och senast aktiv för dina matchningar. Köp bara Dölj aktivitet per månad, eller få det inkluderat i ZULLO Premium. Välj sedan din synlighet i Mitt konto.'
+                                : 'Upptäck fler möjligheter. Matchning och chatt finns kvar gratis.',
+                            style: const TextStyle(
+                                color: Colors.white70, height: 1.5)),
                       ]),
                 ),
                 const SizedBox(height: 20),
-                if (state != null)
+                if (state != null && !widget.activityOnly)
                   Card(
                       child: Padding(
                           padding: const EdgeInsets.all(18),
@@ -226,65 +242,79 @@ class _PremiumPageState extends State<PremiumPage> {
                                 )),
                           ]))),
                 const SizedBox(height: 12),
-                const Text('Det här ingår i Premium',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 21,
-                        fontWeight: FontWeight.w700)),
-                for (final feature in const [
-                  (
-                    Icons.favorite,
-                    'Se vem som gillar dig',
-                    'Se vanliga inkommande likes före matchning.'
-                  ),
-                  (
-                    Icons.all_inclusive,
-                    'Fler likes och ångra',
-                    'Ingen vanlig like-kvot. Ångra en vanlig swipe, men inte en match eller Superlike.'
-                  ),
-                  (
-                    Icons.star,
-                    '3 Superlikes per vecka',
-                    'Visa extra intresse. Matchning kräver fortfarande ett gensvar.'
-                  ),
-                  (
-                    Icons.bolt,
-                    '1 Boost per betalningsmånad',
-                    'Prioriterad synlighet i 30 minuter för personer vars inställningar passar.'
-                  ),
-                  (
-                    Icons.visibility_off,
-                    'Inkognito och dold aktivitet',
-                    'Välj vem som kan upptäcka dig och om matchningar ser din senaste aktivitet.'
-                  ),
-                ])
-                  ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: Icon(feature.$1, color: const Color(0xFFEBC186)),
-                      title: Text(feature.$2,
-                          style: const TextStyle(color: Colors.white)),
-                      subtitle: Text(feature.$3,
-                          style: const TextStyle(color: Colors.white60))),
+                if (!widget.activityOnly) ...[
+                  const Text('Det här ingår i Premium',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 21,
+                          fontWeight: FontWeight.w700)),
+                  for (final feature in const [
+                    (
+                      Icons.favorite,
+                      'Se vem som gillar dig',
+                      'Se vanliga inkommande likes före matchning.'
+                    ),
+                    (
+                      Icons.all_inclusive,
+                      'Fler likes och ångra',
+                      'Ingen vanlig like-kvot. Ångra en vanlig swipe, men inte en match eller Superlike.'
+                    ),
+                    (
+                      Icons.star,
+                      '3 Superlikes per vecka',
+                      'Visa extra intresse. Matchning kräver fortfarande ett gensvar.'
+                    ),
+                    (
+                      Icons.bolt,
+                      '1 Boost per betalningsmånad',
+                      'Prioriterad synlighet i 30 minuter för personer vars inställningar passar.'
+                    ),
+                    (
+                      Icons.visibility_off,
+                      'Inkognito och dold aktivitet',
+                      'Välj vem som kan upptäcka dig och om matchningar ser din senaste aktivitet.'
+                    ),
+                  ])
+                    ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading:
+                            Icon(feature.$1, color: const Color(0xFFEBC186)),
+                        title: Text(feature.$2,
+                            style: const TextStyle(color: Colors.white)),
+                        subtitle: Text(feature.$3,
+                            style: const TextStyle(color: Colors.white60))),
+                ],
                 const SizedBox(height: 16),
-                if (_offers.isEmpty)
+                if (offers.isEmpty)
                   const Text(
                       'Köp är inte tillgängliga just nu. Du kan fortsätta använda ZULLO gratis.',
                       style: TextStyle(color: Colors.white70)),
-                for (final offer in _offers)
+                for (final offer in offers)
                   Card(
                       child: ListTile(
-                    title: Text(offer.title),
+                    title: Text(offer.id == 'zullo_hide_activity_monthly'
+                        ? 'Bara Dölj aktivitet'
+                        : offer.title),
                     subtitle: Text(
-                        '${offer.price}${offer.id == 'zullo_premium_monthly' ? ' per månad' : ''}'),
+                        '${offer.price}${offer.id == 'zullo_premium_monthly' || offer.id == 'zullo_hide_activity_monthly' ? ' per månad' : ''}'),
                     trailing: FilledButton(
                         onPressed: _busy ||
                                 (offer.id == 'zullo_premium_monthly' &&
-                                    state?.premium == true)
+                                    state?.premium == true) ||
+                                (offer.id == 'zullo_hide_activity_monthly' &&
+                                    state?.canHideActivity == true)
                             ? null
                             : () => _action(() => _buy(offer)),
                         child: const Text('Köp')),
                   )),
-                if (_offers.isNotEmpty)
+                if (state?.activityPrivacyUntil?.isAfter(DateTime.now()) ==
+                    true)
+                  const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                      child: Text(
+                          'Ditt separata abonnemang för Dölj aktivitet hanteras i App Store eller Google Play. Det avslutas inte automatiskt om du köper Premium.',
+                          style: TextStyle(color: Colors.white70))),
+                if (offers.isNotEmpty)
                   const Padding(
                       padding: EdgeInsets.symmetric(vertical: 12),
                       child: Text(

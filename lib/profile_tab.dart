@@ -108,11 +108,11 @@ class _ProfileTabState extends State<ProfileTab> {
     }
   }
 
-  Future<void> _openPremiumPage() async {
+  Future<void> _openPremiumPage({bool activityOnly = false}) async {
     await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => const PremiumPage(),
+        builder: (_) => PremiumPage(activityOnly: activityOnly),
       ),
     );
     _loadWallet();
@@ -123,14 +123,17 @@ class _ProfileTabState extends State<ProfileTab> {
           required Color iconColor,
           required String title,
           required String subtitle,
-          bool brand = false}) =>
+          bool brand = false,
+          bool activityOnly = false}) =>
       ProfilePurchaseCard(
           icon: icon,
           color: iconColor,
           title: title,
           subtitle: subtitle,
           brand: brand,
-          onTap: _openPremiumPage);
+          onTap: activityOnly
+              ? () => _openPremiumPage(activityOnly: true)
+              : _openPremiumPage);
 
   Widget _buildPremiumBox() => PremiumBenefitsCard(
       active: _wallet?.premium == true, onTap: _openPremiumPage);
@@ -227,6 +230,16 @@ class _ProfileTabState extends State<ProfileTab> {
               iconColor: const Color(0xFFB57CFF),
               title: "Mina Boosts · ${_wallet?.boosts ?? '—'}",
               subtitle: "FÅ MER",
+            ),
+            const SizedBox(height: 18),
+            _buildMonetizationCard(
+              icon: Icons.visibility_off_outlined,
+              iconColor: const Color(0xFF5C6F87),
+              title: "Dölj aktivitet",
+              subtitle: _wallet?.canHideActivity == true
+                  ? "INGÅR FÖR DIG"
+                  : "KÖP SEPARAT",
+              activityOnly: true,
             ),
             const SizedBox(height: 18),
             _buildMonetizationCard(
