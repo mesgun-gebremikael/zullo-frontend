@@ -1,3 +1,5 @@
+import 'premium_page.dart';
+import 'services/commerce_service.dart';
 import 'blocked_profiles_page.dart';
 import 'services/account_session.dart';
 import 'package:flutter/material.dart';
@@ -22,11 +24,37 @@ String _userIdText = 'Laddar...';
   bool _showActivityStatus = true;
   bool _incognitoMode = false;
   bool _marketingConsent = false;
+  bool _privacyBusy = false;
 
   @override
 void initState() {
   super.initState();
   _loadAccountInfo();
+  if (widget.authService == null) _loadPrivacy();
+}
+
+Future<void> _loadPrivacy() async {
+  try {
+    final state = await CommerceClient().state();
+    if (!mounted || !AccountSession.isCurrent(_generation)) return;
+    setState(() { _showActivityStatus = !state.hideActivity; _incognitoMode = state.incognito; });
+  } catch (_) { /* keep settings usable while temporarily offline */ }
+}
+Future<void> _savePrivacy({bool? showActivity, bool? incognito}) async {
+  if (_privacyBusy) return;
+  _privacyBusy = true;
+  try {
+    final state = await CommerceClient().privacy(hideActivity: !(showActivity ?? _showActivityStatus), incognito: incognito ?? _incognitoMode);
+    if (!mounted || !AccountSession.isCurrent(_generation)) return;
+    setState(() { _showActivityStatus = !state.hideActivity; _incognitoMode = state.incognito; });
+    CommerceEvents.refreshDiscovery();
+  } on CommerceException catch (error) {
+    if (!mounted) return;
+    if (error.status == 402) { await Navigator.push(context, MaterialPageRoute(builder: (_) => const PremiumPage())); await _loadPrivacy(); }
+    else { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.message))); }
+  } catch (_) {
+    if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Kunde inte spara inställningen. Försök igen.')));
+  } finally { _privacyBusy = false; }
 }
 
 Future<void> _loadAccountInfo() async {
@@ -89,13 +117,9 @@ Future<void> _loadAccountInfo() async {
               icon: Icons.power_settings_new,
               title: 'Aktivitetsstatus',
               subtitle:
-                  'Andra användare kan se om du är aktiv eller nyligen varit aktiv',
+                  'Matchningar kan se din senaste aktivitet. Dölj den med Premium.',
               value: _showActivityStatus,
-              onChanged: (value) {
-                setState(() {
-                  _showActivityStatus = value;
-                });
-              },
+              onChanged: (value) => _savePrivacy(showActivity: value),
             ),
             const SizedBox(height: 8),
             _SettingsSwitchRow(
@@ -103,11 +127,7 @@ Future<void> _loadAccountInfo() async {
               title: 'Inkognito Premium',
               subtitle: 'Bara personer som du gillar kan se din profil',
               value: _incognitoMode,
-              onChanged: (value) {
-                setState(() {
-                  _incognitoMode = value;
-                });
-              },
+              onChanged: (value) => _savePrivacy(incognito: value),
             ),
             const SizedBox(height: 8),
            _SettingsArrowRow(

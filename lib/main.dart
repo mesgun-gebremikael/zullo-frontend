@@ -1,3 +1,4 @@
+import 'services/commerce_service.dart';
 import 'services/push_token_service.dart';
 import 'services/api_config.dart';
 import 'services/notification_access.dart';
@@ -255,8 +256,24 @@ class _ZulloAppState extends State<ZulloApp> {
     _setupNotificationTapHandling();
   }
 
+  Future<bool> _handleSuperLike(RemoteMessage message, {required bool open}) async {
+    if (message.data['type'] != 'super_like') return false;
+    final generation = AccountSession.generation;
+    if (!await NotificationAccess.isCurrentRecipient(message.data['recipientUserId'] ?? '') || !AccountSession.isCurrent(generation)) return true;
+    CommerceEvents.refreshDiscovery();
+    void showDiscovery() {
+      if (!AccountSession.isCurrent(generation)) return;
+      navigatorKey.currentState?.popUntil((route) => route.isFirst);
+      CommerceEvents.openDiscovery();
+    }
+    if (open) { showDiscovery(); }
+    else { scaffoldMessengerKey.currentState?.showSnackBar(SnackBar(content: const Text('Du har fått en Superlike ⭐'), action: SnackBarAction(label: 'Visa', onPressed: showDiscovery))); }
+    return true;
+  }
+
    Future<void> _setupNotificationTapHandling() async {
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) async {
+      if (await _handleSuperLike(message, open: true)) return;
       if (_lastOpenedMessageId == message.messageId) return;
       _lastOpenedMessageId = message.messageId;
 
@@ -267,6 +284,7 @@ class _ZulloAppState extends State<ZulloApp> {
     });
 
             FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
+      if (await _handleSuperLike(message, open: false)) return;
       final generation = AccountSession.generation;
       final launch = _parseNotificationLaunch(message);
       if (launch == null) return;

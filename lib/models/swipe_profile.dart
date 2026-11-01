@@ -1,5 +1,6 @@
 class SwipeProfile {
   final String userId;
+  final bool superLikedYou;
   final String displayName;
   final int age;
   final String countryCode;
@@ -37,6 +38,7 @@ class SwipeProfile {
 
   SwipeProfile({
     required this.userId,
+    this.superLikedYou = false,
     required this.displayName,
     required this.age,
     required this.countryCode,
@@ -73,6 +75,7 @@ class SwipeProfile {
         (json['interests'] as List?)?.map((e) => e.toString()).toList() ?? [];
 
     return SwipeProfile(
+      superLikedYou: json['superLikedYou'] == true,
       userId: (json['userId'] ?? '').toString(),
       displayName: (json['displayName'] ?? '').toString(),
       age: (json['age'] as num?)?.toInt() ?? 0,

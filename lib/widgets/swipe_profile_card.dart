@@ -407,6 +407,14 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
             ),
 
             _buildBottomContent(profile),
+            if (profile.superLikedYou) Positioned(
+              top: widget.photoBarsTop + 14, left: 16,
+              child: DecoratedBox(decoration: BoxDecoration(color: const Color(0xFF1879D8), borderRadius: BorderRadius.circular(20)),
+                child: const Padding(padding: EdgeInsets.symmetric(horizontal: 14, vertical: 9), child: Row(mainAxisSize: MainAxisSize.min, children: [
+                  Icon(Icons.star_rounded, color: Colors.white, size: 19), SizedBox(width: 6),
+                  Text('Har supergillat dig', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                ]))),
+            ),
           ],
         ),
       ),

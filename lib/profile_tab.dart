@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'services/commerce_service.dart';
+import 'services/account_session.dart';
 import 'package:flutter/material.dart';
 import 'services/auth_service.dart';
 import 'edit_profile_page.dart';
@@ -14,6 +17,9 @@ class ProfileTab extends StatefulWidget {
 class _ProfileTabState extends State<ProfileTab> {
   final AuthService _authService = AuthService();
 
+  CommerceState? _wallet;
+  StreamSubscription<void>? _commerceEvents;
+  final _generation = AccountSession.generation;
   Map<String, dynamic>? _profile;
   bool _isLoading = true;
   String? _error;
@@ -22,6 +28,17 @@ class _ProfileTabState extends State<ProfileTab> {
   void initState() {
     super.initState();
     _loadProfile();
+    _loadWallet();
+    _commerceEvents = CommerceEvents.walletStream.listen((_) => _loadWallet());
+  }
+
+  @override
+  void dispose() { _commerceEvents?.cancel(); super.dispose(); }
+  Future<void> _loadWallet() async {
+    try {
+      final wallet = await CommerceClient().state();
+      if (mounted && AccountSession.isCurrent(_generation)) setState(() => _wallet = wallet);
+    } catch (_) { /* profile remains usable if commerce is unavailable */ }
   }
 
   Future<void> _loadProfile() async {
@@ -90,6 +107,7 @@ Future<void> _openPremiumPage() async {
       builder: (_) => const PremiumPage(),
     ),
   );
+  _loadWallet();
 }
 
 Widget _buildInfoRow(String title, String value) {
@@ -428,14 +446,14 @@ Widget _buildPremiumBox() {
           _buildMonetizationCard(
   icon: Icons.favorite_rounded,
   iconColor: const Color(0xFF58C4D8),
-  title: "0 Superlikes",
+  title: "${_wallet?.superLikes ?? '—'} Superlikes",
   subtitle: "FÅ MER",
 ),
 const SizedBox(height: 18),
 _buildMonetizationCard(
   icon: Icons.rocket_launch_rounded,
   iconColor: const Color(0xFFB57CFF),
-  title: "Mina Boosts",
+  title: "Mina Boosts · ${_wallet?.boosts ?? '—'}",
   subtitle: "FÅ MER",
 ),
 const SizedBox(height: 18),

@@ -1,3 +1,4 @@
+import 'services/commerce_service.dart';
 import 'services/relation_changes.dart';
 import 'services/signalr_service.dart';
 import 'services/refresh_coordinator.dart';
@@ -45,6 +46,10 @@ class MainNavigation extends StatefulWidget {
 class _MainNavigationState extends State<MainNavigation> with WidgetsBindingObserver {
   StreamSubscription<ChatRepositoryState>? _repositorySubscription;
   StreamSubscription<int>? _sessionChanges;
+  Timer? _presenceTimer;
+  StreamSubscription<void>? _openDiscovery;
+  bool _inForeground = true;
+  bool _presenceInFlight = false;
   final int _sessionGeneration = AccountSession.generation;
   bool get _sessionActive => AccountSession.isCurrent(_sessionGeneration);
 
@@ -76,7 +81,14 @@ bool _isOpeningChat = false;
   });
 
 
+    _openDiscovery = CommerceEvents.openDiscoveryStream.listen((_) {
+      if (mounted && _sessionActive) setState(() => _selectedIndex = 0);
+    });
     WidgetsBinding.instance.addObserver(this);
+    if (widget.pages == null) {
+      unawaited(_pulsePresence());
+      _presenceTimer = Timer.periodic(const Duration(minutes: 1), (_) => unawaited(_pulsePresence()));
+    }
     _liveMessages = _live.messagesStream.listen((_) => MatchesRefreshService.instance.requestRefresh());
     _liveReads = _live.messagesReadStream.listen((_) => MatchesRefreshService.instance.requestRefresh());
     _liveReconnect = _live.reconnectedStream.listen((_) => MatchesRefreshService.instance.requestRefresh());
@@ -122,6 +134,8 @@ if (pendingRequest != null) {
 
    @override
 void dispose() {
+  _openDiscovery?.cancel();
+  _presenceTimer?.cancel();
   _sessionChanges?.cancel();
   _repositorySubscription?.cancel();
   _openChatSubscription?.cancel();
@@ -145,6 +159,17 @@ void dispose() {
 
 
 
+Future<void> _pulsePresence() async {
+  if (!mounted || !_sessionActive || !_inForeground || _presenceInFlight) return;
+  _presenceInFlight = true;
+  try {
+    await CommerceClient().heartbeat();
+    if (mounted && _sessionActive) CommerceEvents.walletChanged();
+    if (mounted && _sessionActive) MatchesRefreshService.instance.requestRefresh();
+  } catch (_) { /* retry on resume or next foreground heartbeat */ }
+  finally { _presenceInFlight = false; }
+}
+
 Future<void> _connectLive() async {
   if (!_sessionActive) return;
   try { await _live.connect(); } catch (_) { /* Resume retries after a disconnected start. */ }
@@ -152,7 +177,9 @@ Future<void> _connectLive() async {
 
 @override
 void didChangeAppLifecycleState(AppLifecycleState state) {
+  _inForeground = state == AppLifecycleState.resumed;
   if (state == AppLifecycleState.resumed && mounted && _sessionActive) {
+    if (widget.pages == null) unawaited(_pulsePresence());
     unawaited(_connectLive());
     unawaited(_authService.syncPushToken());
     unawaited(_loadUnreadStatus(force: true));

@@ -6,6 +6,7 @@ class ChatListItem {
   final String lastMessageText;
   final DateTime? lastMessageAtUtc;
   final DateTime? matchCreatedAtUtc;
+  final DateTime? lastActivityUtc;
   final bool hasUnread;
   final int unreadMessageCount;
 
@@ -17,6 +18,7 @@ class ChatListItem {
     required this.lastMessageText,
     required this.lastMessageAtUtc,
     this.matchCreatedAtUtc,
+    this.lastActivityUtc,
     required this.hasUnread,
     required this.unreadMessageCount,
   });
@@ -39,6 +41,7 @@ class ChatListItem {
       lastMessageText: lastMessageText ?? this.lastMessageText,
       lastMessageAtUtc: lastMessageAtUtc ?? this.lastMessageAtUtc,
       matchCreatedAtUtc: matchCreatedAtUtc,
+      lastActivityUtc: lastActivityUtc,
       hasUnread: hasUnread ?? this.hasUnread,
       unreadMessageCount: unreadMessageCount ?? this.unreadMessageCount,
     );
@@ -61,6 +64,7 @@ class ChatListItem {
       lastMessageText: (json['lastMessageText'] ?? '').toString(),
       lastMessageAtUtc: tryParseUtc(json['lastMessageAtUtc']),
       matchCreatedAtUtc: tryParseUtc(json['matchCreatedAtUtc']),
+      lastActivityUtc: tryParseUtc(json['lastActivityUtc']),
       hasUnread: json['hasUnread'] == true,
       unreadMessageCount: (json['unreadMessageCount'] as num?)?.toInt() ?? 0,
     );
