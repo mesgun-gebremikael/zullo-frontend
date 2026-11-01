@@ -100,7 +100,7 @@ bool _isOpeningChat = false;
     _pages = widget.pages ?? [
       const HomePage(),
       const MatchesPage(), // Explore tillfällig
-      const MatchesPage(), // Likes tillfällig
+      const MatchesPage(showLikes: true), // Incoming likes only
       MatchesPage(
         onUnreadChanged: (hasUnread) {
           if (!mounted || !_sessionActive) return;
@@ -353,6 +353,7 @@ if (initialThreadData != null && initialThreadData.isNotEmpty) {
     if (widget.pages == null) _pages[0] = HomePage(active: _selectedIndex == 0);
     return Scaffold(
       extendBody: true,
+      backgroundColor: const Color(0xFFF0F1F3),
      body: IndexedStack(
   index: _selectedIndex,
   children: List<Widget>.generate(_pages.length, (i) => _visited.contains(i) ? _pages[i] : const SizedBox.shrink()),
@@ -369,7 +370,7 @@ minimum: const EdgeInsets.fromLTRB(14, 0, 14, 12),
        height: 58,
 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
         decoration: BoxDecoration(
-  color: const Color(0xFF1A120C).withOpacity(0.62),
+  color: Colors.white.withValues(alpha: 0.96),
   borderRadius: BorderRadius.circular(30),
   border: Border.all(
     color: const Color(0xFFC89B3C).withOpacity(0.18),
@@ -460,8 +461,8 @@ class _NavItem extends StatelessWidget {
 
   @override
 Widget build(BuildContext context) {
-  const inactiveColor = Colors.white;
-  const inactiveTextColor = Color(0xE6FFFFFF);
+  const inactiveColor = Color(0xFF22262E);
+  const inactiveTextColor = Color(0xFF22262E);
 
   return Expanded(
     child: GestureDetector(
@@ -477,7 +478,7 @@ Widget build(BuildContext context) {
           ),
           decoration: BoxDecoration(
             color: isActive
-             ? const Color(0xFF3A2A1E).withOpacity(0.55)
+             ? const Color(0xFFE9EAEC)
              : Colors.transparent,
             borderRadius: BorderRadius.circular(999),
             border: isActive
@@ -495,7 +496,7 @@ Widget build(BuildContext context) {
   children: [
     Icon(
       isActive ? activeIcon : icon,
-      color: isActive ? Colors.white : inactiveColor,
+      color: isActive ? const Color(0xFF22262E) : inactiveColor,
       size: isActive ? 22 : 20,
     ),
     if (showDot)
@@ -524,7 +525,7 @@ Widget build(BuildContext context) {
                 maxLines: 1,
                 overflow: TextOverflow.visible,
                 style: TextStyle(
-                  color: isActive ? Colors.white : inactiveTextColor,
+                  color: isActive ? const Color(0xFF22262E) : inactiveTextColor,
                   fontSize: isActive ? 9.5 : 9,
                   fontWeight: isActive ? FontWeight.w700 : FontWeight.w600,
                   height: 1,
