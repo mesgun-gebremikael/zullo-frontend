@@ -169,7 +169,7 @@ class RevenueCatBilling implements NativeBilling {
     final generation = AccountSession.generation;
     await _prepare(userId);
     AccountSession.check(generation);
-    await Purchases.purchasePackage(offer.handle as Package);
+    await Purchases.purchase(PurchaseParams.package(offer.handle as Package));
     AccountSession.check(generation);
   }
 

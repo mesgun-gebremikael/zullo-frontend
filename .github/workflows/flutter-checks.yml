@@ -33,6 +33,14 @@ jobs:
           flutter-version: '3.38.4'
           channel: stable
       - run: flutter pub get --enforce-lockfile
+      # Temporary lock refresh for the reviewed Firebase / purchase SDK upgrade.
+      - run: flutter precache --ios
+      - name: Resolve upgraded native dependencies
+        working-directory: ios
+        run: |
+          rm -f Podfile.lock
+          pod install --repo-update
+      - run: git diff --exit-code -- ios/Podfile.lock
       - run: flutter build ios --simulator --debug --no-codesign --dart-define-from-file=config/ios.firebase.json --dart-define=ZULLO_API_URL=https://api.example.invalid
       - run: git diff --exit-code -- ios/Podfile.lock
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
