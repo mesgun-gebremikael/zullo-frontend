@@ -33,6 +33,7 @@ class HubChatTransport implements ChatTransport {
   Future<void> connect(String token) async {
     if (_connection?.state == HubConnectionState.Connected) return;
     final epoch = ++_epoch;
+    final generation = AccountSession.generation;
     await _connection?.stop();
     if (epoch != _epoch) return;
     final connection = HubConnectionBuilder()
@@ -46,6 +47,12 @@ class HubChatTransport implements ChatTransport {
       if (epoch == _epoch && args != null && args.isNotEmpty) {
         _messages.add(Map<String, dynamic>.from(args.first as Map));
       }
+    });
+    connection.on('AccountClosed', (args) {
+      if (epoch == _epoch && AccountSession.isCurrent(generation)) AccountSession.notifyClosed();
+    });
+    connection.on('AccountStateChanged', (args) {
+      if (epoch == _epoch && AccountSession.isCurrent(generation)) CommerceEvents.refreshDiscovery();
     });
     connection.on('CommerceChanged', (args) {
       if (epoch == _epoch) { CommerceEvents.walletChanged(); MatchesRefreshService.instance.requestRefresh(); }

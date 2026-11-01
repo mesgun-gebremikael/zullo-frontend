@@ -41,8 +41,7 @@ void main() {
     final auth = SlowLogoutAuth();
     await tester.pumpWidget(MaterialApp(home: MainNavigation(
       authService: auth, liveService: SignalRService(transport: FakeChatTransport()),
-      pages: [HomePage(authService: auth), const SizedBox(), const SizedBox(),
-        const SizedBox(), const SizedBox()])));
+      pages: [HomePage(authService: auth), const SizedBox(), const SizedBox(), const SizedBox()])));
     await tester.pumpAndSettle();
     await tester.runAsync(() async {
       await tester.tap(find.byIcon(Icons.logout));

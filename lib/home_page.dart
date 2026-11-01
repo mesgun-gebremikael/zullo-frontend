@@ -1,3 +1,4 @@
+import 'account_management_page.dart';
 import 'widgets/discovery_settings_sheet.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'services/commerce_service.dart';
@@ -39,6 +40,7 @@ class _HomePageState extends State<HomePage>
   bool _rewindInFlight = false;
   bool _feedReloadPending = false;
   bool _foreground = true;
+  bool _isPaused = false;
 
   void _refreshEmptyFeed() {
     if (!mounted || !widget.active || !_foreground || _feedRequestRunning ||
@@ -161,6 +163,7 @@ static const double _activeCardLift = 0;
       final loadedRadius = (data['radiusKm'] as num).toDouble();
 
       setState(() {
+        _isPaused = data['isPaused'] == true;
         profiles = loadedProfiles;
         _radiusKm = loadedRadius;
         currentIndex = 0;
@@ -790,69 +793,27 @@ static const double _activeCardLift = 0;
   }
 
 
-  Widget _buildEmptyFeedState() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 120, 20, 40),
-      child: Center(
-        child: Container(
-          width: double.infinity,
-          constraints: const BoxConstraints(maxWidth: 420),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
-          decoration: BoxDecoration(
-            color: const Color(0xFF111111),
-            borderRadius: BorderRadius.circular(28),
-            border: Border.all(color: Colors.white10),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.travel_explore_rounded,
-                color: Colors.white,
-                size: 54,
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                "Inga profiler just nu",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                "Testa att öka avståndet eller ändra åldersspannet i filtret.",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.72),
-                  fontSize: 15,
-                  height: 1.4,
-                ),
-              ),
-              const SizedBox(height: 22),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _openRadiusSheet,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFF2D75),
-                    foregroundColor: Colors.white,
-                    minimumSize: const Size.fromHeight(52),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                  ),
-                  child: const Text("Öppna filter"),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+  Future<void> _openAccountManagement() async {
+    await Navigator.push(context, MaterialPageRoute(builder: (_) => const AccountManagementPage()));
+    if (mounted && AccountSession.isCurrent(_sessionGeneration)) await loadFeed();
   }
+
+  Widget _buildEmptyFeedState() => Center(child: SingleChildScrollView(
+    padding: const EdgeInsets.fromLTRB(24, 110, 24, 100),
+    child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 420), child: Column(mainAxisSize: MainAxisSize.min, children: [
+      Icon(_isPaused ? Icons.pause_circle_outline : Icons.travel_explore_rounded, color: Colors.white, size: 54),
+      const SizedBox(height: 20), Text(_isPaused ? 'Ditt konto är pausat' : 'Inga profiler just nu', textAlign: TextAlign.center,
+        style: const TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w800)),
+      const SizedBox(height: 16), Text(_isPaused
+        ? 'Återaktivera kontot när du vill upptäcka nya personer igen. Dina matchningar och chattar finns kvar.'
+        : 'Testa att öka avståndet eller ändra åldersspannet i filtret.',
+        textAlign: TextAlign.center, style: const TextStyle(color: Colors.white70, fontSize: 17, height: 1.5)),
+      const SizedBox(height: 24), SizedBox(width: double.infinity, child: FilledButton(
+        style: FilledButton.styleFrom(backgroundColor: const Color(0xFFE6296B), foregroundColor: Colors.white, padding: const EdgeInsets.all(16)),
+        onPressed: _isPaused ? _openAccountManagement : _openRadiusSheet,
+        child: Text(_isPaused ? 'Hantera paus' : 'Öppna filter'))),
+    ])),
+  ));
 
     @override
   Widget build(BuildContext context) {

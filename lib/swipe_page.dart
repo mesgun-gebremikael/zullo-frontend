@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 
-
 class SwipePage extends StatelessWidget {
   final bool isLoading;
   final bool hasActiveProfile;
@@ -40,7 +39,6 @@ class SwipePage extends StatelessWidget {
     required this.onSwipeLeft,
     required this.onSwipeUp,
     required this.onSwipeRight,
-    
   });
 
   @override
@@ -55,23 +53,22 @@ class SwipePage extends StatelessWidget {
                   child: ColoredBox(color: Colors.black),
                 ),
                 Positioned.fill(
-  child: Stack(
-    children: [
-      if (nextCard != null) nextCard!,
-      Positioned.fill(
-        child: hasActiveProfile ? activeCard : emptyState,
-      ),
-    ],
-  ),
-),
+                  child: Stack(
+                    children: [
+                      if (nextCard != null) nextCard!,
+                      Positioned.fill(
+                        child: hasActiveProfile ? activeCard : emptyState,
+                      ),
+                    ],
+                  ),
+                ),
                 _TopOverlayBar(
-  onOpenRadiusSheet: onOpenRadiusSheet,
-  onLogout: onLogout,
-    onRewind: onRewind,
-),
-
+                  onOpenRadiusSheet: onOpenRadiusSheet,
+                  onLogout: onLogout,
+                  onRewind: onRewind,
+                ),
                 if (hasActiveProfile)
-                   _BottomActionBar(
+                  _BottomActionBar(
                     dragListenable: dragListenable,
                     onOpenEditProfile: onOpenEditProfile,
                     onSwipeLeft: onSwipeLeft,
@@ -89,13 +86,11 @@ class _TopOverlayBar extends StatelessWidget {
   final VoidCallback onLogout;
   final VoidCallback? onRewind;
 
-
   const _TopOverlayBar({
-  required this.onOpenRadiusSheet,
-  required this.onLogout,
-  this.onRewind,
-});
-
+    required this.onOpenRadiusSheet,
+    required this.onLogout,
+    this.onRewind,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -120,32 +115,25 @@ class _TopOverlayBar extends StatelessWidget {
           ),
           child: Row(
             children: [
-              if (onRewind != null) _TopIconButton(icon: Icons.undo_rounded, onTap: onRewind!),
+              if (onRewind != null)
+                _TopIconButton(icon: Icons.undo_rounded, onTap: onRewind!),
               _TopIconButton(
                 icon: Icons.tune_rounded,
                 onTap: onOpenRadiusSheet,
               ),
               const SizedBox(width: 12),
               const Expanded(
-                child: Center(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _TopTabChip(label: 'För dig', selected: true),
-                      SizedBox(width: 8),
-                      _TopTextTab(label: 'Duos'),
-                      SizedBox(width: 8),
-                      _TopTextTab(label: 'Astro'),
-                    ],
-                  ),
-                ),
-              ),
+                  child: Center(
+                      child: Text('För dig',
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 21,
+                              fontWeight: FontWeight.w800)))),
               const SizedBox(width: 12),
-_TopIconButton(
-  icon: Icons.logout,
-  onTap: onLogout,
-),
-
+              _TopIconButton(
+                icon: Icons.logout,
+                onTap: onLogout,
+              ),
             ],
           ),
         ),
@@ -192,8 +180,8 @@ class _BottomActionBar extends StatelessWidget {
         final likeProgress = _likeProgress(drag);
         final nopeProgress = _nopeProgress(drag);
         final superProgress = _superProgress(drag);
-
-        final isDraggingAny = likeProgress > 0 || nopeProgress > 0 || superProgress > 0;
+        final isDraggingAny =
+            likeProgress > 0 || nopeProgress > 0 || superProgress > 0;
 
         return Positioned(
           left: 0,
@@ -204,29 +192,16 @@ class _BottomActionBar extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                AnimatedOpacity(
-                  duration: const Duration(milliseconds: 90),
-                  opacity: isDraggingAny ? 0.10 : 1.0,
-                  child: _TinderCircleButton(
-                    size: 52,
-                    onTap: () {},
-                    child: const Icon(
-                      Icons.refresh_rounded,
-                      size: 26,
-                      color: Colors.orange,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 14),
                 AnimatedScale(
                   duration: const Duration(milliseconds: 90),
                   scale: nopeProgress > 0 ? 1.22 : 1.0,
                   child: AnimatedOpacity(
                     duration: const Duration(milliseconds: 90),
                     opacity: likeProgress > 0 || superProgress > 0 ? 0.10 : 1.0,
-                    child: _TinderCircleButton(
+                    child: _SwipeActionButton(
                       size: 62,
                       onTap: onSwipeLeft,
+                      label: 'Passa',
                       child: const _ThickXIcon(
                         color: Color(0xFFFF2D75),
                         size: 34,
@@ -241,9 +216,10 @@ class _BottomActionBar extends StatelessWidget {
                   child: AnimatedOpacity(
                     duration: const Duration(milliseconds: 90),
                     opacity: likeProgress > 0 || nopeProgress > 0 ? 0.10 : 1.0,
-                    child: _TinderCircleButton(
+                    child: _SwipeActionButton(
                       size: 54,
                       onTap: onSwipeUp,
+                      label: 'Superlike',
                       child: const Icon(
                         Icons.star_rounded,
                         size: 28,
@@ -259,9 +235,10 @@ class _BottomActionBar extends StatelessWidget {
                   child: AnimatedOpacity(
                     duration: const Duration(milliseconds: 90),
                     opacity: nopeProgress > 0 || superProgress > 0 ? 0.10 : 1.0,
-                    child: _TinderCircleButton(
+                    child: _SwipeActionButton(
                       size: 62,
                       onTap: onSwipeRight,
+                      label: 'Gilla',
                       child: const Icon(
                         Icons.favorite,
                         size: 34,
@@ -274,11 +251,12 @@ class _BottomActionBar extends StatelessWidget {
                 AnimatedOpacity(
                   duration: const Duration(milliseconds: 90),
                   opacity: isDraggingAny ? 0.10 : 1.0,
-                  child: _TinderCircleButton(
+                  child: _SwipeActionButton(
                     size: 52,
                     onTap: onOpenEditProfile,
+                    label: 'Redigera profil',
                     child: const Icon(
-                      Icons.send_rounded,
+                      Icons.edit_outlined,
                       size: 24,
                       color: Colors.lightBlue,
                     ),
@@ -293,40 +271,33 @@ class _BottomActionBar extends StatelessWidget {
   }
 }
 
-class _TinderCircleButton extends StatelessWidget {
+class _SwipeActionButton extends StatelessWidget {
   final Widget child;
   final VoidCallback onTap;
+  final String label;
   final double size;
-
-  const _TinderCircleButton({
-    required this.child,
-    required this.onTap,
-    this.size = 64,
-  });
-
+  const _SwipeActionButton(
+      {required this.child,
+      required this.onTap,
+      required this.label,
+      this.size = 64});
   @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          color: const Color(0xFF0E0E0E),
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              blurRadius: 16,
-              spreadRadius: 0,
-              color: Colors.black.withOpacity(0.28),
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: Center(child: child),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Tooltip(
+      message: label,
+      child: Semantics(
+          button: true,
+          label: label,
+          child: Material(
+              color: const Color(0xFF0E0E0E),
+              shape: const CircleBorder(),
+              elevation: 4,
+              child: InkWell(
+                  onTap: onTap,
+                  customBorder: const CircleBorder(),
+                  child: SizedBox(
+                      width: size,
+                      height: size,
+                      child: Center(child: child))))));
 }
 
 class _ThickXIcon extends StatelessWidget {
@@ -356,101 +327,19 @@ class _ThickXIcon extends StatelessWidget {
 class _TopIconButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
-  final bool showDot;
-
-  const _TopIconButton({
-    required this.icon,
-    required this.onTap,
-    this.showDot = false,
-  });
-
+  const _TopIconButton({required this.icon, required this.onTap});
   @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Container(
-            width: 42,
-            height: 42,
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.28),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: Colors.white, size: 22),
-          ),
-          if (showDot)
-            Positioned(
-              right: 2,
-              top: 2,
-              child: Container(
-                width: 9,
-                height: 9,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFF2D75),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.black, width: 1.5),
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TopTabChip extends StatelessWidget {
-  final String label;
-  final bool selected;
-
-  const _TopTabChip({
-    required this.label,
-    required this.selected,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      decoration: BoxDecoration(
-        color: selected
-            // 🔥 Afrikansk varm ton (subtil, inte stark)
-            ? const Color(0xFF3A2A1E).withOpacity(0.72)
-            : Colors.transparent,
-        borderRadius: BorderRadius.circular(999),
-        border: selected
-            ? Border.all(
-                color: const Color(0xFFC89B3C).withOpacity(0.35),
-                width: 1,
-              )
-            : null,
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 15,
-          fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-        ),
-      ),
-    );
-  }
-}
-class _TopTextTab extends StatelessWidget {
-  final String label;
-
-  const _TopTextTab({required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      label,
-      style: TextStyle(
-        color: const Color(0xFF3A2A1E).withOpacity(0.72),
-        fontSize: 15,
-        fontWeight: FontWeight.w500,
-      ),
-    );
-  }
+  Widget build(BuildContext context) => IconButton(
+        tooltip: icon == Icons.logout
+            ? 'Logga ut'
+            : icon == Icons.tune_rounded
+                ? 'Upptäcktsinställningar'
+                : 'Ångra senaste swipe',
+        onPressed: onTap,
+        style: IconButton.styleFrom(
+            backgroundColor: Colors.black.withValues(alpha: .28),
+            foregroundColor: Colors.white,
+            minimumSize: const Size(48, 48)),
+        icon: Icon(icon, size: 23),
+      );
 }
