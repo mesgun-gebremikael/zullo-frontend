@@ -9,6 +9,7 @@ class OnboardingChoicePage extends StatelessWidget {
   final String? selectedValue;
   final ValueChanged<String> onSelected;
   final VoidCallback onNext;
+  final VoidCallback? onBack;
 
   const OnboardingChoicePage({
     super.key,
@@ -19,6 +20,7 @@ class OnboardingChoicePage extends StatelessWidget {
     required this.selectedValue,
     required this.onSelected,
     required this.onNext,
+    this.onBack,
   });
 
   @override
@@ -27,21 +29,20 @@ class OnboardingChoicePage extends StatelessWidget {
       progress: progress,
       title: title,
       subtitle: subtitle,
-      canContinue:
-          selectedValue != null && selectedValue!.trim().isNotEmpty,
+      canContinue: true,
       onNext: onNext,
+      onBack: onBack,
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
           const SizedBox(height: 8),
-
           ...options.map((option) {
             final selected = selectedValue == option;
 
             return Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: InkWell(
-                onTap: () => onSelected(option),
+                onTap: () => onSelected(selected ? '' : option),
                 borderRadius: BorderRadius.circular(18),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 180),
@@ -82,13 +83,10 @@ class OnboardingChoicePage extends StatelessWidget {
                         height: 26,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: selected
-                              ? Colors.white
-                              : Colors.transparent,
+                          color: selected ? Colors.white : Colors.transparent,
                           border: Border.all(
-                            color: selected
-                                ? Colors.white
-                                : Colors.grey.shade400,
+                            color:
+                                selected ? Colors.white : Colors.grey.shade400,
                             width: 2,
                           ),
                         ),

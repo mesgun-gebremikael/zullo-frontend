@@ -18,7 +18,26 @@ class _OnboardingWorkPageState extends State<OnboardingWorkPage> {
   final _workPlace = TextEditingController();
   final _jobTitle = TextEditingController();
 
-  String _workStatus = 'study';
+  String _workStatus = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _workStatus = widget.data.workStatus;
+    _studyPlace.text = widget.data.studyPlace;
+    _studySubject.text = widget.data.studySubject;
+    _workPlace.text = widget.data.workPlace;
+    _jobTitle.text = widget.data.jobTitle;
+  }
+
+  @override
+  void dispose() {
+    _studyPlace.dispose();
+    _studySubject.dispose();
+    _workPlace.dispose();
+    _jobTitle.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,13 +74,15 @@ class _OnboardingWorkPageState extends State<OnboardingWorkPage> {
           ),
           const SizedBox(height: 26),
           if (isStudy) ...[
-            _field(_studyPlace, 'Var pluggar du?', 'Stockholm, universitet, skola...'),
+            _field(_studyPlace, 'Var pluggar du?',
+                'Stockholm, universitet, skola...'),
             const SizedBox(height: 18),
             _field(_studySubject, 'Vad pluggar du?', 'Data, ekonomi, vård...'),
-          ] else ...[
+          ] else if (_workStatus == 'work') ...[
             _field(_workPlace, 'Var jobbar du?', 'Företag, plats, bransch...'),
             const SizedBox(height: 18),
-            _field(_jobTitle, 'Vad har du för jobbtitel?', 'Utvecklare, lärare, chaufför...'),
+            _field(_jobTitle, 'Vad har du för jobbtitel?',
+                'Utvecklare, lärare, chaufför...'),
           ],
         ],
       ),
@@ -79,7 +100,8 @@ class _OnboardingWorkPageState extends State<OnboardingWorkPage> {
         color: selected ? Colors.white : const Color(0xFF20242C),
         fontWeight: FontWeight.w800,
       ),
-      onSelected: (_) => setState(() => _workStatus = value),
+      onSelected: (selected) =>
+          setState(() => _workStatus = selected ? value : ''),
     );
   }
 
@@ -87,7 +109,8 @@ class _OnboardingWorkPageState extends State<OnboardingWorkPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900)),
+        Text(title,
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900)),
         const SizedBox(height: 10),
         TextField(
           controller: controller,

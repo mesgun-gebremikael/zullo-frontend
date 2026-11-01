@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'onboarding_data.dart';
 import 'onboarding_shell.dart';
-import 'onboarding_distance_page.dart';
 import 'onboarding_work_page.dart';
 
 class OnboardingReligionPage extends StatefulWidget {
@@ -13,12 +12,17 @@ class OnboardingReligionPage extends StatefulWidget {
   });
 
   @override
-  State<OnboardingReligionPage> createState() =>
-      _OnboardingReligionPageState();
+  State<OnboardingReligionPage> createState() => _OnboardingReligionPageState();
 }
 
 class _OnboardingReligionPageState extends State<OnboardingReligionPage> {
-  String _selected = 'Private';
+  String _selected = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _selected = widget.data.religion;
+  }
 
   final options = const [
     'Private',
@@ -37,7 +41,8 @@ class _OnboardingReligionPageState extends State<OnboardingReligionPage> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: InkWell(
-        onTap: () => setState(() => _selected = value),
+        onTap: () =>
+            setState(() => _selected = _selected == value ? '' : value),
         borderRadius: BorderRadius.circular(14),
         child: Container(
           height: 64,
@@ -45,9 +50,8 @@ class _OnboardingReligionPageState extends State<OnboardingReligionPage> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: selected
-                  ? const Color(0xFFFF4458)
-                  : const Color(0xFFD5DAE1),
+              color:
+                  selected ? const Color(0xFFFF4458) : const Color(0xFFD5DAE1),
               width: selected ? 2.4 : 1.4,
             ),
           ),
@@ -82,17 +86,17 @@ class _OnboardingReligionPageState extends State<OnboardingReligionPage> {
       progress: 0.56,
       title: 'Vad är din\nreligion?',
       subtitle: 'Du kan välja Privat om du inte vill visa detta.',
-      canContinue: _selected.isNotEmpty,
-    onNext: () {
-  widget.data.religion = _selected;
+      canContinue: true,
+      onNext: () {
+        widget.data.religion = _selected;
 
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (_) => OnboardingWorkPage(data: widget.data),
-    ),
-  );
-},
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => OnboardingWorkPage(data: widget.data),
+          ),
+        );
+      },
       child: ListView(
         padding: EdgeInsets.zero,
         children: options.map(_option).toList(),
