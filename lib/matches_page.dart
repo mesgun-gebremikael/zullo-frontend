@@ -1,3 +1,4 @@
+import 'services/commerce_service.dart';
 import 'services/relation_changes.dart';
 import 'services/refresh_coordinator.dart';
 import 'services/account_session.dart';
@@ -209,6 +210,7 @@ List<dynamic> _mapChatItemsToUi(List<ChatListItem> items) {
             "lastMessageText": item.lastMessageText,
             "lastMessageAtUtc": item.lastMessageAtUtc?.toIso8601String(),
             "matchCreatedAtUtc": item.matchCreatedAtUtc?.toIso8601String(),
+            "lastActivityUtc": item.lastActivityUtc?.toIso8601String(),
             "hasUnread": item.hasUnread,
             "unreadMessageCount": item.unreadMessageCount,
           })
@@ -393,45 +395,30 @@ final lastMessageAtUtc = (m["lastMessageAtUtc"] ?? "").toString();
                 : ListView(
                     padding: const EdgeInsets.fromLTRB(14, 12, 14, 16),
                     children: [
-                      // ✅ LIKES (Premium-lås i MVP)
-                      InkWell(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const PremiumPage(),
-                            ),
-                          );
+                      Card(child: ListTile(
+                        leading: const Icon(Icons.workspace_premium_rounded),
+                        title: const Text('Se vem som gillar dig'),
+                        subtitle: const Text('Vanliga inkommande likes ingår i Premium. Superlikes kan alla se.'),
+                        onTap: () async {
+                          await Navigator.push(context, MaterialPageRoute(builder: (_) => const PremiumPage()));
+                          if (mounted && _sessionActive) loadMatches(invalidate: true);
                         },
-                        borderRadius: BorderRadius.circular(16),
-                        child: Container(
-                          margin: const EdgeInsets.only(bottom: 14),
-                          padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(16),
-                            color: cs.surfaceContainerHighest.withValues(
-                              alpha: 0.55,
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.lock),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  likesReceived.isEmpty
-                                      ? "Inga nya likes än"
-                                      : "${likesReceived.length} personer har gillat dig — Premium för att se vem",
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      
+                      )),
+                      for (final incoming in likesReceived) Card(child: ListTile(
+                        leading: Icon(incoming['isSuperLike'] == true ? Icons.star_rounded : Icons.favorite, color: incoming['isSuperLike'] == true ? Colors.blue : Colors.pink),
+                        title: Text(incoming['displayName'].toString()),
+                        subtitle: Text(incoming['isSuperLike'] == true ? 'Har supergillat dig' : 'Gillar dig'),
+                        trailing: TextButton(onPressed: () async {
+                          try {
+                            final matched = await _auth.like(incoming['userId'].toString());
+                            if (!context.mounted || !_sessionActive) return;
+                            MatchesRefreshService.instance.requestRefresh();
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(matched ? 'Ni har matchat! Öppna er nya chatt.' : 'Like skickad.')));
+                          } catch (_) {
+                            if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Kunde inte gilla. Försök igen.')));
+                          }
+                        }, child: const Text('Gilla tillbaka')),
+                      )),
 
                       if (newMatches.isEmpty && messageMatches.isEmpty) ...[
                         const SizedBox(height: 140),
@@ -608,7 +595,7 @@ const SizedBox(height: 10),
                                 overflow: TextOverflow.ellipsis,
                               ),
                               subtitle: Text(
-                                subtitleText,
+                                [subtitleText, PresenceText.format(DateTime.tryParse(m['lastActivityUtc']?.toString() ?? ''))].where((text) => text.isNotEmpty).join(' · '),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(

@@ -1,3 +1,4 @@
+import 'services/commerce_service.dart';
 import 'services/relation_changes.dart';
 import 'dart:math';
 import 'services/chat_merge.dart';
@@ -133,6 +134,7 @@ _repositorySubscription =
     ChatRepository.instance.stream.listen((state) {
   if (!mounted || !_sessionActive) return;
 
+  setState(() {});
   final repoThread = ChatRepository.instance.threadFor(widget.userId);
   if (repoThread.isEmpty) return;
 
@@ -897,7 +899,14 @@ _pushCurrentMessagesToRepository();
 
 
 
-  @override
+    String get _presenceText {
+    for (final item in ChatRepository.instance.chatList) {
+      if (item.userId == widget.userId) return PresenceText.format(item.lastActivityUtc);
+    }
+    return '';
+  }
+
+@override
    Widget build(BuildContext context) {
     if (!_sessionActive) return const SizedBox.shrink();
   // bara för att inte “unused”-varnas
@@ -956,10 +965,10 @@ child: widget.photoUrl.isEmpty
           ),
           const SizedBox(width: 10),
           Expanded(
-            child: Text(
-              widget.displayName,
-              overflow: TextOverflow.ellipsis,
-            ),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(widget.displayName, overflow: TextOverflow.ellipsis),
+              if (_presenceText.isNotEmpty) Text(_presenceText, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.normal)),
+            ]),
             ),
           ],
         ),

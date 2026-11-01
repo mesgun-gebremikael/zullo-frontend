@@ -21,8 +21,11 @@ class SwipePage extends StatelessWidget {
   final VoidCallback onSwipeUp;
   final VoidCallback onSwipeRight;
 
+  final VoidCallback? onRewind;
+
   const SwipePage({
     super.key,
+    this.onRewind,
     required this.isLoading,
     required this.hasActiveProfile,
     required this.hasUnreadMessages,
@@ -64,6 +67,7 @@ class SwipePage extends StatelessWidget {
                 _TopOverlayBar(
   onOpenRadiusSheet: onOpenRadiusSheet,
   onLogout: onLogout,
+    onRewind: onRewind,
 ),
 
                 if (hasActiveProfile)
@@ -83,11 +87,13 @@ class SwipePage extends StatelessWidget {
 class _TopOverlayBar extends StatelessWidget {
   final VoidCallback onOpenRadiusSheet;
   final VoidCallback onLogout;
+  final VoidCallback? onRewind;
 
 
   const _TopOverlayBar({
   required this.onOpenRadiusSheet,
   required this.onLogout,
+  this.onRewind,
 });
 
 
@@ -114,6 +120,7 @@ class _TopOverlayBar extends StatelessWidget {
           ),
           child: Row(
             children: [
+              if (onRewind != null) _TopIconButton(icon: Icons.undo_rounded, onTap: onRewind!),
               _TopIconButton(
                 icon: Icons.tune_rounded,
                 onTap: onOpenRadiusSheet,

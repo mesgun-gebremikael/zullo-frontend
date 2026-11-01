@@ -3,6 +3,14 @@ import 'auth_service.dart';
 import 'auth_storage.dart';
 
 class NotificationAccess {
+  static Future<bool> isCurrentRecipient(String recipient) async {
+    final generation = AccountSession.generation;
+    try {
+      final user = await AuthStorage().getUserId();
+      return AccountSession.isCurrent(generation) && AccountSession.notificationBelongsTo(recipient, user);
+    } catch (_) { return false; }
+  }
+
   static Future<bool> canOpen(String peer, String recipient,
       {AuthService? auth}) async {
     final generation = AccountSession.generation;

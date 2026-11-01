@@ -1,3 +1,4 @@
+import 'services/commerce_service.dart';
 import 'services/relation_changes.dart';
 import 'dart:async';
 import 'services/account_session.dart';
@@ -31,8 +32,10 @@ class _HomePageState extends State<HomePage>
   final int _sessionGeneration = AccountSession.generation;
   Timer? _emptyFeedTimer;
   StreamSubscription<String>? _relationChanges;
+  StreamSubscription<void>? _commerceEvents;
   int _feedRevision = 0;
   bool _feedRequestRunning = false;
+  bool _rewindInFlight = false;
   bool _feedReloadPending = false;
   bool _foreground = true;
 
@@ -99,6 +102,12 @@ static const double _activeCardLift = 0;
       setState(() { profiles = []; _prefetchedProfiles = []; currentIndex = 0; });
       unawaited(loadFeed());
     });
+    _commerceEvents = CommerceEvents.stream.listen((_) {
+      if (!mounted || !AccountSession.isCurrent(_sessionGeneration)) return;
+      _feedRevision++;
+      _prefetchedProfiles = [];
+      unawaited(loadFeed());
+    });
     loadFeed();
     loadUnreadStatus();
     loadMyPhoto();
@@ -107,6 +116,7 @@ static const double _activeCardLift = 0;
 
   @override
   void dispose() {
+    _commerceEvents?.cancel();
     _relationChanges?.cancel();
     _emptyFeedTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
@@ -617,15 +627,16 @@ static const double _activeCardLift = 0;
       } catch (_) {}
     } else {
       try {
-        final matched = await _authService.like(p.userId);
+        final matched = await _authService.like(p.userId, superLike: dir == SwipeDir.up);
+        if (dir == SwipeDir.up) CommerceEvents.walletChanged();
         if (matched) {
           await showMatchPopup(other: p);
         } else if (dir == SwipeDir.up) {
           showToast("Super Like skickad ⭐");
         }
       } catch (e) {
-        if (e.toString().contains("429")) {
-          showToast("Du har nått like-gränsen ❤️");
+        if ((e is CommerceException && (e.status == 429 || e.status == 402)) || e.toString().contains("429")) {
+          showToast(dir == SwipeDir.up ? "Du har inga Superlikes kvar ⭐" : "Du har nått like-gränsen ❤️");
 
           Navigator.push(
             context,
@@ -668,6 +679,24 @@ static const double _activeCardLift = 0;
     }
 
     nextProfile();
+  }
+
+  Future<void> _rewind() async {
+    if (_rewindInFlight || _isAnimating || isLoading) return;
+    _rewindInFlight = true;
+    try {
+      await CommerceClient().rewind();
+      if (!mounted || !AccountSession.isCurrent(_sessionGeneration)) return;
+      _feedRevision++;
+      _prefetchedProfiles = [];
+      await loadFeed();
+      showToast('Senaste swipen ångrades');
+    } on CommerceException catch (error) {
+      if (!mounted) return;
+      if (error.status == 402) { await Navigator.push(context, MaterialPageRoute(builder: (_) => const PremiumPage())); }
+      else { showToast(error.message); }
+    } catch (_) { if (mounted) showToast('Kunde inte ångra. Försök igen.'); }
+    finally { _rewindInFlight = false; }
   }
 
   Future<void> _snapBack() async {
@@ -1174,6 +1203,7 @@ static const double _activeCardLift = 0;
       hasActiveProfile: currentProfile != null,
       hasUnreadMessages: hasUnreadMessages,
       dragListenable: _dragNotifier,
+      onRewind: _rewind,
       onOpenRadiusSheet: _openRadiusSheet,
       onOpenMatchesPage: _openMatchesPage,
       onLogout: _logout,

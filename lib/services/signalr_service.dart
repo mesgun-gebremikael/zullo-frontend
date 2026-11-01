@@ -1,3 +1,5 @@
+import 'commerce_service.dart';
+import 'matches_refresh_service.dart';
 import 'relation_changes.dart';
 import 'dart:async';
 import 'package:signalr_netcore/signalr_client.dart';
@@ -44,6 +46,12 @@ class HubChatTransport implements ChatTransport {
       if (epoch == _epoch && args != null && args.isNotEmpty) {
         _messages.add(Map<String, dynamic>.from(args.first as Map));
       }
+    });
+    connection.on('CommerceChanged', (args) {
+      if (epoch == _epoch) { CommerceEvents.walletChanged(); MatchesRefreshService.instance.requestRefresh(); }
+    });
+    connection.on('SuperLikeReceived', (args) {
+      if (epoch == _epoch) { CommerceEvents.refreshDiscovery(); MatchesRefreshService.instance.requestRefresh(); }
     });
     connection.on('RelationChanged', (args) {
       if (epoch == _epoch && args != null && args.isNotEmpty) {

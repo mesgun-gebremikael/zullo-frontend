@@ -1,3 +1,4 @@
+import 'commerce_service.dart';
 import 'relation_changes.dart';
 import 'api_config.dart';
 import 'push_token_service.dart';
@@ -269,7 +270,7 @@ Future<Map<String, dynamic>> getSwipeFeed({
 
   // ---------- LIKE / SKIP ----------
 
-  Future<bool> like(String targetUserId) async {
+  Future<bool> like(String targetUserId, {bool superLike = false}) async {
     final token = await _storage.getToken();
 
     final res = await _client.post(
@@ -278,7 +279,7 @@ Future<Map<String, dynamic>> getSwipeFeed({
         'Content-Type': 'application/json',
         if (token != null) 'Authorization': 'Bearer $token',
       },
-      body: jsonEncode({'targetUserId': targetUserId}),
+      body: jsonEncode({'targetUserId': targetUserId, if (superLike) 'superLike': true}),
     );
 
    if (res.statusCode == 200) {
@@ -286,9 +287,8 @@ Future<Map<String, dynamic>> getSwipeFeed({
   return decoded['matched'] == true;
 }
 
-if (res.statusCode == 429) {
-  final decoded = jsonDecode(res.body);
-  throw Exception(decoded['message'] ?? 'Like limit reached');
+if (res.statusCode == 429 || res.statusCode == 402) {
+  throw CommerceException(res.statusCode, res.statusCode == 402 ? 'Du har inga Superlikes kvar.' : 'Du har nått din like-gräns.');
 }
 
 throw Exception('Like failed: ${res.statusCode} ${res.body}');
