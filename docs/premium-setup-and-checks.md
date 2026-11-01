@@ -64,3 +64,5 @@ Deploy the backend first. Migration `AddPremiumCommerce` adds CommerceAccounts, 
 ## Earlier manual testing still pending
 
 The owner explicitly wants to test later. Registration/automatic login, logout, single name entry, optional choices, required age/photos, notification/chat/reconnect/profile editing, discovery refresh, plus PR12 preference/email/block/unblock changes still need confirmation on the owner's two emulators. Those are not marked complete by this work. Remind the owner when resuming manual testing.
+
+Native validation includes unsigned iOS simulator compilation and an Android debug APK build. Real billing still needs store-connected test builds, licensed test users and the relevant Apple sandbox/TestFlight and Play test-track setup; a successful debug compile does not prove that purchases or payouts work.
