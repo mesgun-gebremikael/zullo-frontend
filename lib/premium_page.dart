@@ -162,10 +162,10 @@ class _PremiumPageState extends State<PremiumPage> {
             offer.id == 'zullo_premium_monthly')
         .toList();
     return Scaffold(
-      backgroundColor: const Color(0xFF0E1016),
+      backgroundColor: Colors.white,
       appBar: AppBar(
-          backgroundColor: const Color(0xFF0E1016),
-          foregroundColor: Colors.white,
+          backgroundColor: Colors.white,
+          foregroundColor: const Color(0xFF22262E),
           title:
               Text(widget.activityOnly ? 'Dölj aktivitet' : 'ZULLO Premium')),
       body: state == null && _error == null
@@ -245,7 +245,7 @@ class _PremiumPageState extends State<PremiumPage> {
                 if (!widget.activityOnly) ...[
                   const Text('Det här ingår i Premium',
                       style: TextStyle(
-                          color: Colors.white,
+                          color: Color(0xFF22262E),
                           fontSize: 21,
                           fontWeight: FontWeight.w700)),
                   for (final feature in const [
@@ -278,17 +278,17 @@ class _PremiumPageState extends State<PremiumPage> {
                     ListTile(
                         contentPadding: EdgeInsets.zero,
                         leading:
-                            Icon(feature.$1, color: const Color(0xFFEBC186)),
+                            Icon(feature.$1, color: const Color(0xFFB38A23)),
                         title: Text(feature.$2,
-                            style: const TextStyle(color: Colors.white)),
+                            style: const TextStyle(color: Color(0xFF22262E))),
                         subtitle: Text(feature.$3,
-                            style: const TextStyle(color: Colors.white60))),
+                            style: const TextStyle(color: Color(0xFF626A77)))),
                 ],
                 const SizedBox(height: 16),
                 if (offers.isEmpty)
                   const Text(
                       'Köp är inte tillgängliga just nu. Du kan fortsätta använda ZULLO gratis.',
-                      style: TextStyle(color: Colors.white70)),
+                      style: TextStyle(color: Color(0xFF626A77))),
                 for (final offer in offers)
                   Card(
                       child: ListTile(
@@ -313,14 +313,14 @@ class _PremiumPageState extends State<PremiumPage> {
                       padding: EdgeInsets.symmetric(vertical: 12),
                       child: Text(
                           'Ditt separata abonnemang för Dölj aktivitet hanteras i App Store eller Google Play. Det avslutas inte automatiskt om du köper Premium.',
-                          style: TextStyle(color: Colors.white70))),
+                          style: TextStyle(color: Color(0xFF626A77)))),
                 if (offers.isNotEmpty)
                   const Padding(
                       padding: EdgeInsets.symmetric(vertical: 12),
                       child: Text(
                           'Abonnemanget förnyas automatiskt tills du säger upp det i App Store eller Google Play. Veckans inkluderade Superlikes och månadens inkluderade Boost sparas inte till nästa period. Separat köpta krediter finns kvar på ditt konto tills de används.',
                           style:
-                              TextStyle(color: Colors.white60, height: 1.4))),
+                              TextStyle(color: Color(0xFF626A77), height: 1.4))),
                 TextButton(
                     onPressed: _busy ||
                             state?.checkoutEnabled != true ||

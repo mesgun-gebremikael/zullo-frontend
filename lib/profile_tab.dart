@@ -143,7 +143,7 @@ class _ProfileTabState extends State<ProfileTab> {
 
     final imageUrl = photos.isNotEmpty
         ? photos[0].toString()
-        : "https://images.unsplash.com/photo-1524504388940-b1c1722653e1";
+        : "";
 
     final displayName = (_profile!["displayName"] ?? "").toString();
 
@@ -160,8 +160,9 @@ class _ProfileTabState extends State<ProfileTab> {
                   onTap: _openPhotoPreview,
                   child: CircleAvatar(
                     radius: 34,
-                    backgroundImage: NetworkImage(imageUrl),
+                    backgroundImage: imageUrl.isEmpty ? null : NetworkImage(imageUrl),
                     backgroundColor: Colors.grey.shade800,
+                    child: imageUrl.isEmpty ? const Icon(Icons.person_outline, color: Colors.white) : null,
                   ),
                 ),
                 const SizedBox(width: 16),

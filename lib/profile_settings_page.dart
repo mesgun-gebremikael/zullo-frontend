@@ -23,7 +23,6 @@ String _userIdText = 'Laddar...';
 
   bool _showActivityStatus = true;
   bool _incognitoMode = false;
-  bool _marketingConsent = false;
   bool _privacyBusy = false;
 
   @override
@@ -109,8 +108,8 @@ Future<void> _loadAccountInfo() async {
             _SettingsArrowRow(
               icon: Icons.verified,
               title: 'Verifiera profil',
-              subtitle: 'Bli verifierad så andra vet att du är på riktigt',
-              onTap: () {},
+              subtitle: 'Verifiering är inte tillgänglig ännu',
+              onTap: null,
             ),
             const SizedBox(height: 8),
             _SettingsSwitchRow(
@@ -134,21 +133,9 @@ Future<void> _loadAccountInfo() async {
   icon: Icons.alternate_email,
   title: 'E-post',
   subtitle: _emailText,
-  onTap: () {},
+  onTap: null,
 ),
             const SizedBox(height: 8),
-_SettingsSwitchRow(
-  icon: Icons.campaign,
-  title: 'Marknadsföringstillstånd',
-  subtitle: 'Jag tillåter ZULLO att använda min profil och mina bilder i våra reklamer',
-  value: _marketingConsent,
-  onChanged: (value) {
-    setState(() {
-      _marketingConsent = value;
-    });
-  },
-),
-const SizedBox(height: 8),
 _SettingsArrowRow(
   icon: Icons.block,
   title: 'Blockerade profiler',
@@ -159,8 +146,8 @@ const SizedBox(height: 8),
 _SettingsArrowRow(
   icon: Icons.delete_outline,
   title: 'Radera eller pausa konto',
-  subtitle: 'Hantera ditt konto',
-  onTap: () {},
+  subtitle: 'Kontohantering är inte tillgänglig ännu',
+  onTap: null,
 ),
 const SizedBox(height: 28),
 Text(
@@ -183,7 +170,7 @@ class _SettingsArrowRow extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   const _SettingsArrowRow({
     required this.icon,
@@ -239,7 +226,7 @@ class _SettingsArrowRow extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 10),
-              const Padding(
+              if (onTap != null) const Padding(
                 padding: EdgeInsets.only(top: 6),
                 child: Icon(
                   Icons.chevron_right,

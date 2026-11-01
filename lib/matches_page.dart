@@ -6,7 +6,6 @@ import 'services/account_session.dart';
  import 'dart:async';
 import 'package:flutter/material.dart';
 import 'services/auth_service.dart';
-import 'premium_page.dart';
 import 'services/unread_sync_service.dart';
 import 'services/chat_coordinator.dart';
 import 'models/chat_open_request.dart';
@@ -23,13 +22,11 @@ import 'services/auth_storage.dart';
 
 
 class MatchesPage extends StatefulWidget {
-  final bool showLikes;
   final ValueChanged<bool>? onUnreadChanged;
   final AuthService? authService;
 
   const MatchesPage({
     super.key,
-    this.showLikes = false,
     this.onUnreadChanged,
     this.authService,
   });
@@ -54,11 +51,9 @@ class _MatchesPageState extends State<MatchesPage> {
 
 StreamSubscription<void>? _refreshSubscription;
 StreamSubscription<ChatRepositoryState>? _repositorySubscription;
-  bool _premium = false;
   bool isLoading = true;
   String? error;
   List<dynamic> matches = [];
-  List<dynamic> likesReceived = [];
   late final MessagesService _messagesService;
 
  @override
@@ -72,7 +67,6 @@ void initState() {
     if (!mounted || !_sessionActive) return;
     setState(() {
       matches.removeWhere((row) => row['userId'].toString() == other);
-      likesReceived.removeWhere((row) => row['userId'].toString() == other);
     });
   });
   _messagesService = MessagesService(
@@ -81,11 +75,9 @@ void initState() {
   );
 
   final cachedMatches = MatchesCacheService.getMatches();
-  final cachedLikes = MatchesCacheService.getLikesReceived();
 
- if (cachedMatches != null && cachedLikes != null) {
+ if (cachedMatches != null) {
   matches = List<dynamic>.from(cachedMatches);
-  likesReceived = List<dynamic>.from(cachedLikes);
   isLoading = false;
 
   final cachedItems = _mapMatchesToChatItems(matches);
@@ -115,7 +107,7 @@ void initState() {
   widget.onUnreadChanged?.call(hasUnread);
 });
 
-  loadMatches(silent: cachedMatches != null && cachedLikes != null);
+  loadMatches(silent: cachedMatches != null);
   _refreshSubscription =
     MatchesRefreshService.instance.stream.listen((_) async {
   if (!mounted || !_sessionActive) return;
@@ -265,7 +257,7 @@ Future<void> _warmTopChatThreads(List<dynamic> list) async {
     if (!mounted || !_sessionActive) return;
     if (!silent) {
       setState(() {
-        if (matches.isEmpty && likesReceived.isEmpty) {
+        if (matches.isEmpty) {
           isLoading = true;
         }
         error = null;
@@ -288,22 +280,14 @@ ChatRepository.instance.setChatList(chatItems);
 final hasUnread = chatItems.any((m) => m.hasUnread);
 widget.onUnreadChanged?.call(hasUnread);
 
-      final likesData = await _auth.getLikesReceived();
-      if (revision != RelationChanges.revision) return;
-      final likesList = List<dynamic>.from(likesData);
-
      if (!mounted || !_sessionActive) return;
 
 final mappedForUi = _mapChatItemsToUi(chatItems);
 
-MatchesCacheService.setData(
-  matches: mappedForUi,
-  likesReceived: likesList,
-);
+MatchesCacheService.setMatches(mappedForUi);
 
 setState(() {
   matches = mappedForUi;
-  likesReceived = likesList;
   isLoading = false;
   error = null;
 });
@@ -316,7 +300,7 @@ _warmTopChatThreads(mappedForUi);
 
       if (!silent) {
         setState(() {
-          error = "Kunde inte ladda matches: $e";
+          error = "Kunde inte hämta dina chattar. Dra nedåt för att försöka igen.";
           isLoading = false;
         });
       }
@@ -366,56 +350,6 @@ final lastMessageAtUtc = (m["lastMessageAtUtc"] ?? "").toString();
   );
 }
 
-  Future<void> _loadMembership() async {
-    try {
-      final state = await CommerceClient().state();
-      if (mounted && _sessionActive) setState(() => _premium = state.premium);
-    } catch (_) { /* Server still controls which likes can be returned. */ }
-  }
-
-  Future<void> _openPremium() async {
-    await Navigator.push(context, MaterialPageRoute(builder: (_) => const PremiumPage()));
-    if (mounted && _sessionActive) {
-      await _loadMembership();
-      await loadMatches(invalidate: true);
-    }
-  }
-
-  Widget _buildLikes() => Theme(data: ThemeData.light(useMaterial3: true), child: Scaffold(
-    backgroundColor: Colors.white,
-    appBar: AppBar(backgroundColor: Colors.white, foregroundColor: const Color(0xFF22262E),
-      title: const Text('Likes', style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800))),
-    body: RefreshIndicator(onRefresh: loadMatches, child: isLoading
-      ? const Center(child: CircularProgressIndicator())
-      : ListView(physics: const AlwaysScrollableScrollPhysics(), padding: const EdgeInsets.fromLTRB(20, 10, 20, 110), children: [
-          if (error != null) Padding(padding: const EdgeInsets.all(24), child: Text(error!))
-          else if (likesReceived.isEmpty)
-            ConstrainedBox(constraints: BoxConstraints(minHeight: MediaQuery.sizeOf(context).height * .72),
-              child: DiscoveryEmptyState(likes: true, premium: _premium, onAction: _premium ? CommerceEvents.openDiscovery : _openPremium))
-          else ...[
-                      for (final incoming in likesReceived) Card(child: ListTile(
-                        leading: Icon(incoming['isSuperLike'] == true ? Icons.star_rounded : Icons.favorite, color: incoming['isSuperLike'] == true ? Colors.blue : Colors.pink),
-                        title: Text(incoming['displayName'].toString()),
-                        subtitle: Text(incoming['isSuperLike'] == true ? 'Har supergillat dig' : 'Gillar dig'),
-                        trailing: TextButton(onPressed: () async {
-                          try {
-                            final matched = await _auth.like(incoming['userId'].toString());
-                            if (!mounted || !_sessionActive) return;
-                            MatchesRefreshService.instance.requestRefresh();
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(matched ? 'Ni har matchat! Öppna er nya chatt.' : 'Like skickad.')));
-                          } catch (_) {
-                            if (mounted && _sessionActive) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Kunde inte gilla. Försök igen.')));
-                          }
-                        }, child: const Text('Gilla tillbaka')),
-                      )),
-
-            if (!_premium) Padding(padding: const EdgeInsets.only(top: 24), child: FilledButton(
-              style: FilledButton.styleFrom(backgroundColor: const Color(0xFFE8C35D), foregroundColor: const Color(0xFF22262E)),
-              onPressed: _openPremium, child: const Text('Se vem som gillar dig'))),
-          ],
-      ])),
-  ));
-
   @override
   Widget build(BuildContext context) {
     if (!_sessionActive) return const SizedBox.shrink();
@@ -430,8 +364,6 @@ final lastMessageAtUtc = (m["lastMessageAtUtc"] ?? "").toString();
                          final lastText = (m['lastMessageText'] ?? '').toString().trim();
                          return lastText.isNotEmpty;
                        }).toList();
-
-    if (widget.showLikes) return _buildLikes();
 
     return Theme(
       data: ThemeData.light(useMaterial3: true),

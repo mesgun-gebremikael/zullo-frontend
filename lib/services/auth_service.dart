@@ -1,3 +1,4 @@
+import '../models/received_likes_summary.dart';
 import 'commerce_service.dart';
 import 'relation_changes.dart';
 import 'api_config.dart';
@@ -37,7 +38,7 @@ class AuthService {
   static final String baseApiUrl = ApiConfig.baseUrl;
   static final String baseAuthUrl = '$baseApiUrl/api/auth';
 
-  final AuthStorage _storage = AuthStorage();
+  final AuthStorage _storage;
   static final http.Client _sharedTransport = http.Client();
   final http.Client _transport;
   int _generation = AccountSession.generation;
@@ -45,8 +46,9 @@ class AuthService {
       SessionHttpClient(_transport, generation: () => _generation);
   final Future<String?> Function() _pushTokenLoader;
   AuthService(
-      {http.Client? client, Future<String?> Function()? pushTokenLoader})
-      : _transport = client ?? _sharedTransport,
+      {http.Client? client, AuthStorage? storage, Future<String?> Function()? pushTokenLoader})
+      : _storage = storage ?? AuthStorage(),
+        _transport = client ?? _sharedTransport,
         _pushTokenLoader = pushTokenLoader ?? PushTokenService.currentToken;
 
   Future<void> _acceptAuth(http.Response response) async {
@@ -338,6 +340,19 @@ throw Exception('Like failed: ${res.statusCode} ${res.body}');
   throw Exception('Matches failed: ${res.statusCode}');
 });
 }
+Future<ReceivedLikesSummary> getReceivedLikesSummary() async {
+  AccountSession.check(_generation);
+  final revision = RelationChanges.revision;
+  final token = await _storage.getToken();
+  final response = await _client.get(Uri.parse('$baseApiUrl/likes/received/summary'), headers: {
+    if (token != null) 'Authorization': 'Bearer $token',
+  }).timeout(const Duration(seconds: 15));
+  AccountSession.check(_generation);
+  if (revision != RelationChanges.revision) throw StateError('Relation changed during refresh');
+  if (response.statusCode != 200) throw StateError('Could not load received likes summary');
+  return ReceivedLikesSummary.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+}
+
 Future<List<dynamic>> getLikesReceived() async {
   AccountSession.check(_generation);
   return MatchesCacheService.loadLikes(_generation, () async {

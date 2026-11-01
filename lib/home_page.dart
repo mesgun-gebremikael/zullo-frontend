@@ -1,3 +1,5 @@
+import 'widgets/discovery_settings_sheet.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'services/commerce_service.dart';
 import 'services/relation_changes.dart';
 import 'dart:async';
@@ -13,7 +15,6 @@ import 'profile_page.dart';
 import 'chat_page.dart';
 import 'edit_profile_page.dart';
 import 'swipe_page.dart';
-import 'welcome_page.dart';
 import 'widgets/swipe_profile_card.dart';
 
 enum SwipeDir { left, right, up }
@@ -70,6 +71,7 @@ static const double _activeCardLift = 0;
   String _selectedIntention = 'Relationship';
   String _selectedReligion = 'Private';
   String _interestedIn = 'Alla';
+  String? _preferenceUserId;
   int _minAge = 18;
   int _maxAge = 99;
 
@@ -109,9 +111,9 @@ static const double _activeCardLift = 0;
       unawaited(loadFeed());
     });
     loadFeed();
+    _loadMyFilterValues();
     loadUnreadStatus();
     loadMyPhoto();
-    _loadMyFilterValues();
   }
 
   @override
@@ -727,390 +729,54 @@ static const double _activeCardLift = 0;
   Future<void> _loadMyFilterValues() async {
     try {
       final me = await _authService.getMyProfile();
-
+      final user = (me['userId'] ?? '').toString();
+      final preferences = user.isEmpty ? null : await SharedPreferences.getInstance();
+      final previousMinAge = _minAge;
+      final previousMaxAge = _maxAge;
+      final savedAges = preferences?.getString('discovery_age_$user')?.split(',').map(int.tryParse).toList();
       if (!mounted || !AccountSession.isCurrent(_sessionGeneration)) return;
       setState(() {
+        _preferenceUserId = user.isEmpty ? null : user;
+        if (savedAges != null && savedAges.length == 2 && savedAges[0] != null && savedAges[1] != null && savedAges[0]! >= 18 && savedAges[1]! <= 99 && savedAges[0]! <= savedAges[1]!) {
+          _minAge = savedAges[0]!; _maxAge = savedAges[1]!;
+        }
         _interestedIn = (me["interestedIn"] ?? "Alla").toString();
         _radiusKm = (me["matchRadiusKm"] as num?)?.toDouble() ?? _radiusKm;
         _selectedIntention = (me["intention"] ?? "Relationship").toString();
         _selectedReligion = (me["religion"] ?? "Private").toString();
       });
+      if (previousMinAge != _minAge || previousMaxAge != _maxAge) {
+        _feedRevision++; _prefetchedProfiles = []; unawaited(loadFeed());
+      }
     } catch (_) {}
   }
 
   Future<void> _openRadiusSheet() async {
     await _loadMyFilterValues();
-    if (!mounted) return;
-    double tempRadius = _radiusKm;
-    String tempInterestedIn = _interestedIn;
-    String tempIntention = _selectedIntention;
-    String tempReligion = _selectedReligion;
-    int tempMinAge = _minAge;
-    int tempMaxAge = _maxAge;
-
-    await showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: const Color(0xFFF4F4F5),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-      ),
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            return SafeArea(
-              top: false,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(18, 12, 18, 28),
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Center(
-                        child: Container(
-                          width: 42,
-                          height: 5,
-                          decoration: BoxDecoration(
-                            color: Colors.black12,
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 18),
-                      Row(
-                        children: [
-                          const Expanded(
-                            child: Text(
-                              'Inställningar',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.w800,
-                                color: Color(0xFF1D1D1F),
-                              ),
-                            ),
-                          ),
-                          Container(
-                            width: 54,
-                            height: 54,
-                            decoration: const BoxDecoration(
-                              color: Color(0xFF101826),
-                              shape: BoxShape.circle,
-                            ),
-                            child: IconButton(
-                              onPressed: () async {
-                                Navigator.pop(context);
-
-                                try {
-                                  final savedKm = tempRadius.round();
-                                  await _authService.updateFilterProfile(
-                                    matchRadiusKm: savedKm,
-                                    interestedIn: tempInterestedIn,
-                                    intention: tempIntention,
-                                    religion: tempReligion,
-                                  );
-
-                                  if (!mounted) return;
-                                  setState(() {
-                                    _feedRevision++;
-                                    _prefetchedProfiles = [];
-                                    profiles = [];
-                                    _interestedIn = tempInterestedIn;
-                                    _radiusKm = savedKm.toDouble();
-                                    _selectedIntention = tempIntention;
-                                    _selectedReligion = tempReligion;
-                                    _minAge = tempMinAge;
-                                    _maxAge = tempMaxAge;
-                                    currentIndex = 0;
-                                  });
-
-                                  await loadFeed();
-                                  showToast('Filter uppdaterade');
-                                } catch (_) {
-                                  showToast('Kunde inte uppdatera filter');
-                                }
-                              },
-                              icon: const Icon(
-                                Icons.check,
-                                color: Colors.white,
-                                size: 30,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-                      const Text(
-                        'DISCOVERY',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w900,
-                          color: Color(0xFF66707F),
-                          letterSpacing: 0.6,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Container(
-                        padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(28),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Plats',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w500,
-                                color: Color(0xFF22252B),
-                              ),
-                            ),
-                            const SizedBox(height: 14),
-                            const Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    'Din plats här senare',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      color: Color(0xFF596170),
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                                Icon(
-                                  Icons.chevron_right_rounded,
-                                  size: 34,
-                                  color: Color(0xFF8E96A3),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            const Text(
-                              'Ändra plats för att swipa någon annanstans.',
-                              style: TextStyle(
-                                fontSize: 16,
-                                height: 1.3,
-                                color: Color(0xFF596170),
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            Divider(color: Colors.black.withOpacity(0.08), height: 1),
-                            const SizedBox(height: 18),
-                            Row(
-                              children: [
-                                const Expanded(
-                                  child: Text(
-                                    'Maxavstånd',
-                                    style: TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.w500,
-                                      color: Color(0xFF22252B),
-                                    ),
-                                  ),
-                                ),
-                                Text(
-                                  '${tempRadius.round()} km',
-                                  style: const TextStyle(
-                                    fontSize: 22,
-                                    color: Color(0xFF596170),
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SliderTheme(
-                              data: SliderTheme.of(context).copyWith(
-                                trackHeight: 3,
-                                activeTrackColor: const Color(0xFFFF2D75),
-                                inactiveTrackColor: const Color(0xFF8F97A3),
-                                thumbColor: Colors.white,
-                                overlayColor: Colors.transparent,
-                                thumbShape:
-                                    const RoundSliderThumbShape(enabledThumbRadius: 18),
-                              ),
-                              child: Slider(
-                                value: tempRadius,
-                                min: 1,
-                                max: 300,
-                                divisions: 199,
-                                onChanged: (value) {
-                                  setModalState(() {
-                                    tempRadius = value;
-                                  });
-                                },
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Expanded(
-                                  child: Text(
-                                    'Visa personer längre bort om det inte finns fler profiler att se.',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      height: 1.3,
-                                      color: Color(0xFF596170),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 14),
-                                Transform.scale(
-                                  scale: 1.15,
-                                  child: Switch(
-                                    value: true,
-                                    onChanged: (_) {},
-                                    activeColor: Colors.white,
-                                    activeTrackColor: const Color(0xFFFF2D75),
-                                    inactiveThumbColor: Colors.white,
-                                    inactiveTrackColor: const Color(0xFFD1D1D6),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            Divider(color: Colors.black.withOpacity(0.08), height: 1),
-                            const SizedBox(height: 18),
-                            DropdownButtonFormField<String>(
-                              initialValue: ['Alla', 'Män', 'Kvinnor'].contains(tempInterestedIn) ? tempInterestedIn : 'Alla',
-                              decoration: const InputDecoration(labelText: 'Intresserad av'),
-                              items: const ['Alla', 'Män', 'Kvinnor'].map((value) =>
-                                DropdownMenuItem(value: value, child: Text(value))).toList(),
-                              onChanged: (value) {
-                                if (value != null) setModalState(() => tempInterestedIn = value);
-                              },
-                            ),
-                            const SizedBox(height: 18),
-                            Divider(color: Colors.black.withOpacity(0.08), height: 1),
-                            const SizedBox(height: 18),
-                            Row(
-                              children: [
-                                const Expanded(
-                                  child: Text(
-                                    'Åldersspann',
-                                    style: TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.w500,
-                                      color: Color(0xFF22252B),
-                                    ),
-                                  ),
-                                ),
-                                Text(
-                                  '$tempMinAge-$tempMaxAge',
-                                  style: const TextStyle(
-                                    fontSize: 22,
-                                    color: Color(0xFF596170),
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SliderTheme(
-                              data: SliderTheme.of(context).copyWith(
-                                activeTrackColor: const Color(0xFFFF2D75),
-                                inactiveTrackColor: const Color(0xFF8F97A3),
-                                thumbColor: Colors.white,
-                                overlayColor: Colors.transparent,
-                                trackHeight: 3,
-                                rangeThumbShape: const RoundRangeSliderThumbShape(
-                                  enabledThumbRadius: 18,
-                                ),
-                              ),
-                              child: RangeSlider(
-                                values: RangeValues(
-                                  tempMinAge.toDouble(),
-                                  tempMaxAge.toDouble(),
-                                ),
-                                min: 18,
-                                max: 100,
-                                divisions: 82,
-                                onChanged: (values) {
-                                  setModalState(() {
-                                    tempMinAge = values.start.round();
-                                    tempMaxAge = values.end.round();
-                                  });
-                                },
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Expanded(
-                                  child: Text(
-                                    'Visa personer lite utanför det intervall jag föredrar om det inte finns fler profiler att se',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      height: 1.3,
-                                      color: Color(0xFF596170),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 14),
-                                Transform.scale(
-                                  scale: 1.15,
-                                  child: Switch(
-                                    value: true,
-                                    onChanged: (_) {},
-                                    activeColor: Colors.white,
-                                    activeTrackColor: const Color(0xFFFF2D75),
-                                    inactiveThumbColor: Colors.white,
-                                    inactiveTrackColor: const Color(0xFFD1D1D6),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 18),
-                            Divider(color: Colors.black.withOpacity(0.08), height: 1),
-                            const SizedBox(height: 18),
-                            const Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    'Globalt läge',
-                                    style: TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.w500,
-                                      color: Color(0xFF22252B),
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(
-                                  width: 52,
-                                  child: Switch(
-                                    value: false,
-                                    onChanged: null,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 22),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 4),
-                        child: Text(
-                          'Med Globalt läge får du upp människor i närheten och över hela världen.',
-                          style: TextStyle(
-                            fontSize: 16,
-                            height: 1.35,
-                            color: Color(0xFF596170),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
+    if (!mounted || !AccountSession.isCurrent(_sessionGeneration)) return;
+    await showModalBottomSheet<void>(context: context, isScrollControlled: true,
+      showDragHandle: true, backgroundColor: Colors.white,
+      builder: (_) => DiscoverySettingsSheet(
+        initial: DiscoveryPreferences(interestedIn: _interestedIn, radiusKm: _radiusKm.round(), minAge: _minAge, maxAge: _maxAge),
+        onSave: (values) async {
+          final user = _preferenceUserId;
+          AccountSession.check(_sessionGeneration);
+          final preferences = user == null ? null : await SharedPreferences.getInstance();
+          await _authService.updateFilterProfile(matchRadiusKm: values.radiusKm, interestedIn: values.interestedIn,
+            intention: _selectedIntention, religion: _selectedReligion);
+          AccountSession.check(_sessionGeneration);
+          // Age ranges are device preferences, scoped to the authenticated account.
+          // Interest and radius are authoritative profile fields on the server.
+          await preferences?.setString('discovery_age_$user', '${values.minAge},${values.maxAge}');
+          if (!mounted || !AccountSession.isCurrent(_sessionGeneration)) return;
+          setState(() {
+            _feedRevision++; _prefetchedProfiles = []; profiles = []; currentIndex = 0;
+            _interestedIn = values.interestedIn; _radiusKm = values.radiusKm.toDouble();
+            _minAge = values.minAge; _maxAge = values.maxAge;
+          });
+          unawaited(loadFeed());
+        },
+      ));
   }
 
   Future<void> _openMatchesPage() async {

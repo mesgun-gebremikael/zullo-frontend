@@ -1,3 +1,5 @@
+import 'likes_page.dart';
+import 'explore_page.dart';
 import 'services/commerce_service.dart';
 import 'services/relation_changes.dart';
 import 'services/signalr_service.dart';
@@ -99,8 +101,8 @@ bool _isOpeningChat = false;
 
     _pages = widget.pages ?? [
       const HomePage(),
-      const MatchesPage(), // Explore tillfällig
-      const MatchesPage(showLikes: true), // Incoming likes only
+      const ExplorePage(),
+      const LikesPage(),
       MatchesPage(
         onUnreadChanged: (hasUnread) {
           if (!mounted || !_sessionActive) return;
