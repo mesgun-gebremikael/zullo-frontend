@@ -18,11 +18,10 @@ class OnboardingLifestylePage extends StatefulWidget {
       _OnboardingLifestylePageState();
 }
 
-class _OnboardingLifestylePageState
-    extends State<OnboardingLifestylePage> {
+class _OnboardingLifestylePageState extends State<OnboardingLifestylePage> {
   int _step = 0;
 
-  late int _heightCm;
+  late int? _heightCm;
   late String _workout;
   late String _pets;
   late String _smoking;
@@ -33,30 +32,12 @@ class _OnboardingLifestylePageState
   void initState() {
     super.initState();
 
-    _heightCm =
-    (widget.data.heightCm ?? 0) > 0
-        ? widget.data.heightCm!
-        : 170;
-
-    _workout = widget.data.workout.isNotEmpty
-        ? widget.data.workout
-        : 'Ibland';
-
-    _pets =
-        widget.data.pets.isNotEmpty ? widget.data.pets : 'Vill inte ha';
-
-    _smoking =
-        widget.data.smoking.isNotEmpty ? widget.data.smoking : 'Nej';
-
-    _relationshipHistory =
-        widget.data.relationshipHistory.isNotEmpty
-            ? widget.data.relationshipHistory
-            : 'Varit i ett förhållande';
-
-    _zodiacSign =
-        widget.data.zodiacSign.isNotEmpty
-            ? widget.data.zodiacSign
-            : 'Vattuman';
+    _heightCm = widget.data.heightCm;
+    _workout = widget.data.workout;
+    _pets = widget.data.pets;
+    _smoking = widget.data.smoking;
+    _relationshipHistory = widget.data.relationshipHistory;
+    _zodiacSign = widget.data.zodiacSign;
   }
 
   void _nextStep() {
@@ -85,149 +66,154 @@ class _OnboardingLifestylePageState
   }
 
   void _previousStep() {
-  if (_step > 0) {
-    setState(() {
-      _step--;
-    });
-    return;
+    if (_step > 0) {
+      setState(() {
+        _step--;
+      });
+      return;
+    }
+
+    Navigator.pop(context);
   }
 
-  Navigator.pop(context);
-}
+  @override
+  Widget build(BuildContext context) {
+    Widget page;
 
- @override
-Widget build(BuildContext context) {
-  Widget page;
+    switch (_step) {
+      case 0:
+        page = _buildHeightPage();
+        break;
 
-  switch (_step) {
-    case 0:
-      page = _buildHeightPage();
-      break;
+      case 1:
+        page = OnboardingChoicePage(
+          progress: 0.72,
+          title: 'Tränar du?',
+          subtitle: 'Välj det alternativ som passar dig bäst.',
+          options: const [
+            'Aldrig',
+            'Ibland',
+            'Ofta',
+          ],
+          selectedValue: _workout,
+          onSelected: (value) {
+            setState(() {
+              _workout = value;
+            });
+          },
+          onNext: _nextStep,
+          onBack: _previousStep,
+        );
+        break;
 
-    case 1:
-      page = OnboardingChoicePage(
-        progress: 0.72,
-        title: 'Tränar du?',
-        subtitle: 'Välj det alternativ som passar dig bäst.',
-        options: const [
-          'Aldrig',
-          'Ibland',
-          'Ofta',
-        ],
-        selectedValue: _workout,
-        onSelected: (value) {
-          setState(() {
-            _workout = value;
-          });
-        },
-        onNext: _nextStep,
-      );
-      break;
+      case 2:
+        page = OnboardingChoicePage(
+          progress: 0.75,
+          title: 'Har du husdjur?',
+          subtitle: 'Berätta lite mer om din livsstil.',
+          options: const [
+            'Har husdjur',
+            'Vill ha husdjur',
+            'Vill inte ha',
+            'Allergisk',
+          ],
+          selectedValue: _pets,
+          onSelected: (value) {
+            setState(() {
+              _pets = value;
+            });
+          },
+          onNext: _nextStep,
+          onBack: _previousStep,
+        );
+        break;
 
-    case 2:
-      page = OnboardingChoicePage(
-        progress: 0.75,
-        title: 'Har du husdjur?',
-        subtitle: 'Berätta lite mer om din livsstil.',
-        options: const [
-          'Har husdjur',
-          'Vill ha husdjur',
-          'Vill inte ha',
-          'Allergisk',
-        ],
-        selectedValue: _pets,
-        onSelected: (value) {
-          setState(() {
-            _pets = value;
-          });
-        },
-        onNext: _nextStep,
-      );
-      break;
+      case 3:
+        page = OnboardingChoicePage(
+          progress: 0.78,
+          title: 'Använder du nikotin?',
+          subtitle: 'Välj det alternativ som passar dig.',
+          options: const [
+            'Nej',
+            'Ibland',
+            'Ja',
+          ],
+          selectedValue: _smoking,
+          onSelected: (value) {
+            setState(() {
+              _smoking = value;
+            });
+          },
+          onNext: _nextStep,
+          onBack: _previousStep,
+        );
+        break;
 
-    case 3:
-      page = OnboardingChoicePage(
-        progress: 0.78,
-        title: 'Använder du nikotin?',
-        subtitle: 'Välj det alternativ som passar dig.',
-        options: const [
-          'Nej',
-          'Ibland',
-          'Ja',
-        ],
-        selectedValue: _smoking,
-        onSelected: (value) {
-          setState(() {
-            _smoking = value;
-          });
-        },
-        onNext: _nextStep,
-      );
-      break;
+      case 4:
+        page = OnboardingChoicePage(
+          progress: 0.81,
+          title: 'Har du varit i en relation?',
+          subtitle: 'Välj det som beskriver dig bäst.',
+          options: const [
+            'Varit i ett förhållande',
+            'Inget seriöst',
+            'Aldrig haft ett förhållande',
+          ],
+          selectedValue: _relationshipHistory,
+          onSelected: (value) {
+            setState(() {
+              _relationshipHistory = value;
+            });
+          },
+          onNext: _nextStep,
+          onBack: _previousStep,
+        );
+        break;
 
-    case 4:
-      page = OnboardingChoicePage(
-        progress: 0.81,
-        title: 'Har du varit i en relation?',
-        subtitle: 'Välj det som beskriver dig bäst.',
-        options: const [
-          'Varit i ett förhållande',
-          'Inget seriöst',
-          'Aldrig haft ett förhållande',
-        ],
-        selectedValue: _relationshipHistory,
-        onSelected: (value) {
-          setState(() {
-            _relationshipHistory = value;
-          });
-        },
-        onNext: _nextStep,
-      );
-      break;
+      case 5:
+      default:
+        page = OnboardingChoicePage(
+          progress: 0.84,
+          title: 'Vad är ditt stjärntecken?',
+          subtitle: 'Välj ditt stjärntecken.',
+          options: const [
+            'Vattuman',
+            'Vädur',
+            'Kräfta',
+            'Stenbock',
+            'Tvilling',
+            'Lejon',
+            'Våg',
+            'Fisk',
+            'Skytt',
+            'Skorpion',
+            'Oxe',
+            'Jungfru',
+          ],
+          selectedValue: _zodiacSign,
+          onSelected: (value) {
+            setState(() {
+              _zodiacSign = value;
+            });
+          },
+          onNext: _nextStep,
+          onBack: _previousStep,
+        );
+        break;
+    }
 
-    case 5:
-    default:
-      page = OnboardingChoicePage(
-        progress: 0.84,
-        title: 'Vad är ditt stjärntecken?',
-        subtitle: 'Välj ditt stjärntecken.',
-        options: const [
-          'Vattuman',
-          'Vädur',
-          'Kräfta',
-          'Stenbock',
-          'Tvilling',
-          'Lejon',
-          'Våg',
-          'Fisk',
-          'Skytt',
-          'Skorpion',
-          'Oxe',
-          'Jungfru',
-        ],
-        selectedValue: _zodiacSign,
-        onSelected: (value) {
-          setState(() {
-            _zodiacSign = value;
-          });
-        },
-        onNext: _nextStep,
-      );
-      break;
+    return PopScope(
+      canPop: _step == 0,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) {
+          return;
+        }
+
+        _previousStep();
+      },
+      child: page,
+    );
   }
-
-  return PopScope(
-    canPop: _step == 0,
-    onPopInvokedWithResult: (didPop, result) {
-      if (didPop) {
-        return;
-      }
-
-      _previousStep();
-    },
-    child: page,
-  );
-}
 
   Widget _buildHeightPage() {
     return OnboardingShell(
@@ -236,12 +222,12 @@ Widget build(BuildContext context) {
       subtitle: 'Du kan ändra detta senare i Redigera Info.',
       canContinue: true,
       onNext: _nextStep,
+      onBack: _previousStep,
       child: Column(
         children: [
           const Spacer(),
-
           Text(
-            '$_heightCm',
+            _heightCm?.toString() ?? '—',
             style: const TextStyle(
               fontSize: 72,
               height: 1,
@@ -249,9 +235,12 @@ Widget build(BuildContext context) {
               color: Color(0xFF20242C),
             ),
           ),
-
+          if (_heightCm != null)
+            TextButton(
+              onPressed: () => setState(() => _heightCm = null),
+              child: const Text('Ta bort längd'),
+            ),
           const SizedBox(height: 6),
-
           Text(
             'cm',
             style: TextStyle(
@@ -260,11 +249,9 @@ Widget build(BuildContext context) {
               color: Colors.grey.shade600,
             ),
           ),
-
           const SizedBox(height: 40),
-
           Slider(
-            value: _heightCm.toDouble(),
+            value: (_heightCm ?? 170).toDouble(),
             min: 140,
             max: 220,
             divisions: 80,
@@ -275,7 +262,6 @@ Widget build(BuildContext context) {
               });
             },
           ),
-
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Row(
@@ -298,7 +284,6 @@ Widget build(BuildContext context) {
               ],
             ),
           ),
-
           const Spacer(flex: 2),
         ],
       ),
