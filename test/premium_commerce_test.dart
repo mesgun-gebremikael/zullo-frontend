@@ -60,6 +60,25 @@ class FakeStore extends NativeBilling {
   }
 }
 
+class PrivacyCommerce extends FakeCommerce {
+  @override
+  Future<CommerceState> sync() async {
+    syncs++;
+    return current =
+        const CommerceState(checkoutEnabled: true, activityPrivacy: true);
+  }
+}
+
+class PrivacyStore extends FakeStore {
+  @override
+  Future<List<StoreOffer>> offers(String userId) async => const [
+        StoreOffer(
+            'zullo_hide_activity_monthly', 'Dölj aktivitet', '19,00 kr', 1),
+        StoreOffer('zullo_premium_monthly', 'ZULLO Premium', '59,00 kr', 2),
+        StoreOffer('zullo_boost_1', '1 Boost', '9,00 kr', 3),
+      ];
+}
+
 void main() {
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
@@ -74,6 +93,63 @@ void main() {
     });
     await tester.pumpAndSettle();
   }
+
+  testWidgets(
+      'standalone activity page offers privacy and Premium without Boost upsell and verifies its own entitlement',
+      (tester) async {
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final commerce = PrivacyCommerce()
+      ..current = const CommerceState(checkoutEnabled: true);
+    final store = PrivacyStore();
+    await pump(
+        tester,
+        () => tester.pumpWidget(MaterialApp(
+            home: PremiumPage(
+                commerce: commerce, billing: store, activityOnly: true))));
+    expect(find.text('Bara Dölj aktivitet'), findsOneWidget);
+    expect(find.text('19,00 kr per månad'), findsOneWidget);
+    expect(find.text('1 Boost'), findsNothing);
+    expect(find.text('Det här ingår i Premium'), findsNothing);
+    await pump(tester, () async {
+      await tester.tap(find.widgetWithText(FilledButton, 'Köp').first);
+    });
+    expect(store.buys, 1);
+    expect(commerce.syncs, 1);
+    expect(commerce.current.canHideActivity, isTrue);
+    expect(commerce.current.premium, isFalse);
+    expect(find.textContaining('väntar på verifiering'), findsNothing);
+    final privacyButton = tester
+        .widget<FilledButton>(find.widgetWithText(FilledButton, 'Köp').first);
+    expect(privacyButton.onPressed, isNull);
+    await pump(tester, () => tester.pumpWidget(const SizedBox.shrink()));
+  });
+
+  testWidgets(
+      'Premium already includes activity privacy and prevents a redundant standalone purchase',
+      (tester) async {
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final commerce = PrivacyCommerce()
+      ..current = const CommerceState(checkoutEnabled: true, premium: true);
+    await pump(
+        tester,
+        () => tester.pumpWidget(MaterialApp(
+            home: PremiumPage(
+                commerce: commerce,
+                billing: PrivacyStore(),
+                activityOnly: true))));
+    expect(find.text('Dölj aktivitet ingår för dig'), findsOneWidget);
+    for (final button in tester
+        .widgetList<FilledButton>(find.widgetWithText(FilledButton, 'Köp'))) {
+      expect(button.onPressed, isNull);
+    }
+    await pump(tester, () => tester.pumpWidget(const SizedBox.shrink()));
+  });
 
   testWidgets(
       'unconfigured checkout shows balances but never queries or offers a purchase',
