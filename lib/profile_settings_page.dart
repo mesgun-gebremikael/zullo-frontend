@@ -117,7 +117,7 @@ Future<void> _loadAccountInfo() async {
               icon: Icons.power_settings_new,
               title: 'Aktivitetsstatus',
               subtitle:
-                  'Matchningar kan se din senaste aktivitet. Dölj den med Premium.',
+                  'På: matchningar ser din aktivitet. Stäng av med ZULLO Premium för att dölja online och senast aktiv.',
               value: _showActivityStatus,
               onChanged: (value) => _savePrivacy(showActivity: value),
             ),

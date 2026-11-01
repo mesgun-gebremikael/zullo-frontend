@@ -1,3 +1,4 @@
+import 'widgets/discovery_empty_state.dart';
 import 'services/commerce_service.dart';
 import 'services/relation_changes.dart';
 import 'services/refresh_coordinator.dart';
@@ -22,11 +23,13 @@ import 'services/auth_storage.dart';
 
 
 class MatchesPage extends StatefulWidget {
+  final bool showLikes;
   final ValueChanged<bool>? onUnreadChanged;
   final AuthService? authService;
 
   const MatchesPage({
     super.key,
+    this.showLikes = false,
     this.onUnreadChanged,
     this.authService,
   });
@@ -51,6 +54,7 @@ class _MatchesPageState extends State<MatchesPage> {
 
 StreamSubscription<void>? _refreshSubscription;
 StreamSubscription<ChatRepositoryState>? _repositorySubscription;
+  bool _premium = false;
   bool isLoading = true;
   String? error;
   List<dynamic> matches = [];
@@ -362,10 +366,60 @@ final lastMessageAtUtc = (m["lastMessageAtUtc"] ?? "").toString();
   );
 }
 
+  Future<void> _loadMembership() async {
+    try {
+      final state = await CommerceClient().state();
+      if (mounted && _sessionActive) setState(() => _premium = state.premium);
+    } catch (_) { /* Server still controls which likes can be returned. */ }
+  }
+
+  Future<void> _openPremium() async {
+    await Navigator.push(context, MaterialPageRoute(builder: (_) => const PremiumPage()));
+    if (mounted && _sessionActive) {
+      await _loadMembership();
+      await loadMatches(invalidate: true);
+    }
+  }
+
+  Widget _buildLikes() => Theme(data: ThemeData.light(useMaterial3: true), child: Scaffold(
+    backgroundColor: Colors.white,
+    appBar: AppBar(backgroundColor: Colors.white, foregroundColor: const Color(0xFF22262E),
+      title: const Text('Likes', style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800))),
+    body: RefreshIndicator(onRefresh: loadMatches, child: isLoading
+      ? const Center(child: CircularProgressIndicator())
+      : ListView(physics: const AlwaysScrollableScrollPhysics(), padding: const EdgeInsets.fromLTRB(20, 10, 20, 110), children: [
+          if (error != null) Padding(padding: const EdgeInsets.all(24), child: Text(error!))
+          else if (likesReceived.isEmpty)
+            ConstrainedBox(constraints: BoxConstraints(minHeight: MediaQuery.sizeOf(context).height * .72),
+              child: DiscoveryEmptyState(likes: true, premium: _premium, onAction: _premium ? CommerceEvents.openDiscovery : _openPremium))
+          else ...[
+                      for (final incoming in likesReceived) Card(child: ListTile(
+                        leading: Icon(incoming['isSuperLike'] == true ? Icons.star_rounded : Icons.favorite, color: incoming['isSuperLike'] == true ? Colors.blue : Colors.pink),
+                        title: Text(incoming['displayName'].toString()),
+                        subtitle: Text(incoming['isSuperLike'] == true ? 'Har supergillat dig' : 'Gillar dig'),
+                        trailing: TextButton(onPressed: () async {
+                          try {
+                            final matched = await _auth.like(incoming['userId'].toString());
+                            if (!mounted || !_sessionActive) return;
+                            MatchesRefreshService.instance.requestRefresh();
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(matched ? 'Ni har matchat! Öppna er nya chatt.' : 'Like skickad.')));
+                          } catch (_) {
+                            if (mounted && _sessionActive) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Kunde inte gilla. Försök igen.')));
+                          }
+                        }, child: const Text('Gilla tillbaka')),
+                      )),
+
+            if (!_premium) Padding(padding: const EdgeInsets.only(top: 24), child: FilledButton(
+              style: FilledButton.styleFrom(backgroundColor: const Color(0xFFE8C35D), foregroundColor: const Color(0xFF22262E)),
+              onPressed: _openPremium, child: const Text('Se vem som gillar dig'))),
+          ],
+      ])),
+  ));
+
   @override
   Widget build(BuildContext context) {
     if (!_sessionActive) return const SizedBox.shrink();
-    final cs = Theme.of(context).colorScheme;
+    const cs = ColorScheme.light();
 
     final newMatches = matches.where((m) {
                         final lastText = (m['lastMessageText'] ?? '').toString().trim();
@@ -377,9 +431,16 @@ final lastMessageAtUtc = (m["lastMessageAtUtc"] ?? "").toString();
                          return lastText.isNotEmpty;
                        }).toList();
 
-    return Scaffold(
+    if (widget.showLikes) return _buildLikes();
+
+    return Theme(
+      data: ThemeData.light(useMaterial3: true),
+      child: Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text("Matches"),
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF22262E),
+        title: const Text("Chattar", style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800)),
       ),
       body: RefreshIndicator(
         onRefresh: loadMatches,
@@ -393,43 +454,17 @@ final lastMessageAtUtc = (m["lastMessageAtUtc"] ?? "").toString();
                     ],
                   )
                 : ListView(
-                    padding: const EdgeInsets.fromLTRB(14, 12, 14, 16),
+                    padding: const EdgeInsets.fromLTRB(14, 12, 14, 110),
                     children: [
-                      Card(child: ListTile(
-                        leading: const Icon(Icons.workspace_premium_rounded),
-                        title: const Text('Se vem som gillar dig'),
-                        subtitle: const Text('Vanliga inkommande likes ingår i Premium. Superlikes kan alla se.'),
-                        onTap: () async {
-                          await Navigator.push(context, MaterialPageRoute(builder: (_) => const PremiumPage()));
-                          if (mounted && _sessionActive) loadMatches(invalidate: true);
-                        },
-                      )),
-                      for (final incoming in likesReceived) Card(child: ListTile(
-                        leading: Icon(incoming['isSuperLike'] == true ? Icons.star_rounded : Icons.favorite, color: incoming['isSuperLike'] == true ? Colors.blue : Colors.pink),
-                        title: Text(incoming['displayName'].toString()),
-                        subtitle: Text(incoming['isSuperLike'] == true ? 'Har supergillat dig' : 'Gillar dig'),
-                        trailing: TextButton(onPressed: () async {
-                          try {
-                            final matched = await _auth.like(incoming['userId'].toString());
-                            if (!context.mounted || !_sessionActive) return;
-                            MatchesRefreshService.instance.requestRefresh();
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(matched ? 'Ni har matchat! Öppna er nya chatt.' : 'Like skickad.')));
-                          } catch (_) {
-                            if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Kunde inte gilla. Försök igen.')));
-                          }
-                        }, child: const Text('Gilla tillbaka')),
-                      )),
-
                       if (newMatches.isEmpty && messageMatches.isEmpty) ...[
-                        const SizedBox(height: 140),
-                        const Center(child: Text("Inga matches än")),
+                        ConstrainedBox(constraints: BoxConstraints(minHeight: MediaQuery.sizeOf(context).height * .7), child: DiscoveryEmptyState(likes: false, onAction: CommerceEvents.openDiscovery)),
                       ] else ...[
                        if (newMatches.isNotEmpty) ...[
   Row(
     mainAxisAlignment: MainAxisAlignment.spaceBetween,
     children: const [
       Text(
-        "New Matches",
+        "Nya matchningar",
         style: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w800,
@@ -516,7 +551,7 @@ final lastMessageAtUtc = (m["lastMessageAtUtc"] ?? "").toString();
   const SizedBox(height: 18),
 ],
                        const Text(
-  "Messages",
+  "Meddelanden",
   style: TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.w800,
@@ -619,7 +654,7 @@ const SizedBox(height: 10),
                     ],
                   ),
       ),
-    );
+    ));
   }
 }
 
