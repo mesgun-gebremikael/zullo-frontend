@@ -702,6 +702,7 @@ static const double _activeCardLift = 0;
       if (!mounted || !AccountSession.isCurrent(_sessionGeneration)) return;
       setState(() {
         _interestedIn = (me["interestedIn"] ?? "Alla").toString();
+        _radiusKm = (me["matchRadiusKm"] as num?)?.toDouble() ?? _radiusKm;
         _selectedIntention = (me["intention"] ?? "Relationship").toString();
         _selectedReligion = (me["religion"] ?? "Private").toString();
       });

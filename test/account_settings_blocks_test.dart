@@ -26,12 +26,14 @@ class TestStorage extends AuthStorage {
 
 class SettingsAuth extends AuthService {
   String preference = 'Kvinnor';
+  int? savedRadius;
   final feedPreferences = <String>[];
   @override
   Future<Map<String, dynamic>> getMyAccount() async =>
       {'email': 'owner@example.test'};
   @override
   Future<Map<String, dynamic>> getMyProfile() async => {
+        'matchRadiusKm': 153,
         'photoUrls': [],
         'interestedIn': preference,
         'intention': '',
@@ -53,6 +55,7 @@ class SettingsAuth extends AuthService {
       int? matchRadiusKm,
       String? interestedIn}) async {
     preference = interestedIn!;
+    savedRadius = matchRadiusKm;
   }
 }
 
@@ -129,6 +132,7 @@ void main() {
     await tester.tap(find.byIcon(Icons.check));
     await tester.pumpAndSettle();
     expect(auth.preference, 'Män');
+    expect(auth.savedRadius, 153);
     expect(auth.feedPreferences.last, 'Män');
     await tester.pumpWidget(const SizedBox.shrink());
   });
