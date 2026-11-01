@@ -66,3 +66,9 @@ Deploy the backend first. Migration `AddPremiumCommerce` adds CommerceAccounts, 
 The owner explicitly wants to test later. Registration/automatic login, logout, single name entry, optional choices, required age/photos, notification/chat/reconnect/profile editing, discovery refresh, plus PR12 preference/email/block/unblock changes still need confirmation on the owner's two emulators. Those are not marked complete by this work. Remind the owner when resuming manual testing.
 
 Native validation includes unsigned iOS simulator compilation and an Android debug APK build. Real billing still needs store-connected test builds, licensed test users and the relevant Apple sandbox/TestFlight and Play test-track setup; a successful debug compile does not prove that purchases or payouts work.
+
+## Presentation and activity controls
+
+Profile uses white rounded purchase cards, a blue Superlike star and ZULLO letter marks. There are no Top Picks or profile-completion promotional cards. The Likes tab is separate from Chats: incoming likes remain server-filtered; the empty free state opens Premium and the empty paid state opens discovery. No artificial profiles or counts are added.
+
+The activity toggle is under Profile → settings gear → Mitt konto → Aktivitetsstatus. On shows recent activity to unblocked matches; off requires active server-verified Premium and otherwise opens Premium without changing the saved setting. The server stops applying activity hiding when Premium expires. Existing privacy/presence authorization tests cover this; real-device confirmation remains pending. All earlier manual tests remain unperformed as confirmed again by the owner.
