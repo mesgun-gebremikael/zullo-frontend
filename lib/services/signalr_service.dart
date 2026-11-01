@@ -1,3 +1,4 @@
+import 'relation_changes.dart';
 import 'dart:async';
 import 'package:signalr_netcore/signalr_client.dart';
 import 'account_session.dart';
@@ -42,6 +43,12 @@ class HubChatTransport implements ChatTransport {
     connection.on('MessageReceived', (args) {
       if (epoch == _epoch && args != null && args.isNotEmpty) {
         _messages.add(Map<String, dynamic>.from(args.first as Map));
+      }
+    });
+    connection.on('RelationChanged', (args) {
+      if (epoch == _epoch && args != null && args.isNotEmpty) {
+        final data = Map<String, dynamic>.from(args.first as Map);
+        RelationChanges.notify((data['otherUserId'] ?? '').toString());
       }
     });
     connection.on('MessagesRead', (args) {

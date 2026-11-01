@@ -1,9 +1,11 @@
+import 'blocked_profiles_page.dart';
+import 'services/account_session.dart';
 import 'package:flutter/material.dart';
 import 'services/auth_service.dart';
-import 'services/auth_storage.dart';
 
 class ProfileSettingsPage extends StatefulWidget {
-  const ProfileSettingsPage({super.key});
+  final AuthService? authService;
+  const ProfileSettingsPage({super.key, this.authService});
 
   @override
   State<ProfileSettingsPage> createState() => _ProfileSettingsPageState();
@@ -11,8 +13,8 @@ class ProfileSettingsPage extends StatefulWidget {
 
 class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
 
-final AuthService _authService = AuthService();
-final AuthStorage _authStorage = AuthStorage();
+late final AuthService _authService = widget.authService ?? AuthService();
+final int _generation = AccountSession.generation;
 
 String _emailText = 'Laddar...';
 String _userIdText = 'Laddar...';
@@ -29,17 +31,17 @@ void initState() {
 
 Future<void> _loadAccountInfo() async {
   try {
-    final profile = await _authService.getMyProfile();
-    final userId = await _authStorage.getUserId();
+    final profile = await _authService.getMyAccount();
+    final userId = profile["userId"]?.toString();
 
-    if (!mounted) return;
+    if (!mounted || !AccountSession.isCurrent(_generation)) return;
 
     setState(() {
       _emailText = (profile["email"] ?? "Ingen e-post hittades").toString();
       _userIdText = userId ?? "Ingen user id hittades";
     });
   } catch (e) {
-    if (!mounted) return;
+    if (!mounted || !AccountSession.isCurrent(_generation)) return;
 
     setState(() {
       _emailText = "Kunde inte ladda e-post";
@@ -129,9 +131,9 @@ _SettingsSwitchRow(
 const SizedBox(height: 8),
 _SettingsArrowRow(
   icon: Icons.block,
-  title: 'Blockade profiler',
-  subtitle: 'Personer du har blockat',
-  onTap: () {},
+  title: 'Blockerade profiler',
+  subtitle: 'Personer du har blockerat',
+  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BlockedProfilesPage())),
 ),
 const SizedBox(height: 8),
 _SettingsArrowRow(

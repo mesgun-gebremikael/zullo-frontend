@@ -1,3 +1,4 @@
+import 'relation_changes.dart';
 import 'account_session.dart';
 import 'session_http_client.dart';
 import 'dart:convert';
@@ -40,6 +41,7 @@ class MessagesService {
 
   Future<MessagePage> getThreadPage(String peer,
       {String? before, String? after, int take = 50}) async {
+    final revision = RelationChanges.versionFor(peer);
     final token = await _storage.getToken();
     final response = await _client.get(
       Uri.parse('$baseApiUrl/messages/thread-page').replace(queryParameters: {
@@ -50,6 +52,9 @@ class MessagesService {
       }),
       headers: {if (token != null) 'Authorization': 'Bearer $token'},
     ).timeout(const Duration(seconds: 15));
+    if (revision != RelationChanges.versionFor(peer)) {
+      throw ChatRequestException(403, 'Konversationen har ändrats. Öppna den igen.');
+    }
     if (response.statusCode != 200) {
       throw ChatRequestException(
           response.statusCode,

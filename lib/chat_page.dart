@@ -1,3 +1,4 @@
+import 'services/relation_changes.dart';
 import 'dart:math';
 import 'services/chat_merge.dart';
 import 'services/thread_history.dart';
@@ -51,8 +52,10 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   StreamSubscription<int>? _sessionChanges;
+  StreamSubscription<String>? _relationChanges;
+  bool _relationClosed = false;
   final int _sessionGeneration = AccountSession.generation;
-  bool get _sessionActive => AccountSession.isCurrent(_sessionGeneration);
+  bool get _sessionActive => !_relationClosed && AccountSession.isCurrent(_sessionGeneration);
 
   // ✅ Endast HTTP (inte https:7015)
   static final String _baseApiUrl = AuthService.baseApiUrl;
@@ -104,6 +107,20 @@ void initState() {
     if (mounted) setState(() {});
   });
 
+  _relationChanges = RelationChanges.stream.listen((other) {
+    if (other != widget.userId || !mounted || !_sessionActive || _relationClosed) return;
+    _relationClosed = true;
+    setState(() { _messages.clear(); });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && AccountSession.isCurrent(_sessionGeneration)) {
+        final route = ModalRoute.of(context);
+        if (route != null) {
+          if (route.isCurrent) { Navigator.of(context).pop(); }
+          else { Navigator.of(context).removeRoute(route); }
+        }
+      }
+    });
+  });
   WidgetsBinding.instance.addObserver(this);
   _messagesService = widget.messagesService ?? MessagesService(_baseApiUrl, AuthStorage());
   _history = ThreadHistory(_messagesService, widget.userId);
@@ -255,6 +272,7 @@ unawaited(Future(() async {
 
    @override
 void dispose() {
+  _relationChanges?.cancel();
   WidgetsBinding.instance.removeObserver(this);
   _reconnectedSubscription?.cancel();
   _sessionChanges?.cancel();
@@ -491,6 +509,10 @@ void _updateRepositoryLastMessage({
       _hasLoadedInitialThread = true;
     } catch (error) {
       if (!mounted || !_sessionActive) return;
+      if (error is ChatRequestException && error.statusCode == 403) {
+        RelationChanges.notify(widget.userId);
+        return;
+      }
       setState(() {
         _error = error is ChatRequestException ? error.message : 'Kunde inte synkronisera chatten. Försök igen.';
         _isLoading = false;
@@ -631,6 +653,10 @@ _scrollToBottom();
 
   } catch (e) {
   if (!mounted || !_sessionActive) return;
+  if (e is ChatRequestException && e.statusCode == 403) {
+    RelationChanges.notify(widget.userId);
+    return;
+  }
 
   setState(() {
     if (e is ChatRequestException && (e.statusCode == 401 || e.statusCode == 403)) _isReady = false;
@@ -669,7 +695,7 @@ Future<void> _blockUser() async {
       const SnackBar(content: Text("Användaren blockerades.")),
     );
 
-    Navigator.pop(context, true);
+    if (!_relationClosed) Navigator.pop(context, true);
   } catch (e) {
     if (!mounted || !_sessionActive) return;
 

@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'services/relation_changes.dart';
+import 'services/account_session.dart';
 import 'package:flutter/material.dart';
 import 'models/swipe_profile.dart';
 
@@ -12,9 +15,37 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   int _photoIndex = 0;
+  bool _hidden = false;
+  final _generation = AccountSession.generation;
+  StreamSubscription<String>? _relationChanges;
+
+  @override
+  void initState() {
+    super.initState();
+    _relationChanges = RelationChanges.stream.listen((other) {
+      if (!mounted || _hidden || other != widget.profile.userId || !AccountSession.isCurrent(_generation)) return;
+      setState(() => _hidden = true);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && AccountSession.isCurrent(_generation)) {
+        final route = ModalRoute.of(context);
+        if (route != null) {
+          if (route.isCurrent) { Navigator.of(context).pop(); }
+          else { Navigator.of(context).removeRoute(route); }
+        }
+      }
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _relationChanges?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_hidden || !AccountSession.isCurrent(_generation)) return const Scaffold(backgroundColor: Colors.black);
     final p = widget.profile;
     final photos = p.photoUrls;
 
