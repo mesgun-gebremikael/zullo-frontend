@@ -256,15 +256,17 @@ Widget _buildPremiumBox() {
                 ),
               ),
               const SizedBox(width: 10),
-              const Text(
-                "ZULLO Premium",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 25,
-                  fontWeight: FontWeight.bold,
+              const Expanded(
+                child: Text(
+                  "ZULLO Premium",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 25,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-              const Spacer(),
+              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                 decoration: BoxDecoration(

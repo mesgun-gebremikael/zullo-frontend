@@ -67,15 +67,31 @@ void main() {
     expect(await AuthStorage().getToken(), 'token');
   });
 
+  test('account creation needs only email and password, no placeholder name', () async {
+    final auth = AuthService(
+      pushTokenLoader: () async => null,
+      client: MockClient((request) async {
+        expect(jsonDecode(request.body), {
+          'email': 'new@example.test',
+          'password': 'password123',
+        });
+        return http.Response('{"token":"new-token","userId":"new-user"}', 200);
+      }),
+    );
+    await auth.registerAndLogin(email: 'new@example.test', password: 'password123');
+    expect(await AuthStorage().getToken(), 'new-token');
+  });
+
   testWidgets('double taps send one request and duplicate-email error stays visible', (tester) async {
     final response = Completer<http.Response>();
     var calls = 0;
     final auth = AuthService(client: MockClient((_) { calls++; return response.future; }));
     await tester.pumpWidget(MaterialApp(home: RegisterPage(authService: auth)));
     final fields = find.byType(TextField);
-    await tester.enterText(fields.at(0), 'Test');
-    await tester.enterText(fields.at(1), 'test@example.test');
-    await tester.enterText(fields.at(2), 'password123');
+    expect(fields, findsNWidgets(2));
+    expect(find.text('Name'), findsNothing);
+    await tester.enterText(fields.at(0), 'test@example.test');
+    await tester.enterText(fields.at(1), 'password123');
     final button = find.widgetWithText(ElevatedButton, 'Create account');
     await tester.ensureVisible(button);
     await tester.tap(button);

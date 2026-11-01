@@ -12,7 +12,6 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
-  final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
@@ -22,10 +21,9 @@ class _RegisterPageState extends State<RegisterPage> {
 
   Future<void> _submit() async {
     if (_isSubmitting) return;
-    final name = nameController.text.trim();
     final email = emailController.text.trim();
     final password = passwordController.text;
-    if (name.isEmpty || email.isEmpty || password.isEmpty) {
+    if (email.isEmpty || password.isEmpty) {
       setState(() => _error = 'Fyll i alla fält.');
       return;
     }
@@ -40,7 +38,7 @@ class _RegisterPageState extends State<RegisterPage> {
     });
     try {
       await _authService.registerAndLogin(
-          name: name, email: email, password: password);
+          email: email, password: password);
       if (!mounted) return;
       Navigator.pushReplacement(context,
           MaterialPageRoute(builder: (_) => const OnboardingStartPage()));
@@ -63,7 +61,6 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   void dispose() {
-    nameController.dispose();
     emailController.dispose();
     passwordController.dispose();
     super.dispose();
@@ -94,14 +91,6 @@ class _RegisterPageState extends State<RegisterPage> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
-            TextField(
-              controller: nameController,
-              textInputAction: TextInputAction.next,
-              decoration: const InputDecoration(
-                labelText: 'Name',
-              ),
-            ),
-            const SizedBox(height: 12),
             TextField(
               controller: emailController,
               textInputAction: TextInputAction.next,
