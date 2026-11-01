@@ -123,13 +123,18 @@ void main() {
     final auth = SettingsAuth();
     await tester.pumpWidget(MaterialApp(home: HomePage(authService: auth)));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Öppna filter'));
+    await tester.runAsync(() async {
+      await tester.tap(find.text('Öppna filter'));
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+    });
     await tester.pumpAndSettle();
-    await tester.tap(find.byType(DropdownButtonFormField<String>));
+    await tester.tap(find.text('Intresserad av'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Män').last);
     await tester.pumpAndSettle();
-    await tester.tap(find.byIcon(Icons.check));
+    await tester.ensureVisible(find.text('Spara inställningar'));
+    await tester.tap(find.text('Spara inställningar'));
+    await tester.runAsync(() async { await Future<void>.delayed(const Duration(milliseconds: 30)); });
     await tester.pumpAndSettle();
     expect(auth.preference, 'Män');
     expect(auth.savedRadius, 153);

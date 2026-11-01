@@ -1,3 +1,4 @@
+import 'package:zullo_app/likes_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -59,14 +60,17 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     FlutterSecureStorage.setMockInitialValues({});
     await AuthStorage().saveAuth(token: 'presentation', userId: 'presentation');
-    final auth =
-        AuthService(client: MockClient((_) async => http.Response('[]', 200)));
+    final auth = AuthService(
+        client: MockClient((request) async => http.Response(
+            request.url.path.endsWith('/summary')
+                ? '{"totalCount":0,"hiddenCount":0,"canViewAll":false}'
+                : '[]',
+            200)));
     for (final showLikes in [true, false]) {
       await tester.pumpWidget(MaterialApp(
-          home: MatchesPage(
-              key: ValueKey(showLikes),
-              showLikes: showLikes,
-              authService: auth)));
+          home: showLikes
+              ? LikesPage(key: ValueKey(showLikes), authService: auth)
+              : MatchesPage(key: ValueKey(showLikes), authService: auth)));
       await tester.pumpAndSettle();
       expect(find.text(showLikes ? 'Likes' : 'Chattar'), findsOneWidget);
       expect(find.text('Toppval'), findsNothing);

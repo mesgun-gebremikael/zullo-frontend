@@ -33,6 +33,10 @@ class MatchesCacheService {
   static List<dynamic>? getMatches() => _matches;
   static List<dynamic>? getLikesReceived() => _likesReceived;
 
+  static void setMatches(List<dynamic> matches) {
+    _matches = List<dynamic>.from(matches);
+  }
+
   static void setData({
     required List<dynamic> matches,
     required List<dynamic> likesReceived,

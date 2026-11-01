@@ -342,7 +342,7 @@ void main() {
         .runAsync(() => Future<void>.delayed(const Duration(milliseconds: 30)));
     await tester.pumpAndSettle();
     expect(matches, 2); // Original snapshot plus one invalidated follow-up.
-    expect(likes, 2);
+    expect(likes, 0); // Chats must never request the incoming Likes API.
     await close(tester);
   });
 }
