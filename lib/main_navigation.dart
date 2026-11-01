@@ -1,3 +1,4 @@
+import 'services/relation_changes.dart';
 import 'services/signalr_service.dart';
 import 'services/refresh_coordinator.dart';
 import 'models/chat_list_item.dart';
@@ -167,7 +168,9 @@ Future<void> _loadUnreadStatus({bool force = false}) {
   return _refresh.run(() async {
     if (!mounted || !_sessionActive) return;
     try {
+      final revision = RelationChanges.revision;
       final matches = await _authService.getMatches();
+      if (revision != RelationChanges.revision) return;
       if (!mounted || !_sessionActive) return;
       ChatRepository.instance.setChatList(matches.map((m) => ChatListItem.fromJson(Map<String, dynamic>.from(m as Map))).toList());
       _syncUnreadFromRepository();

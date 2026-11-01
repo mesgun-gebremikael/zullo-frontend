@@ -1,3 +1,4 @@
+import 'relation_changes.dart';
 import 'conversation_cache_policy.dart';
 import 'chat_merge.dart';
 import 'dart:async';
@@ -49,6 +50,13 @@ class ChatRepository {
   }
 
   void setChatList(List<ChatListItem> items) {
+    final next = {for (final item in items) item.userId: item};
+    final changed = _state.chatList.where((old) {
+      final current = next[old.userId];
+      return current == null || current.matchCreatedAtUtc != old.matchCreatedAtUtc;
+    }).map((item) => item.userId).toList();
+    // Reconcile missed socket events after resume/reconnect, including a new match.
+    for (final id in changed) { RelationChanges.notify(id); }
     hasLoadedList = true;
     _state = _state.copyWith(chatList: List<ChatListItem>.from(items));
     _emit();
@@ -104,6 +112,15 @@ class ChatRepository {
     });
 
     _state = _state.copyWith(chatList: nextList);
+    _emit();
+  }
+
+  void removeUser(String userId) {
+    final threads = Map<String, List<ChatMessageItem>>.from(_state.threads)..remove(userId);
+    _state = _state.copyWith(
+      chatList: _state.chatList.where((item) => item.userId != userId).toList(),
+      threads: threads,
+    );
     _emit();
   }
 

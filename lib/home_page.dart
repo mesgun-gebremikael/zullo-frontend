@@ -1,3 +1,4 @@
+import 'services/relation_changes.dart';
 import 'dart:async';
 import 'services/account_session.dart';
 import 'package:flutter/material.dart';
@@ -29,6 +30,8 @@ class _HomePageState extends State<HomePage>
   late final AuthService _authService = widget.authService ?? AuthService();
   final int _sessionGeneration = AccountSession.generation;
   Timer? _emptyFeedTimer;
+  StreamSubscription<String>? _relationChanges;
+  int _feedRevision = 0;
   bool _feedRequestRunning = false;
   bool _feedReloadPending = false;
   bool _foreground = true;
@@ -63,6 +66,7 @@ static const double _activeCardLift = 0;
   double _radiusKm = 50;
   String _selectedIntention = 'Relationship';
   String _selectedReligion = 'Private';
+  String _interestedIn = 'Alla';
   int _minAge = 18;
   int _maxAge = 99;
 
@@ -89,6 +93,12 @@ static const double _activeCardLift = 0;
       duration: const Duration(milliseconds: 200),
     );
     _emptyFeedTimer = Timer.periodic(const Duration(seconds: 20), (_) => _refreshEmptyFeed());
+    _relationChanges = RelationChanges.stream.listen((_) {
+      if (!mounted || !AccountSession.isCurrent(_sessionGeneration)) return;
+      _feedRevision++;
+      setState(() { profiles = []; _prefetchedProfiles = []; currentIndex = 0; });
+      unawaited(loadFeed());
+    });
     loadFeed();
     loadUnreadStatus();
     loadMyPhoto();
@@ -97,6 +107,7 @@ static const double _activeCardLift = 0;
 
   @override
   void dispose() {
+    _relationChanges?.cancel();
     _emptyFeedTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     _dragNotifier.dispose();
@@ -109,7 +120,7 @@ static const double _activeCardLift = 0;
   void didChangeAppLifecycleState(AppLifecycleState state) {
     _foreground = state == AppLifecycleState.resumed;
     if (_foreground) {
-      _refreshEmptyFeed();
+      unawaited(loadFeed());
       loadUnreadStatus();
     }
   }
@@ -120,6 +131,7 @@ static const double _activeCardLift = 0;
       if (!background) _feedReloadPending = true;
       return;
     }
+    final revision = _feedRevision;
     _feedRequestRunning = true;
     if (!background) {
       setState(() { isLoading = true; error = null; });
@@ -132,6 +144,7 @@ static const double _activeCardLift = 0;
       );
 
       if (!mounted || !AccountSession.isCurrent(_sessionGeneration)) return;
+      if (revision != _feedRevision) { _feedReloadPending = true; return; }
       final loadedProfiles = List<SwipeProfile>.from(data['profiles']);
       final loadedRadius = (data['radiusKm'] as num).toDouble();
 
@@ -236,6 +249,7 @@ static const double _activeCardLift = 0;
     if (_isPrefetching) return;
     if (_prefetchedProfiles.isNotEmpty) return;
 
+    final revision = _feedRevision;
     _isPrefetching = true;
 
     try {
@@ -249,6 +263,7 @@ static const double _activeCardLift = 0;
 
       if (!mounted || !AccountSession.isCurrent(_sessionGeneration)) return;
 
+      if (revision != _feedRevision) return;
       final existingIds = profiles.map((p) => p.userId).toSet();
       final filteredProfiles = fetchedProfiles
           .where((p) => !existingIds.contains(p.userId))
@@ -684,7 +699,10 @@ static const double _activeCardLift = 0;
     try {
       final me = await _authService.getMyProfile();
 
+      if (!mounted || !AccountSession.isCurrent(_sessionGeneration)) return;
       setState(() {
+        _interestedIn = (me["interestedIn"] ?? "Alla").toString();
+        _radiusKm = (me["matchRadiusKm"] as num?)?.toDouble() ?? _radiusKm;
         _selectedIntention = (me["intention"] ?? "Relationship").toString();
         _selectedReligion = (me["religion"] ?? "Private").toString();
       });
@@ -692,7 +710,10 @@ static const double _activeCardLift = 0;
   }
 
   Future<void> _openRadiusSheet() async {
+    await _loadMyFilterValues();
+    if (!mounted) return;
     double tempRadius = _radiusKm;
+    String tempInterestedIn = _interestedIn;
     String tempIntention = _selectedIntention;
     String tempReligion = _selectedReligion;
     int tempMinAge = _minAge;
@@ -755,12 +776,17 @@ static const double _activeCardLift = 0;
                                   final savedKm = tempRadius.round();
                                   await _authService.updateFilterProfile(
                                     matchRadiusKm: savedKm,
+                                    interestedIn: tempInterestedIn,
                                     intention: tempIntention,
                                     religion: tempReligion,
                                   );
 
                                   if (!mounted) return;
                                   setState(() {
+                                    _feedRevision++;
+                                    _prefetchedProfiles = [];
+                                    profiles = [];
+                                    _interestedIn = tempInterestedIn;
                                     _radiusKm = savedKm.toDouble();
                                     _selectedIntention = tempIntention;
                                     _selectedReligion = tempReligion;
@@ -919,33 +945,14 @@ static const double _activeCardLift = 0;
                             const SizedBox(height: 12),
                             Divider(color: Colors.black.withOpacity(0.08), height: 1),
                             const SizedBox(height: 18),
-                            const Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    'Intresserad av',
-                                    style: TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.w500,
-                                      color: Color(0xFF22252B),
-                                    ),
-                                  ),
-                                ),
-                                Text(
-                                  'Kvinnor',
-                                  style: TextStyle(
-                                    fontSize: 22,
-                                    color: Color(0xFF596170),
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                SizedBox(width: 4),
-                                Icon(
-                                  Icons.chevron_right_rounded,
-                                  size: 30,
-                                  color: Color(0xFF8E96A3),
-                                ),
-                              ],
+                            DropdownButtonFormField<String>(
+                              initialValue: ['Alla', 'Män', 'Kvinnor'].contains(tempInterestedIn) ? tempInterestedIn : 'Alla',
+                              decoration: const InputDecoration(labelText: 'Intresserad av'),
+                              items: const ['Alla', 'Män', 'Kvinnor'].map((value) =>
+                                DropdownMenuItem(value: value, child: Text(value))).toList(),
+                              onChanged: (value) {
+                                if (value != null) setModalState(() => tempInterestedIn = value);
+                              },
                             ),
                             const SizedBox(height: 18),
                             Divider(color: Colors.black.withOpacity(0.08), height: 1),

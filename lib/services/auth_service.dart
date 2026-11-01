@@ -1,3 +1,4 @@
+import 'relation_changes.dart';
 import 'api_config.dart';
 import 'push_token_service.dart';
 import 'matches_cache_service.dart';
@@ -315,6 +316,7 @@ throw Exception('Like failed: ${res.statusCode} ${res.body}');
   Future<List<dynamic>> getMatches() async {
   AccountSession.check(_generation);
   return MatchesCacheService.loadMatches(_generation, () async {
+  final revision = RelationChanges.revision;
   final url = Uri.parse('$baseApiUrl/matches');
   final token = await _storage.getToken();
 
@@ -327,6 +329,7 @@ throw Exception('Like failed: ${res.statusCode} ${res.body}');
   ).timeout(const Duration(seconds: 15));
 
 
+  if (revision != RelationChanges.revision) throw StateError('Relation changed during refresh');
   if (res.statusCode == 200) {
     final decoded = jsonDecode(res.body);
     return (decoded as List).cast<dynamic>();
@@ -338,6 +341,7 @@ throw Exception('Like failed: ${res.statusCode} ${res.body}');
 Future<List<dynamic>> getLikesReceived() async {
   AccountSession.check(_generation);
   return MatchesCacheService.loadLikes(_generation, () async {
+  final revision = RelationChanges.revision;
   final url = Uri.parse('$baseApiUrl/likes/received');
   final token = await _storage.getToken();
 
@@ -350,6 +354,7 @@ Future<List<dynamic>> getLikesReceived() async {
   ).timeout(const Duration(seconds: 15));
 
 
+  if (revision != RelationChanges.revision) throw StateError('Relation changed during refresh');
   if (res.statusCode == 200) {
     final decoded = jsonDecode(res.body);
     return (decoded as List).cast<dynamic>();
@@ -500,10 +505,19 @@ Future<void> reportUser({
   throw Exception('Update radius failed: ${res.statusCode} ${res.body}');
 }
 
+Future<Map<String, dynamic>> getMyAccount() async {
+  final token = await _storage.getToken();
+  final res = await _client.get(Uri.parse('$baseApiUrl/me/account'),
+      headers: {'Authorization': 'Bearer $token'}).timeout(const Duration(seconds: 15));
+  if (res.statusCode != 200) throw Exception('Kunde inte hämta kontot.');
+  return Map<String, dynamic>.from(jsonDecode(res.body) as Map);
+}
+
 Future<void> updateFilterProfile({
   required String intention,
   required String religion,
   int? matchRadiusKm,
+  String? interestedIn,
 }) async {
   final token = await _storage.getToken();
   final res = await _client.patch(
@@ -515,6 +529,7 @@ Future<void> updateFilterProfile({
     body: jsonEncode({
       'intention': intention,
       'religion': religion,
+      if (interestedIn != null) 'interestedIn': interestedIn,
       if (matchRadiusKm != null) 'matchRadiusKm': matchRadiusKm,
     }),
   );

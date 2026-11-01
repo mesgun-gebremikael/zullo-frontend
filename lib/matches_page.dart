@@ -1,3 +1,4 @@
+import 'services/relation_changes.dart';
 import 'services/refresh_coordinator.dart';
 import 'services/account_session.dart';
  import 'dart:async';
@@ -36,6 +37,7 @@ class MatchesPage extends StatefulWidget {
 
 class _MatchesPageState extends State<MatchesPage> {
   StreamSubscription<int>? _sessionChanges;
+  StreamSubscription<String>? _relationChanges;
   final int _sessionGeneration = AccountSession.generation;
   bool get _sessionActive => AccountSession.isCurrent(_sessionGeneration);
 
@@ -61,6 +63,13 @@ void initState() {
     if (mounted) setState(() {});
   });
 
+  _relationChanges = RelationChanges.stream.listen((other) {
+    if (!mounted || !_sessionActive) return;
+    setState(() {
+      matches.removeWhere((row) => row['userId'].toString() == other);
+      likesReceived.removeWhere((row) => row['userId'].toString() == other);
+    });
+  });
   _messagesService = MessagesService(
     AuthService.baseApiUrl,
     AuthStorage(),
@@ -119,6 +128,7 @@ void initState() {
 @override
 void dispose() {
   _sessionChanges?.cancel();
+  _relationChanges?.cancel();
   _openedChatSubscription?.cancel(); // NYTT
 
    _refreshSubscription?.cancel();
@@ -198,6 +208,7 @@ List<dynamic> _mapChatItemsToUi(List<ChatListItem> items) {
             "age": item.age,
             "lastMessageText": item.lastMessageText,
             "lastMessageAtUtc": item.lastMessageAtUtc?.toIso8601String(),
+            "matchCreatedAtUtc": item.matchCreatedAtUtc?.toIso8601String(),
             "hasUnread": item.hasUnread,
             "unreadMessageCount": item.unreadMessageCount,
           })
@@ -256,7 +267,9 @@ Future<void> _warmTopChatThreads(List<dynamic> list) async {
     }
 
     try {
+     final revision = RelationChanges.revision;
      final matchesData = await _auth.getMatches();
+     if (revision != RelationChanges.revision) return;
     if (!mounted || !_sessionActive) return;
     final matchesList = List<dynamic>.from(matchesData);
 
@@ -270,6 +283,7 @@ final hasUnread = chatItems.any((m) => m.hasUnread);
 widget.onUnreadChanged?.call(hasUnread);
 
       final likesData = await _auth.getLikesReceived();
+      if (revision != RelationChanges.revision) return;
       final likesList = List<dynamic>.from(likesData);
 
      if (!mounted || !_sessionActive) return;

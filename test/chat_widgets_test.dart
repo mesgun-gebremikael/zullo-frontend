@@ -1,3 +1,4 @@
+import 'package:zullo_app/services/relation_changes.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -57,6 +58,31 @@ void main() {
             'latestCursor': 'cursor-$sequence'
           }),
           200);
+
+  testWidgets('relationship change closes an open chat and clears its messages', (tester) async {
+    final transport = FakeChatTransport();
+    final client = MockClient((request) async => request.url.path.endsWith('/thread-page')
+        ? page([row(1, 'Private old message')]) : http.Response('{}', 200));
+    final navigator = GlobalKey<NavigatorState>();
+    await settleIo(tester, () => tester.pumpWidget(MaterialApp(
+      navigatorKey: navigator,
+      home: const Scaffold(body: Text('Chat list')),
+    )));
+    await settleIo(tester, () async {
+      unawaited(navigator.currentState!.push(MaterialPageRoute<void>(builder: (_) => ChatPage(
+        userId: 'B', displayName: 'Peer', photoUrl: '',
+        messagesService: MessagesService('http://test', AuthStorage(), client: client),
+        liveService: SignalRService(transport: transport), refreshBadge: () async {},
+      ))));
+      await tester.pump();
+    });
+    expect(find.text('Private old message'), findsOneWidget);
+    RelationChanges.notify('B');
+    await tester.pumpAndSettle();
+    expect(find.byType(ChatPage), findsNothing);
+    expect(find.text('Chat list'), findsOneWidget);
+    await close(tester);
+  });
 
   testWidgets(
       'failed send retries the same identifier and keeps a single bubble',
