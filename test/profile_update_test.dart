@@ -1,5 +1,8 @@
+import 'support/draft_fakes.dart';
+import 'support/pump_platform_routes.dart';
 import 'package:zullo_app/edit_profile_page.dart';
-import 'package:zullo_app/onboarding/onboarding_interested_in_page.dart';
+import 'package:zullo_app/onboarding/onboarding_wizard.dart';
+import 'package:zullo_app/onboarding/onboarding_steps.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -196,7 +199,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     final data = OnboardingData()..interestedIn = 'Män';
     await tester
-        .pumpWidget(MaterialApp(home: OnboardingInterestedInPage(data: data)));
+        .pumpWidget(MaterialApp(home: OnboardingWizard(data: data, initialStep:OnboardingStep.interestedIn)));
     expect(find.byIcon(Icons.check_rounded), findsOneWidget);
     await tester.tap(find.text('Kvinnor'));
     await tester.tap(find.text('Nästa'));
@@ -239,15 +242,15 @@ void main() {
       'temporary profile lookup failure offers retry without logout or onboarding',
       (tester) async {
     var attempts = 0;
-    final auth = AuthService(
+    final auth = RoutingAuth(
         client: MockClient(
-            (_) async => http.Response('{}', ++attempts == 1 ? 500 : 404)));
+            (request) async => http.Response('{}', request.url.path == '/me/profile' && ++attempts == 1 ? 500 : 404)));
     await tester.runAsync(() async {
       await tester.pumpWidget(MaterialApp(
           home: SplashPage(authService: auth, startupDelay: Duration.zero)));
       await Future<void>.delayed(const Duration(milliseconds: 20));
     });
-    await tester.pumpAndSettle();
+    await pumpPlatformRoutes(tester);
     expect(find.text('Försök igen'), findsOneWidget);
     expect(find.byType(OnboardingStartPage), findsNothing);
     expect(await tester.runAsync(() => AuthStorage().getToken()), 'A-token');
@@ -255,7 +258,7 @@ void main() {
       await tester.tap(find.text('Försök igen'));
       await Future<void>.delayed(const Duration(milliseconds: 20));
     });
-    await tester.pumpAndSettle();
+    await pumpPlatformRoutes(tester);
     expect(find.byType(OnboardingStartPage), findsOneWidget);
     expect(attempts, 2);
   });

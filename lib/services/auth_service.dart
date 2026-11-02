@@ -1,3 +1,4 @@
+import 'onboarding_draft_service.dart';
 import '../models/received_likes_summary.dart';
 import 'commerce_service.dart';
 import 'relation_changes.dart';
@@ -50,6 +51,8 @@ class AuthService {
       : _storage = storage ?? AuthStorage(),
         _transport = client ?? _sharedTransport,
         _pushTokenLoader = pushTokenLoader ?? PushTokenService.currentToken;
+
+  OnboardingDraftService get onboardingDrafts => OnboardingDraftService(client: _transport, storage: _storage);
 
   Future<void> _acceptAuth(http.Response response) async {
     final decoded = jsonDecode(response.body);
@@ -213,7 +216,7 @@ class AuthService {
       'Content-Type': 'application/json',
       if (token != null) 'Authorization': 'Bearer $token',
     },
-  );
+  ).timeout(const Duration(seconds: 30));
 
 
   if (res.statusCode == 200) {
@@ -240,7 +243,7 @@ Future<Map<String, dynamic>> getSwipeFeed({
       'Content-Type': 'application/json',
       if (token != null) 'Authorization': 'Bearer $token',
     },
-  );
+  ).timeout(const Duration(seconds: 30));
 
   if (response.statusCode == 200) {
     final decoded = jsonDecode(response.body);
@@ -283,7 +286,7 @@ Future<Map<String, dynamic>> getSwipeFeed({
         if (token != null) 'Authorization': 'Bearer $token',
       },
       body: jsonEncode({'targetUserId': targetUserId, if (superLike) 'superLike': true}),
-    );
+    ).timeout(const Duration(seconds: 30));
 
    if (res.statusCode == 200) {
   final decoded = jsonDecode(res.body);
@@ -307,7 +310,7 @@ throw Exception('Like failed: ${res.statusCode} ${res.body}');
         if (token != null) 'Authorization': 'Bearer $token',
       },
       body: jsonEncode({'targetUserId': targetUserId}),
-    );
+    ).timeout(const Duration(seconds: 30));
 
     if (res.statusCode != 200) {
       throw Exception('Skip failed: ${res.statusCode} ${res.body}');
@@ -467,7 +470,7 @@ Future<void> _saveProfileBody(Map<String, dynamic> body) async {
       'Authorization': 'Bearer $token',
     },
     body: jsonEncode(body),
-  );
+  ).timeout(const Duration(seconds: 30));
 
 
 
@@ -492,7 +495,7 @@ Future<void> reportUser({
       'reportedUserId': reportedUserId,
       'reason': reason,
     }),
-  );
+  ).timeout(const Duration(seconds: 30));
 
   if (res.statusCode != 200) {
     throw Exception('Report failed: ${res.statusCode} ${res.body}');
@@ -511,7 +514,7 @@ Future<void> reportUser({
     body: jsonEncode({
       'matchRadiusKm': km,
     }),
-  );
+  ).timeout(const Duration(seconds: 30));
 
   if (res.statusCode == 200) {
     final decoded = jsonDecode(res.body);
@@ -548,7 +551,7 @@ Future<void> updateFilterProfile({
       if (interestedIn != null) 'interestedIn': interestedIn,
       if (matchRadiusKm != null) 'matchRadiusKm': matchRadiusKm,
     }),
-  );
+  ).timeout(const Duration(seconds: 30));
   if (res.statusCode != 200) {
     throw Exception('Update filter profile failed: ${res.statusCode} ${res.body}');
   }
@@ -569,7 +572,7 @@ Future<bool> canOpenChat(String otherUserId) async {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
       },
-    );
+    ).timeout(const Duration(seconds: 30));
 
     return res.statusCode == 200;
   } catch (_) {
@@ -599,7 +602,7 @@ Future<void> saveDeviceToken(String token) async {
     body: jsonEncode({
       'token': trimmedToken,
     }),
-  );
+  ).timeout(const Duration(seconds: 30));
 
   if (res.statusCode != 200) {
     throw Exception('Save device token failed: ${res.statusCode} ${res.body}');

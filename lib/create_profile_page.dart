@@ -33,7 +33,7 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
 
   final ImagePicker _picker = ImagePicker();
 
-  List<String> _photoUrls = [];
+  final List<String> _photoUrls = [];
   bool _isUploadingImage = false;
   bool _isLoading = false;
   String? _error;

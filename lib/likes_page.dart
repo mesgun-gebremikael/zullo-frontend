@@ -1,3 +1,4 @@
+import 'services/profile_images.dart';
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
@@ -244,7 +245,7 @@ class _LikesPageState extends State<LikesPage> {
               Row(children: [
                 CircleAvatar(
                     radius: 28,
-                    backgroundImage: photo.isEmpty ? null : NetworkImage(photo),
+                    backgroundImage: photo.isEmpty ? null : ProfileImages.avatar(photo),
                     child: photo.isEmpty
                         ? const Icon(Icons.person_outline)
                         : null),

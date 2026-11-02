@@ -1,3 +1,4 @@
+import 'services/profile_images.dart';
 import 'package:flutter/material.dart';
 
 class ProfilePhotoPreviewPage extends StatelessWidget {
@@ -44,9 +45,7 @@ class ProfilePhotoPreviewPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final photos = _readPhotoUrls();
 
-    final imageUrl = photos.isNotEmpty
-        ? photos.first
-        : "https://images.unsplash.com/photo-1524504388940-b1c1722653e1";
+    final imageUrl = photos.isNotEmpty ? photos.first : '';
 
     final displayName = (profile["displayName"] ?? "").toString();
     final age = (profile["age"] ?? "").toString();
@@ -98,10 +97,13 @@ class ProfilePhotoPreviewPage extends StatelessWidget {
                   width: double.infinity,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(30),
-                    image: DecorationImage(
-                      image: NetworkImage(imageUrl),
-                      fit: BoxFit.cover,
-                    ),
+                    color: const Color(0xFF596273),
+                    image: imageUrl.isEmpty
+                        ? null
+                        : DecorationImage(
+                            image: ProfileImages.card(imageUrl),
+                            fit: BoxFit.cover,
+                          ),
                   ),
                   child: Container(
                     decoration: BoxDecoration(
@@ -131,7 +133,8 @@ class ProfilePhotoPreviewPage extends StatelessWidget {
                                     right: index ==
                                             (photos.isEmpty
                                                     ? 1
-                                                    : photos.length.clamp(1, 6)) -
+                                                    : photos.length
+                                                        .clamp(1, 6)) -
                                                 1
                                         ? 0
                                         : 6,

@@ -15,7 +15,7 @@ import '../services/signalr_service.dart';
 import '../services/current_chat.dart';
 import '../services/badge_service.dart';
 import 'services/chat_cache_service.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'services/profile_images.dart';
 import 'services/unread_sync_service.dart';
 import 'services/matches_cache_service.dart';
 import 'services/matches_refresh_service.dart';
@@ -957,7 +957,7 @@ _pushCurrentMessagesToRepository();
             backgroundColor: scheme.surfaceContainerHighest,
            backgroundImage:
     widget.photoUrl.isNotEmpty
-        ? CachedNetworkImageProvider(widget.photoUrl)
+        ? ProfileImages.avatar(widget.photoUrl)
         : null,
 child: widget.photoUrl.isEmpty
     ? Icon(Icons.person, color: scheme.onSurface.withValues(alpha: 0.75))

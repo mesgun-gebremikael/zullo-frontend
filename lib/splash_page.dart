@@ -48,7 +48,7 @@ class _SplashPageState extends State<SplashPage> {
     if (token == null || token.isEmpty) return const WelcomePage();
     final exists = await (widget.authService ?? AuthService()).hasProfile();
     AccountSession.check(generation);
-    return exists ? const MainNavigation() : const OnboardingStartPage();
+    return exists ? const MainNavigation() : OnboardingStartPage(authService: widget.authService);
   }
 
   Future<void> _checkLogin() async {

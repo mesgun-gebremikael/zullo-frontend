@@ -9,7 +9,6 @@ import 'register_page.dart';
 import 'login_page.dart';
 import 'splash_page.dart';
 import 'dart:ui';
-import 'chat_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';

@@ -1,3 +1,4 @@
+import 'services/profile_images.dart';
 import 'account_management_page.dart';
 import 'widgets/discovery_settings_sheet.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -6,7 +7,6 @@ import 'services/relation_changes.dart';
 import 'dart:async';
 import 'services/account_session.dart';
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'services/auth_service.dart';
 import 'models/swipe_profile.dart';
 import 'premium_page.dart';
@@ -293,7 +293,7 @@ static const double _activeCardLift = 0;
       for (final profile in _prefetchedProfiles.take(2)) {
         if (profile.photoUrls.isNotEmpty) {
           precacheImage(
-            NetworkImage(profile.photoUrls.first),
+            ProfileImages.card(profile.photoUrls.first),
             context,
           );
         }
@@ -720,9 +720,9 @@ static const double _activeCardLift = 0;
       final profile = profiles[i];
       if (profile.photoUrls.isEmpty) continue;
 
-      for (final url in profile.photoUrls.take(2)) {
+      for (final url in profile.photoUrls.take(1)) {
         precacheImage(
-          NetworkImage(url),
+          ProfileImages.card(url),
           context,
         );
       }

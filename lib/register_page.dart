@@ -37,11 +37,13 @@ class _RegisterPageState extends State<RegisterPage> {
       _error = null;
     });
     try {
-      await _authService.registerAndLogin(
-          email: email, password: password);
+      await _authService.registerAndLogin(email: email, password: password);
       if (!mounted) return;
-      Navigator.pushReplacement(context,
-          MaterialPageRoute(builder: (_) => const OnboardingStartPage()));
+      Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+              builder: (_) => OnboardingStartPage(authService: _authService)),
+          (_) => false);
     } on TimeoutException {
       if (mounted) {
         setState(() => _error =
@@ -68,89 +70,92 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Create account'),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text(
-              'Create account',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-              ),
+    return PopScope(
+        canPop: !_isSubmitting,
+        child: Scaffold(
+          appBar: AppBar(
+            title: const Text('Create account'),
+            automaticallyImplyLeading: !_isSubmitting,
+          ),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text(
+                  'Create account',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Join ZULLO today',
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 32),
+                TextField(
+                  controller: emailController,
+                  textInputAction: TextInputAction.next,
+                  decoration: const InputDecoration(
+                    labelText: 'Email',
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: passwordController,
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Password',
+                  ),
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: _isSubmitting ? null : _submit,
+                    child: _isSubmitting
+                        ? const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                                SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2)),
+                                SizedBox(width: 12),
+                                Text('Skapar ditt konto…')
+                              ])
+                        : const Text('Create account'),
+                  ),
+                ),
+                if (_isSubmitting)
+                  const Padding(
+                      padding: EdgeInsets.only(top: 12),
+                      child: Text(
+                          'Väntar på servern. Första anslutningen kan ta en stund.',
+                          textAlign: TextAlign.center)),
+                if (_error != null)
+                  Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: Text(_error!,
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.error),
+                          semanticsLabel: _error)),
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: _isSubmitting
+                      ? null
+                      : () {
+                          Navigator.pop(context);
+                        },
+                  child: const Text('Already have an account? Log in'),
+                ),
+              ],
             ),
-            const SizedBox(height: 8),
-            const Text(
-              'Join ZULLO today',
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 32),
-            TextField(
-              controller: emailController,
-              textInputAction: TextInputAction.next,
-              decoration: const InputDecoration(
-                labelText: 'Email',
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: passwordController,
-              obscureText: true,
-              decoration: const InputDecoration(
-                labelText: 'Password',
-              ),
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              height: 48,
-              child: ElevatedButton(
-                onPressed: _isSubmitting ? null : _submit,
-                child: _isSubmitting
-                    ? const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                            SizedBox(
-                                width: 18,
-                                height: 18,
-                                child:
-                                    CircularProgressIndicator(strokeWidth: 2)),
-                            SizedBox(width: 12),
-                            Text('Skapar ditt konto…')
-                          ])
-                    : const Text('Create account'),
-              ),
-            ),
-            if (_isSubmitting)
-              const Padding(
-                  padding: EdgeInsets.only(top: 12),
-                  child: Text(
-                      'Väntar på servern. Första anslutningen kan ta en stund.',
-                      textAlign: TextAlign.center)),
-            if (_error != null)
-              Padding(
-                  padding: const EdgeInsets.only(top: 12),
-                  child: Text(_error!,
-                      style:
-                          TextStyle(color: Theme.of(context).colorScheme.error),
-                      semanticsLabel: _error)),
-            const SizedBox(height: 16),
-            TextButton(
-              onPressed: _isSubmitting
-                  ? null
-                  : () {
-                      Navigator.pop(context);
-                    },
-              child: const Text('Already have an account? Log in'),
-            ),
-          ],
-        ),
-      ),
-    );
+          ),
+        ));
   }
 }

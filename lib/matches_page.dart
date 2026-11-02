@@ -11,7 +11,7 @@ import 'services/chat_coordinator.dart';
 import 'models/chat_open_request.dart';
 import 'services/matches_cache_service.dart';
 import 'services/matches_refresh_service.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'services/profile_images.dart';
 import 'models/chat_list_item.dart';
 import 'services/chat_repository.dart';
 import 'services/chat_thread_cache_service.dart';
@@ -221,7 +221,7 @@ List<dynamic> _mapChatItemsToUi(List<ChatListItem> items) {
     if (photoUrl.isEmpty) continue;
 
     precacheImage(
-      CachedNetworkImageProvider(photoUrl),
+      ProfileImages.avatar(photoUrl),
       context,
     );
   }
@@ -444,7 +444,7 @@ final lastMessageAtUtc = (m["lastMessageAtUtc"] ?? "").toString();
       radius: 30,
       backgroundColor: cs.surfaceContainerHighest,
       backgroundImage:
-    photoUrl.isNotEmpty ? CachedNetworkImageProvider(photoUrl) : null,
+    photoUrl.isNotEmpty ? ProfileImages.avatar(photoUrl) : null,
       child: photoUrl.isEmpty
           ? Icon(
               Icons.person,
@@ -532,7 +532,7 @@ const SizedBox(height: 10),
                                     backgroundColor:
                                         cs.surfaceContainerHighest,
                                     backgroundImage: photoUrl.isNotEmpty
-    ? CachedNetworkImageProvider(photoUrl)
+    ? ProfileImages.avatar(photoUrl)
     : null,
                                     child: photoUrl.isEmpty
                                         ? Icon(
