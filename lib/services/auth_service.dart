@@ -196,7 +196,7 @@ class AuthService {
         'Content-Type': 'application/json',
         if (token != null) 'Authorization': 'Bearer $token',
       },
-    );
+    ).timeout(const Duration(seconds: 30));
 
     if (res.statusCode == 200) return true;
     if (res.statusCode == 404) return false;
