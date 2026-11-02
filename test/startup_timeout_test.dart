@@ -1,3 +1,5 @@
+import 'support/draft_fakes.dart';
+import 'support/pump_platform_routes.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -44,9 +46,10 @@ void main() {
     final pending = Completer<http.Response>();
     var attempts = 0;
     final storage = StartupStorage();
-    final auth = AuthService(
+    final auth = RoutingAuth(
         storage: storage,
-        client: MockClient((_) {
+        client: MockClient((request) {
+          if(request.url.path == '/me/onboarding') return Future.value(http.Response('{}',404));
           attempts++;
           return attempts == 1
               ? pending.future
@@ -69,7 +72,7 @@ void main() {
     expect(await storage.getToken(), 'saved-token');
     expect(find.byType(OnboardingStartPage), findsNothing);
     await tester.tap(find.text('Försök igen'));
-    await tester.pumpAndSettle();
+    await pumpPlatformRoutes(tester);
     expect(attempts, 2);
     expect(find.byType(OnboardingStartPage), findsOneWidget);
     pending.complete(http.Response('{}', 200));

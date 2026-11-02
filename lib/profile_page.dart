@@ -1,3 +1,4 @@
+import 'services/profile_images.dart';
 import 'dart:async';
 import 'services/relation_changes.dart';
 import 'services/account_session.dart';
@@ -73,7 +74,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 ),
                               );
                             }
-                            return Image.network(photos[i], fit: BoxFit.cover);
+                            return Image(image: ProfileImages.card(photos[i]), fit: BoxFit.cover);
                           },
                         ),
 

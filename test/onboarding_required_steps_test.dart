@@ -1,9 +1,8 @@
+import 'package:zullo_app/onboarding/onboarding_wizard.dart';
+import 'package:zullo_app/onboarding/onboarding_steps.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zullo_app/onboarding/onboarding_birthdate_page.dart';
 import 'package:zullo_app/onboarding/onboarding_data.dart';
-import 'package:zullo_app/onboarding/onboarding_name_page.dart';
-import 'package:zullo_app/onboarding/onboarding_photos_page.dart';
 
 void main() {
   for (final step in ['name', 'birthdate', 'photos']) {
@@ -15,21 +14,19 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
       final data = OnboardingData();
       final page = switch (step) {
-        'name' => OnboardingNamePage(data: data),
-        'birthdate' => OnboardingBirthdatePage(data: data),
-        _ => OnboardingPhotosPage(data: data),
+        'name' =>
+          OnboardingWizard(data: data, initialStep: OnboardingStep.name),
+        'birthdate' =>
+          OnboardingWizard(data: data, initialStep: OnboardingStep.birthDate),
+        _ => OnboardingWizard(data: data, initialStep: OnboardingStep.photos),
       };
       await tester.pumpWidget(MaterialApp(home: page));
-      expect(
-          tester.widget<ElevatedButton>(find.byType(ElevatedButton)).onPressed,
+      expect(tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
           isNull);
       if (step == 'name') {
-        await tester.enterText(find.byType(TextField), 'Anna');
+        await tester.enterText(find.byType(TextFormField), 'Anna');
         await tester.pump();
-        expect(
-            tester
-                .widget<ElevatedButton>(find.byType(ElevatedButton))
-                .onPressed,
+        expect(tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
             isNotNull);
         await tester.tap(find.text('Nästa'));
         await tester.pumpAndSettle();

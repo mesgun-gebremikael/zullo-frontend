@@ -1,3 +1,4 @@
+import 'services/profile_images.dart';
 import 'dart:io';
 import 'widgets/profile_basics_section.dart';
 import 'package:flutter/material.dart';
@@ -1271,7 +1272,7 @@ Future<void> _openHeightPicker() async {
                   ),
                   const SizedBox(height: 14),
                   Text(
-                    "${tempCm} cm • ${_cmToFeet(tempCm)}'${_cmToInchesPart(tempCm)}\"",
+                    "$tempCm cm • ${_cmToFeet(tempCm)}'${_cmToInchesPart(tempCm)}\"",
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.grey.shade700,
@@ -1732,8 +1733,8 @@ Widget _buildPreviewChip(String text) {
                             children: [
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(12),
-                                child: Image.network(
-                                  url,
+                                child: Image(
+                                  image: ProfileImages.thumbnail(url),
                                   fit: BoxFit.cover,
                                   width: double.infinity,
                                   height: double.infinity,

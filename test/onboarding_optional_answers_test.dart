@@ -1,11 +1,8 @@
-import 'package:zullo_app/onboarding/onboarding_intention_page.dart';
-import 'package:zullo_app/onboarding/onboarding_religion_page.dart';
-import 'package:zullo_app/onboarding/onboarding_work_page.dart';
+import 'package:zullo_app/onboarding/onboarding_wizard.dart';
+import 'package:zullo_app/onboarding/onboarding_steps.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:zullo_app/onboarding/onboarding_data.dart';
-import 'package:zullo_app/onboarding/onboarding_lifestyle_page.dart';
-import 'package:zullo_app/onboarding/onboarding_family_page.dart';
 
 void main() {
   Future<void> next(WidgetTester tester) async {
@@ -22,9 +19,11 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
       final data = OnboardingData();
       final page = switch (scenario) {
-        'intention' => OnboardingIntentionPage(data: data),
-        'religion' => OnboardingReligionPage(data: data),
-        _ => OnboardingWorkPage(data: data),
+        'intention' =>
+          OnboardingWizard(data: data, initialStep: OnboardingStep.intention),
+        'religion' =>
+          OnboardingWizard(data: data, initialStep: OnboardingStep.religion),
+        _ => OnboardingWizard(data: data, initialStep: OnboardingStep.work),
       };
       final label = switch (scenario) {
         'intention' => 'Seriöst förhållande',
@@ -62,18 +61,19 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     final data = OnboardingData();
-    await tester
-        .pumpWidget(MaterialApp(home: OnboardingLifestylePage(data: data)));
+    await tester.pumpWidget(MaterialApp(
+        home:
+            OnboardingWizard(data: data, initialStep: OnboardingStep.height)));
     await next(tester);
-    expect(find.byIcon(Icons.check), findsNothing);
+    expect(find.byIcon(Icons.check_rounded), findsNothing);
     await tester.tap(find.text('Ibland'));
     await tester.pumpAndSettle();
-    expect(find.byIcon(Icons.check), findsOneWidget);
+    expect(find.byIcon(Icons.check_rounded), findsOneWidget);
     await tester.tap(find.text('Ibland'));
     await tester.pumpAndSettle();
-    expect(find.byIcon(Icons.check), findsNothing);
+    expect(find.byIcon(Icons.check_rounded), findsNothing);
     await next(tester);
-    expect(find.byIcon(Icons.check), findsNothing);
+    expect(find.byIcon(Icons.check_rounded), findsNothing);
     for (var i = 0; i < 5; i++) {
       await next(tester);
     }
@@ -97,16 +97,17 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     final data = OnboardingData()..childrenCount = '1 barn';
-    await tester
-        .pumpWidget(MaterialApp(home: OnboardingFamilyPage(data: data)));
-    expect(find.byIcon(Icons.check), findsOneWidget);
+    await tester.pumpWidget(MaterialApp(
+        home: OnboardingWizard(
+            data: data, initialStep: OnboardingStep.children)));
+    expect(find.byIcon(Icons.check_rounded), findsOneWidget);
     await tester.tap(find.text('1 barn'));
     await tester.pumpAndSettle();
     await next(tester);
     await tester.tap(find.byIcon(Icons.arrow_back_ios_new_rounded));
     await tester.pumpAndSettle();
     expect(find.text('Hur många barn har du?'), findsOneWidget);
-    expect(find.byIcon(Icons.check), findsNothing);
+    expect(find.byIcon(Icons.check_rounded), findsNothing);
     await next(tester);
     await next(tester);
     expect(data.childrenCount, isEmpty);

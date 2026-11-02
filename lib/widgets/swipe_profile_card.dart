@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import '../services/profile_images.dart';
 import 'package:flutter/material.dart';
 
 import '../models/swipe_profile.dart';
@@ -9,6 +9,7 @@ class SwipeProfileCard extends StatefulWidget {
   final double height;
   final double photoBarsTop;
   final double distanceFallbackKm;
+  final ImageProvider Function(String)? imageProvider;
 
   const SwipeProfileCard({
     super.key,
@@ -17,6 +18,7 @@ class SwipeProfileCard extends StatefulWidget {
     required this.height,
     this.photoBarsTop = 66,
     this.distanceFallbackKm = 50,
+    this.imageProvider,
   });
 
   @override
@@ -33,6 +35,7 @@ enum _CardContentGroup {
 
 class _SwipeProfileCardState extends State<SwipeProfileCard> {
   int imageIndex = 0;
+  int _imageRevision = 0;
 
   late String _visibleImageUrl;
   bool _isImageReady = false;
@@ -48,7 +51,6 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
     _resolveVisibleImage(_visibleImageUrl);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _precacheAllPhotos();
       _precacheNextPhoto();
     });
   }
@@ -65,13 +67,14 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
 
     if (userChanged || photosChanged) {
       imageIndex = 0;
+      // A different user must never briefly inherit the previous user's photo.
+      _visibleImageUrl = '';
 
       final newUrl = _currentPhotoUrl();
       _resolveVisibleImage(newUrl);
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _precacheAllPhotos();
-        _precacheNextPhoto();
+          _precacheNextPhoto();
       });
     }
   }
@@ -93,6 +96,8 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
     return photos[imageIndex];
   }
 
+  ImageProvider _provider(String url) => widget.imageProvider?.call(url) ?? ProfileImages.card(url);
+
   void _removeImageListener() {
     if (_imageStream != null && _imageListener != null) {
       _imageStream!.removeListener(_imageListener!);
@@ -103,6 +108,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
   }
 
   void _resolveVisibleImage(String url) {
+    final revision = ++_imageRevision;
     if (url.isEmpty) {
       setState(() {
         _visibleImageUrl = '';
@@ -111,7 +117,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
       return;
     }
 
-    final provider = CachedNetworkImageProvider(url);
+    final provider = _provider(url);
     final stream = provider.resolve(const ImageConfiguration());
 
     _removeImageListener();
@@ -119,7 +125,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
     _imageStream = stream;
     _imageListener = ImageStreamListener(
       (ImageInfo _, bool __) {
-        if (!mounted) return;
+        if (!mounted || revision != _imageRevision) return;
 
         setState(() {
           _visibleImageUrl = url;
@@ -129,7 +135,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
         _removeImageListener();
       },
       onError: (dynamic _, StackTrace? __) {
-        if (!mounted) return;
+        if (!mounted || revision != _imageRevision) return;
 
         setState(() {
           _visibleImageUrl = url;
@@ -162,20 +168,8 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
     _precacheNextPhoto();
   }
 
-  void _precacheAllPhotos() {
-    final profile = widget.profile;
-
-    if (profile.photoUrls.isEmpty) return;
-
-    for (final url in profile.photoUrls.take(4)) {
-      precacheImage(
-        CachedNetworkImageProvider(url),
-        context,
-      );
-    }
-  }
-
   void _precacheNextPhoto() {
+    if (!mounted) return;
     final profile = widget.profile;
 
     if (profile.photoUrls.isEmpty) return;
@@ -184,7 +178,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
     if (nextIndex >= profile.photoUrls.length) return;
 
     precacheImage(
-      CachedNetworkImageProvider(profile.photoUrls[nextIndex]),
+      _provider(profile.photoUrls[nextIndex]),
       context,
     );
   }
@@ -294,8 +288,9 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
                       fit: StackFit.expand,
                       children: [
                         if (_visibleImageUrl.isNotEmpty)
-                          Image.network(
-                            _visibleImageUrl,
+                          Image(
+                            key: ValueKey(widget.profile.userId),
+                            image: _provider(_visibleImageUrl),
                             fit: BoxFit.cover,
                             gaplessPlayback: true,
                             errorBuilder: (_, __, ___) {

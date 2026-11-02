@@ -1,3 +1,4 @@
+import 'onboarding_draft_service.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'account_session.dart';
@@ -47,9 +48,23 @@ class AccountService {
     return jsonDecode(response.body) as Map<String, dynamic>;
   }
 
-  Future<bool> paused() async => (await _request('GET', '/status'))['paused'] == true;
+  Future<bool> paused() async =>
+      (await _request('GET', '/status'))['paused'] == true;
   Future<bool> pause(bool value) async =>
       (await _request('PATCH', '/pause', {'paused': value}))['paused'] == true;
-  Future<Map<String, dynamic>> remove(String password) =>
-      _request('POST', '/removal', {'password': password, 'confirm': true});
+  Future<Map<String, dynamic>> remove(String password) async {
+    String? user;
+    try {
+      user = await _storage.getUserId().timeout(const Duration(seconds: 5));
+    } catch (_) {/* optional local cache cleanup */}
+    AccountSession.check(_generation);
+    final result = await _request(
+        'POST', '/removal', {'password': password, 'confirm': true});
+    if (user != null) {
+      try {
+        await DraftCache().clear(user).timeout(const Duration(seconds: 5));
+      } catch (_) {/* server erasure remains accepted */}
+    }
+    return result;
+  }
 }

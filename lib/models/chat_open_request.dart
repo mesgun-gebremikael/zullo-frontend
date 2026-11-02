@@ -1,4 +1,3 @@
-import '../models/chat_open_request.dart';
 
 class ChatOpenRequest {
   final String userId;

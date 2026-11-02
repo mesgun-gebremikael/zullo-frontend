@@ -1,3 +1,4 @@
+import 'services/profile_images.dart';
 import 'widgets/commerce_cards.dart';
 import 'dart:async';
 import 'services/commerce_service.dart';
@@ -160,7 +161,7 @@ class _ProfileTabState extends State<ProfileTab> {
                   onTap: _openPhotoPreview,
                   child: CircleAvatar(
                     radius: 34,
-                    backgroundImage: imageUrl.isEmpty ? null : NetworkImage(imageUrl),
+                    backgroundImage: imageUrl.isEmpty ? null : ProfileImages.thumbnail(imageUrl),
                     backgroundColor: Colors.grey.shade800,
                     child: imageUrl.isEmpty ? const Icon(Icons.person_outline, color: Colors.white) : null,
                   ),
