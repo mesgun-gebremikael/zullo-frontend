@@ -42,7 +42,8 @@ class OnboardingShell extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     IconButton(
-                      onPressed: onBack ?? () => Navigator.pop(context),
+                      onPressed: onBack ?? () => Navigator.maybePop(context),
+                      tooltip: 'Tillbaka',
                       icon: const Icon(Icons.arrow_back_ios_new_rounded),
                       iconSize: 34,
                       padding: EdgeInsets.zero,
