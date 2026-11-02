@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'services/account_session.dart';
 import 'services/auth_storage.dart';
@@ -10,11 +11,15 @@ class SplashPage extends StatefulWidget {
   final bool skipNavigation;
   final AuthService? authService;
   final Duration startupDelay;
+  final Duration checkTimeout;
+  final AuthStorage? storage;
 
   const SplashPage(
       {super.key,
       this.skipNavigation = false,
       this.authService,
+      this.storage,
+      this.checkTimeout = const Duration(seconds: 30),
       this.startupDelay = const Duration(seconds: 2)});
 
   @override
@@ -22,7 +27,7 @@ class SplashPage extends StatefulWidget {
 }
 
 class _SplashPageState extends State<SplashPage> {
-  final AuthStorage _storage = AuthStorage();
+  late final AuthStorage _storage = widget.storage ?? AuthStorage();
   bool _checking = false;
   String? _error;
 
@@ -37,6 +42,15 @@ class _SplashPageState extends State<SplashPage> {
     Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => page));
   }
 
+  Future<Widget> _destination(int generation) async {
+    final token = await _storage.getToken();
+    AccountSession.check(generation);
+    if (token == null || token.isEmpty) return const WelcomePage();
+    final exists = await (widget.authService ?? AuthService()).hasProfile();
+    AccountSession.check(generation);
+    return exists ? const MainNavigation() : const OnboardingStartPage();
+  }
+
   Future<void> _checkLogin() async {
     if (_checking) return;
     _checking = true;
@@ -47,14 +61,9 @@ class _SplashPageState extends State<SplashPage> {
         await Future<void>.delayed(widget.startupDelay);
       }
       AccountSession.check(generation);
-      final token = await _storage.getToken();
-      if (token == null || token.isEmpty) {
-        _open(const WelcomePage());
-        return;
-      }
-      final exists = await (widget.authService ?? AuthService()).hasProfile();
+      final page = await _destination(generation).timeout(widget.checkTimeout);
       AccountSession.check(generation);
-      _open(exists ? const MainNavigation() : const OnboardingStartPage());
+      _open(page);
     } on SessionChangedException {
       // A newer login/logout owns navigation now.
     } on ProfileSessionExpiredException {
@@ -62,7 +71,7 @@ class _SplashPageState extends State<SplashPage> {
         final clearing = _storage.clearAuth();
         final clearingGeneration = AccountSession.generation;
         try {
-          await clearing;
+          await clearing.timeout(widget.checkTimeout);
           if (AccountSession.isCurrent(clearingGeneration)) {
             _open(const WelcomePage());
           }
@@ -73,6 +82,11 @@ class _SplashPageState extends State<SplashPage> {
             setState(() => _error = 'Kunde inte öppna appen. Försök igen.');
           }
         }
+      }
+    } on TimeoutException {
+      if (mounted && AccountSession.isCurrent(generation)) {
+        setState(() => _error =
+            'Anslutningen tog för lång tid. Kontrollera internet och försök igen.');
       }
     } catch (_) {
       // A transient server/storage error is not a missing profile or a logout.
@@ -88,10 +102,21 @@ class _SplashPageState extends State<SplashPage> {
   Widget build(BuildContext context) => Scaffold(
         body: Center(
             child: _error == null
-                ? const Text('ZULLO',
-                    style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold))
+                ? Column(mainAxisSize: MainAxisSize.min, children: [
+                    const Text('ZULLO',
+                        style: TextStyle(
+                            fontSize: 36, fontWeight: FontWeight.bold)),
+                    if (!widget.skipNavigation) ...[
+                      const SizedBox(height: 24),
+                      const CircularProgressIndicator(),
+                      const SizedBox(height: 16),
+                      const Text('Öppnar appen…'),
+                    ],
+                  ])
                 : Column(mainAxisSize: MainAxisSize.min, children: [
-                    Text(_error!),
+                    Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Text(_error!, textAlign: TextAlign.center)),
                     const SizedBox(height: 16),
                     ElevatedButton(
                         onPressed: _checkLogin,
