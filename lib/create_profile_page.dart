@@ -7,7 +7,8 @@ import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 
 import 'services/auth_storage.dart';
-import 'services/cloudinary_service.dart';
+import 'services/photo_service.dart';
+import 'services/account_session.dart';
 import 'main_navigation.dart';
 import 'welcome_page.dart';
 
@@ -19,6 +20,7 @@ class CreateProfilePage extends StatefulWidget {
 }
 
 class _CreateProfilePageState extends State<CreateProfilePage> {
+  final int _photoGeneration = AccountSession.generation;
   final _displayName = TextEditingController();
   final _age = TextEditingController(text: "24");
   final _gender = TextEditingController(text: "Man");
@@ -46,39 +48,25 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
   }
 
   Future<void> _pickAndUploadImage() async {
-    final picked = await _picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 82,
-      maxWidth: 1440,
-      maxHeight: 1440,
-    );
-
-    if (picked == null) return;
-
-    setState(() {
-      _isUploadingImage = true;
-      _error = null;
-    });
-
-    final file = File(picked.path);
-    final url = await CloudinaryService.uploadImage(file);
-
-    if (!mounted) return;
-
-    if (url != null) {
-      setState(() {
-        _photoUrls.add(url);
-        _isUploadingImage = false;
-      });
-    } else {
-      setState(() {
-        _isUploadingImage = false;
-        _error = "Bild-upload misslyckades.";
-      });
+    if (_isUploadingImage || _isLoading || _photoUrls.length >= 6 || !AccountSession.isCurrent(_photoGeneration)) return;
+    setState(() { _isUploadingImage = true; _error = null; });
+    try {
+      final picked = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 82, maxWidth: 1920, maxHeight: 1920);
+      if (picked == null || !mounted || !AccountSession.isCurrent(_photoGeneration)) return;
+      final url = await PhotoService().uploadFile(File(picked.path));
+      if (!mounted || !AccountSession.isCurrent(_photoGeneration)) return;
+      setState(() { if (!_photoUrls.contains(url)) _photoUrls.add(url); });
+    } on PhotoUploadException catch (error) {
+      if (mounted && AccountSession.isCurrent(_photoGeneration)) setState(() => _error = error.message);
+    } catch (_) {
+      if (mounted && AccountSession.isCurrent(_photoGeneration)) setState(() => _error = 'Kunde inte välja eller ladda upp bilden. Försök igen.');
+    } finally {
+      if (mounted && AccountSession.isCurrent(_photoGeneration)) setState(() => _isUploadingImage = false);
     }
   }
 
   Future<void> _saveProfile() async {
+    if (_isLoading || _isUploadingImage || !AccountSession.isCurrent(_photoGeneration)) return;
     final name = _displayName.text.trim();
     final age = int.tryParse(_age.text.trim()) ?? 0;
     final gender = _gender.text.trim();
@@ -329,7 +317,7 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
             SizedBox(
               height: 48,
               child: ElevatedButton(
-                onPressed: _isLoading ? null : _saveProfile,
+                onPressed: (_isLoading || _isUploadingImage) ? null : _saveProfile,
                 child: _isLoading
                     ? const SizedBox(
                         height: 22,

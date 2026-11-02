@@ -3,7 +3,8 @@ import 'widgets/profile_basics_section.dart';
 import 'package:flutter/material.dart';
 import 'services/auth_service.dart';
 import 'package:image_picker/image_picker.dart';
-import 'services/cloudinary_service.dart';
+import 'services/photo_service.dart';
+import 'services/account_session.dart';
 import 'models/swipe_profile.dart';
 import 'widgets/swipe_profile_card.dart';
 import 'dart:math' as math;
@@ -25,6 +26,7 @@ class EditProfilePage extends StatefulWidget {
 }
 
 class _EditProfilePageState extends State<EditProfilePage> {
+  final int _photoGeneration = AccountSession.generation;
   late final AuthService _authService = widget.authService ?? AuthService();
    SwipeProfile? _cachedPreviewProfile;
   final _displayName = TextEditingController();
@@ -157,56 +159,26 @@ _originPlace.text = (profile["originPlace"] ?? "").toString();
   }
   
   Future<void> _addPhoto() async {
-  if (_photoUrls.length >= 6) {
-    setState(() {
-      _error = "Du kan ha max 6 bilder.";
-    });
-    return;
-  }
-
-  try {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 85,
-    );
-
-    if (pickedFile == null) return;
-
-    setState(() {
-      _isUploadingPhoto = true;
-      _error = null;
-    });
-
-    final uploadedUrl = await CloudinaryService.uploadImage(
-      File(pickedFile.path),
-    );
-
-    if (!mounted) return;
-
-    if (uploadedUrl == null || uploadedUrl.isEmpty) {
-      setState(() {
-        _isUploadingPhoto = false;
-        _error = "Kunde inte ladda upp bilden.";
-      });
-      return;
+    if (_isUploadingPhoto || _isSaving || !AccountSession.isCurrent(_photoGeneration)) return;
+    if (_photoUrls.length >= 6) { setState(() => _error = 'Du kan ha max 6 bilder.'); return; }
+    setState(() { _isUploadingPhoto = true; _error = null; });
+    try {
+      final picked = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 82, maxWidth: 1920, maxHeight: 1920);
+      if (picked == null || !mounted || !AccountSession.isCurrent(_photoGeneration)) return;
+      final url = await PhotoService().uploadFile(File(picked.path));
+      if (!mounted || !AccountSession.isCurrent(_photoGeneration)) return;
+      setState(() { if (!_photoUrls.contains(url)) _photoUrls.add(url); });
+    } on PhotoUploadException catch (error) {
+      if (mounted && AccountSession.isCurrent(_photoGeneration)) setState(() => _error = error.message);
+    } catch (_) {
+      if (mounted && AccountSession.isCurrent(_photoGeneration)) setState(() => _error = 'Kunde inte välja eller ladda upp bilden. Försök igen.');
+    } finally {
+      if (mounted && AccountSession.isCurrent(_photoGeneration)) setState(() => _isUploadingPhoto = false);
     }
-
-    setState(() {
-      _photoUrls.add(uploadedUrl);
-      _isUploadingPhoto = false;
-    });
-  } catch (e) {
-    if (!mounted) return;
-
-    setState(() {
-      _isUploadingPhoto = false;
-      _error = "Fel vid bildupload: $e";
-    });
   }
-}
 
 void _removePhotoAt(int index) {
+  if (_isSaving || _isUploadingPhoto || !AccountSession.isCurrent(_photoGeneration)) return;
   setState(() {
     _photoUrls.removeAt(index);
     _error = null;
@@ -216,6 +188,7 @@ void _removePhotoAt(int index) {
 
 
   Future<void> _saveProfile() async {
+    if (_isSaving || _isUploadingPhoto || !AccountSession.isCurrent(_photoGeneration)) return;
     final name = _displayName.text.trim();
     final age = int.tryParse(_age.text.trim()) ?? 0;
     final gender = _gender.text.trim();
@@ -1660,7 +1633,7 @@ Widget _buildPreviewChip(String text) {
       Padding(
         padding: const EdgeInsets.only(right: 16),
         child: GestureDetector(
-          onTap: _isSaving ? null : _saveProfile,
+          onTap: (_isSaving || _isUploadingPhoto) ? null : _saveProfile,
           child: Container(
             width: 52,
             height: 52,
@@ -1867,7 +1840,7 @@ const SizedBox(height: 24),
                     SizedBox(
                       height: 48,
                       child: ElevatedButton(
-                        onPressed: _isSaving ? null : _saveProfile,
+                        onPressed: (_isSaving || _isUploadingPhoto) ? null : _saveProfile,
                         child: _isSaving
                             ? const SizedBox(
                                 height: 22,

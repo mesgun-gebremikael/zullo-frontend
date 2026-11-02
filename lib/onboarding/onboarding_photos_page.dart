@@ -1,7 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import '../services/cloudinary_service.dart';
+import '../services/photo_service.dart';
+import '../services/account_session.dart';
 import 'onboarding_data.dart';
 import '../services/auth_service.dart';
 import '../main_navigation.dart';
@@ -19,47 +20,32 @@ class OnboardingPhotosPage extends StatefulWidget {
 }
 
 class _OnboardingPhotosPageState extends State<OnboardingPhotosPage> {
+  final int _photoGeneration = AccountSession.generation;
   final ImagePicker _picker = ImagePicker();
   bool _isUploading = false;
   bool _isSaving = false;
   String? _error;
 
   Future<void> _pickAndUploadImage() async {
-    if (widget.data.photoUrls.length >= 6 || _isUploading) return;
-
-    final picked = await _picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 82,
-      maxWidth: 1440,
-      maxHeight: 1440,
-    );
-
-    if (picked == null) return;
-
-    setState(() {
-      _isUploading = true;
-      _error = null;
-    });
-
-    final file = File(picked.path);
-    final url = await CloudinaryService.uploadImage(file);
-
-    if (!mounted) return;
-
-    if (url != null) {
-      setState(() {
-        widget.data.photoUrls.add(url);
-        _isUploading = false;
-      });
-    } else {
-      setState(() {
-        _isUploading = false;
-        _error = 'Bild-upload misslyckades.';
-      });
+    if (widget.data.photoUrls.length >= 6 || _isUploading || _isSaving || !AccountSession.isCurrent(_photoGeneration)) return;
+    setState(() { _isUploading = true; _error = null; });
+    try {
+      final picked = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 82, maxWidth: 1920, maxHeight: 1920);
+      if (picked == null || !mounted || !AccountSession.isCurrent(_photoGeneration)) return;
+      final url = await PhotoService().uploadFile(File(picked.path));
+      if (!mounted || !AccountSession.isCurrent(_photoGeneration)) return;
+      setState(() { if (!widget.data.photoUrls.contains(url)) widget.data.photoUrls.add(url); });
+    } on PhotoUploadException catch (error) {
+      if (mounted && AccountSession.isCurrent(_photoGeneration)) setState(() => _error = error.message);
+    } catch (_) {
+      if (mounted && AccountSession.isCurrent(_photoGeneration)) setState(() => _error = 'Kunde inte välja eller ladda upp bilden. Försök igen.');
+    } finally {
+      if (mounted && AccountSession.isCurrent(_photoGeneration)) setState(() => _isUploading = false);
     }
   }
 
   void _removePhoto(int index) {
+    if (_isUploading || _isSaving || !AccountSession.isCurrent(_photoGeneration)) return;
     setState(() {
       widget.data.photoUrls.removeAt(index);
     });
@@ -228,12 +214,12 @@ class _OnboardingPhotosPageState extends State<OnboardingPhotosPage> {
                   ),
                 onPressed: canContinue
     ? () async {
-        if (_isSaving) return;
+        if (_isSaving || _isUploading || !AccountSession.isCurrent(_photoGeneration)) return;
         
 
         if (widget.data.birthDate == null) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('2. STOPP: birthDate saknas')),
+            const SnackBar(content: Text('Fyll i födelsedatum innan du sparar profilen.')),
           );
           return;
         }
@@ -247,7 +233,7 @@ class _OnboardingPhotosPageState extends State<OnboardingPhotosPage> {
 
           await AuthService().saveOnboardingProfile(widget.data);
 
-          if (!context.mounted) return;
+          if (!context.mounted || !AccountSession.isCurrent(_photoGeneration)) return;
 
         
 
@@ -259,11 +245,11 @@ class _OnboardingPhotosPageState extends State<OnboardingPhotosPage> {
             (route) => false,
           );
         } catch (e) {
-          if (!context.mounted) return;
+          if (!context.mounted || !AccountSession.isCurrent(_photoGeneration)) return;
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('ERROR saveProfile: $e'),
+              content: Text('Kunde inte spara profilen. Dina val finns kvar. Försök igen.'),
             ),
           );
         } finally {
