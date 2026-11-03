@@ -1,3 +1,4 @@
+import 'theme/zullo_palette.dart';
 import 'services/profile_images.dart';
 import 'dart:io';
 import 'widgets/profile_basics_section.dart';
@@ -195,6 +196,10 @@ void _removePhotoAt(int index) {
     final gender = _gender.text.trim();
     final bio = _bio.text.trim();
 
+    if (bio.length > 1000) {
+      setState(() => _error = 'Din presentation får innehålla högst 1 000 tecken.');
+      return;
+    }
     if (name.isEmpty || age < 18 || gender.isEmpty) {
       setState(() {
         _error = "Fyll i namn, kön och ålder (18+).";
@@ -268,55 +273,21 @@ void _removePhotoAt(int index) {
     }
   }
 
-  Widget _buildTopToggle() {
-  return Row(
-    children: [
-      Expanded(
-        child: GestureDetector(
-          onTap: () {
-            setState(() {
-              _isPreviewMode = false;
-            });
-          },
-          child: Center(
-            child: Text(
-              "Redigera",
-              style: TextStyle(
-                color: _isPreviewMode ? Colors.grey : const Color(0xFFE91E63),
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ),
-      ),
-      Container(
-        width: 1,
-        height: 34,
-        color: Colors.grey.shade300,
-      ),
-      Expanded(
-        child: GestureDetector(
-          onTap: () {
-            setState(() {
-              _isPreviewMode = true;
-            });
-          },
-          child: Center(
-            child: Text(
-              "Min profil",
-              style: TextStyle(
-                color: _isPreviewMode ? const Color(0xFFE91E63) : Colors.grey,
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ),
-      ),
+  Widget _buildTopToggle() => SegmentedButton<bool>(
+    segments: const [
+      ButtonSegment(value: false, label: Text('Redigera')),
+      ButtonSegment(value: true, label: Text('Förhandsvisa')),
     ],
+    selected: {_isPreviewMode},
+    showSelectedIcon: false,
+    style: SegmentedButton.styleFrom(selectedBackgroundColor: ZulloPalette.tint,
+      selectedForegroundColor: ZulloPalette.rose, backgroundColor: Colors.white,
+      foregroundColor: ZulloPalette.muted, padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14)),
+    onSelectionChanged: (value) => setState(() {
+      _cachedPreviewProfile = null;
+      _isPreviewMode = value.first;
+    }),
   );
-}
 
 List<String> _buildPreviewChips() {
   final chips = <String>[];
@@ -1627,35 +1598,18 @@ Widget _buildPreviewChip(String text) {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+  backgroundColor: ZulloPalette.canvas,
   appBar: AppBar(
-    centerTitle: true,
-   title: Text(_isPreviewMode ? "Min profil" : "Redigera Info"),
-    actions: [
-      Padding(
-        padding: const EdgeInsets.only(right: 16),
-        child: GestureDetector(
-          onTap: (_isSaving || _isUploadingPhoto) ? null : _saveProfile,
-          child: Container(
-            width: 52,
-            height: 52,
-            decoration: const BoxDecoration(
-              color: Color(0xFF1F2430),
-              shape: BoxShape.circle,
-            ),
-            child: _isSaving
-                ? const Padding(
-                    padding: EdgeInsets.all(14),
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(
-                    Icons.check,
-                    color: Colors.white,
-                    size: 28,
-                  ),
-          ),
-        ),
-      ),
-    ],
+    backgroundColor: ZulloPalette.canvas, surfaceTintColor: Colors.transparent,
+    elevation: 0, centerTitle: false,
+    title: const Text('Din profil', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: ZulloPalette.ink)),
+    actions: [Padding(padding: const EdgeInsets.only(right: 16), child: TextButton(
+      onPressed: (_isLoading || _isSaving || _isUploadingPhoto) ? null : _saveProfile,
+      style: TextButton.styleFrom(foregroundColor: ZulloPalette.rose,
+        backgroundColor: ZulloPalette.tint, padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12)),
+      child: _isSaving ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2))
+        : const Text('Spara', style: TextStyle(fontWeight: FontWeight.w800)),
+    ))],
   ),
      body: _isLoading
     ? const Center(child: CircularProgressIndicator())
@@ -1702,7 +1656,7 @@ Widget _buildPreviewChip(String text) {
                     const SizedBox(height: 24),
 
                     const Text(
-                      "MEDIA",
+                      "Dina bilder",
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
@@ -1769,12 +1723,12 @@ Widget _buildPreviewChip(String text) {
                             child: Container(
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(12),
-                                color: Colors.grey,
+                                color: const Color(0xFFF3E4E9),
                               ),
                               child: const Center(
                                 child: Icon(
-                                  Icons.add,
-                                  color: Colors.white,
+                                  Icons.add_photo_alternate_outlined,
+                                  color: ZulloPalette.rose,
                                   size: 30,
                                 ),
                               ),

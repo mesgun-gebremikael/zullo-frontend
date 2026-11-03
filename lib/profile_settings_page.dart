@@ -1,3 +1,4 @@
+import 'welcome_page.dart';
 import 'account_management_page.dart';
 import 'premium_page.dart';
 import 'services/commerce_service.dart';
@@ -56,6 +57,36 @@ Future<void> _savePrivacy({bool? showActivity, bool? incognito}) async {
   } finally { _privacyBusy = false; }
 }
 
+bool _loggingOut = false;
+Future<void> _logout() async {
+  if (_loggingOut || !AccountSession.isCurrent(_generation)) return;
+  _loggingOut = true;
+  final accepted = await showDialog<bool>(context: context, builder: (dialogContext) => AlertDialog(
+    title: const Text('Logga ut från ZULLO?'),
+    content: const Text('Din profil och dina samtal finns kvar när du loggar in igen.'),
+    actions: [TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Stanna kvar')),
+      FilledButton(onPressed: () => Navigator.pop(dialogContext, true), child: const Text('Logga ut'))],
+  ));
+  if (!mounted || !AccountSession.isCurrent(_generation)) return;
+  if (accepted != true) { _loggingOut = false; return; }
+  final navigator = Navigator.of(context, rootNavigator: true);
+  final messenger = ScaffoldMessenger.of(context);
+  try {
+    await _authService.logout();
+    if (AccountSession.isCurrent(_generation + 1) && navigator.mounted) {
+      navigator.pushAndRemoveUntil(MaterialPageRoute(builder: (_) => const WelcomePage()), (_) => false);
+    }
+  } on SessionChangedException {
+    // A newer account owns navigation now.
+  } catch (_) {
+    if (AccountSession.isCurrent(_generation + 1) && navigator.mounted) {
+      navigator.pushAndRemoveUntil(MaterialPageRoute(builder: (_) => const WelcomePage()), (_) => false);
+    } else if (AccountSession.isCurrent(_generation) && messenger.mounted) {
+      messenger.showSnackBar(const SnackBar(content: Text('Kunde inte logga ut. Försök igen.')));
+    }
+  } finally { _loggingOut = false; }
+}
+
 Future<void> _loadAccountInfo() async {
   try {
     final profile = await _authService.getMyAccount();
@@ -90,11 +121,11 @@ Future<void> _loadAccountInfo() async {
         ),
         centerTitle: true,
         title: const Text(
-          'MITT KONTO',
+          'Kontoinställningar',
           style: TextStyle(
             color: Colors.black,
             fontWeight: FontWeight.w800,
-            letterSpacing: 1,
+            fontSize: 21,
           ),
         ),
       ),
@@ -146,7 +177,9 @@ _SettingsArrowRow(
   subtitle: 'Ta en paus eller stäng ditt konto',
   onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AccountManagementPage())),
 ),
-const SizedBox(height: 28),
+const SizedBox(height: 24),
+_SettingsArrowRow(icon: Icons.logout_rounded, title: 'Logga ut',
+  subtitle: 'Din profil finns kvar', onTap: _logout),
 const SizedBox(height: 24),
           ],
         ),

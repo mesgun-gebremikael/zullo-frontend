@@ -124,7 +124,7 @@ void main() {
     await tester.pumpWidget(MaterialApp(home: HomePage(authService: auth)));
     await tester.pumpAndSettle();
     await tester.runAsync(() async {
-      await tester.tap(find.text('Öppna filter'));
+      await tester.tap(find.text('Justera mina filter'));
       await Future<void>.delayed(const Duration(milliseconds: 50));
     });
     await tester.pumpAndSettle();

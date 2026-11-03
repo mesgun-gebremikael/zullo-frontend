@@ -1,3 +1,5 @@
+import 'theme/zullo_palette.dart';
+import 'widgets/profile_story.dart';
 import 'services/profile_images.dart';
 import 'dart:async';
 import 'services/relation_changes.dart';
@@ -51,7 +53,7 @@ class _ProfilePageState extends State<ProfilePage> {
     final photos = p.photoUrls;
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: ZulloPalette.canvas,
       body: SafeArea(
         child: Stack(
           children: [
@@ -134,29 +136,14 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          "${p.intention} • ${p.countryCode}",
+                          [p.livePlace, if (p.distanceKm > 0) "${p.distanceKm.round()} km bort"].where((s) => s.trim().isNotEmpty).join(" · "),
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.black.withOpacity(0.65),
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-                        const SizedBox(height: 18),
-
-                        _InfoRow(icon: Icons.public, text: "Land: ${p.countryCode}"),
-                        const SizedBox(height: 10),
-                        _InfoRow(icon: Icons.favorite, text: "Intention: ${p.intention}"),
-
-                        const SizedBox(height: 22),
-                        Text(
-                          "Om ${p.displayName}",
-                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          "Här lägger vi bio + intressen snart när Profile-modellen kopplas i feeden.",
-                          style: TextStyle(color: Colors.black.withOpacity(0.7)),
-                        ),
+                        ProfileStory(profile: p),
                         const SizedBox(height: 120),
                       ],
                     ),
@@ -204,32 +191,6 @@ class _PhotoBars extends StatelessWidget {
           ),
         );
       }),
-    );
-  }
-}
-
-class _InfoRow extends StatelessWidget {
-  final IconData icon;
-  final String text;
-  const _InfoRow({required this.icon, required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, size: 18, color: Colors.black.withOpacity(0.7)),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Text(
-            text,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.black.withOpacity(0.75),
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

@@ -1,3 +1,4 @@
+import '../profile_page.dart';
 import '../services/profile_images.dart';
 import 'package:flutter/material.dart';
 
@@ -416,6 +417,14 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
     );
   }
 
+  Widget _detailsButton(SwipeProfile profile) => IconButton(
+    tooltip: 'Läs hela profilen',
+    onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => ProfilePage(profile: profile))),
+    style: IconButton.styleFrom(backgroundColor: Colors.black.withValues(alpha: .42),
+      foregroundColor: Colors.white, minimumSize: const Size(48, 48)),
+    icon: const Icon(Icons.open_in_full_rounded, size: 21),
+  );
+
      Widget _buildBottomContent(SwipeProfile profile) {
     final groups = _contentGroupsForProfile(profile);
 
@@ -453,20 +462,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
         Positioned(
           right: 20,
           bottom: 188,
-          child: Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.42),
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white24),
-            ),
-            child: const Icon(
-              Icons.arrow_upward_rounded,
-              color: Colors.white,
-              size: 22,
-            ),
-          ),
+          child: _detailsButton(profile),
         ),
         Positioned(
           left: 20,
@@ -509,20 +505,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
         Positioned(
           right: 20,
           bottom: 188,
-          child: Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.42),
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white24),
-            ),
-            child: const Icon(
-              Icons.arrow_upward_rounded,
-              color: Colors.white,
-              size: 22,
-            ),
-          ),
+          child: _detailsButton(profile),
         ),
         Positioned(
           left: 20,
@@ -614,20 +597,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
         Positioned(
           right: 20,
           bottom: 188,
-          child: Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.42),
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white24),
-            ),
-            child: const Icon(
-              Icons.arrow_upward_rounded,
-              color: Colors.white,
-              size: 22,
-            ),
-          ),
+          child: _detailsButton(profile),
         ),
         Positioned(
           left: 20,
@@ -641,7 +611,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
               const SizedBox(height: 8),
               _sectionTitle(
                 icon: Icons.tune_rounded,
-                title: "Om mig & Livsstil",
+                title: "Min livsstil",
               ),
               const SizedBox(height: 8),
               _iconChipWrap(
@@ -698,20 +668,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
         Positioned(
           right: 20,
           bottom: 188,
-          child: Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.42),
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white24),
-            ),
-            child: const Icon(
-              Icons.arrow_upward_rounded,
-              color: Colors.white,
-              size: 22,
-            ),
-          ),
+          child: _detailsButton(profile),
         ),
         Positioned(
           left: 20,
@@ -762,20 +719,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
         Positioned(
           right: 20,
           bottom: 188,
-          child: Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.42),
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white24),
-            ),
-            child: const Icon(
-              Icons.arrow_upward_rounded,
-              color: Colors.white,
-              size: 22,
-            ),
-          ),
+          child: _detailsButton(profile),
         ),
         Positioned(
           left: 20,

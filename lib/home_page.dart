@@ -1,3 +1,4 @@
+import 'widgets/discovery_feed_empty.dart';
 import 'services/profile_images.dart';
 import 'account_management_page.dart';
 import 'widgets/discovery_settings_sheet.dart';
@@ -10,7 +11,6 @@ import 'package:flutter/material.dart';
 import 'services/auth_service.dart';
 import 'models/swipe_profile.dart';
 import 'premium_page.dart';
-import 'welcome_page.dart';
 import 'matches_page.dart';
 import 'profile_page.dart';
 import 'chat_page.dart';
@@ -312,18 +312,6 @@ static const double _activeCardLift = 0;
         content: Text(text),
         duration: const Duration(milliseconds: 900),
       ),
-    );
-  }
-
-  Future<void> _logout() async {
-    // Clearing auth removes this tab before its storage operation completes.
-    // The app navigator outlives the tab and owns the signed-out route.
-    final navigator = Navigator.of(context);
-    await _authService.logout();
-    if (!navigator.mounted) return;
-    navigator.pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const WelcomePage()),
-      (route) => false,
     );
   }
 
@@ -798,22 +786,10 @@ static const double _activeCardLift = 0;
     if (mounted && AccountSession.isCurrent(_sessionGeneration)) await loadFeed();
   }
 
-  Widget _buildEmptyFeedState() => Center(child: SingleChildScrollView(
-    padding: const EdgeInsets.fromLTRB(24, 110, 24, 100),
-    child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 420), child: Column(mainAxisSize: MainAxisSize.min, children: [
-      Icon(_isPaused ? Icons.pause_circle_outline : Icons.travel_explore_rounded, color: Colors.white, size: 54),
-      const SizedBox(height: 20), Text(_isPaused ? 'Ditt konto är pausat' : 'Inga profiler just nu', textAlign: TextAlign.center,
-        style: const TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w800)),
-      const SizedBox(height: 16), Text(_isPaused
-        ? 'Återaktivera kontot när du vill upptäcka nya personer igen. Dina matchningar och chattar finns kvar.'
-        : 'Testa att öka avståndet eller ändra åldersspannet i filtret.',
-        textAlign: TextAlign.center, style: const TextStyle(color: Colors.white70, fontSize: 17, height: 1.5)),
-      const SizedBox(height: 24), SizedBox(width: double.infinity, child: FilledButton(
-        style: FilledButton.styleFrom(backgroundColor: const Color(0xFFE6296B), foregroundColor: Colors.white, padding: const EdgeInsets.all(16)),
-        onPressed: _isPaused ? _openAccountManagement : _openRadiusSheet,
-        child: Text(_isPaused ? 'Hantera paus' : 'Öppna filter'))),
-    ])),
-  ));
+  Widget _buildEmptyFeedState() => DiscoveryFeedEmpty(
+    paused: _isPaused,
+    onAction: _isPaused ? _openAccountManagement : _openRadiusSheet,
+  );
 
     @override
   Widget build(BuildContext context) {
@@ -833,7 +809,6 @@ static const double _activeCardLift = 0;
       onRewind: _rewind,
       onOpenRadiusSheet: _openRadiusSheet,
       onOpenMatchesPage: _openMatchesPage,
-      onLogout: _logout,
       onOpenEditProfile: _openEditProfile,
       onSwipeLeft: () {
         if (!_isAnimating && !isLoading) {

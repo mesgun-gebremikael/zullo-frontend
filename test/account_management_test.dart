@@ -142,7 +142,6 @@ void main() {
             emptyState: const SizedBox(),
             onOpenRadiusSheet: () {},
             onOpenMatchesPage: () {},
-            onLogout: () {},
             onOpenEditProfile: () => edit++,
             onSwipeLeft: () {},
             onSwipeUp: () {},

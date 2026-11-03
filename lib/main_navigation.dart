@@ -1,3 +1,5 @@
+import 'theme/zullo_palette.dart';
+import 'widgets/zullo_symbol.dart';
 import 'welcome_page.dart';
 import 'likes_page.dart';
 import 'services/commerce_service.dart';
@@ -396,18 +398,18 @@ minimum: const EdgeInsets.fromLTRB(14, 0, 14, 12),
     child: BackdropFilter(
       filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
       child: Container(
-       height: 58,
+       height: 70 + (MediaQuery.textScalerOf(context).scale(11.5) - 11.5),
 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
         decoration: BoxDecoration(
   color: Colors.white.withValues(alpha: 0.96),
   borderRadius: BorderRadius.circular(30),
   border: Border.all(
-    color: const Color(0xFFC89B3C).withOpacity(0.18),
+    color: const Color(0xFFF0DEE5),
     width: 1,
   ),
   boxShadow: [
     BoxShadow(
-      color: Colors.black.withOpacity(0.22),
+      color: const Color(0xFF65213B).withValues(alpha: .08),
       blurRadius: 14,
       offset: const Offset(0, 6),
     ),
@@ -416,11 +418,11 @@ padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
         child: Row(
           children: [
             _NavItem(
-              icon: Icons.local_fire_department_outlined,
-              activeIcon: Icons.local_fire_department,
+              icon: Icons.explore_outlined,
+              symbol: ZulloSymbolKind.discover,
+              activeIcon: Icons.explore,
               label: 'Swipa',
               isActive: _selectedIndex == 0,
-              activeColor: const Color(0xFFFF4458),
               onTap: () => _onItemTapped(0),
             ),
             _NavItem(
@@ -428,15 +430,14 @@ padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
               activeIcon: Icons.favorite,
               label: 'Likes',
               isActive: _selectedIndex == AppTabs.likes,
-              activeColor: Colors.white,
               onTap: () => _onItemTapped(AppTabs.likes),
             ),
             _NavItem(
   icon: Icons.chat_bubble_outline,
+  symbol: ZulloSymbolKind.conversation,
   activeIcon: Icons.chat_bubble,
   label: 'Chattar',
   isActive: _selectedIndex == AppTabs.chats,
-  activeColor: Colors.white,
   showDot: _hasUnreadMessages,
   onTap: () => _onItemTapped(AppTabs.chats),
 ),
@@ -446,7 +447,6 @@ padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
               activeIcon: Icons.person,
               label: 'Profil',
               isActive: _selectedIndex == AppTabs.profile,
-              activeColor: Colors.white,
               onTap: () => _onItemTapped(AppTabs.profile),
             ),
           ],
@@ -462,9 +462,9 @@ padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
 class _NavItem extends StatelessWidget {
   final IconData icon;
   final IconData activeIcon;
+  final ZulloSymbolKind? symbol;
   final String label;
   final bool isActive;
-  final Color activeColor;
   final VoidCallback onTap;
    final bool showDot;
 
@@ -472,9 +472,9 @@ class _NavItem extends StatelessWidget {
   const _NavItem({
   required this.icon,
   required this.activeIcon,
+  this.symbol,
   required this.label,
   required this.isActive,
-  required this.activeColor,
   required this.onTap,
   this.showDot = false,
 });
@@ -482,11 +482,12 @@ class _NavItem extends StatelessWidget {
 
   @override
 Widget build(BuildContext context) {
-  const inactiveColor = Color(0xFF22262E);
-  const inactiveTextColor = Color(0xFF22262E);
+  const inactiveColor = Color(0xFF7B727B);
+  const inactiveTextColor = Color(0xFF7B727B);
 
   return Expanded(
-    child: GestureDetector(
+    child: Semantics(button: true, selected: isActive, onTap: onTap, excludeSemantics: true, label: showDot ? "$label, olästa meddelanden" : label,
+      child: GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: Center(
@@ -495,16 +496,16 @@ Widget build(BuildContext context) {
           curve: Curves.easeOut,
           padding: EdgeInsets.symmetric(
             horizontal: isActive ? 12 : 4,
-            vertical: isActive ? 6 : 2,
+            vertical: 8,
           ),
           decoration: BoxDecoration(
             color: isActive
-             ? const Color(0xFFE9EAEC)
+             ? ZulloPalette.tint
              : Colors.transparent,
             borderRadius: BorderRadius.circular(999),
             border: isActive
       ? Border.all(
-          color: const Color(0xFFC89B3C).withOpacity(0.25),
+          color: const Color(0xFFF0D4DF),
           width: 1,
         )
       : null,
@@ -515,9 +516,10 @@ Widget build(BuildContext context) {
              Stack(
   clipBehavior: Clip.none,
   children: [
-    Icon(
+    if (symbol != null) ZulloSymbol(kind: symbol!, color: isActive ? ZulloPalette.rose : inactiveColor, size: 25)
+    else Icon(
       isActive ? activeIcon : icon,
-      color: isActive ? const Color(0xFF22262E) : inactiveColor,
+      color: isActive ? ZulloPalette.rose : inactiveColor,
       size: isActive ? 22 : 20,
     ),
     if (showDot)
@@ -540,14 +542,14 @@ Widget build(BuildContext context) {
   ],
 ),
 
-              const SizedBox(height: 1),
+              const SizedBox(height: 4),
               Text(
                 label,
                 maxLines: 1,
                 overflow: TextOverflow.visible,
                 style: TextStyle(
-                  color: isActive ? const Color(0xFF22262E) : inactiveTextColor,
-                  fontSize: isActive ? 9.5 : 9,
+                  color: isActive ? ZulloPalette.rose : inactiveTextColor,
+                  fontSize: 11.5,
                   fontWeight: isActive ? FontWeight.w700 : FontWeight.w600,
                   height: 1,
                 ),
@@ -556,7 +558,7 @@ Widget build(BuildContext context) {
           ),
         ),
       ),
-    ),
+    )),
   );
 }
 }

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:zullo_app/home_page.dart';
+import 'package:zullo_app/profile_settings_page.dart';
 import 'package:zullo_app/main_navigation.dart';
 import 'package:zullo_app/models/swipe_profile.dart';
 import 'package:zullo_app/register_page.dart';
@@ -20,9 +20,14 @@ class SlowLogoutAuth extends AuthService {
     await AuthStorage().clearAuth();
     await finishLogout.future;
   }
+
   @override
-  Future<Map<String, dynamic>> getSwipeFeed({int minAge = 18, int maxAge = 99}) async =>
-    {'profiles': <SwipeProfile>[], 'radiusKm': 50.0};
+  Future<Map<String, dynamic>> getSwipeFeed(
+          {int minAge = 18, int maxAge = 99}) async =>
+      {'profiles': <SwipeProfile>[], 'radiusKm': 50.0};
+  @override
+  Future<Map<String, dynamic>> getMyAccount() async =>
+      {"email": "a@example.test"};
   @override
   Future<Map<String, dynamic>> getMyProfile() async => {'photoUrls': []};
   @override
@@ -31,7 +36,9 @@ class SlowLogoutAuth extends AuthService {
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  testWidgets('logout reaches welcome after its tab is disposed, then registration opens', (tester) async {
+  testWidgets(
+      'logout reaches welcome after its tab is disposed, then registration opens',
+      (tester) async {
     SharedPreferences.setMockInitialValues({});
     FlutterSecureStorage.setMockInitialValues({});
     await tester.runAsync(() async {
@@ -39,16 +46,39 @@ void main() {
       await AuthStorage().saveAuth(token: 'token', userId: 'A');
     });
     final auth = SlowLogoutAuth();
-    await tester.pumpWidget(MaterialApp(home: MainNavigation(
-      authService: auth, liveService: SignalRService(transport: FakeChatTransport()),
-      pages: [HomePage(authService: auth), const SizedBox(), const SizedBox(), const SizedBox()])));
+    await tester.pumpWidget(MaterialApp(
+        home: MainNavigation(
+            authService: auth,
+            liveService: SignalRService(transport: FakeChatTransport()),
+            pages: [
+          Builder(
+              builder: (context) => Center(
+                  child: TextButton(
+                      onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                              builder: (_) =>
+                                  ProfileSettingsPage(authService: auth))),
+                      child: const Text('Kontoinställningar')))),
+          const SizedBox(),
+          const SizedBox(),
+          const SizedBox()
+        ])));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Kontoinställningar'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Logga ut'));
+    await tester.tap(find.text('Logga ut'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Stanna kvar'));
+    await tester.pumpAndSettle();
+    expect(find.byType(ProfileSettingsPage), findsOneWidget);
+    await tester.tap(find.text('Logga ut'));
     await tester.pumpAndSettle();
     await tester.runAsync(() async {
-      await tester.tap(find.byIcon(Icons.logout));
+      await tester.tap(find.widgetWithText(FilledButton, 'Logga ut'));
       await Future<void>.delayed(const Duration(milliseconds: 30));
     });
     await tester.pump();
-    expect(find.byType(HomePage), findsNothing);
     await tester.runAsync(() async {
       expect(await AuthStorage().getToken(), isNull);
       auth.finishLogout.complete();

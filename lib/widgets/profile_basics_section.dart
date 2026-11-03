@@ -34,7 +34,7 @@ class ProfileBasicsSection extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         const Text(
-          'Ge en känsla av vem du är.',
+          'Din presentation visas i hela profilen, med plats att läsa.',
           style: TextStyle(color: Colors.black54),
         ),
         const SizedBox(height: 16),
@@ -47,6 +47,8 @@ class ProfileBasicsSection extends StatelessWidget {
           ),
           child: TextField(
             controller: bio,
+            maxLength: 1000,
+            inputFormatters: [TextInputFormatter.withFunction((oldValue, newValue) => newValue.text.length <= 1000 ? newValue : oldValue)],
             minLines: 3,
             maxLines: 6,
             textCapitalization: TextCapitalization.sentences,
