@@ -1,3 +1,4 @@
+import 'profile_page.dart';
 import 'services/commerce_service.dart';
 import 'services/relation_changes.dart';
 import 'dart:math';
@@ -30,6 +31,8 @@ class ChatPage extends StatefulWidget {
   final bool openChatsListOnExit;
   final List<dynamic>? initialThreadData;
   final String? initialMeUserId;
+  final ImageProvider Function(String)? profileImageProvider;
+  final AuthService? authService;
   final MessagesService? messagesService;
   final SignalRService? liveService;
   final Future<void> Function()? refreshBadge;
@@ -42,6 +45,8 @@ class ChatPage extends StatefulWidget {
   this.openChatsListOnExit = false,
   this.initialThreadData,
   this.initialMeUserId,
+  this.profileImageProvider,
+  this.authService,
   this.messagesService,
   this.liveService,
   this.refreshBadge,
@@ -62,7 +67,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   static final String _baseApiUrl = AuthService.baseApiUrl;
 
   late final MessagesService _messagesService;
-  final AuthService _authService = AuthService();
+  late final AuthService _authService = widget.authService ?? AuthService();
   final BlockService _blockService = BlockService();
 
   final _controller = TextEditingController();
@@ -686,6 +691,32 @@ _scrollToBottom();
 }
 
 
+bool _openingProfile = false;
+Future<void> _openProfile() async {
+  if (_openingProfile || !_sessionActive) return;
+  _openingProfile = true;
+  try {
+    final profile = await _authService.getMatchedProfile(widget.userId);
+    if (!mounted || !_sessionActive) return;
+    await Navigator.of(context).push(MaterialPageRoute(builder: (_) => ProfilePage(profile: profile, imageProvider: widget.profileImageProvider)));
+  } catch (_) {
+    if (mounted && _sessionActive) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profilen kunde inte öppnas. Försök igen.')));
+    }
+  } finally { _openingProfile = false; }
+}
+
+Future<void> _confirmBlock() async {
+  if (!_sessionActive) return;
+  final accepted = await showDialog<bool>(context: context, builder: (ctx) => AlertDialog(
+    backgroundColor: Colors.white, surfaceTintColor: Colors.transparent,
+    title: const Text('Blockera personen?'), content: const Text('Ni kommer inte längre att kunna kontakta varandra. Du kan häva blockeringen i inställningarna.'),
+    actions: [TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Avbryt')),
+      FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Blockera'))],
+  ));
+  if (accepted == true && mounted && _sessionActive) await _blockUser();
+}
+
 Future<void> _blockUser() async {
   if (!_sessionActive) return;
   try {
@@ -723,6 +754,7 @@ Future<void> _showReportDialog() async {
     context: context,
     builder: (ctx) {
       return AlertDialog(
+        backgroundColor: Colors.white, surfaceTintColor: Colors.transparent, scrollable: true,
         title: const Text("Rapportera användare"),
         content: StatefulBuilder(
           builder: (context, setLocalState) {
@@ -928,29 +960,32 @@ _pushCurrentMessagesToRepository();
       ),
      actions: [
   PopupMenuButton<String>(
+    tooltip: 'Samtalsalternativ', color: Colors.white, surfaceTintColor: Colors.transparent,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
     onSelected: (value) {
       if (value == "report") {
         _showReportDialog();
       }
 
       if (value == "block") {
-        _blockUser();
+        _confirmBlock();
       }
     },
     itemBuilder: (context) => const [
       PopupMenuItem(
         value: "report",
-        child: Text("Rapportera"),
+        child: Row(children: [Icon(Icons.flag_outlined), SizedBox(width: 12), Text("Rapportera")]),
       ),
       PopupMenuItem(
         value: "block",
-        child: Text("Blockera"),
+        child: Row(children: [Icon(Icons.block_outlined), SizedBox(width: 12), Text("Blockera")]),
       ),
     ],
   ),
 ],
       titleSpacing: 0,
-      title: Row(
+      title: Semantics(button: true, label: 'Öppna profilen för ${widget.displayName}', child: InkWell(onTap: _openProfile, borderRadius: BorderRadius.circular(16),
+        child: Row(
         children: [
           CircleAvatar(
             radius: 18,
@@ -972,7 +1007,8 @@ child: widget.photoUrl.isEmpty
             ),
           ],
         ),
-      ),
+      )),
+    ),
       body: Column(
         children: [
           Expanded(

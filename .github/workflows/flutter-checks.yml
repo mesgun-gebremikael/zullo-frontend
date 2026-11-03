@@ -33,14 +33,17 @@ jobs:
           flutter-version: '3.38.4'
           channel: stable
       - run: flutter pub get --enforce-lockfile
-      - run: flutter build ios --simulator --debug --no-codesign --dart-define-from-file=config/ios.firebase.json --dart-define=ZULLO_API_URL=https://api.example.invalid
-      - run: git diff --exit-code -- ios/Podfile.lock
+      # Resolve dependencies first; upload a changed native lockfile for review
+      # before spending time on a full Xcode build.
+      - run: flutter build ios --simulator --debug --no-codesign --config-only --dart-define-from-file=config/ios.firebase.json --dart-define=ZULLO_API_URL=https://api.example.invalid
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:
           name: ios-dependency-lock
           path: ios/Podfile.lock
           if-no-files-found: ignore
+      - run: git diff --exit-code -- ios/Podfile.lock
+      - run: flutter build ios --simulator --debug --no-codesign --dart-define-from-file=config/ios.firebase.json --dart-define=ZULLO_API_URL=https://api.example.invalid
   android-build:
     runs-on: ubuntu-latest
     timeout-minutes: 30

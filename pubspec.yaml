@@ -25,6 +25,8 @@ dependencies:
   flutter_secure_storage: ^9.2.4
   purchases_flutter: ^10.19.0
   url_launcher: ^6.3.2
+  geolocator: ^14.0.2
+  geocoding: ^4.0.0
 
 
 

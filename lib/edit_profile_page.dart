@@ -1,3 +1,4 @@
+import 'widgets/conversation_prompt_editor.dart';
 import 'theme/zullo_palette.dart';
 import 'services/profile_images.dart';
 import 'dart:io';
@@ -35,6 +36,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final _age = TextEditingController();
   final _gender = TextEditingController();
 
+  String _promptKey = '', _promptAnswer = '';
   final _bio = TextEditingController();
 
 List<String> _photoUrls = [];
@@ -108,6 +110,8 @@ _originPlace.dispose();
 _age.text = (profile["age"] ?? "").toString();
 _gender.text = (profile["gender"] ?? "").toString();
 _bio.text = (profile["bio"] ?? "").toString();
+_promptKey = (profile["promptKey"] ?? "").toString();
+_promptAnswer = (profile["promptAnswer"] ?? "").toString();
 
 _photoUrls = ((profile["photoUrls"] as List?) ?? [])
     .map((e) => e.toString())
@@ -196,6 +200,9 @@ void _removePhotoAt(int index) {
     final gender = _gender.text.trim();
     final bio = _bio.text.trim();
 
+    if (_promptKey.isNotEmpty && _promptAnswer.trim().isEmpty) {
+      setState(() => _error = 'Skriv ett svar på samtalsfrågan eller ta bort den.'); return;
+    }
     if (bio.length > 1000) {
       setState(() => _error = 'Din presentation får innehålla högst 1 000 tecken.');
       return;
@@ -224,7 +231,7 @@ void _removePhotoAt(int index) {
   displayName: _displayName.text,
   age: int.parse(_age.text),
   gender: _gender.text,
-  bio: _bio.text,
+  bio: _bio.text, promptKey: _promptKey, promptAnswer: _promptAnswer,
   photoUrls: _photoUrls,
   interests: _interests,
   intention: _intention,
@@ -321,7 +328,7 @@ SwipeProfile _buildPreviewProfile() {
     countryCode: '',
     intention: _intention,
     photoUrls: _photoUrls,
-    bio: _bio.text.trim(),
+    bio: _bio.text.trim(), promptKey: _promptKey, promptAnswer: _promptAnswer,
     religion: _religion,
     workout: _workout,
     smoking: _smoking,
@@ -1741,6 +1748,9 @@ Widget _buildPreviewChip(String text) {
 
                   ProfileBasicsSection(name: _displayName, age: _age,
                     gender: _gender, bio: _bio),
+                  const SizedBox(height: 24),
+                  ConversationPromptEditor(promptKey: _promptKey, answer: _promptAnswer,
+                    onChanged: (key, answer) => setState(() { _promptKey = key; _promptAnswer = answer; _cachedPreviewProfile = null; })),
                   const SizedBox(height: 28),
                   _buildWorkStudySection(),
 const SizedBox(height: 24),

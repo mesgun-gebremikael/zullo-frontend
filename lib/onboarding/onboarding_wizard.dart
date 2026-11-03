@@ -1,3 +1,4 @@
+import '../widgets/conversation_prompt_editor.dart';
 import '../splash_page.dart';
 import 'package:flutter/services.dart';
 import 'confirm_leave.dart';
@@ -85,6 +86,8 @@ class _OnboardingWizardState extends State<OnboardingWizard>
         return ['Man', 'Kvinna'].contains(data.gender);
       case OnboardingStep.interestedIn:
         return ['Män', 'Kvinnor', 'Alla'].contains(data.interestedIn);
+      case OnboardingStep.bio:
+        return data.promptKey.isEmpty || data.promptAnswer.trim().isNotEmpty;
       case OnboardingStep.photos:
         return data.photoUrls.length >= 2;
       default:
@@ -305,6 +308,27 @@ class _OnboardingWizardState extends State<OnboardingWizard>
       }).toList());
   Widget _content() {
     final question = onboardingQuestions[step]!;
+    if (step == OnboardingStep.intention) {
+      const marks = {'Relationship': Icons.favorite_outline_rounded, 'Marriage': Icons.diversity_1_outlined,
+        'Date': Icons.coffee_outlined, 'Serious': Icons.handshake_outlined, 'NotSure': Icons.explore_outlined};
+      return LayoutBuilder(builder: (context, constraints) => Wrap(spacing: 12, runSpacing: 12,
+        children: question.options.entries.map((option) {
+          final selected = data.intention == option.key;
+          final width = MediaQuery.textScalerOf(context).scale(16) > 23 || constraints.maxWidth < 310
+            ? constraints.maxWidth : (constraints.maxWidth - 12) / 2;
+          return SizedBox(width: width, child: OutlinedButton(
+            style: OutlinedButton.styleFrom(backgroundColor: selected ? const Color(0xFFFFEDF3) : const Color(0xFFF7F8FA),
+              foregroundColor: const Color(0xFF20242C), padding: const EdgeInsets.all(22),
+              side: BorderSide(color: selected ? const Color(0xFFEC2863) : const Color(0xFFE8EBF0)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22))),
+            onPressed: () => _change('intention', selected ? '' : option.key),
+            child: Column(children: [Icon(marks[option.key], size: 32, color: const Color(0xFFEC2863)),
+              const SizedBox(height: 14), Text(option.value, textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+              if (selected) const Padding(padding: EdgeInsets.only(top: 10), child: Icon(Icons.check_rounded, color: Color(0xFFEC2863))),
+            ])));
+        }).toList()));
+    }
     if (question.options.isNotEmpty) {
       return _choices(question.options, question.field!);
     }
@@ -377,7 +401,12 @@ class _OnboardingWizardState extends State<OnboardingWizard>
               child: const Text('Rensa val'))
         ]);
       case OnboardingStep.bio:
-        return _text('bio', 'Några ord om dig', lines: 5);
+        return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          _text('bio', 'Om mig', lines: 4),
+          const SizedBox(height: 24),
+          ConversationPromptEditor(promptKey: data.promptKey, answer: data.promptAnswer,
+            onChanged: (key, answer) { data.promptKey = key; data.promptAnswer = answer; setup.changed(); }),
+        ]);
       case OnboardingStep.photos:
         return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           if (setup.photosExpired)
@@ -496,6 +525,11 @@ class _OnboardingWizardState extends State<OnboardingWizard>
                                   : 'Valfritt. Du kan hoppa över och ändra senare.',
                               style: const TextStyle(
                                   color: Color(0xFF667085), fontSize: 16)),
+                          if (!_validStepRequired) Align(alignment: Alignment.centerRight,
+                            child: TextButton(onPressed: _busy ? null : () {
+                              if (step == OnboardingStep.bio && data.promptAnswer.trim().isEmpty) { data.promptKey = ''; setup.changed(); }
+                              _go(step.index + 1);
+                            }, child: const Text('Hoppa över'))),
                           const SizedBox(height: 28),
                           AbsorbPointer(absorbing: _busy, child: _content()),
                           if (_error != null || setup.error != null)

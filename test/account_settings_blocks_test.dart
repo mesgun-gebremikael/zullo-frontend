@@ -25,6 +25,12 @@ class TestStorage extends AuthStorage {
 }
 
 class SettingsAuth extends AuthService {
+  @override
+  Future<Map<String, dynamic>> discoverySettings({Map<String, dynamic>? update}) async {
+    if (update?['interestedIn'] is String) preference = update!['interestedIn'];
+    if (update?['radiusKm'] is int) savedRadius = update!['radiusKm'];
+    return {'minAge': 18, 'maxAge': 99};
+  }
   String preference = 'Kvinnor';
   int? savedRadius;
   final feedPreferences = <String>[];
@@ -124,7 +130,7 @@ void main() {
     await tester.pumpWidget(MaterialApp(home: HomePage(authService: auth)));
     await tester.pumpAndSettle();
     await tester.runAsync(() async {
-      await tester.tap(find.text('Justera mina filter'));
+      await tester.tap(find.text('Ändra filter'));
       await Future<void>.delayed(const Duration(milliseconds: 50));
     });
     await tester.pumpAndSettle();

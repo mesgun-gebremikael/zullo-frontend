@@ -1,3 +1,4 @@
+import 'discovery_location_page.dart';
 import 'welcome_page.dart';
 import 'account_management_page.dart';
 import 'premium_page.dart';
@@ -133,6 +134,10 @@ Future<void> _loadAccountInfo() async {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         child: Column(
           children: [
+            _SettingsArrowRow(icon: Icons.near_me_outlined, title: 'Plats & upptäckt',
+              subtitle: 'Din plats och val för en bredare sökning',
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DiscoveryLocationPage()))),
+            const SizedBox(height: 8),
             _SettingsArrowRow(
               icon: Icons.verified,
               title: 'Verifiera profil',

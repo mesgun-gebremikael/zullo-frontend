@@ -229,6 +229,26 @@ class AuthService {
 
   // ---------- SWIPE FEED ----------
 
+Future<Map<String, dynamic>> discoverySettings({Map<String, dynamic>? update}) async {
+  final token = await _storage.getToken().timeout(const Duration(seconds: 5));
+  final headers = {'Authorization': 'Bearer $token', 'Content-Type': 'application/json'};
+  final url = Uri.parse('$baseApiUrl/me/discovery-settings');
+  final response = await (update == null ? _client.get(url, headers: headers)
+    : _client.patch(url, headers: headers, body: jsonEncode(update))).timeout(const Duration(seconds: 20));
+  if (response.statusCode != 200) throw Exception('Kunde inte läsa eller spara upptäcktsvalen.');
+  return Map<String, dynamic>.from(jsonDecode(response.body) as Map);
+}
+
+Future<SwipeProfile> getMatchedProfile(String userId) async {
+  final revision = RelationChanges.revision;
+  final token = await _storage.getToken().timeout(const Duration(seconds: 5));
+  final response = await _client.get(Uri.parse('$baseApiUrl/profiles/${Uri.encodeComponent(userId)}'),
+    headers: {'Authorization': 'Bearer $token'}).timeout(const Duration(seconds: 20));
+  if (revision != RelationChanges.revision) throw StateError('Relation changed');
+  if (response.statusCode != 200) throw Exception('Profilen är inte tillgänglig.');
+  return SwipeProfile.fromJson(Map<String, dynamic>.from(jsonDecode(response.body) as Map));
+}
+
 Future<Map<String, dynamic>> getSwipeFeed({
   int minAge = 18,
   int maxAge = 99,
@@ -399,6 +419,8 @@ Future<void> saveProfile({
 
   int? heightCm,
   bool clearHeight = false,
+  String? promptKey,
+  String? promptAnswer,
   double? lat,
   double? lng,
   String? countryCode,
@@ -424,6 +446,8 @@ final body = {
   'age': age,
   'gender': gender,
   'bio': bio,
+    if (promptKey != null) 'promptKey': promptKey,
+    if (promptAnswer != null) 'promptAnswer': promptAnswer,
   'photoUrls': photoUrls,
   'interests': interests,
   'intention': intention,
