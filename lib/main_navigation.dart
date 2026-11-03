@@ -1,3 +1,4 @@
+import 'services/device_location_service.dart';
 import 'theme/zullo_palette.dart';
 import 'widgets/zullo_symbol.dart';
 import 'welcome_page.dart';
@@ -55,6 +56,11 @@ class MainNavigation extends StatefulWidget {
 
 
 class _MainNavigationState extends State<MainNavigation> with WidgetsBindingObserver {
+  late final _locationSync = ForegroundLocationSync(_authService, isActive: () => mounted && _inForeground);
+  Future<void> _refreshLocation() async {
+    if (widget.pages != null || !_sessionActive) return;
+    if (await _locationSync.refresh()) { if (mounted && _sessionActive) CommerceEvents.refreshDiscovery(); }
+  }
   StreamSubscription<ChatRepositoryState>? _repositorySubscription;
   StreamSubscription<int>? _sessionChanges;
   Timer? _presenceTimer;
@@ -102,8 +108,12 @@ bool _isOpeningChat = false;
     });
     WidgetsBinding.instance.addObserver(this);
     if (widget.pages == null) {
+      unawaited(_refreshLocation());
       unawaited(_pulsePresence());
-      _presenceTimer = Timer.periodic(const Duration(minutes: 1), (_) => unawaited(_pulsePresence()));
+      _presenceTimer = Timer.periodic(const Duration(minutes: 1), (_) {
+        unawaited(_pulsePresence());
+        if (_inForeground) unawaited(_refreshLocation());
+      });
     }
     _liveMessages = _live.messagesStream.listen((_) => MatchesRefreshService.instance.requestRefresh());
     _liveReads = _live.messagesReadStream.listen((_) => MatchesRefreshService.instance.requestRefresh());
@@ -404,12 +414,12 @@ padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
   color: Colors.white.withValues(alpha: 0.96),
   borderRadius: BorderRadius.circular(30),
   border: Border.all(
-    color: const Color(0xFFF0DEE5),
+    color: const Color(0xFFE8EBF0),
     width: 1,
   ),
   boxShadow: [
     BoxShadow(
-      color: const Color(0xFF65213B).withValues(alpha: .08),
+      color: const Color(0xFF20242C).withValues(alpha: .08),
       blurRadius: 14,
       offset: const Offset(0, 6),
     ),
@@ -482,8 +492,8 @@ class _NavItem extends StatelessWidget {
 
   @override
 Widget build(BuildContext context) {
-  const inactiveColor = Color(0xFF7B727B);
-  const inactiveTextColor = Color(0xFF7B727B);
+  const inactiveColor = Color(0xFF697180);
+  const inactiveTextColor = Color(0xFF697180);
 
   return Expanded(
     child: Semantics(button: true, selected: isActive, onTap: onTap, excludeSemantics: true, label: showDot ? "$label, olästa meddelanden" : label,
@@ -505,7 +515,7 @@ Widget build(BuildContext context) {
             borderRadius: BorderRadius.circular(999),
             border: isActive
       ? Border.all(
-          color: const Color(0xFFF0D4DF),
+          color: const Color(0xFFFFDFE9),
           width: 1,
         )
       : null,
@@ -533,7 +543,7 @@ Widget build(BuildContext context) {
             color: const Color(0xFFFF4458),
             shape: BoxShape.circle,
             border: Border.all(
-              color: const Color(0xFF1A120C),
+              color: const Color(0xFFFFFFFF),
               width: 1.2,
             ),
           ),

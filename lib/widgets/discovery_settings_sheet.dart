@@ -1,3 +1,4 @@
+import '../discovery_location_page.dart';
 import 'package:flutter/material.dart';
 
 class DiscoveryPreferences {
@@ -114,6 +115,9 @@ class _DiscoverySettingsSheetState extends State<DiscoverySettingsSheet> {
               const SizedBox(height: 8),
               const Text('Hitta personer som passar det du söker.',
                   style: TextStyle(fontSize: 16, color: Color(0xFF626A77))),
+              ListTile(contentPadding: EdgeInsets.zero, leading: const Icon(Icons.near_me_outlined),
+                title: const Text('Plats & fler upptäcktsval'), trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: _busy ? null : () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DiscoveryLocationPage()))),
               const SizedBox(height: 28),
               _card(ListTile(
                   contentPadding: const EdgeInsets.all(18),
@@ -161,8 +165,8 @@ class _DiscoverySettingsSheetState extends State<DiscoverySettingsSheet> {
                         RangeSlider(
                             values: _ages,
                             min: 18,
-                            max: 99,
-                            divisions: 81,
+                            max: 100,
+                            divisions: 82,
                             onChanged: _busy
                                 ? null
                                 : (value) => setState(() => _ages = value)),

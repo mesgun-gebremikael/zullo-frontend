@@ -1,3 +1,4 @@
+import 'package:zullo_app/theme/zullo_theme.dart';
 import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
@@ -66,8 +67,7 @@ void main() {
       addTearDown(() => tester.binding.setSurfaceSize(null));
       final key = GlobalKey();
       var actions = 0;
-      await tester.pumpWidget(MaterialApp(
-          home: MediaQuery(
+      await tester.pumpWidget(MaterialApp(theme: zulloTheme(), home: MediaQuery(
               data: MediaQueryData(textScaler: TextScaler.linear(scale)),
               child: RepaintBoundary(
                   key: key,
@@ -75,8 +75,8 @@ void main() {
                       backgroundColor: const Color(0xFFFFF8F5),
                       body: DiscoveryFeedEmpty(
                           paused: false, onAction: () => actions++))))));
-      await tester.ensureVisible(find.text('Justera mina filter'));
-      await tester.tap(find.text('Justera mina filter'));
+      await tester.ensureVisible(find.text('Ändra filter'));
+      await tester.tap(find.text('Ändra filter'));
       expect(actions, 1);
       expect(tester.takeException(), isNull);
       if (scale == 1) await capture(tester, key, 'discovery');
@@ -104,8 +104,7 @@ void main() {
           onSwipeLeft: () {},
           onSwipeUp: () {},
           onSwipeRight: () {});
-      await tester.pumpWidget(MaterialApp(
-          home: MediaQuery(
+      await tester.pumpWidget(MaterialApp(theme: zulloTheme(), home: MediaQuery(
               data: MediaQueryData(textScaler: TextScaler.linear(scale)),
               child: RepaintBoundary(
                   key: key,
@@ -123,8 +122,8 @@ void main() {
       expect(tester.getTopLeft(find.text('Swipa')).dy, greaterThan(540));
       expect(find.byIcon(Icons.logout), findsNothing);
       if (scale == 1) {
-        await tester.ensureVisible(find.text('Justera mina filter'));
-        expect(tester.getBottomRight(find.text('Justera mina filter')).dy,
+        await tester.ensureVisible(find.text('Ändra filter'));
+        expect(tester.getBottomRight(find.text('Ändra filter')).dy,
             lessThan(tester.getTopLeft(find.text('Swipa')).dy - 30));
         await capture(tester, key, 'discovery-navigation');
       }
@@ -150,8 +149,7 @@ void main() {
       'livePlace': 'Stockholm'
     });
     final key = GlobalKey();
-    await tester.pumpWidget(MaterialApp(
-        home: RepaintBoundary(
+    await tester.pumpWidget(MaterialApp(theme: zulloTheme(), home: RepaintBoundary(
             key: key,
             child: Scaffold(
                 body: SingleChildScrollView(
@@ -171,8 +169,7 @@ void main() {
       (tester) async {
     await tester.binding.setSurfaceSize(const Size(320, 640));
     addTearDown(() => tester.binding.setSurfaceSize(null));
-    await tester.pumpWidget(MaterialApp(
-        home: MediaQuery(
+    await tester.pumpWidget(MaterialApp(theme: zulloTheme(), home: MediaQuery(
             data: const MediaQueryData(textScaler: TextScaler.linear(1.6)),
             child: EditProfilePage(authService: PreviewAuth()))));
     await tester.pumpAndSettle();
@@ -184,8 +181,7 @@ void main() {
   });
   testWidgets('profile preview refreshes edited bio and opens the full profile',
       (tester) async {
-    await tester.pumpWidget(MaterialApp(
-        home: EditProfilePage(
+    await tester.pumpWidget(MaterialApp(theme: zulloTheme(), home: EditProfilePage(
             authService: PreviewAuth(), startInPreviewMode: true)));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Redigera'));

@@ -70,8 +70,17 @@ static const double _activeCardLift = 0;
   bool hasUnreadMessages = false;
   String myPhotoUrl = "";
   double _radiusKm = 50;
-  String _selectedIntention = 'Relationship';
-  String _selectedReligion = 'Private';
+  Timer? _deferredDiscoveryRefresh;
+  void _refreshDiscoveryWhenIdle() {
+    _deferredDiscoveryRefresh?.cancel();
+    if (!mounted || !AccountSession.isCurrent(_sessionGeneration)) return;
+    if (_isDragging || _isAnimating) {
+      _deferredDiscoveryRefresh = Timer(const Duration(milliseconds: 400), _refreshDiscoveryWhenIdle);
+      return;
+    }
+    _feedRevision++; _prefetchedProfiles = [];
+    unawaited(loadFeed());
+  }
   String _interestedIn = 'Alla';
   String? _preferenceUserId;
   int _minAge = 18;
@@ -106,12 +115,7 @@ static const double _activeCardLift = 0;
       setState(() { profiles = []; _prefetchedProfiles = []; currentIndex = 0; });
       unawaited(loadFeed());
     });
-    _commerceEvents = CommerceEvents.stream.listen((_) {
-      if (!mounted || !AccountSession.isCurrent(_sessionGeneration)) return;
-      _feedRevision++;
-      _prefetchedProfiles = [];
-      unawaited(loadFeed());
-    });
+    _commerceEvents = CommerceEvents.stream.listen((_) => _refreshDiscoveryWhenIdle());
     loadFeed();
     _loadMyFilterValues();
     loadUnreadStatus();
@@ -120,6 +124,7 @@ static const double _activeCardLift = 0;
 
   @override
   void dispose() {
+    _deferredDiscoveryRefresh?.cancel();
     _commerceEvents?.cancel();
     _relationChanges?.cancel();
     _emptyFeedTimer?.cancel();
@@ -728,13 +733,14 @@ static const double _activeCardLift = 0;
       if (!mounted || !AccountSession.isCurrent(_sessionGeneration)) return;
       setState(() {
         _preferenceUserId = user.isEmpty ? null : user;
-        if (savedAges != null && savedAges.length == 2 && savedAges[0] != null && savedAges[1] != null && savedAges[0]! >= 18 && savedAges[1]! <= 99 && savedAges[0]! <= savedAges[1]!) {
+        if (savedAges != null && savedAges.length == 2 && savedAges[0] != null && savedAges[1] != null && savedAges[0]! >= 18 && savedAges[1]! <= 100 && savedAges[0]! <= savedAges[1]!) {
           _minAge = savedAges[0]!; _maxAge = savedAges[1]!;
+        }
+        if ((me['discoveryAgeConfigured'] == true || savedAges == null) && me['discoveryMinAge'] is num && me['discoveryMaxAge'] is num) {
+          _minAge = (me['discoveryMinAge'] as num).toInt(); _maxAge = (me['discoveryMaxAge'] as num).toInt();
         }
         _interestedIn = (me["interestedIn"] ?? "Alla").toString();
         _radiusKm = (me["matchRadiusKm"] as num?)?.toDouble() ?? _radiusKm;
-        _selectedIntention = (me["intention"] ?? "Relationship").toString();
-        _selectedReligion = (me["religion"] ?? "Private").toString();
       });
       if (previousMinAge != _minAge || previousMaxAge != _maxAge) {
         _feedRevision++; _prefetchedProfiles = []; unawaited(loadFeed());
@@ -753,11 +759,10 @@ static const double _activeCardLift = 0;
           final user = _preferenceUserId;
           AccountSession.check(_sessionGeneration);
           final preferences = user == null ? null : await SharedPreferences.getInstance();
-          await _authService.updateFilterProfile(matchRadiusKm: values.radiusKm, interestedIn: values.interestedIn,
-            intention: _selectedIntention, religion: _selectedReligion);
+          await _authService.discoverySettings(update: {'radiusKm': values.radiusKm, 'interestedIn': values.interestedIn,
+            'minAge': values.minAge, 'maxAge': values.maxAge});
           AccountSession.check(_sessionGeneration);
-          // Age ranges are device preferences, scoped to the authenticated account.
-          // Interest and radius are authoritative profile fields on the server.
+          // Keep an account-scoped offline copy of the server age preferences.
           await preferences?.setString('discovery_age_$user', '${values.minAge},${values.maxAge}');
           if (!mounted || !AccountSession.isCurrent(_sessionGeneration)) return;
           setState(() {

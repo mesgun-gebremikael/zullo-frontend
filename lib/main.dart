@@ -1,3 +1,4 @@
+import 'theme/zullo_theme.dart';
 import 'services/commerce_service.dart';
 import 'services/push_token_service.dart';
 import 'services/api_config.dart';
@@ -321,29 +322,7 @@ class _ZulloAppState extends State<ZulloApp> {
       navigatorKey: navigatorKey,
       scaffoldMessengerKey: scaffoldMessengerKey,
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.pink,
-        ),
-        scaffoldBackgroundColor: Colors.white,
-        appBarTheme: const AppBarTheme(backgroundColor: Colors.white, foregroundColor: Color(0xFF22262E), surfaceTintColor: Colors.transparent, elevation: 0, scrolledUnderElevation: 0),
-        cardTheme: CardThemeData(color: const Color(0xFFF6F7F9), surfaceTintColor: Colors.transparent, elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22))),
-        filledButtonTheme: FilledButtonThemeData(style: FilledButton.styleFrom(backgroundColor: const Color(0xFF22262E), foregroundColor: Colors.white, minimumSize: const Size(48, 48))),
-        inputDecorationTheme: const InputDecorationTheme(
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.all(Radius.circular(16)),
-          ),
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(24)),
-            ),
-            padding: const EdgeInsets.symmetric(vertical: 16),
-          ),
-        ),
-      ),
+      theme: zulloTheme(),
       home: initialHome,
     );
   }

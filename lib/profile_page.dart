@@ -9,8 +9,9 @@ import 'models/swipe_profile.dart';
 
 class ProfilePage extends StatefulWidget {
   final SwipeProfile profile;
+  final ImageProvider Function(String)? imageProvider;
 
-  const ProfilePage({super.key, required this.profile});
+  const ProfilePage({super.key, required this.profile, this.imageProvider});
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
@@ -76,9 +77,16 @@ class _ProfilePageState extends State<ProfilePage> {
                                 ),
                               );
                             }
-                            return Image(image: ProfileImages.card(photos[i]), fit: BoxFit.cover);
+                            return Image(image: (widget.imageProvider ?? ProfileImages.card)(photos[i]), fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => const ColoredBox(color: Color(0xFFF0F2F6),
+                                child: Center(child: Icon(Icons.person_outline_rounded, size: 64, color: Color(0xFF697180)))));
                           },
                         ),
+
+                        if (photos.isNotEmpty) Positioned(bottom: 18, right: 18,
+                          child: DecoratedBox(decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(20)),
+                            child: Padding(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                              child: Text('${_photoIndex + 1} / ${photos.length}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700))))),
 
                         // Top gradient
                         Positioned(

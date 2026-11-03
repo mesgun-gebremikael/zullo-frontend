@@ -1,3 +1,4 @@
+import 'conversation_prompt_editor.dart';
 import '../theme/zullo_palette.dart';
 import 'package:flutter/material.dart';
 import '../models/swipe_profile.dart';
@@ -31,11 +32,11 @@ class ProfileStory extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 14, vertical: 10),
                         decoration: BoxDecoration(
-                            color: const Color(0xFFF5ECEF),
+                            color: const Color(0xFFF2F4F7),
                             borderRadius: BorderRadius.circular(16)),
                         child: Text(text,
                             style: const TextStyle(
-                                color: Color(0xFF594650), height: 1.4))))
+                                color: Color(0xFF424B59), height: 1.4))))
                     .toList()),
           ]));
     }
@@ -49,7 +50,7 @@ class ProfileStory extends StatelessWidget {
             decoration: BoxDecoration(
                 color: ZulloPalette.canvas,
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: const Color(0xFFF1E2E6))),
+                border: Border.all(color: const Color(0xFFE8EBF0))),
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               const Row(children: [
@@ -64,10 +65,18 @@ class ProfileStory extends StatelessWidget {
               const SizedBox(height: 12),
               SelectableText(p.bio.trim(),
                   style: const TextStyle(
-                      fontSize: 17, height: 1.65, color: Color(0xFF514750))),
+                      fontSize: 17, height: 1.65, color: Color(0xFF424B59))),
             ])),
       ],
-      section('Jag söker', [p.intention]),
+      if (conversationPrompts.containsKey(p.promptKey) && p.promptAnswer.trim().isNotEmpty) ...[
+        const SizedBox(height: 24),
+        Text(conversationPrompts[p.promptKey]!, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+        const SizedBox(height: 10),
+        SelectableText(p.promptAnswer.trim(), style: const TextStyle(fontSize: 17, height: 1.6)),
+      ],
+      if (p.outsideDistance || p.outsideAge) const Padding(padding: EdgeInsets.only(top: 20),
+        child: Text('Visas genom ditt val att söka lite utanför filtren.')),
+      section('Jag söker', [const {'Relationship': 'Seriöst förhållande', 'Marriage': 'Giftermål', 'Date': 'Dejta och se vart det leder', 'Serious': 'Något seriöst', 'NotSure': 'Jag vet inte än'}[p.intention] ?? p.intention]),
       section('Min vardag', [
         p.workStatus,
         if (p.livePlace.trim().isNotEmpty) 'Bor i ${p.livePlace}',

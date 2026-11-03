@@ -8,6 +8,8 @@ class SwipeProfile {
   final List<String> photoUrls;
 
   final String bio;
+  final String promptKey, promptAnswer;
+  final bool outsideDistance, outsideAge;
   final String religion;
   final String workout;
   final String smoking;
@@ -45,6 +47,7 @@ class SwipeProfile {
     required this.intention,
     required this.photoUrls,
     required this.bio,
+    this.promptKey = "", this.promptAnswer = "", this.outsideDistance = false, this.outsideAge = false,
     required this.religion,
     required this.workout,
     required this.smoking,
@@ -83,6 +86,8 @@ class SwipeProfile {
       intention: (json['intention'] ?? '').toString(),
       photoUrls: photos,
       bio: (json['bio'] ?? '').toString(),
+      promptKey: (json['promptKey'] ?? '').toString(), promptAnswer: (json['promptAnswer'] ?? '').toString(),
+      outsideDistance: json['outsideDistance'] == true, outsideAge: json['outsideAge'] == true,
       religion: (json['religion'] ?? '').toString(),
       workout: (json['workout'] ?? '').toString(),
       smoking: (json['smoking'] ?? '').toString(),

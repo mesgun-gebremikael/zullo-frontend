@@ -24,11 +24,11 @@ class DiscoveryFeedEmpty extends StatelessWidget {
                           decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               gradient: const RadialGradient(colors: [
-                                Color(0xFFFFDFE8),
+                                Color(0xFFFFE5EF),
                                 ZulloPalette.canvas
                               ]),
                               border:
-                                  Border.all(color: const Color(0xFFF3DCE3))),
+                                  Border.all(color: const Color(0xFFF0F2F6))),
                           child: Center(
                               child: Container(
                                   width: compact ? 64 : 96,
@@ -38,7 +38,7 @@ class DiscoveryFeedEmpty extends StatelessWidget {
                                       borderRadius: BorderRadius.circular(32),
                                       boxShadow: const [
                                         BoxShadow(
-                                            color: Color(0x14B34769),
+                                            color: Color(0x0C20242C),
                                             blurRadius: 28,
                                             offset: Offset(0, 12))
                                       ]),
@@ -51,7 +51,7 @@ class DiscoveryFeedEmpty extends StatelessWidget {
                                               color: ZulloPalette.rose,
                                               size: 40))))),
                       SizedBox(height: compact ? 18 : 30),
-                      const Text('DIN NÄSTA KONTAKT',
+                      const Text('ZULLO · UPPTÄCK',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                               color: ZulloPalette.rose,
@@ -62,7 +62,7 @@ class DiscoveryFeedEmpty extends StatelessWidget {
                       Text(
                           paused
                               ? 'En paus, i din takt.'
-                              : 'Lite mer utrymme.\nNya möjligheter.',
+                              : 'Utöka din sökning',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                               color: ZulloPalette.ink,
@@ -73,7 +73,7 @@ class DiscoveryFeedEmpty extends StatelessWidget {
                       Text(
                           paused
                               ? 'Din profil är pausad. Dina matchningar och samtal finns kvar när du vill fortsätta.'
-                              : 'Du har sett profilerna som passar dina filter just nu. Prova ett större avstånd eller kom tillbaka senare.',
+                              : 'Välj ett större område eller justera dina filter för att hitta fler personer.',
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                               color: ZulloPalette.muted,
@@ -96,7 +96,7 @@ class DiscoveryFeedEmpty extends StatelessWidget {
                                       horizontal: 24, vertical: 18)),
                               label: Text(paused
                                   ? 'Hantera paus'
-                                  : 'Justera mina filter'))),
+                                  : 'Ändra filter'))),
                     ]))));
       });
 }

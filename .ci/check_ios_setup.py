@@ -9,6 +9,9 @@ with (root / 'ios/Runner/Info.plist').open('rb') as stream:
     info = plistlib.load(stream)
 with (root / 'ios/Runner/Runner.entitlements').open('rb') as stream:
     entitlements = plistlib.load(stream)
+assert info.get('NSLocationWhenInUseUsageDescription'), 'Foreground location needs a clear usage description'
+assert 'location' not in info.get('UIBackgroundModes', []), 'Discovery must not request background location'
+assert 'BYPASS_PERMISSION_LOCATION_ALWAYS=1' in (root / 'ios/Podfile').read_text()
 assert info.get('NSPhotoLibraryUsageDescription'), 'Photo selection needs an iOS usage description'
 assert 'remote-notification' in info.get('UIBackgroundModes', []), 'Missing remote notification capability'
 assert not info.get('NSAppTransportSecurity', {}).get('NSAllowsArbitraryLoads'), 'Do not disable iOS transport security'

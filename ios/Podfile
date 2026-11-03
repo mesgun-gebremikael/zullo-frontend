@@ -38,6 +38,13 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
+    # Foreground-only location: do not compile/request Always permission.
+    if target.name == 'geolocator_apple'
+      target.build_configurations.each do |config|
+        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)']
+        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'BYPASS_PERMISSION_LOCATION_ALWAYS=1'
+      end
+    end
     # Firebase Messaging may import Firebase's legacy umbrella header.
     # Xcode 16+ rejects that header inside the plugin framework by default.
     if target.name == 'firebase_messaging'
