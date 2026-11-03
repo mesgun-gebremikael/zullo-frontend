@@ -1,3 +1,4 @@
+import 'l10n/localization.dart';
 import 'theme/zullo_palette.dart';
 import 'services/profile_images.dart';
 import 'widgets/commerce_cards.dart';
@@ -143,9 +144,7 @@ class _ProfileTabState extends State<ProfileTab> {
   Widget _buildProfileContent() {
     final photos = (_profile!["photoUrls"] as List?) ?? [];
 
-    final imageUrl = photos.isNotEmpty
-        ? photos[0].toString()
-        : "";
+    final imageUrl = photos.isNotEmpty ? photos[0].toString() : "";
 
     final displayName = (_profile!["displayName"] ?? "").toString();
 
@@ -155,8 +154,12 @@ class _ProfileTabState extends State<ProfileTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('DIN PLATS PÅ ZULLO', style: TextStyle(color: ZulloPalette.rose,
-              fontSize: 11, letterSpacing: 2, fontWeight: FontWeight.w800)),
+            Text(context.l10n.yourLocationOnZullo,
+                style: TextStyle(
+                    color: ZulloPalette.rose,
+                    fontSize: 11,
+                    letterSpacing: 2,
+                    fontWeight: FontWeight.w800)),
             const SizedBox(height: 16),
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -165,9 +168,13 @@ class _ProfileTabState extends State<ProfileTab> {
                   onTap: _openPhotoPreview,
                   child: CircleAvatar(
                     radius: 34,
-                    backgroundImage: imageUrl.isEmpty ? null : ProfileImages.thumbnail(imageUrl),
+                    backgroundImage: imageUrl.isEmpty
+                        ? null
+                        : ProfileImages.thumbnail(imageUrl),
                     backgroundColor: Colors.grey.shade800,
-                    child: imageUrl.isEmpty ? const Icon(Icons.person_outline, color: Colors.white) : null,
+                    child: imageUrl.isEmpty
+                        ? const Icon(Icons.person_outline, color: Colors.white)
+                        : null,
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -182,9 +189,12 @@ class _ProfileTabState extends State<ProfileTab> {
                   ),
                 ),
                 IconButton.filledTonal(
-                  tooltip: 'Kontoinställningar', onPressed: _openSettings,
-                  style: IconButton.styleFrom(backgroundColor: ZulloPalette.tint,
-                    foregroundColor: ZulloPalette.rose, minimumSize: const Size(48, 48)),
+                  tooltip: context.l10n.accountSettings,
+                  onPressed: _openSettings,
+                  style: IconButton.styleFrom(
+                      backgroundColor: ZulloPalette.tint,
+                      foregroundColor: ZulloPalette.rose,
+                      minimumSize: const Size(48, 48)),
                   icon: const Icon(Icons.tune_rounded),
                 ),
               ],
@@ -204,8 +214,8 @@ class _ProfileTabState extends State<ProfileTab> {
                 ),
                 onPressed: _openEditProfile,
                 icon: const Icon(Icons.edit, size: 28),
-                label: const Text(
-                  "Redigera profil",
+                label: Text(
+                  context.l10n.editProfile,
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -267,9 +277,9 @@ class _ProfileTabState extends State<ProfileTab> {
                   ),
                 )
               : _profile == null
-                  ? const Center(
+                  ?  Center(
                       child: Text(
-                        "Ingen profil",
+                        context.l10n.noProfile,
                         style: TextStyle(color: Color(0xFF22262E)),
                       ),
                     )

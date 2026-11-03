@@ -1,11 +1,13 @@
 import 'conversation_cache_policy.dart';
+
 class ChatThreadCacheService {
   ChatThreadCacheService._();
 
   static final Map<String, List<dynamic>> _threads = {};
   static final Map<String, Future<List<dynamic>>> _pending = {};
 
-  static Future<List<dynamic>> loadOnce(String userId, Future<List<dynamic>> Function() load) {
+  static Future<List<dynamic>> loadOnce(
+      String userId, Future<List<dynamic>> Function() load) {
     final active = _pending[userId];
     if (active != null) return active;
     late Future<List<dynamic>> operation;

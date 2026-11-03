@@ -20,8 +20,10 @@ jobs:
           channel: stable
       - run: flutter pub get --enforce-lockfile
       - run: flutter test --reporter expanded
+      - run: python3 .ci/check_localizations.py
       - run: python3 .ci/check_analysis.py
       - run: python3 .ci/check_ios_setup.py
+      - run: python3 .ci/check_android_setup.py
       - run: flutter build web --release --dart-define=ZULLO_API_URL=https://api.example.invalid
   ios-build:
     runs-on: macos-15

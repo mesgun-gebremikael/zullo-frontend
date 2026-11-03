@@ -47,12 +47,15 @@ class AuthService {
       SessionHttpClient(_transport, generation: () => _generation);
   final Future<String?> Function() _pushTokenLoader;
   AuthService(
-      {http.Client? client, AuthStorage? storage, Future<String?> Function()? pushTokenLoader})
+      {http.Client? client,
+      AuthStorage? storage,
+      Future<String?> Function()? pushTokenLoader})
       : _storage = storage ?? AuthStorage(),
         _transport = client ?? _sharedTransport,
         _pushTokenLoader = pushTokenLoader ?? PushTokenService.currentToken;
 
-  OnboardingDraftService get onboardingDrafts => OnboardingDraftService(client: _transport, storage: _storage);
+  OnboardingDraftService get onboardingDrafts =>
+      OnboardingDraftService(client: _transport, storage: _storage);
 
   Future<void> _acceptAuth(http.Response response) async {
     final decoded = jsonDecode(response.body);
@@ -208,129 +211,152 @@ class AuthService {
   }
 
   Future<Map<String, dynamic>> getMyProfile() async {
-  final token = await _storage.getToken();
+    final token = await _storage.getToken();
 
-  final res = await _client.get(
-    Uri.parse('$baseApiUrl/me/profile'),
-    headers: {
-      'Content-Type': 'application/json',
-      if (token != null) 'Authorization': 'Bearer $token',
-    },
-  ).timeout(const Duration(seconds: 30));
+    final res = await _client.get(
+      Uri.parse('$baseApiUrl/me/profile'),
+      headers: {
+        'Content-Type': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
+      },
+    ).timeout(const Duration(seconds: 30));
 
+    if (res.statusCode == 200) {
+      final decoded = jsonDecode(res.body) as Map<String, dynamic>;
+      return decoded;
+    }
 
-  if (res.statusCode == 200) {
-    final decoded = jsonDecode(res.body) as Map<String, dynamic>;
-    return decoded;
+    throw Exception('Get my profile failed: ${res.statusCode} ${res.body}');
   }
-
-  throw Exception('Get my profile failed: ${res.statusCode} ${res.body}');
-}
 
   // ---------- SWIPE FEED ----------
 
-Future<Map<String, dynamic>> discoverySettings({Map<String, dynamic>? update}) async {
-  final token = await _storage.getToken().timeout(const Duration(seconds: 5));
-  final headers = {'Authorization': 'Bearer $token', 'Content-Type': 'application/json'};
-  final url = Uri.parse('$baseApiUrl/me/discovery-settings');
-  final response = await (update == null ? _client.get(url, headers: headers)
-    : _client.patch(url, headers: headers, body: jsonEncode(update))).timeout(const Duration(seconds: 20));
-  if (response.statusCode != 200) throw Exception('Kunde inte läsa eller spara upptäcktsvalen.');
-  return Map<String, dynamic>.from(jsonDecode(response.body) as Map);
-}
-
-Future<SwipeProfile> getMatchedProfile(String userId) async {
-  final revision = RelationChanges.revision;
-  final token = await _storage.getToken().timeout(const Duration(seconds: 5));
-  final response = await _client.get(Uri.parse('$baseApiUrl/profiles/${Uri.encodeComponent(userId)}'),
-    headers: {'Authorization': 'Bearer $token'}).timeout(const Duration(seconds: 20));
-  if (revision != RelationChanges.revision) throw StateError('Relation changed');
-  if (response.statusCode != 200) throw Exception('Profilen är inte tillgänglig.');
-  return SwipeProfile.fromJson(Map<String, dynamic>.from(jsonDecode(response.body) as Map));
-}
-
-Future<Map<String, dynamic>> getSwipeFeed({
-  int minAge = 18,
-  int maxAge = 99,
-}) async {
-  final token = await _storage.getToken();
-
-  final response = await _client.get(
-    Uri.parse(
-      '$baseApiUrl/swipe/feed?minAge=$minAge&maxAge=$maxAge',
-    ),
-    headers: {
-      'Content-Type': 'application/json',
-      if (token != null) 'Authorization': 'Bearer $token',
-    },
-  ).timeout(const Duration(seconds: 30));
-
-  if (response.statusCode == 200) {
-    final decoded = jsonDecode(response.body);
-
-    final radiusKm = (decoded['radiusKm'] ?? 50) as num;
-
-    final List profilesJson = (decoded['profiles'] ?? []) as List;
-
-    final profiles = profilesJson
-        .map((j) => SwipeProfile.fromJson(j))
-        .toList();
-
-    return {
-      'radiusKm': radiusKm.toDouble(),
-      'isPaused': decoded['isPaused'] == true,
-      'profiles': profiles,
+  Future<Map<String, dynamic>> discoverySettings(
+      {Map<String, dynamic>? update}) async {
+    final token = await _storage.getToken().timeout(const Duration(seconds: 5));
+    final headers = {
+      'Authorization': 'Bearer $token',
+      'Content-Type': 'application/json'
     };
+    final url = Uri.parse('$baseApiUrl/me/discovery-settings');
+    final response = await (update == null
+            ? _client.get(url, headers: headers)
+            : _client.patch(url, headers: headers, body: jsonEncode(update)))
+        .timeout(const Duration(seconds: 20));
+    if (response.statusCode != 200) {
+      throw Exception('Kunde inte läsa eller spara upptäcktsvalen.');
+    }
+    return Map<String, dynamic>.from(jsonDecode(response.body) as Map);
   }
 
-  if (response.statusCode == 204) {
-    return {
-      'radiusKm': 50.0,
-      'profiles': <SwipeProfile>[],
-    };
+  Future<SwipeProfile> getMatchedProfile(String userId) async {
+    final revision = RelationChanges.revision;
+    final token = await _storage.getToken().timeout(const Duration(seconds: 5));
+    final response = await _client.get(
+        Uri.parse('$baseApiUrl/profiles/${Uri.encodeComponent(userId)}'),
+        headers: {
+          'Authorization': 'Bearer $token'
+        }).timeout(const Duration(seconds: 20));
+    if (revision != RelationChanges.revision) {
+      throw StateError('Relation changed');
+    }
+    if (response.statusCode != 200) {
+      throw Exception('Profilen är inte tillgänglig.');
+    }
+    return SwipeProfile.fromJson(
+        Map<String, dynamic>.from(jsonDecode(response.body) as Map));
   }
 
-  throw Exception(
-      'Failed to load swipe feed: ${response.statusCode} ${response.body}');
-}
+  Future<Map<String, dynamic>> getSwipeFeed({
+    int minAge = 18,
+    int maxAge = 99,
+  }) async {
+    final token = await _storage.getToken();
+
+    final response = await _client.get(
+      Uri.parse(
+        '$baseApiUrl/swipe/feed?minAge=$minAge&maxAge=$maxAge',
+      ),
+      headers: {
+        'Content-Type': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
+      },
+    ).timeout(const Duration(seconds: 30));
+
+    if (response.statusCode == 200) {
+      final decoded = jsonDecode(response.body);
+
+      final radiusKm = (decoded['radiusKm'] ?? 50) as num;
+
+      final List profilesJson = (decoded['profiles'] ?? []) as List;
+
+      final profiles =
+          profilesJson.map((j) => SwipeProfile.fromJson(j)).toList();
+
+      return {
+        'radiusKm': radiusKm.toDouble(),
+        'isPaused': decoded['isPaused'] == true,
+        'profiles': profiles,
+      };
+    }
+
+    if (response.statusCode == 204) {
+      return {
+        'radiusKm': 50.0,
+        'profiles': <SwipeProfile>[],
+      };
+    }
+
+    throw Exception(
+        'Failed to load swipe feed: ${response.statusCode} ${response.body}');
+  }
 
   // ---------- LIKE / SKIP ----------
 
   Future<bool> like(String targetUserId, {bool superLike = false}) async {
     final token = await _storage.getToken();
 
-    final res = await _client.post(
-      Uri.parse('$baseApiUrl/swipe/like'),
-      headers: {
-        'Content-Type': 'application/json',
-        if (token != null) 'Authorization': 'Bearer $token',
-      },
-      body: jsonEncode({'targetUserId': targetUserId, if (superLike) 'superLike': true}),
-    ).timeout(const Duration(seconds: 30));
+    final res = await _client
+        .post(
+          Uri.parse('$baseApiUrl/swipe/like'),
+          headers: {
+            'Content-Type': 'application/json',
+            if (token != null) 'Authorization': 'Bearer $token',
+          },
+          body: jsonEncode(
+              {'targetUserId': targetUserId, if (superLike) 'superLike': true}),
+        )
+        .timeout(const Duration(seconds: 30));
 
-   if (res.statusCode == 200) {
-  final decoded = jsonDecode(res.body);
-  return decoded['matched'] == true;
-}
+    if (res.statusCode == 200) {
+      final decoded = jsonDecode(res.body);
+      return decoded['matched'] == true;
+    }
 
-if (res.statusCode == 429 || res.statusCode == 402) {
-  throw CommerceException(res.statusCode, res.statusCode == 402 ? 'Du har inga Superlikes kvar.' : 'Du har nått din like-gräns.');
-}
+    if (res.statusCode == 429 || res.statusCode == 402) {
+      throw CommerceException(
+          res.statusCode,
+          res.statusCode == 402
+              ? 'Du har inga Superlikes kvar.'
+              : 'Du har nått din like-gräns.');
+    }
 
-throw Exception('Like failed: ${res.statusCode} ${res.body}');
+    throw Exception('Like failed: ${res.statusCode} ${res.body}');
   }
 
   Future<void> skip(String targetUserId) async {
     final token = await _storage.getToken();
 
-    final res = await _client.post(
-      Uri.parse('$baseApiUrl/swipe/skip'),
-      headers: {
-        'Content-Type': 'application/json',
-        if (token != null) 'Authorization': 'Bearer $token',
-      },
-      body: jsonEncode({'targetUserId': targetUserId}),
-    ).timeout(const Duration(seconds: 30));
+    final res = await _client
+        .post(
+          Uri.parse('$baseApiUrl/swipe/skip'),
+          headers: {
+            'Content-Type': 'application/json',
+            if (token != null) 'Authorization': 'Bearer $token',
+          },
+          body: jsonEncode({'targetUserId': targetUserId}),
+        )
+        .timeout(const Duration(seconds: 30));
 
     if (res.statusCode != 200) {
       throw Exception('Skip failed: ${res.statusCode} ${res.body}');
@@ -340,300 +366,316 @@ throw Exception('Like failed: ${res.statusCode} ${res.body}');
   // ---------- MATCHES ----------
 
   Future<List<dynamic>> getMatches() async {
-  AccountSession.check(_generation);
-  return MatchesCacheService.loadMatches(_generation, () async {
-  final revision = RelationChanges.revision;
-  final url = Uri.parse('$baseApiUrl/matches');
-  final token = await _storage.getToken();
+    AccountSession.check(_generation);
+    return MatchesCacheService.loadMatches(_generation, () async {
+      final revision = RelationChanges.revision;
+      final url = Uri.parse('$baseApiUrl/matches');
+      final token = await _storage.getToken();
 
-  final res = await _client.get(
-    url,
-    headers: {
-      'Content-Type': 'application/json',
-      if (token != null) 'Authorization': 'Bearer $token',
-    },
-  ).timeout(const Duration(seconds: 15));
+      final res = await _client.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+      ).timeout(const Duration(seconds: 15));
 
+      if (revision != RelationChanges.revision) {
+        throw StateError('Relation changed during refresh');
+      }
+      if (res.statusCode == 200) {
+        final decoded = jsonDecode(res.body);
+        return (decoded as List).cast<dynamic>();
+      }
 
-  if (revision != RelationChanges.revision) throw StateError('Relation changed during refresh');
-  if (res.statusCode == 200) {
-    final decoded = jsonDecode(res.body);
-    return (decoded as List).cast<dynamic>();
+      throw Exception('Matches failed: ${res.statusCode}');
+    });
   }
 
-  throw Exception('Matches failed: ${res.statusCode}');
-});
-}
-Future<ReceivedLikesSummary> getReceivedLikesSummary() async {
-  AccountSession.check(_generation);
-  final revision = RelationChanges.revision;
-  final token = await _storage.getToken();
-  final response = await _client.get(Uri.parse('$baseApiUrl/likes/received/summary'), headers: {
-    if (token != null) 'Authorization': 'Bearer $token',
-  }).timeout(const Duration(seconds: 15));
-  AccountSession.check(_generation);
-  if (revision != RelationChanges.revision) throw StateError('Relation changed during refresh');
-  if (response.statusCode != 200) throw StateError('Could not load received likes summary');
-  return ReceivedLikesSummary.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
-}
-
-Future<List<dynamic>> getLikesReceived() async {
-  AccountSession.check(_generation);
-  return MatchesCacheService.loadLikes(_generation, () async {
-  final revision = RelationChanges.revision;
-  final url = Uri.parse('$baseApiUrl/likes/received');
-  final token = await _storage.getToken();
-
-  final res = await _client.get(
-    url,
-    headers: {
-      'Content-Type': 'application/json',
+  Future<ReceivedLikesSummary> getReceivedLikesSummary() async {
+    AccountSession.check(_generation);
+    final revision = RelationChanges.revision;
+    final token = await _storage.getToken();
+    final response = await _client
+        .get(Uri.parse('$baseApiUrl/likes/received/summary'), headers: {
       if (token != null) 'Authorization': 'Bearer $token',
-    },
-  ).timeout(const Duration(seconds: 15));
-
-
-  if (revision != RelationChanges.revision) throw StateError('Relation changed during refresh');
-  if (res.statusCode == 200) {
-    final decoded = jsonDecode(res.body);
-    return (decoded as List).cast<dynamic>();
+    }).timeout(const Duration(seconds: 15));
+    AccountSession.check(_generation);
+    if (revision != RelationChanges.revision) {
+      throw StateError('Relation changed during refresh');
+    }
+    if (response.statusCode != 200) {
+      throw StateError('Could not load received likes summary');
+    }
+    return ReceivedLikesSummary.fromJson(
+        jsonDecode(response.body) as Map<String, dynamic>);
   }
 
-  throw Exception('Likes received failed: ${res.statusCode}');
-});
-}
+  Future<List<dynamic>> getLikesReceived() async {
+    AccountSession.check(_generation);
+    return MatchesCacheService.loadLikes(_generation, () async {
+      final revision = RelationChanges.revision;
+      final url = Uri.parse('$baseApiUrl/likes/received');
+      final token = await _storage.getToken();
+
+      final res = await _client.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+      ).timeout(const Duration(seconds: 15));
+
+      if (revision != RelationChanges.revision) {
+        throw StateError('Relation changed during refresh');
+      }
+      if (res.statusCode == 200) {
+        final decoded = jsonDecode(res.body);
+        return (decoded as List).cast<dynamic>();
+      }
+
+      throw Exception('Likes received failed: ${res.statusCode}');
+    });
+  }
 
 //-------------------------------------------------
-Future<void> saveProfile({
-  required String displayName,
-  required int age,
-  required String gender,
-  required String bio,
-  required List<String> photoUrls,
-  required List<String> interests,
-  required String intention,
-  required String religion,
-  required String workout,
-  required String smoking,
-  required String pets,
-
-  int? heightCm,
-  bool clearHeight = false,
-  String? promptKey,
-  String? promptAnswer,
-  double? lat,
-  double? lng,
-  String? countryCode,
-  String? interestedIn,
-  int? matchRadiusKm,
-  String? relationshipHistory,
-  String? zodiacSign,
-  String? alcohol,
-  String? cannabis,
-  String? childrenCount,
-  String? wantChildren,
-  String? workStatus,
-  String? studyPlace,
-  String? studySubject,
-  String? workPlace,
-  String? jobTitle,
-  String? livePlace,
-  String? originPlace,
-}) async {
-
-final body = {
-  'displayName': displayName,
-  'age': age,
-  'gender': gender,
-  'bio': bio,
-    if (promptKey != null) 'promptKey': promptKey,
-    if (promptAnswer != null) 'promptAnswer': promptAnswer,
-  'photoUrls': photoUrls,
-  'interests': interests,
-  'intention': intention,
-  'religion': religion,
-  'workout': workout,
-  'smoking': smoking,
-  'pets': pets,
-  if (heightCm != null || clearHeight) 'heightCm': heightCm,
-  if (lat != null) 'lat': lat,
-  if (lng != null) 'lng': lng,
-  if (countryCode != null) 'countryCode': countryCode,
-  if (interestedIn != null) 'interestedIn': interestedIn,
-  if (matchRadiusKm != null) 'matchRadiusKm': matchRadiusKm,
-  if (relationshipHistory != null) 'relationshipHistory': relationshipHistory,
-  if (zodiacSign != null) 'zodiacSign': zodiacSign,
-  if (alcohol != null) 'alcohol': alcohol,
-  if (cannabis != null) 'cannabis': cannabis,
-  if (childrenCount != null) 'childrenCount': childrenCount,
-  if (wantChildren != null) 'wantChildren': wantChildren,
-  if (workStatus != null) 'workStatus': workStatus,
-  if (studyPlace != null) 'studyPlace': studyPlace,
-  if (studySubject != null) 'studySubject': studySubject,
-  if (workPlace != null) 'workPlace': workPlace,
-  if (jobTitle != null) 'jobTitle': jobTitle,
-  if (livePlace != null) 'livePlace': livePlace,
-  if (originPlace != null) 'originPlace': originPlace,
-};
-
-
-  await _saveProfileBody(body);
-}
-
-Future<void> saveOnboardingProfile(OnboardingData data, {DateTime? today}) =>
-    _saveProfileBody(data.toProfileUpdate(today: today));
-
-Future<void> _saveProfileBody(Map<String, dynamic> body) async {
-  final token = await _storage.getToken();
-  if (token == null || token.isEmpty) throw StateError('Logga in igen.');
-  final url = Uri.parse('$baseApiUrl/me/profile');
-  final res = await _client.post(
-    url,
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
-    },
-    body: jsonEncode(body),
-  ).timeout(const Duration(seconds: 30));
-
-
-
-  if (res.statusCode == 200 || res.statusCode == 201) return;
-
-  throw Exception('Save profile failed: ${res.statusCode} ${res.body}');
-}
-
-Future<void> reportUser({
-  required String reportedUserId,
-  required String reason,
-}) async {
-  final token = await _storage.getToken();
-
-  final res = await _client.post(
-    Uri.parse('$baseApiUrl/reports'),
-    headers: {
-      'Content-Type': 'application/json',
-      if (token != null) 'Authorization': 'Bearer $token',
-    },
-    body: jsonEncode({
-      'reportedUserId': reportedUserId,
-      'reason': reason,
-    }),
-  ).timeout(const Duration(seconds: 30));
-
-  if (res.statusCode != 200) {
-    throw Exception('Report failed: ${res.statusCode} ${res.body}');
-  }
-}
-
- Future<int> updateRadius(int km) async {
-  final token = await _storage.getToken();
-
-  final res = await _client.post(
-    Uri.parse('$baseApiUrl/me/radius'),
-    headers: {
-      'Content-Type': 'application/json',
-      if (token != null) 'Authorization': 'Bearer $token',
-    },
-    body: jsonEncode({
-      'matchRadiusKm': km,
-    }),
-  ).timeout(const Duration(seconds: 30));
-
-  if (res.statusCode == 200) {
-    final decoded = jsonDecode(res.body);
-    return (decoded['matchRadiusKm'] ?? km) as int;
-  }
-
-  throw Exception('Update radius failed: ${res.statusCode} ${res.body}');
-}
-
-Future<Map<String, dynamic>> getMyAccount() async {
-  final token = await _storage.getToken();
-  final res = await _client.get(Uri.parse('$baseApiUrl/me/account'),
-      headers: {'Authorization': 'Bearer $token'}).timeout(const Duration(seconds: 15));
-  if (res.statusCode != 200) throw Exception('Kunde inte hämta kontot.');
-  return Map<String, dynamic>.from(jsonDecode(res.body) as Map);
-}
-
-Future<void> updateFilterProfile({
-  required String intention,
-  required String religion,
-  int? matchRadiusKm,
-  String? interestedIn,
-}) async {
-  final token = await _storage.getToken();
-  final res = await _client.patch(
-    Uri.parse('$baseApiUrl/me/profile'),
-    headers: {
-      'Content-Type': 'application/json',
-      if (token != null) 'Authorization': 'Bearer $token',
-    },
-    body: jsonEncode({
+  Future<void> saveProfile({
+    required String displayName,
+    required int age,
+    required String gender,
+    required String bio,
+    required List<String> photoUrls,
+    required List<String> interests,
+    required String intention,
+    required String religion,
+    required String workout,
+    required String smoking,
+    required String pets,
+    int? heightCm,
+    bool clearHeight = false,
+    String? promptKey,
+    String? promptAnswer,
+    double? lat,
+    double? lng,
+    String? countryCode,
+    String? interestedIn,
+    int? matchRadiusKm,
+    String? relationshipHistory,
+    String? zodiacSign,
+    String? alcohol,
+    String? cannabis,
+    String? childrenCount,
+    String? wantChildren,
+    String? workStatus,
+    String? studyPlace,
+    String? studySubject,
+    String? workPlace,
+    String? jobTitle,
+    String? livePlace,
+    String? originPlace,
+  }) async {
+    final body = {
+      'displayName': displayName,
+      'age': age,
+      'gender': gender,
+      'bio': bio,
+      if (promptKey != null) 'promptKey': promptKey,
+      if (promptAnswer != null) 'promptAnswer': promptAnswer,
+      'photoUrls': photoUrls,
+      'interests': interests,
       'intention': intention,
       'religion': religion,
+      'workout': workout,
+      'smoking': smoking,
+      'pets': pets,
+      if (heightCm != null || clearHeight) 'heightCm': heightCm,
+      if (lat != null) 'lat': lat,
+      if (lng != null) 'lng': lng,
+      if (countryCode != null) 'countryCode': countryCode,
       if (interestedIn != null) 'interestedIn': interestedIn,
       if (matchRadiusKm != null) 'matchRadiusKm': matchRadiusKm,
-    }),
-  ).timeout(const Duration(seconds: 30));
-  if (res.statusCode != 200) {
-    throw Exception('Update filter profile failed: ${res.statusCode} ${res.body}');
-  }
-}
+      if (relationshipHistory != null)
+        'relationshipHistory': relationshipHistory,
+      if (zodiacSign != null) 'zodiacSign': zodiacSign,
+      if (alcohol != null) 'alcohol': alcohol,
+      if (cannabis != null) 'cannabis': cannabis,
+      if (childrenCount != null) 'childrenCount': childrenCount,
+      if (wantChildren != null) 'wantChildren': wantChildren,
+      if (workStatus != null) 'workStatus': workStatus,
+      if (studyPlace != null) 'studyPlace': studyPlace,
+      if (studySubject != null) 'studySubject': studySubject,
+      if (workPlace != null) 'workPlace': workPlace,
+      if (jobTitle != null) 'jobTitle': jobTitle,
+      if (livePlace != null) 'livePlace': livePlace,
+      if (originPlace != null) 'originPlace': originPlace,
+    };
 
-Future<bool> canOpenChat(String otherUserId) async {
-  final token = await _storage.getToken();
-  if (token == null || token.isEmpty) {
-    return false;
-  }
-
-  final url = Uri.parse('$baseApiUrl/messages/thread-page?otherUserId=$otherUserId&take=1');
-
-  try {
-    final res = await _client.get(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-    ).timeout(const Duration(seconds: 30));
-
-    return res.statusCode == 200;
-  } catch (_) {
-    return false;
-  }
-}
-
-Future<void> saveDeviceToken(String token) async {
-  final authToken = await _storage.getToken();
-  if (authToken == null || authToken.isEmpty) {
-    throw Exception('No auth token found');
+    await _saveProfileBody(body);
   }
 
-  final trimmedToken = token.trim();
-  if (trimmedToken.isEmpty) {
-    throw Exception('Device token is empty');
+  Future<void> saveOnboardingProfile(OnboardingData data, {DateTime? today}) =>
+      _saveProfileBody(data.toProfileUpdate(today: today));
+
+  Future<void> _saveProfileBody(Map<String, dynamic> body) async {
+    final token = await _storage.getToken();
+    if (token == null || token.isEmpty) throw StateError('Logga in igen.');
+    final url = Uri.parse('$baseApiUrl/me/profile');
+    final res = await _client
+        .post(
+          url,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+          body: jsonEncode(body),
+        )
+        .timeout(const Duration(seconds: 30));
+
+    if (res.statusCode == 200 || res.statusCode == 201) return;
+
+    throw Exception('Save profile failed: ${res.statusCode} ${res.body}');
   }
 
-  final url = Uri.parse('$baseApiUrl/me/device-token');
+  Future<void> reportUser({
+    required String reportedUserId,
+    required String reason,
+  }) async {
+    final token = await _storage.getToken();
 
-  final res = await _client.post(
-    url,
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $authToken',
-    },
-    body: jsonEncode({
-      'token': trimmedToken,
-    }),
-  ).timeout(const Duration(seconds: 30));
+    final res = await _client
+        .post(
+          Uri.parse('$baseApiUrl/reports'),
+          headers: {
+            'Content-Type': 'application/json',
+            if (token != null) 'Authorization': 'Bearer $token',
+          },
+          body: jsonEncode({
+            'reportedUserId': reportedUserId,
+            'reason': reason,
+          }),
+        )
+        .timeout(const Duration(seconds: 30));
 
-  if (res.statusCode != 200) {
-    throw Exception('Save device token failed: ${res.statusCode} ${res.body}');
+    if (res.statusCode != 200) {
+      throw Exception('Report failed: ${res.statusCode} ${res.body}');
+    }
   }
-}
 
+  Future<int> updateRadius(int km) async {
+    final token = await _storage.getToken();
 
+    final res = await _client
+        .post(
+          Uri.parse('$baseApiUrl/me/radius'),
+          headers: {
+            'Content-Type': 'application/json',
+            if (token != null) 'Authorization': 'Bearer $token',
+          },
+          body: jsonEncode({
+            'matchRadiusKm': km,
+          }),
+        )
+        .timeout(const Duration(seconds: 30));
 
+    if (res.statusCode == 200) {
+      final decoded = jsonDecode(res.body);
+      return (decoded['matchRadiusKm'] ?? km) as int;
+    }
 
+    throw Exception('Update radius failed: ${res.statusCode} ${res.body}');
+  }
+
+  Future<Map<String, dynamic>> getMyAccount() async {
+    final token = await _storage.getToken();
+    final res = await _client.get(Uri.parse('$baseApiUrl/me/account'),
+        headers: {
+          'Authorization': 'Bearer $token'
+        }).timeout(const Duration(seconds: 15));
+    if (res.statusCode != 200) throw Exception('Kunde inte hämta kontot.');
+    return Map<String, dynamic>.from(jsonDecode(res.body) as Map);
+  }
+
+  Future<void> updateFilterProfile({
+    required String intention,
+    required String religion,
+    int? matchRadiusKm,
+    String? interestedIn,
+  }) async {
+    final token = await _storage.getToken();
+    final res = await _client
+        .patch(
+          Uri.parse('$baseApiUrl/me/profile'),
+          headers: {
+            'Content-Type': 'application/json',
+            if (token != null) 'Authorization': 'Bearer $token',
+          },
+          body: jsonEncode({
+            'intention': intention,
+            'religion': religion,
+            if (interestedIn != null) 'interestedIn': interestedIn,
+            if (matchRadiusKm != null) 'matchRadiusKm': matchRadiusKm,
+          }),
+        )
+        .timeout(const Duration(seconds: 30));
+    if (res.statusCode != 200) {
+      throw Exception(
+          'Update filter profile failed: ${res.statusCode} ${res.body}');
+    }
+  }
+
+  Future<bool> canOpenChat(String otherUserId) async {
+    final token = await _storage.getToken();
+    if (token == null || token.isEmpty) {
+      return false;
+    }
+
+    final url = Uri.parse(
+        '$baseApiUrl/messages/thread-page?otherUserId=$otherUserId&take=1');
+
+    try {
+      final res = await _client.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      ).timeout(const Duration(seconds: 30));
+
+      return res.statusCode == 200;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<void> saveDeviceToken(String token) async {
+    final authToken = await _storage.getToken();
+    if (authToken == null || authToken.isEmpty) {
+      throw Exception('No auth token found');
+    }
+
+    final trimmedToken = token.trim();
+    if (trimmedToken.isEmpty) {
+      throw Exception('Device token is empty');
+    }
+
+    final url = Uri.parse('$baseApiUrl/me/device-token');
+
+    final res = await _client
+        .post(
+          url,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $authToken',
+          },
+          body: jsonEncode({
+            'token': trimmedToken,
+          }),
+        )
+        .timeout(const Duration(seconds: 30));
+
+    if (res.statusCode != 200) {
+      throw Exception(
+          'Save device token failed: ${res.statusCode} ${res.body}');
+    }
+  }
 }

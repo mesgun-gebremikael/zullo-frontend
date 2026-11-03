@@ -9,7 +9,7 @@ class AuthStorage {
   static const String _userIdKey = 'auth_user_id';
   static Future<void> _writes = Future.value();
   static const _defaultStorage = FlutterSecureStorage(
-    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+    aOptions: AndroidOptions(resetOnError: false, migrateWithBackup: true),
     iOptions: IOSOptions(
         accessibility: KeychainAccessibility.first_unlock_this_device),
   );

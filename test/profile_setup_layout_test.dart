@@ -34,7 +34,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(const MaterialApp(home: WelcomePage()));
-    await tester.scrollUntilVisible(find.text('Log in'), 120);
+    await tester.scrollUntilVisible(find.text('Logga in'), 120);
     expect(tester.takeException(), isNull);
   });
 }

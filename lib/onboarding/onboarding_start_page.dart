@@ -1,3 +1,4 @@
+import '../l10n/localization.dart';
 import '../splash_page.dart';
 import 'confirm_leave.dart';
 import '../services/account_session.dart';
@@ -63,16 +64,16 @@ class _OnboardingStartPageState extends State<OnboardingStartPage> {
         context: context,
         builder: (context) => AlertDialog(
                 scrollable: true,
-                title: const Text('Öppna kontots sparade utkast?'),
-                content: const Text(
-                    'De lokala val som inte har synkroniserats ersätts med utkastet på ditt konto.'),
+                title: Text(context.l10n.openTheDraftSavedToYourAccount),
+                content: Text(
+                    context.l10n.localChangesThatHaveNotSyncedWillBeReplacedBy),
                 actions: [
                   TextButton(
                       onPressed: () => Navigator.pop(context, false),
-                      child: const Text('Avbryt')),
+                      child: Text(context.l10n.cancel)),
                   FilledButton(
                       onPressed: () => Navigator.pop(context, true),
-                      child: const Text('Öppna utkast'))
+                      child: Text(context.l10n.openDraft))
                 ]));
     if (accept == true && mounted) await _load(preferServer: true);
   }
@@ -112,12 +113,12 @@ class _OnboardingStartPageState extends State<OnboardingStartPage> {
   @override
   Widget build(BuildContext context) {
     if (loading) {
-      return const Scaffold(
+      return  Scaffold(
           body: Center(
               child: Column(mainAxisSize: MainAxisSize.min, children: [
         CircularProgressIndicator(),
         SizedBox(height: 16),
-        Text('Öppnar din påbörjade profil…')
+        Text(context.l10n.openingYourUnfinishedProfile)
       ])));
     }
     if (error != null) {
@@ -129,8 +130,8 @@ class _OnboardingStartPageState extends State<OnboardingStartPage> {
                       child: Column(mainAxisSize: MainAxisSize.min, children: [
                         Text(
                             error is DraftException
-                                ? (error as DraftException).message
-                                : 'Kunde inte hämta din påbörjade profil. Dina sparade svar har inte ändrats.',
+                                ? context.tr((error as DraftException).message)
+                                : context.l10n.yourUnfinishedProfileCouldNotBeLoadedYourSavedAnswers,
                             textAlign: TextAlign.center),
                         const SizedBox(height: 16),
                         FilledButton(
@@ -149,20 +150,20 @@ class _OnboardingStartPageState extends State<OnboardingStartPage> {
                             child: Text(error is DraftException &&
                                     (error as DraftException).code ==
                                         'profile_exists'
-                                ? 'Öppna din profil'
+                                ? context.l10n.openYourProfile
                                 : error is DraftException &&
                                         (error as DraftException).code ==
                                             'session_expired'
-                                    ? 'Logga in igen'
-                                    : 'Försök igen')),
+                                    ? context.l10n.signInAgain
+                                    : context.l10n.tryAgain)),
                         TextButton(
                             onPressed: _leaveError,
-                            child: const Text('Till startsidan')),
+                            child: Text(context.l10n.goToHome)),
                         if (error is DraftException &&
                             (error as DraftException).code == 'draft_conflict')
                           TextButton(
                               onPressed: _reload,
-                              child: const Text('Öppna kontots utkast')),
+                              child: Text(context.l10n.openAccountDraft)),
                       ])))));
     }
     return OnboardingWizard(

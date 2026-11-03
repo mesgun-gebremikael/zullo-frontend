@@ -1,3 +1,4 @@
+import '../l10n/localization.dart';
 import '../theme/zullo_palette.dart';
 import 'package:flutter/material.dart';
 import 'zullo_symbol.dart';
@@ -51,7 +52,7 @@ class DiscoveryFeedEmpty extends StatelessWidget {
                                               color: ZulloPalette.rose,
                                               size: 40))))),
                       SizedBox(height: compact ? 18 : 30),
-                      const Text('ZULLO · UPPTÄCK',
+                      Text(context.l10n.zulloDiscover,
                           textAlign: TextAlign.center,
                           style: TextStyle(
                               color: ZulloPalette.rose,
@@ -60,9 +61,7 @@ class DiscoveryFeedEmpty extends StatelessWidget {
                               fontWeight: FontWeight.w800)),
                       const SizedBox(height: 12),
                       Text(
-                          paused
-                              ? 'En paus, i din takt.'
-                              : 'Utöka din sökning',
+                          paused ? context.l10n.pausedAtYourPace : context.l10n.broadenYourSearch,
                           textAlign: TextAlign.center,
                           style: TextStyle(
                               color: ZulloPalette.ink,
@@ -72,8 +71,8 @@ class DiscoveryFeedEmpty extends StatelessWidget {
                       const SizedBox(height: 16),
                       Text(
                           paused
-                              ? 'Din profil är pausad. Dina matchningar och samtal finns kvar när du vill fortsätta.'
-                              : 'Välj ett större område eller justera dina filter för att hitta fler personer.',
+                              ? context.l10n.yourProfileIsPausedYourMatchesAndConversationsWillBe
+                              : context.l10n.chooseALargerAreaOrAdjustYourFiltersToFind,
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                               color: ZulloPalette.muted,
@@ -94,9 +93,8 @@ class DiscoveryFeedEmpty extends StatelessWidget {
                                   foregroundColor: Colors.white,
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 24, vertical: 18)),
-                              label: Text(paused
-                                  ? 'Hantera paus'
-                                  : 'Ändra filter'))),
+                              label: Text(
+                                  paused ? context.l10n.managePause : context.l10n.adjustFilters))),
                     ]))));
       });
 }

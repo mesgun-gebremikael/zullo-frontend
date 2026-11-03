@@ -26,8 +26,8 @@ void main() {
         find.byType(TextFormField).at(0), 'person@example.test');
     await tester.enterText(
         find.byType(TextFormField).at(1), '  valid password  ');
-    await tester.tap(find.widgetWithText(FilledButton, 'Log in'));
-    await tester.tap(find.widgetWithText(FilledButton, 'Log in'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Logga in'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Logga in'));
     await tester.pump();
     expect(auth.calls, 1);
     expect(auth.password, '  valid password  ');

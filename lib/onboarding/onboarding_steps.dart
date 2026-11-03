@@ -1,3 +1,5 @@
+import '../models/profile_choices.dart';
+
 enum OnboardingStep {
   name,
   birthDate,
@@ -36,25 +38,10 @@ const onboardingQuestions = <OnboardingStep, OnboardingQuestion>{
   OnboardingStep.interestedIn: OnboardingQuestion('Vem vill du träffa?',
       field: 'interestedIn',
       options: {'Män': 'Män', 'Kvinnor': 'Kvinnor', 'Alla': 'Alla'}),
-  OnboardingStep.intention:
-      OnboardingQuestion('Vad söker du?', field: 'intention', options: {
-    'Relationship': 'Seriöst förhållande',
-    'Marriage': 'Giftermål',
-    'Date': 'Dejta och se vart det leder',
-    'Serious': 'Något seriöst',
-    'NotSure': 'Jag vet inte än'
-  }),
-  OnboardingStep.religion:
-      OnboardingQuestion('Vad är din religion?', field: 'religion', options: {
-    'Private': 'Privat',
-    'Kristen': 'Kristen',
-    'Ortodox': 'Ortodox',
-    'Muslim': 'Muslim',
-    'Katolik': 'Katolik',
-    'Ateist': 'Ateist',
-    'Agnostiker': 'Agnostiker',
-    'Annat': 'Annat'
-  }),
+  OnboardingStep.intention: OnboardingQuestion('Vad söker du?',
+      field: 'intention', options: intentionOptions),
+  OnboardingStep.religion: OnboardingQuestion('Tro och livsåskådning',
+      field: 'religion', options: religionOptions),
   OnboardingStep.work: OnboardingQuestion('Vad jobbar du med?'),
   OnboardingStep.location: OnboardingQuestion('Var bor du?'),
   OnboardingStep.distance:

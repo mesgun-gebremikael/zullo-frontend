@@ -1,3 +1,4 @@
+import '../l10n/localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -28,13 +29,13 @@ class ProfileBasicsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Om mig',
+        Text(
+          context.l10n.aboutMe,
           style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800),
         ),
         const SizedBox(height: 6),
-        const Text(
-          'Din presentation visas i hela profilen, med plats att läsa.',
+        Text(
+          context.l10n.yourBioAppearsOnYourFullProfileWithRoomTo,
           style: TextStyle(color: Colors.black54),
         ),
         const SizedBox(height: 16),
@@ -48,13 +49,16 @@ class ProfileBasicsSection extends StatelessWidget {
           child: TextField(
             controller: bio,
             maxLength: 1000,
-            inputFormatters: [TextInputFormatter.withFunction((oldValue, newValue) => newValue.text.length <= 1000 ? newValue : oldValue)],
+            inputFormatters: [
+              TextInputFormatter.withFunction((oldValue, newValue) =>
+                  newValue.text.length <= 1000 ? newValue : oldValue)
+            ],
             minLines: 3,
             maxLines: 6,
             textCapitalization: TextCapitalization.sentences,
-            decoration: const InputDecoration(
-              labelText: 'Din presentation',
-              hintText: 'Jag trivs bäst när…',
+            decoration: InputDecoration(
+              labelText: context.l10n.yourBio,
+              hintText: context.l10n.iFeelHappiestWhen,
               alignLabelWithHint: true,
               border: InputBorder.none,
               enabledBorder: InputBorder.none,
@@ -63,13 +67,13 @@ class ProfileBasicsSection extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 24),
-        const Text(
-          'Grunduppgifter',
+        Text(
+          context.l10n.theBasics,
           style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
         ),
         const SizedBox(height: 6),
-        const Text(
-          'Det här visas på din profil.',
+        Text(
+          context.l10n.thisAppearsOnYourProfile,
           style: TextStyle(color: Colors.black54),
         ),
         const SizedBox(height: 16),
@@ -86,8 +90,8 @@ class ProfileBasicsSection extends StatelessWidget {
                 controller: name,
                 textCapitalization: TextCapitalization.words,
                 textInputAction: TextInputAction.next,
-                decoration: const InputDecoration(
-                  labelText: 'Förnamn',
+                decoration: InputDecoration(
+                  labelText: context.l10n.firstName,
                   prefixIcon: Icon(Icons.person_outline, color: accent),
                 ),
               ),
@@ -96,9 +100,9 @@ class ProfileBasicsSection extends StatelessWidget {
                 controller: age,
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                decoration: const InputDecoration(
-                  labelText: 'Ålder',
-                  helperText: 'Du måste vara minst 18 år.',
+                decoration: InputDecoration(
+                  labelText: context.l10n.age,
+                  helperText: context.l10n.youMustBeAtLeastYearsOld,
                   prefixIcon: Icon(Icons.cake_outlined, color: accent),
                 ),
               ),
@@ -107,14 +111,18 @@ class ProfileBasicsSection extends StatelessWidget {
                 initialValue:
                     gender.text.trim().isEmpty ? null : gender.text.trim(),
                 isExpanded: true,
-                decoration: const InputDecoration(
-                  labelText: 'Kön',
+                decoration: InputDecoration(
+                  labelText: context.l10n.gender,
                   prefixIcon: Icon(Icons.badge_outlined, color: accent),
                 ),
                 items: genders
                     .map(
-                      (value) =>
-                          DropdownMenuItem(value: value, child: Text(value)),
+                      (value) => DropdownMenuItem(
+                          value: value,
+                          child: Text(const {'Man', 'Kvinna', 'Icke-binär'}
+                                  .contains(value)
+                              ? context.tr(value)
+                              : value)),
                     )
                     .toList(),
                 onChanged: (value) {

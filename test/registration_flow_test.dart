@@ -92,7 +92,7 @@ void main() {
     expect(find.text('Name'), findsNothing);
     await tester.enterText(fields.at(0), 'test@example.test');
     await tester.enterText(fields.at(1), 'password123');
-    final button = find.widgetWithText(ElevatedButton, 'Create account');
+    final button = find.widgetWithText(ElevatedButton, 'Skapa konto');
     await tester.ensureVisible(button);
     await tester.tap(button);
     await tester.tap(button);

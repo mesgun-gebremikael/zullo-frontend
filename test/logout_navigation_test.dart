@@ -87,7 +87,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(WelcomePage), findsOneWidget);
     expect(find.byType(MainNavigation), findsNothing);
-    await tester.tap(find.widgetWithText(ElevatedButton, 'Create account'));
+    await tester.tap(find.widgetWithText(ElevatedButton, 'Skapa konto'));
     await tester.pumpAndSettle();
     expect(find.byType(RegisterPage), findsOneWidget);
     expect(tester.takeException(), isNull);

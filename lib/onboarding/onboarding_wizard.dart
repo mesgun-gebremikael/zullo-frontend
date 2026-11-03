@@ -1,3 +1,4 @@
+import '../l10n/localization.dart';
 import '../widgets/conversation_prompt_editor.dart';
 import '../splash_page.dart';
 import 'package:flutter/services.dart';
@@ -208,7 +209,7 @@ class _OnboardingWizardState extends State<OnboardingWizard>
     ]) {
       if (!_valid(required)) {
         _go(required.index);
-        setState(() => _error = 'Fyll i detta innan du sparar profilen.');
+        setState(() => _error = 'Det här behövs för att skapa din profil.');
         return;
       }
     }
@@ -270,7 +271,7 @@ class _OnboardingWizardState extends State<OnboardingWizard>
       maxLines: lines,
       textCapitalization: TextCapitalization.sentences,
       decoration: InputDecoration(
-          labelText: label,
+          labelText: context.tr(label),
           filled: true,
           fillColor: const Color(0xFFF6F7F9),
           counterText: '',
@@ -298,7 +299,7 @@ class _OnboardingWizardState extends State<OnboardingWizard>
                     onPressed: () => _change(field, selected ? '' : option.key),
                     child: Row(children: [
                       Expanded(
-                          child: Text(option.value,
+                          child: Text(context.tr(option.value),
                               style: const TextStyle(
                                   color: Color(0xFF20242C), fontSize: 17))),
                       if (selected)
@@ -309,25 +310,56 @@ class _OnboardingWizardState extends State<OnboardingWizard>
   Widget _content() {
     final question = onboardingQuestions[step]!;
     if (step == OnboardingStep.intention) {
-      const marks = {'Relationship': Icons.favorite_outline_rounded, 'Marriage': Icons.diversity_1_outlined,
-        'Date': Icons.coffee_outlined, 'Serious': Icons.handshake_outlined, 'NotSure': Icons.explore_outlined};
-      return LayoutBuilder(builder: (context, constraints) => Wrap(spacing: 12, runSpacing: 12,
-        children: question.options.entries.map((option) {
-          final selected = data.intention == option.key;
-          final width = MediaQuery.textScalerOf(context).scale(16) > 23 || constraints.maxWidth < 310
-            ? constraints.maxWidth : (constraints.maxWidth - 12) / 2;
-          return SizedBox(width: width, child: OutlinedButton(
-            style: OutlinedButton.styleFrom(backgroundColor: selected ? const Color(0xFFFFEDF3) : const Color(0xFFF7F8FA),
-              foregroundColor: const Color(0xFF20242C), padding: const EdgeInsets.all(22),
-              side: BorderSide(color: selected ? const Color(0xFFEC2863) : const Color(0xFFE8EBF0)),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22))),
-            onPressed: () => _change('intention', selected ? '' : option.key),
-            child: Column(children: [Icon(marks[option.key], size: 32, color: const Color(0xFFEC2863)),
-              const SizedBox(height: 14), Text(option.value, textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-              if (selected) const Padding(padding: EdgeInsets.only(top: 10), child: Icon(Icons.check_rounded, color: Color(0xFFEC2863))),
-            ])));
-        }).toList()));
+      const marks = {
+        'Relationship': Icons.favorite_outline_rounded,
+        'Marriage': Icons.diversity_1_outlined,
+        'Date': Icons.coffee_outlined,
+        'Serious': Icons.handshake_outlined,
+        'Friendship': Icons.people_outline_rounded,
+        'NotSure': Icons.explore_outlined
+      };
+      return LayoutBuilder(
+          builder: (context, constraints) => Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: question.options.entries.map((option) {
+                final selected = data.intention == option.key;
+                final width = MediaQuery.textScalerOf(context).scale(16) > 23 ||
+                        constraints.maxWidth < 310
+                    ? constraints.maxWidth
+                    : (constraints.maxWidth - 12) / 2;
+                return SizedBox(
+                    width: width,
+                    child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                            backgroundColor: selected
+                                ? const Color(0xFFFFEDF3)
+                                : const Color(0xFFF7F8FA),
+                            foregroundColor: const Color(0xFF20242C),
+                            padding: const EdgeInsets.all(22),
+                            side: BorderSide(
+                                color: selected
+                                    ? const Color(0xFFEC2863)
+                                    : const Color(0xFFE8EBF0)),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(22))),
+                        onPressed: () =>
+                            _change('intention', selected ? '' : option.key),
+                        child: Column(children: [
+                          Icon(marks[option.key],
+                              size: 32, color: const Color(0xFFEC2863)),
+                          const SizedBox(height: 14),
+                          Text(context.tr(option.value),
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.w700)),
+                          if (selected)
+                            const Padding(
+                                padding: EdgeInsets.only(top: 10),
+                                child: Icon(Icons.check_rounded,
+                                    color: Color(0xFFEC2863))),
+                        ])));
+              }).toList()));
     }
     if (question.options.isNotEmpty) {
       return _choices(question.options, question.field!);
@@ -340,8 +372,9 @@ class _OnboardingWizardState extends State<OnboardingWizard>
             onPressed: _pickDate,
             icon: const Icon(Icons.calendar_today_outlined),
             label: Text(data.birthDate == null
-                ? 'Välj födelsedatum'
-                : data.birthDate!.toIso8601String().split('T').first));
+                ? context.l10n.chooseYourDateOfBirth
+                : MaterialLocalizations.of(context)
+                    .formatMediumDate(data.birthDate!)));
       case OnboardingStep.work:
         return Column(children: [
           _choices({'study': 'Pluggar just nu', 'work': 'Jobbar just nu'},
@@ -354,7 +387,7 @@ class _OnboardingWizardState extends State<OnboardingWizard>
           if (data.workStatus == 'work') ...[
             _text('workPlace', 'Var jobbar du?'),
             const SizedBox(height: 16),
-            _text('jobTitle', 'Din jobbtitel')
+            _text('jobTitle', context.l10n.whatIsYourJobTitle)
           ]
         ]);
       case OnboardingStep.location:
@@ -365,7 +398,7 @@ class _OnboardingWizardState extends State<OnboardingWizard>
         ]);
       case OnboardingStep.distance:
         return Column(children: [
-          Text('${data.distanceKm} km',
+          Text(context.l10n.value0Km((data.distanceKm).toString()),
               style:
                   const TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
           Slider(
@@ -381,7 +414,10 @@ class _OnboardingWizardState extends State<OnboardingWizard>
         ]);
       case OnboardingStep.height:
         return Column(children: [
-          Text(data.heightCm == null ? 'Valfritt' : '${data.heightCm} cm',
+          Text(
+              data.heightCm == null
+                  ? context.l10n.optional
+                  : context.l10n.heightCentimeters((data.heightCm).toString()),
               style:
                   const TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
           Slider(
@@ -398,23 +434,28 @@ class _OnboardingWizardState extends State<OnboardingWizard>
                 data.heightCm = null;
                 setup.changed();
               },
-              child: const Text('Rensa val'))
+              child: Text(context.l10n.clearSelection))
         ]);
       case OnboardingStep.bio:
         return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           _text('bio', 'Om mig', lines: 4),
           const SizedBox(height: 24),
-          ConversationPromptEditor(promptKey: data.promptKey, answer: data.promptAnswer,
-            onChanged: (key, answer) { data.promptKey = key; data.promptAnswer = answer; setup.changed(); }),
+          ConversationPromptEditor(
+              promptKey: data.promptKey,
+              answer: data.promptAnswer,
+              onChanged: (key, answer) {
+                data.promptKey = key;
+                data.promptAnswer = answer;
+                setup.changed();
+              }),
         ]);
       case OnboardingStep.photos:
         return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           if (setup.photosExpired)
-            const Padding(
+            Padding(
                 padding: EdgeInsets.only(bottom: 16),
-                child: Text(
-                    'En tidigare osparad bild har gått ut. Lägg till den igen.')),
-          const Text('Minst 2 bilder krävs. Du kan ha högst 6.'),
+                child: Text(context.l10n.aPhotoThatWasNotSavedHasExpiredAddIt)),
+          Text(context.l10n.atLeastPhotosAreRequiredYouCanAddUpTo),
           const SizedBox(height: 16),
           GridView.builder(
               shrinkWrap: true,
@@ -443,9 +484,9 @@ class _OnboardingWizardState extends State<OnboardingWizard>
                           errorWidget: (_, __, ___) =>
                               const Icon(Icons.broken_image_outlined)),
                       Align(
-                          alignment: Alignment.topRight,
+                          alignment: AlignmentDirectional.topEnd,
                           child: IconButton(
-                              tooltip: 'Ta bort bild',
+                              tooltip: context.l10n.removePhoto,
                               onPressed: _busy
                                   ? null
                                   : () {
@@ -458,7 +499,8 @@ class _OnboardingWizardState extends State<OnboardingWizard>
                     ]));
               }),
           const SizedBox(height: 12),
-          Text('${data.photoUrls.length} / 6 bilder')
+          Text(
+              context.l10n.photosCountOfSix((data.photoUrls.length).toString()))
         ]);
       default:
         return const SizedBox.shrink();
@@ -481,8 +523,8 @@ class _OnboardingWizardState extends State<OnboardingWizard>
                 Row(children: [
                   IconButton(
                       tooltip: step == OnboardingStep.name
-                          ? 'Lämna profilskapandet'
-                          : 'Tillbaka',
+                          ? context.l10n.leaveProfileSetup
+                          : context.l10n.back,
                       onPressed: _busy ? null : _back,
                       icon: Icon(step == OnboardingStep.name
                           ? Icons.close
@@ -492,11 +534,12 @@ class _OnboardingWizardState extends State<OnboardingWizard>
                       flex: 3,
                       child: TextButton(
                           onPressed: _busy ? null : _leave,
-                          child: const Text('Fortsätt senare',
+                          child: Text(context.l10n.continueLater,
                               textAlign: TextAlign.end))),
                 ]),
                 Text(
-                    'Din profil · ${step.index + 1} av ${OnboardingStep.values.length}',
+                    context.l10n.profileStep((step.index + 1).toString(),
+                        (OnboardingStep.values.length).toString()),
                     style: const TextStyle(color: Color(0xFF667085))),
               ]),
             ),
@@ -512,7 +555,7 @@ class _OnboardingWizardState extends State<OnboardingWizard>
                     child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Text(onboardingQuestions[step]!.title,
+                          Text(context.tr(onboardingQuestions[step]!.title),
                               style: const TextStyle(
                                   fontSize: 32,
                                   fontWeight: FontWeight.w800,
@@ -521,21 +564,34 @@ class _OnboardingWizardState extends State<OnboardingWizard>
                           const SizedBox(height: 12),
                           Text(
                               _validStepRequired
-                                  ? 'Det här behövs för att skapa din profil.'
-                                  : 'Valfritt. Du kan hoppa över och ändra senare.',
+                                  ? context.l10n.weNeedThisToCreateYourProfile
+                                  : context.l10n
+                                      .optionalYouCanSkipThisAndChangeItLater,
                               style: const TextStyle(
                                   color: Color(0xFF667085), fontSize: 16)),
-                          if (!_validStepRequired) Align(alignment: Alignment.centerRight,
-                            child: TextButton(onPressed: _busy ? null : () {
-                              if (step == OnboardingStep.bio && data.promptAnswer.trim().isEmpty) { data.promptKey = ''; setup.changed(); }
-                              _go(step.index + 1);
-                            }, child: const Text('Hoppa över'))),
+                          if (!_validStepRequired)
+                            Align(
+                                alignment: AlignmentDirectional.centerEnd,
+                                child: TextButton(
+                                    onPressed: _busy
+                                        ? null
+                                        : () {
+                                            if (step == OnboardingStep.bio &&
+                                                data.promptAnswer
+                                                    .trim()
+                                                    .isEmpty) {
+                                              data.promptKey = '';
+                                              setup.changed();
+                                            }
+                                            _go(step.index + 1);
+                                          },
+                                    child: Text(context.l10n.skip))),
                           const SizedBox(height: 28),
                           AbsorbPointer(absorbing: _busy, child: _content()),
                           if (_error != null || setup.error != null)
                             Padding(
                                 padding: const EdgeInsets.only(top: 16),
-                                child: Text(_error ?? setup.error!,
+                                child: Text(context.tr(_error ?? setup.error!),
                                     style: const TextStyle(
                                         color: Color(0xFFB42318)))),
                           if (setup.error != null)
@@ -557,12 +613,12 @@ class _OnboardingWizardState extends State<OnboardingWizard>
                                         }
                                       },
                                 child: Text(setup.errorCode == 'profile_exists'
-                                    ? 'Öppna din profil'
+                                    ? context.l10n.openYourProfile
                                     : setup.errorCode == 'session_expired'
-                                        ? 'Logga in igen'
+                                        ? context.l10n.signInAgain
                                         : setup.conflict
-                                            ? 'Öppna kontots utkast'
-                                            : 'Försök spara igen')),
+                                            ? context.l10n.openAccountDraft
+                                            : context.l10n.trySavingAgain)),
                         ]))),
             Padding(
                 padding: const EdgeInsets.fromLTRB(24, 12, 24, 18),
@@ -574,12 +630,13 @@ class _OnboardingWizardState extends State<OnboardingWizard>
                             padding: const EdgeInsets.only(bottom: 8),
                             child: Text(
                                 setup.error != null
-                                    ? 'Inte synkroniserat'
+                                    ? context.l10n.notSynced
                                     : setup.saving || setup.dirty
-                                        ? 'Sparar…'
+                                        ? context.l10n.saving
                                         : setup.revision == 0
-                                            ? 'Dina svar sparas automatiskt'
-                                            : 'Sparat på ditt konto',
+                                            ? context
+                                                .l10n.answersSavedAutomatically
+                                            : context.l10n.savedToYourAccount,
                                 textAlign: TextAlign.center,
                                 style: const TextStyle(
                                     fontSize: 12, color: Color(0xFF667085)))),
@@ -605,8 +662,8 @@ class _OnboardingWizardState extends State<OnboardingWizard>
                                   child: CircularProgressIndicator(
                                       strokeWidth: 2, color: Colors.white))
                               : Text(step == OnboardingStep.photos
-                                  ? 'Spara profil'
-                                  : 'Nästa')),
+                                  ? context.l10n.saveProfile
+                                  : context.l10n.next)),
                     ])),
           ]))));
   bool get _validStepRequired => [

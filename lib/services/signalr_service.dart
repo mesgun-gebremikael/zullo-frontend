@@ -49,19 +49,29 @@ class HubChatTransport implements ChatTransport {
       }
     });
     connection.on('AccountClosed', (args) {
-      if (epoch == _epoch && AccountSession.isCurrent(generation)) AccountSession.notifyClosed();
+      if (epoch == _epoch && AccountSession.isCurrent(generation)) {
+        AccountSession.notifyClosed();
+      }
     });
     connection.on('AccountStateChanged', (args) {
-      if (epoch == _epoch && AccountSession.isCurrent(generation)) CommerceEvents.refreshDiscovery();
+      if (epoch == _epoch && AccountSession.isCurrent(generation)) {
+        CommerceEvents.refreshDiscovery();
+      }
     });
     connection.on('CommerceChanged', (args) {
-      if (epoch == _epoch) { CommerceEvents.walletChanged(); MatchesRefreshService.instance.requestRefresh(); }
+      if (epoch == _epoch) {
+        CommerceEvents.walletChanged();
+        MatchesRefreshService.instance.requestRefresh();
+      }
     });
     connection.on('LikesChanged', (args) {
       if (epoch == _epoch) MatchesRefreshService.instance.requestRefresh();
     });
     connection.on('SuperLikeReceived', (args) {
-      if (epoch == _epoch) { CommerceEvents.refreshDiscovery(); MatchesRefreshService.instance.requestRefresh(); }
+      if (epoch == _epoch) {
+        CommerceEvents.refreshDiscovery();
+        MatchesRefreshService.instance.requestRefresh();
+      }
     });
     connection.on('RelationChanged', (args) {
       if (epoch == _epoch && args != null && args.isNotEmpty) {

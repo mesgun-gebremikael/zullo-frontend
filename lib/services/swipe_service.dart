@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../config.dart';
 
-
 class SwipeService {
   static final String baseUrl = '$apiBaseUrl/swipe';
 

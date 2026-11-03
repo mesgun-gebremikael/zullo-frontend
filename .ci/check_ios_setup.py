@@ -23,7 +23,7 @@ assert project.count('APS_ENVIRONMENT = production;') == 2
 for name in ['Debug', 'Release']:
     config = (root / f'ios/Flutter/{name}.xcconfig').read_text()
     assert 'Pods-Runner.' in config and 'Generated.xcconfig' in config
-assert "platform :ios, '13.0'" in (root / 'ios/Podfile').read_text()
+assert "platform :ios, '15.0'" in (root / 'ios/Podfile').read_text()
 registration = json.loads((root / 'config/ios.firebase.json').read_text())
 bundle = registration['ZULLO_IOS_BUNDLE_ID']
 assert project.count(f'PRODUCT_BUNDLE_IDENTIFIER = {bundle};') == 3, 'Runner must match the registered Firebase bundle ID'

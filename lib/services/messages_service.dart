@@ -53,7 +53,8 @@ class MessagesService {
       headers: {if (token != null) 'Authorization': 'Bearer $token'},
     ).timeout(const Duration(seconds: 15));
     if (revision != RelationChanges.versionFor(peer)) {
-      throw ChatRequestException(403, 'Konversationen har ändrats. Öppna den igen.');
+      throw ChatRequestException(
+          403, 'Konversationen har ändrats. Öppna den igen.');
     }
     if (response.statusCode != 200) {
       throw ChatRequestException(

@@ -142,7 +142,6 @@ void main() {
             emptyState: const SizedBox(),
             onOpenRadiusSheet: () {},
             onOpenMatchesPage: () {},
-            onOpenEditProfile: () => edit++,
             onSwipeLeft: () {},
             onSwipeUp: () {},
             onSwipeRight: () => likes++,
@@ -152,9 +151,9 @@ void main() {
     expect(find.byIcon(Icons.refresh_rounded), findsNothing);
     expect(find.byIcon(Icons.send_rounded), findsNothing);
     await tester.tap(find.byTooltip('Ångra senaste swipe'));
-    await tester.tap(find.byTooltip('Redigera profil'));
+    expect(find.byTooltip('Redigera profil'), findsNothing);
     await tester.tap(find.byTooltip('Gilla'));
-    expect([undo, edit, likes], [1, 1, 1]);
+    expect([undo, edit, likes], [1, 0, 1]);
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());
   });

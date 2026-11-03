@@ -35,7 +35,8 @@ class DraftCache {
   DraftCache({FlutterSecureStorage? storage})
       : storage = storage ??
             const FlutterSecureStorage(
-                aOptions: AndroidOptions(encryptedSharedPreferences: true),
+                aOptions: AndroidOptions(
+                    resetOnError: false, migrateWithBackup: true),
                 iOptions: IOSOptions(
                     accessibility:
                         KeychainAccessibility.first_unlock_this_device));

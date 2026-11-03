@@ -1,4 +1,3 @@
-
 class ChatOpenRequest {
   final String userId;
   final String displayName;

@@ -1,3 +1,4 @@
+import 'l10n/localization.dart';
 import 'services/profile_images.dart';
 import 'dart:async';
 import 'dart:math' as math;
@@ -95,8 +96,8 @@ class _LikesPageState extends State<LikesPage> {
       MatchesRefreshService.instance.requestRefresh();
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(matched
-              ? 'Ni har matchat! Öppna Chattar för att säga hej.'
-              : 'Like skickad.')));
+              ? context.l10n.youVeMatchedOpenChatsToSayHello
+              : context.l10n.likeSent)));
       await _load(invalidate: true);
     } on CommerceException catch (e) {
       if (mounted && AccountSession.isCurrent(_generation)) {
@@ -105,8 +106,8 @@ class _LikesPageState extends State<LikesPage> {
       }
     } catch (_) {
       if (mounted && AccountSession.isCurrent(_generation)) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text('Kunde inte gilla tillbaka. Försök igen.')));
+        ScaffoldMessenger.of(context).showSnackBar( SnackBar(
+            content: Text(context.l10n.couldNotLikeThisPersonBackTryAgain)));
       }
     } finally {
       if (_active) setState(() => _liking = null);
@@ -120,7 +121,7 @@ class _LikesPageState extends State<LikesPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-          title: const Text('Likes',
+          title: Text(context.l10n.likes,
               style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800))),
       body: RefreshIndicator(
           onRefresh: () => _load(invalidate: true),
@@ -139,10 +140,10 @@ class _LikesPageState extends State<LikesPage> {
                                   const Icon(Icons.cloud_off_outlined,
                                       size: 44),
                                   const SizedBox(height: 16),
-                                  Text(_error!, textAlign: TextAlign.center),
+                                  Text(context.tr(_error!), textAlign: TextAlign.center),
                                   TextButton(
                                       onPressed: () => _load(invalidate: true),
-                                      child: const Text('Försök igen')),
+                                      child: Text(context.l10n.tryAgain)),
                                 ]))))
               else if (summary == null)
                 const SliverFillRemaining(
@@ -213,7 +214,7 @@ class _LikesPageState extends State<LikesPage> {
           backgroundColor: const Color(0xFFE8C35D),
           foregroundColor: const Color(0xFF22262E),
           padding: const EdgeInsets.all(18)),
-      child: const Text('Se vem som gillar dig',
+      child: Text(context.l10n.seeWhoLikesYou,
           style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)));
   Widget _lockedCard() => Semantics(
       label: 'Dold like. Visa med Premium',
@@ -245,7 +246,8 @@ class _LikesPageState extends State<LikesPage> {
               Row(children: [
                 CircleAvatar(
                     radius: 28,
-                    backgroundImage: photo.isEmpty ? null : ProfileImages.avatar(photo),
+                    backgroundImage:
+                        photo.isEmpty ? null : ProfileImages.avatar(photo),
                     child: photo.isEmpty
                         ? const Icon(Icons.person_outline)
                         : null),
@@ -259,8 +261,8 @@ class _LikesPageState extends State<LikesPage> {
                               fontSize: 19, fontWeight: FontWeight.w700)),
                       Text(
                           like['isSuperLike'] == true
-                              ? 'Har supergillat dig'
-                              : 'Gillar dig',
+                              ? context.l10n.haveSuperlikedYou
+                              : context.l10n.likesYou,
                           style: TextStyle(
                               color: like['isSuperLike'] == true
                                   ? Colors.blue
@@ -275,7 +277,7 @@ class _LikesPageState extends State<LikesPage> {
                   child: FilledButton.icon(
                       onPressed: _liking == null ? () => _likeBack(like) : null,
                       icon: const Icon(Icons.favorite_outline),
-                      label: const Text('Gilla tillbaka'))),
+                      label: Text(context.l10n.likeBack))),
             ])));
   }
 }

@@ -1,3 +1,4 @@
+import 'l10n/localization.dart';
 import 'package:flutter/material.dart';
 import 'login_page.dart';
 import 'register_page.dart';
@@ -28,15 +29,16 @@ class WelcomePage extends StatelessWidget {
                           child: const Icon(Icons.favorite_rounded,
                               size: 48, color: Color(0xFFFF4458)))),
                   const SizedBox(height: 28),
-                  const Text('ZULLO',
+                  Text(context.l10n.zullo,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                           fontSize: 40,
                           fontWeight: FontWeight.w900,
                           color: Color(0xFF20242C))),
                   const SizedBox(height: 16),
-                  const Text(
-                      'Träffa någon som delar din kultur,\ndina värderingar och din framtid.',
+                  Text(
+                      context.l10n
+                          .meetSomeoneWhoSharesYourCultureYourValuesAndYour,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                           fontSize: 17, height: 1.5, color: Color(0xFF667085))),
@@ -51,14 +53,14 @@ class WelcomePage extends StatelessWidget {
                           context,
                           MaterialPageRoute(
                               builder: (_) => const RegisterPage())),
-                      child: const Text('Create account')),
+                      child: Text(context.l10n.createAccount)),
                   const SizedBox(height: 12),
                   OutlinedButton(
                       style: OutlinedButton.styleFrom(
                           minimumSize: const Size.fromHeight(54)),
                       onPressed: () => Navigator.push(context,
                           MaterialPageRoute(builder: (_) => const LoginPage())),
-                      child: const Text('Log in')),
+                      child: Text(context.l10n.logIn)),
                 ]),
           ),
         );

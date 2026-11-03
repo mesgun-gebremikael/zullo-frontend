@@ -1,3 +1,7 @@
+import 'l10n/localization.dart';
+import 'l10n/language_settings_page.dart';
+import 'l10n/locale_catalog.dart';
+import 'l10n/locale_controller.dart';
 import 'discovery_location_page.dart';
 import 'welcome_page.dart';
 import 'account_management_page.dart';
@@ -17,94 +21,138 @@ class ProfileSettingsPage extends StatefulWidget {
 }
 
 class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
+  late final AuthService _authService = widget.authService ?? AuthService();
+  final int _generation = AccountSession.generation;
 
-late final AuthService _authService = widget.authService ?? AuthService();
-final int _generation = AccountSession.generation;
-
-String _emailText = 'Laddar...';
+  String? _emailText;
+  bool _emailLoading = true, _emailLoadFailed = false;
 
   bool _showActivityStatus = true;
   bool _incognitoMode = false;
   bool _privacyBusy = false;
 
   @override
-void initState() {
-  super.initState();
-  _loadAccountInfo();
-  if (widget.authService == null) _loadPrivacy();
-}
-
-Future<void> _loadPrivacy() async {
-  try {
-    final state = await CommerceClient().state();
-    if (!mounted || !AccountSession.isCurrent(_generation)) return;
-    setState(() { _showActivityStatus = !state.hideActivity; _incognitoMode = state.incognito; });
-  } catch (_) { /* keep settings usable while temporarily offline */ }
-}
-Future<void> _savePrivacy({bool? showActivity, bool? incognito}) async {
-  if (_privacyBusy) return;
-  _privacyBusy = true;
-  try {
-    final state = await CommerceClient().privacy(hideActivity: !(showActivity ?? _showActivityStatus), incognito: incognito ?? _incognitoMode);
-    if (!mounted || !AccountSession.isCurrent(_generation)) return;
-    setState(() { _showActivityStatus = !state.hideActivity; _incognitoMode = state.incognito; });
-    CommerceEvents.refreshDiscovery();
-  } on CommerceException catch (error) {
-    if (!mounted) return;
-    if (error.status == 402) { await Navigator.push(context, MaterialPageRoute(builder: (_) => PremiumPage(activityOnly: showActivity == false && incognito != true))); await _loadPrivacy(); }
-    else { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.message))); }
-  } catch (_) {
-    if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Kunde inte spara inställningen. Försök igen.')));
-  } finally { _privacyBusy = false; }
-}
-
-bool _loggingOut = false;
-Future<void> _logout() async {
-  if (_loggingOut || !AccountSession.isCurrent(_generation)) return;
-  _loggingOut = true;
-  final accepted = await showDialog<bool>(context: context, builder: (dialogContext) => AlertDialog(
-    title: const Text('Logga ut från ZULLO?'),
-    content: const Text('Din profil och dina samtal finns kvar när du loggar in igen.'),
-    actions: [TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Stanna kvar')),
-      FilledButton(onPressed: () => Navigator.pop(dialogContext, true), child: const Text('Logga ut'))],
-  ));
-  if (!mounted || !AccountSession.isCurrent(_generation)) return;
-  if (accepted != true) { _loggingOut = false; return; }
-  final navigator = Navigator.of(context, rootNavigator: true);
-  final messenger = ScaffoldMessenger.of(context);
-  try {
-    await _authService.logout();
-    if (AccountSession.isCurrent(_generation + 1) && navigator.mounted) {
-      navigator.pushAndRemoveUntil(MaterialPageRoute(builder: (_) => const WelcomePage()), (_) => false);
-    }
-  } on SessionChangedException {
-    // A newer account owns navigation now.
-  } catch (_) {
-    if (AccountSession.isCurrent(_generation + 1) && navigator.mounted) {
-      navigator.pushAndRemoveUntil(MaterialPageRoute(builder: (_) => const WelcomePage()), (_) => false);
-    } else if (AccountSession.isCurrent(_generation) && messenger.mounted) {
-      messenger.showSnackBar(const SnackBar(content: Text('Kunde inte logga ut. Försök igen.')));
-    }
-  } finally { _loggingOut = false; }
-}
-
-Future<void> _loadAccountInfo() async {
-  try {
-    final profile = await _authService.getMyAccount();
-
-    if (!mounted || !AccountSession.isCurrent(_generation)) return;
-
-    setState(() {
-      _emailText = (profile["email"] ?? "Ingen e-post hittades").toString();
-    });
-  } catch (e) {
-    if (!mounted || !AccountSession.isCurrent(_generation)) return;
-
-    setState(() {
-      _emailText = "Kunde inte ladda e-post";
-    });
+  void initState() {
+    super.initState();
+    _loadAccountInfo();
+    if (widget.authService == null) _loadPrivacy();
   }
-}
+
+  Future<void> _loadPrivacy() async {
+    try {
+      final state = await CommerceClient().state();
+      if (!mounted || !AccountSession.isCurrent(_generation)) return;
+      setState(() {
+        _showActivityStatus = !state.hideActivity;
+        _incognitoMode = state.incognito;
+      });
+    } catch (_) {/* keep settings usable while temporarily offline */}
+  }
+
+  Future<void> _savePrivacy({bool? showActivity, bool? incognito}) async {
+    if (_privacyBusy) return;
+    _privacyBusy = true;
+    try {
+      final state = await CommerceClient().privacy(
+          hideActivity: !(showActivity ?? _showActivityStatus),
+          incognito: incognito ?? _incognitoMode);
+      if (!mounted || !AccountSession.isCurrent(_generation)) return;
+      setState(() {
+        _showActivityStatus = !state.hideActivity;
+        _incognitoMode = state.incognito;
+      });
+      CommerceEvents.refreshDiscovery();
+    } on CommerceException catch (error) {
+      if (!mounted) return;
+      if (error.status == 402) {
+        await Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (_) => PremiumPage(
+                    activityOnly: showActivity == false && incognito != true)));
+        await _loadPrivacy();
+      } else {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(context.tr(error.message))));
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(context.l10n.thisSettingCouldNotBeSavedTryAgain)));
+      }
+    } finally {
+      _privacyBusy = false;
+    }
+  }
+
+  bool _loggingOut = false;
+  Future<void> _logout() async {
+    if (_loggingOut || !AccountSession.isCurrent(_generation)) return;
+    _loggingOut = true;
+    final accepted = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+              title: Text(context.l10n.logOutOfZullo),
+              content: Text(
+                  context.l10n.yourProfileAndConversationsWillBeHereWhenYouLog),
+              actions: [
+                TextButton(
+                    onPressed: () => Navigator.pop(dialogContext, false),
+                    child: Text(context.l10n.stay)),
+                FilledButton(
+                    onPressed: () => Navigator.pop(dialogContext, true),
+                    child: Text(context.l10n.logOut))
+              ],
+            ));
+    if (!mounted || !AccountSession.isCurrent(_generation)) return;
+    if (accepted != true) {
+      _loggingOut = false;
+      return;
+    }
+    final navigator = Navigator.of(context, rootNavigator: true);
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await _authService.logout();
+      if (AccountSession.isCurrent(_generation + 1) && navigator.mounted) {
+        navigator.pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const WelcomePage()),
+            (_) => false);
+      }
+    } on SessionChangedException {
+      // A newer account owns navigation now.
+    } catch (_) {
+      if (AccountSession.isCurrent(_generation + 1) && navigator.mounted) {
+        navigator.pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const WelcomePage()),
+            (_) => false);
+      } else if (AccountSession.isCurrent(_generation) && messenger.mounted) {
+        messenger.showSnackBar(
+            SnackBar(content: Text(context.l10n.couldNotLogOutTryAgain)));
+      }
+    } finally {
+      _loggingOut = false;
+    }
+  }
+
+  Future<void> _loadAccountInfo() async {
+    try {
+      final profile = await _authService.getMyAccount();
+
+      if (!mounted || !AccountSession.isCurrent(_generation)) return;
+
+      setState(() {
+        _emailText = profile["email"]?.toString();
+        _emailLoading = false;
+      });
+    } catch (e) {
+      if (!mounted || !AccountSession.isCurrent(_generation)) return;
+
+      setState(() {
+        _emailLoading = false;
+        _emailLoadFailed = true;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -121,8 +169,8 @@ Future<void> _loadAccountInfo() async {
           ),
         ),
         centerTitle: true,
-        title: const Text(
-          'Kontoinställningar',
+        title: Text(
+          context.l10n.accountSettings,
           style: TextStyle(
             color: Colors.black,
             fontWeight: FontWeight.w800,
@@ -134,22 +182,43 @@ Future<void> _loadAccountInfo() async {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         child: Column(
           children: [
-            _SettingsArrowRow(icon: Icons.near_me_outlined, title: 'Plats & upptäckt',
-              subtitle: 'Din plats och val för en bredare sökning',
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DiscoveryLocationPage()))),
+            AnimatedBuilder(
+              animation: LocaleController.instance,
+              builder: (context, _) => _SettingsArrowRow(
+                icon: Icons.language,
+                title: context.l10n.languageSettingsTitle,
+                subtitle: LocaleController.instance.locale == null
+                    ? context.l10n.languageAutomatic
+                    : LocaleCatalog.name(LocaleController.instance.locale!),
+                onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const LanguageSettingsPage())),
+              ),
+            ),
+            const SizedBox(height: 8),
+            _SettingsArrowRow(
+                icon: Icons.near_me_outlined,
+                title: 'Plats & upptäckt',
+                subtitle:
+                    context.tr('Din plats och val för en bredare sökning'),
+                onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const DiscoveryLocationPage()))),
             const SizedBox(height: 8),
             _SettingsArrowRow(
               icon: Icons.verified,
               title: 'Verifiera profil',
-              subtitle: 'Verifiering är inte tillgänglig ännu',
+              subtitle: context.tr('Verifiering är inte tillgänglig ännu'),
               onTap: null,
             ),
             const SizedBox(height: 8),
             _SettingsSwitchRow(
               icon: Icons.power_settings_new,
               title: 'Aktivitetsstatus',
-              subtitle:
-                  'På: matchningar ser din aktivitet. Stäng av med Dölj aktivitet eller ZULLO Premium för att dölja online och senast aktiv.',
+              subtitle: context.tr(
+                  'På: matchningar ser din aktivitet. Stäng av med Dölj aktivitet eller ZULLO Premium för att dölja online och senast aktiv.'),
               value: _showActivityStatus,
               onChanged: (value) => _savePrivacy(showActivity: value),
             ),
@@ -157,35 +226,49 @@ Future<void> _loadAccountInfo() async {
             _SettingsSwitchRow(
               icon: Icons.visibility_off,
               title: 'Inkognito Premium',
-              subtitle: 'Bara personer som du gillar kan se din profil',
+              subtitle:
+                  context.tr('Bara personer som du gillar kan se din profil'),
               value: _incognitoMode,
               onChanged: (value) => _savePrivacy(incognito: value),
             ),
             const SizedBox(height: 8),
-           _SettingsArrowRow(
-  icon: Icons.alternate_email,
-  title: 'E-post',
-  subtitle: _emailText,
-  onTap: null,
-),
+            _SettingsArrowRow(
+              icon: Icons.alternate_email,
+              title: 'E-post',
+              subtitle: _emailLoading
+                  ? context.l10n.loading
+                  : _emailLoadFailed
+                      ? context.l10n.yourAccountCouldNotBeLoaded
+                      : _emailText ?? context.l10n.notSpecified,
+              onTap: null,
+            ),
             const SizedBox(height: 8),
-_SettingsArrowRow(
-  icon: Icons.block,
-  title: 'Blockerade profiler',
-  subtitle: 'Personer du har blockerat',
-  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BlockedProfilesPage())),
-),
-const SizedBox(height: 8),
-_SettingsArrowRow(
-  icon: Icons.delete_outline,
-  title: 'Radera eller pausa konto',
-  subtitle: 'Ta en paus eller stäng ditt konto',
-  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AccountManagementPage())),
-),
-const SizedBox(height: 24),
-_SettingsArrowRow(icon: Icons.logout_rounded, title: 'Logga ut',
-  subtitle: 'Din profil finns kvar', onTap: _logout),
-const SizedBox(height: 24),
+            _SettingsArrowRow(
+              icon: Icons.block,
+              title: 'Blockerade profiler',
+              subtitle: context.tr('Personer du har blockerat'),
+              onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const BlockedProfilesPage())),
+            ),
+            const SizedBox(height: 8),
+            _SettingsArrowRow(
+              icon: Icons.delete_outline,
+              title: 'Radera eller pausa konto',
+              subtitle: context.tr('Ta en paus eller stäng ditt konto'),
+              onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const AccountManagementPage())),
+            ),
+            const SizedBox(height: 24),
+            _SettingsArrowRow(
+                icon: Icons.logout_rounded,
+                title: 'Logga ut',
+                subtitle: context.tr('Din profil finns kvar'),
+                onTap: _logout),
+            const SizedBox(height: 24),
           ],
         ),
       ),
@@ -233,7 +316,7 @@ class _SettingsArrowRow extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      title,
+                      context.tr(title),
                       style: const TextStyle(
                         color: Colors.black,
                         fontSize: 18,
@@ -253,14 +336,17 @@ class _SettingsArrowRow extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 10),
-              if (onTap != null) const Padding(
-                padding: EdgeInsets.only(top: 6),
-                child: Icon(
-                  Icons.chevron_right,
-                  color: Colors.black38,
-                  size: 24,
+              if (onTap != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 6),
+                  child: Icon(
+                    Directionality.of(context) == TextDirection.rtl
+                        ? Icons.chevron_left
+                        : Icons.chevron_right,
+                    color: Colors.black38,
+                    size: 24,
+                  ),
                 ),
-              ),
             ],
           ),
         ),
@@ -309,7 +395,7 @@ class _SettingsSwitchRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  title,
+                  context.tr(title),
                   style: const TextStyle(
                     color: Colors.black,
                     fontSize: 18,

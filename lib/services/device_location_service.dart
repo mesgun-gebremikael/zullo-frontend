@@ -55,9 +55,9 @@ class DeviceLocationService {
     }
     var name = 'Nuvarande plats';
     try {
-      final places =
-          await placemarkFromCoordinates(position.latitude, position.longitude)
-              .timeout(const Duration(seconds: 8));
+      final places = await Geocoding()
+          .placemarkFromCoordinates(position.latitude, position.longitude)
+          .timeout(const Duration(seconds: 8));
       if (places.isNotEmpty) {
         final p = places.first;
         final city = (p.locality?.isNotEmpty == true
@@ -99,7 +99,9 @@ class ForegroundLocationSync {
       final settings = await auth.discoverySettings();
       AccountSession.check(generation);
       _checked = DateTime.now();
-      if (settings['automaticLocation'] != true || isActive?.call() == false) return false;
+      if (settings['automaticLocation'] != true || isActive?.call() == false) {
+        return false;
+      }
       final place = await location.locate(requestPermission: false);
       AccountSession.check(generation);
       if (place == null || isActive?.call() == false) return false;

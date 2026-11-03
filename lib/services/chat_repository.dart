@@ -51,12 +51,18 @@ class ChatRepository {
 
   void setChatList(List<ChatListItem> items) {
     final next = {for (final item in items) item.userId: item};
-    final changed = _state.chatList.where((old) {
-      final current = next[old.userId];
-      return current == null || current.matchCreatedAtUtc != old.matchCreatedAtUtc;
-    }).map((item) => item.userId).toList();
+    final changed = _state.chatList
+        .where((old) {
+          final current = next[old.userId];
+          return current == null ||
+              current.matchCreatedAtUtc != old.matchCreatedAtUtc;
+        })
+        .map((item) => item.userId)
+        .toList();
     // Reconcile missed socket events after resume/reconnect, including a new match.
-    for (final id in changed) { RelationChanges.notify(id); }
+    for (final id in changed) {
+      RelationChanges.notify(id);
+    }
     hasLoadedList = true;
     _state = _state.copyWith(chatList: List<ChatListItem>.from(items));
     _emit();
@@ -64,7 +70,8 @@ class ChatRepository {
 
   void setThread(String userId, List<ChatMessageItem> messages) {
     final nextThreads = Map<String, List<ChatMessageItem>>.from(_state.threads);
-    ConversationCachePolicy.put(nextThreads, userId, mergeChatItems(_state.threads[userId] ?? const [], messages));
+    ConversationCachePolicy.put(nextThreads, userId,
+        mergeChatItems(_state.threads[userId] ?? const [], messages));
 
     _state = _state.copyWith(threads: nextThreads);
     _emit();
@@ -106,8 +113,10 @@ class ChatRepository {
     }).toList();
 
     nextList.sort((a, b) {
-      final aTime = a.lastMessageAtUtc ?? DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
-      final bTime = b.lastMessageAtUtc ?? DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
+      final aTime = a.lastMessageAtUtc ??
+          DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
+      final bTime = b.lastMessageAtUtc ??
+          DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
       return bTime.compareTo(aTime);
     });
 
@@ -116,7 +125,8 @@ class ChatRepository {
   }
 
   void removeUser(String userId) {
-    final threads = Map<String, List<ChatMessageItem>>.from(_state.threads)..remove(userId);
+    final threads = Map<String, List<ChatMessageItem>>.from(_state.threads)
+      ..remove(userId);
     _state = _state.copyWith(
       chatList: _state.chatList.where((item) => item.userId != userId).toList(),
       threads: threads,

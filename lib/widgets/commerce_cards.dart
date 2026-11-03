@@ -1,3 +1,4 @@
+import '../l10n/localization.dart';
 import 'package:flutter/material.dart';
 
 const commerceInk = Color(0xFF22262E);
@@ -58,7 +59,7 @@ class ProfilePurchaseCard extends StatelessWidget {
                   child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                    Text(title,
+                    Text(context.tr(title),
                         style: const TextStyle(
                             color: Color(0xFF555D6A),
                             fontSize: 19,
@@ -109,7 +110,7 @@ class PremiumBenefitsCard extends StatelessWidget {
                             fontWeight: FontWeight.w800)))
               ]),
               const SizedBox(height: 18),
-              const Text('Detta ingår',
+              Text(context.l10n.whatSIncluded,
                   style: TextStyle(
                       color: commerceInk,
                       fontSize: 21,
@@ -145,7 +146,7 @@ class PremiumBenefitsCard extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(vertical: 15)),
                     onPressed: onTap,
                     child: Text(
-                        active ? 'Hantera Premium' : 'Se alla funktioner',
+                        active ? context.l10n.managePremium : context.l10n.seeAllFeatures,
                         style: const TextStyle(fontWeight: FontWeight.w800)),
                   )),
             ]),
