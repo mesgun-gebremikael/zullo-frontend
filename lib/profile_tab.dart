@@ -1,3 +1,4 @@
+import 'theme/zullo_palette.dart';
 import 'services/profile_images.dart';
 import 'widgets/commerce_cards.dart';
 import 'dart:async';
@@ -154,6 +155,9 @@ class _ProfileTabState extends State<ProfileTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const Text('DIN PLATS PÅ ZULLO', style: TextStyle(color: ZulloPalette.rose,
+              fontSize: 11, letterSpacing: 2, fontWeight: FontWeight.w800)),
+            const SizedBox(height: 16),
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -172,26 +176,16 @@ class _ProfileTabState extends State<ProfileTab> {
                     displayName,
                     style: const TextStyle(
                       color: Color(0xFF22262E),
-                      fontSize: 34,
+                      fontSize: 30,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
-                GestureDetector(
-                  onTap: _openSettings,
-                  child: Container(
-                    width: 68,
-                    height: 68,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.settings,
-                      color: Color(0xFF22262E),
-                      size: 32,
-                    ),
-                  ),
+                IconButton.filledTonal(
+                  tooltip: 'Kontoinställningar', onPressed: _openSettings,
+                  style: IconButton.styleFrom(backgroundColor: ZulloPalette.tint,
+                    foregroundColor: ZulloPalette.rose, minimumSize: const Size(48, 48)),
+                  icon: const Icon(Icons.tune_rounded),
                 ),
               ],
             ),
@@ -201,7 +195,7 @@ class _ProfileTabState extends State<ProfileTab> {
               height: 68,
               child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black,
+                  backgroundColor: ZulloPalette.rose,
                   foregroundColor: Colors.white,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
@@ -262,7 +256,7 @@ class _ProfileTabState extends State<ProfileTab> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F1F3),
+      backgroundColor: ZulloPalette.canvas,
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _error != null

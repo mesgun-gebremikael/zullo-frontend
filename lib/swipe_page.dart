@@ -1,3 +1,4 @@
+import 'theme/zullo_palette.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 
@@ -14,7 +15,6 @@ class SwipePage extends StatelessWidget {
 
   final VoidCallback onOpenRadiusSheet;
   final VoidCallback onOpenMatchesPage;
-  final VoidCallback onLogout;
   final VoidCallback onOpenEditProfile;
   final VoidCallback onSwipeLeft;
   final VoidCallback onSwipeUp;
@@ -34,7 +34,6 @@ class SwipePage extends StatelessWidget {
     required this.emptyState,
     required this.onOpenRadiusSheet,
     required this.onOpenMatchesPage,
-    required this.onLogout,
     required this.onOpenEditProfile,
     required this.onSwipeLeft,
     required this.onSwipeUp,
@@ -44,28 +43,30 @@ class SwipePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: hasActiveProfile ? Colors.black : ZulloPalette.canvas,
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : Stack(
               children: [
-                const Positioned.fill(
-                  child: ColoredBox(color: Colors.black),
+                Positioned.fill(
+                  child: ColoredBox(color: hasActiveProfile ? Colors.black : ZulloPalette.canvas),
                 ),
                 Positioned.fill(
                   child: Stack(
                     children: [
                       if (nextCard != null) nextCard!,
                       Positioned.fill(
-                        child: hasActiveProfile ? activeCard : emptyState,
+                        child: hasActiveProfile ? activeCard : Padding(
+                          padding: const EdgeInsets.only(top: 80, bottom: 100), child: emptyState),
                       ),
                     ],
                   ),
                 ),
                 _TopOverlayBar(
                   onOpenRadiusSheet: onOpenRadiusSheet,
-                  onLogout: onLogout,
-                  onRewind: onRewind,
+                  onOpenProfile: onOpenEditProfile,
+                  light: !hasActiveProfile,
+                  onRewind: hasActiveProfile ? onRewind : null,
                 ),
                 if (hasActiveProfile)
                   _BottomActionBar(
@@ -82,63 +83,27 @@ class SwipePage extends StatelessWidget {
 }
 
 class _TopOverlayBar extends StatelessWidget {
-  final VoidCallback onOpenRadiusSheet;
-  final VoidCallback onLogout;
+  final VoidCallback onOpenRadiusSheet, onOpenProfile;
   final VoidCallback? onRewind;
-
-  const _TopOverlayBar({
-    required this.onOpenRadiusSheet,
-    required this.onLogout,
-    this.onRewind,
-  });
-
+  final bool light;
+  const _TopOverlayBar({required this.onOpenRadiusSheet, required this.onOpenProfile,
+    required this.light, this.onRewind});
   @override
   Widget build(BuildContext context) {
-    return Positioned(
-      top: 0,
-      left: 0,
-      right: 0,
-      child: SafeArea(
-        bottom: false,
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(12, 10, 12, 0),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Colors.black.withOpacity(0.50),
-                Colors.black.withOpacity(0.22),
-                Colors.transparent,
-              ],
-            ),
-          ),
-          child: Row(
-            children: [
-              if (onRewind != null)
-                _TopIconButton(icon: Icons.undo_rounded, onTap: onRewind!),
-              _TopIconButton(
-                icon: Icons.tune_rounded,
-                onTap: onOpenRadiusSheet,
-              ),
-              const SizedBox(width: 12),
-              const Expanded(
-                  child: Center(
-                      child: Text('För dig',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 21,
-                              fontWeight: FontWeight.w800)))),
-              const SizedBox(width: 12),
-              _TopIconButton(
-                icon: Icons.logout,
-                onTap: onLogout,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+    final ink = light ? ZulloPalette.ink : Colors.white;
+    Widget action(IconData icon, String label, VoidCallback tap) => IconButton(
+      tooltip: label, onPressed: tap, icon: Icon(icon, color: ink, size: 23),
+      style: IconButton.styleFrom(backgroundColor: light ? Colors.white : Colors.black26));
+    return Positioned(top: 0, left: 0, right: 0, child: SafeArea(bottom: false,
+      child: Padding(padding: const EdgeInsets.fromLTRB(18, 12, 18, 12), child: Row(children: [
+        action(Icons.tune_rounded, 'Upptäcktsfilter', onOpenRadiusSheet),
+        const SizedBox(width: 12),
+        Expanded(child: Text('ZULLO', style: TextStyle(color: ink, fontSize: 23,
+          letterSpacing: 3, fontWeight: FontWeight.w800))),
+        if (onRewind != null) action(Icons.undo_rounded, 'Ångra senaste swipe', onRewind!),
+        const SizedBox(width: 8),
+        action(Icons.person_outline_rounded, 'Min profil', onOpenProfile),
+      ]))));
   }
 }
 
@@ -322,24 +287,4 @@ class _ThickXIcon extends StatelessWidget {
       ],
     );
   }
-}
-
-class _TopIconButton extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback onTap;
-  const _TopIconButton({required this.icon, required this.onTap});
-  @override
-  Widget build(BuildContext context) => IconButton(
-        tooltip: icon == Icons.logout
-            ? 'Logga ut'
-            : icon == Icons.tune_rounded
-                ? 'Upptäcktsinställningar'
-                : 'Ångra senaste swipe',
-        onPressed: onTap,
-        style: IconButton.styleFrom(
-            backgroundColor: Colors.black.withValues(alpha: .28),
-            foregroundColor: Colors.white,
-            minimumSize: const Size(48, 48)),
-        icon: Icon(icon, size: 23),
-      );
 }
