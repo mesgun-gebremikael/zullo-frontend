@@ -35,8 +35,8 @@ class DiscoveryEmptyState extends StatelessWidget {
           Text(
               likes
                   ? (premium
-                      ? 'Dina likes börjar här'
-                      : 'Se vem som gillar dig')
+                      ? context.l10n.yourLikesStartHere
+                      : context.l10n.seeWhoLikesYou)
                   : context.l10n.startSwiping,
               textAlign: TextAlign.center,
               style: const TextStyle(
@@ -47,8 +47,9 @@ class DiscoveryEmptyState extends StatelessWidget {
           Text(
               likes
                   ? (premium
-                      ? 'När någon gillar dig visas personen här.'
-                      : 'Med ZULLO Premium kan du se personer som har gillat dig. Dina Superlikes visas här även utan Premium.')
+                      ? context.l10n.whenSomeoneLikesYouTheyLlAppearHere
+                      : context
+                          .l10n.withZulloPremiumYouCanSeePeopleWhoHaveLiked)
                   : context.l10n.whenYouMatchWithSomeoneTheyWillAppearHereSo,
               textAlign: TextAlign.center,
               style: const TextStyle(
@@ -68,7 +69,9 @@ class DiscoveryEmptyState extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 18, vertical: 17)),
                 child: Text(
-                    likes && !premium ? context.l10n.seeWhoLikesYou : context.l10n.startSwiping,
+                    likes && !premium
+                        ? context.l10n.seeWhoLikesYou
+                        : context.l10n.startSwiping,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                         fontSize: 17, fontWeight: FontWeight.w800)),

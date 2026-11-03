@@ -167,8 +167,9 @@ class _PremiumPageState extends State<PremiumPage> {
       appBar: AppBar(
           backgroundColor: Colors.white,
           foregroundColor: const Color(0xFF22262E),
-          title:
-              Text(widget.activityOnly ? context.l10n.hideActivity : 'ZULLO Premium')),
+          title: Text(widget.activityOnly
+              ? context.l10n.hideActivity
+              : 'ZULLO Premium')),
       body: state == null && _error == null
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
@@ -179,21 +180,21 @@ class _PremiumPageState extends State<PremiumPage> {
                   decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(24),
                       gradient: const LinearGradient(
-                          colors: [Color(0xFF805326), Color(0xFF33243A)])),
+                          colors: [Color(0xFF20242C), Color(0xFF49243D)])),
                   child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Icon(Icons.workspace_premium_rounded,
-                            color: Color(0xFFFFD99D), size: 40),
+                            color: Color(0xFFFF83AF), size: 40),
                         const SizedBox(height: 12),
                         Text(
                             widget.activityOnly
                                 ? (state?.canHideActivity == true
-                                    ? 'Dölj aktivitet ingår för dig'
-                                    : 'Din aktivitet, ditt val')
+                                    ? context.l10n.hideActivityIsIncludedForYou
+                                    : context.l10n.hideActivity)
                                 : (state?.premium == true
-                                    ? 'Din Premium är aktiv'
-                                    : 'Mer av ZULLO'),
+                                    ? context.l10n.yourPremiumIsActive
+                                    : context.l10n.getMore),
                             style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 28,
@@ -201,8 +202,10 @@ class _PremiumPageState extends State<PremiumPage> {
                         const SizedBox(height: 8),
                         Text(
                             widget.activityOnly
-                                ? context.l10n.hideYourOnlineAndLastActiveStatusFromYourMatches
-                                : context.l10n.discoverMorePossibilitiesMatchingAndChattingStayFree,
+                                ? context.l10n
+                                    .hideYourOnlineAndLastActiveStatusFromYourMatches
+                                : context.l10n
+                                    .discoverMorePossibilitiesMatchingAndChattingStayFree,
                             style: const TextStyle(
                                 color: Colors.white70, height: 1.5)),
                       ]),
@@ -238,7 +241,8 @@ class _PremiumPageState extends State<PremiumPage> {
                                           : () => _action(_commerce.boost),
                                   icon: const Icon(Icons.bolt),
                                   label: Text(boostActive
-                                      ? context.l10n.boostActiveRemaining((_boostTime).toString())
+                                      ? context.l10n.boostActiveRemaining(
+                                          (_boostTime).toString())
                                       : context.l10n.activateBoost30Minutes),
                                 )),
                           ]))),
@@ -249,7 +253,7 @@ class _PremiumPageState extends State<PremiumPage> {
                           color: Color(0xFF22262E),
                           fontSize: 21,
                           fontWeight: FontWeight.w700)),
-                  for (final feature in const [
+                  for (final feature in [
                     (
                       Icons.favorite,
                       'Se vem som gillar dig',
@@ -262,7 +266,7 @@ class _PremiumPageState extends State<PremiumPage> {
                     ),
                     (
                       Icons.star,
-                      '3 Superlikes per vecka',
+                      context.l10n.threeSuperlikesPerWeek,
                       'Visa extra intresse. Matchning kräver fortfarande ett gensvar.'
                     ),
                     (
@@ -272,17 +276,17 @@ class _PremiumPageState extends State<PremiumPage> {
                     ),
                     (
                       Icons.visibility_off,
-                      'Inkognito och dold aktivitet',
+                      context.l10n.premiumIncognito,
                       'Välj vem som kan upptäcka dig och om matchningar ser din senaste aktivitet.'
                     ),
                   ])
                     ListTile(
                         contentPadding: EdgeInsets.zero,
                         leading:
-                            Icon(feature.$1, color: const Color(0xFFB38A23)),
-                        title: Text(feature.$2,
+                            Icon(feature.$1, color: const Color(0xFFEC2863)),
+                        title: Text(context.tr(feature.$2),
                             style: const TextStyle(color: Color(0xFF22262E))),
-                        subtitle: Text(feature.$3,
+                        subtitle: Text(context.tr(feature.$3),
                             style: const TextStyle(color: Color(0xFF626A77)))),
                 ],
                 const SizedBox(height: 16),
@@ -298,7 +302,7 @@ class _PremiumPageState extends State<PremiumPage> {
                         ? context.l10n.hideActivityOnly
                         : offer.title),
                     subtitle: Text(
-                        '${offer.price}${offer.id == 'zullo_premium_monthly' || offer.id == 'zullo_hide_activity_monthly' ? ' per månad' : ''}'),
+                        '${offer.price}${offer.id == 'zullo_premium_monthly' || offer.id == 'zullo_hide_activity_monthly' ? context.l10n.perMonth : ''}'),
                     trailing: FilledButton(
                         onPressed: _busy ||
                                 (offer.id == 'zullo_premium_monthly' &&
@@ -311,16 +315,18 @@ class _PremiumPageState extends State<PremiumPage> {
                   )),
                 if (state?.activityPrivacyUntil?.isAfter(DateTime.now()) ==
                     true)
-                   Padding(
+                  Padding(
                       padding: EdgeInsets.symmetric(vertical: 12),
                       child: Text(
-                          context.l10n.yourSeparateHideActivitySubscriptionIsManagedInTheApp,
+                          context.l10n
+                              .yourSeparateHideActivitySubscriptionIsManagedInTheApp,
                           style: TextStyle(color: Color(0xFF626A77)))),
                 if (offers.isNotEmpty)
-                   Padding(
+                  Padding(
                       padding: EdgeInsets.symmetric(vertical: 12),
                       child: Text(
-                          context.l10n.yourSubscriptionRenewsAutomaticallyUntilYouCancelInTheApp,
+                          context.l10n
+                              .yourSubscriptionRenewsAutomaticallyUntilYouCancelInTheApp,
                           style: TextStyle(
                               color: Color(0xFF626A77), height: 1.4))),
                 TextButton(

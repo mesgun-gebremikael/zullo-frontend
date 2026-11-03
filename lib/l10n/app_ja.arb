@@ -501,5 +501,7 @@
   "lastActiveHours": "{count, plural, other{最終アクティブ：{count}時間前}}",
   "lastActiveDays": "{count, plural, other{最終アクティブ：{count}日前}}",
   "interests": "興味・関心",
-  "cannabis": "大麻"
+  "cannabis": "大麻",
+  "threeSuperlikesPerWeek": "毎週3回のスーパーライク",
+  "sentAMessage": "メッセージを送りました"
 }

@@ -501,5 +501,7 @@
   "lastActiveHours": "{count, plural, other{ใช้งานล่าสุดเมื่อ {count} ชั่วโมงที่แล้ว}}",
   "lastActiveDays": "{count, plural, other{ใช้งานล่าสุดเมื่อ {count} วันที่แล้ว}}",
   "interests": "ความสนใจ",
-  "cannabis": "กัญชา"
+  "cannabis": "กัญชา",
+  "threeSuperlikesPerWeek": "3 ซูเปอร์ไลก์ต่อสัปดาห์",
+  "sentAMessage": "ส่งข้อความมา"
 }

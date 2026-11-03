@@ -501,5 +501,7 @@
   "lastActiveHours": "{count, plural, other{上次活躍：{count}小時前}}",
   "lastActiveDays": "{count, plural, other{上次活躍：{count}天前}}",
   "interests": "興趣愛好",
-  "cannabis": "大麻"
+  "cannabis": "大麻",
+  "threeSuperlikesPerWeek": "每週 3 次超級喜歡",
+  "sentAMessage": "傳送了一則訊息"
 }

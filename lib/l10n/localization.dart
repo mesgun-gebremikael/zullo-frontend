@@ -970,6 +970,12 @@ extension ZulloLocalization on BuildContext {
         return l10n.interests;
       case "Cannabis":
         return l10n.cannabis;
+      case "3 Superlikes per vecka":
+        return l10n.threeSuperlikesPerWeek;
+      case "Skickade ett meddelande":
+        return l10n.sentAMessage;
+      case "Inkognito":
+        return l10n.premiumIncognito;
     }
     {
       final match =

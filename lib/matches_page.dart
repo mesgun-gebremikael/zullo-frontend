@@ -399,7 +399,7 @@ class _MatchesPageState extends State<MatchesPage> {
                               Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
-                                children:  [
+                                children: [
                                   Text(
                                     context.l10n.newMatches,
                                     style: TextStyle(
@@ -521,8 +521,9 @@ class _MatchesPageState extends State<MatchesPage> {
                               final lastText = (m['lastMessageText'] ?? '')
                                   .toString()
                                   .trim();
-                              final subtitleText =
-                                  lastText.isNotEmpty ? lastText : "Säg hej 👋";
+                              final subtitleText = lastText.isNotEmpty
+                                  ? lastText
+                                  : context.l10n.sayHello338;
 
                               return Container(
                                 margin: const EdgeInsets.only(bottom: 10),
@@ -584,9 +585,11 @@ class _MatchesPageState extends State<MatchesPage> {
                                   subtitle: Text(
                                     [
                                       subtitleText,
-                                      PresenceText.format(DateTime.tryParse(
-                                          m['lastActivityUtc']?.toString() ??
-                                              ''), strings: context.l10n)
+                                      PresenceText.format(
+                                          DateTime.tryParse(m['lastActivityUtc']
+                                                  ?.toString() ??
+                                              ''),
+                                          strings: context.l10n)
                                     ]
                                         .where((text) => text.isNotEmpty)
                                         .join(' · '),

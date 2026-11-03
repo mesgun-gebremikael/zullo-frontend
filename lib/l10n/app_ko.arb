@@ -501,5 +501,7 @@
   "lastActiveHours": "{count, plural, other{{count}시간 전 활동}}",
   "lastActiveDays": "{count, plural, other{{count}일 전 활동}}",
   "interests": "관심사",
-  "cannabis": "대마초"
+  "cannabis": "대마초",
+  "threeSuperlikesPerWeek": "매주 슈퍼라이크 3개",
+  "sentAMessage": "메시지를 보냈어요"
 }

@@ -501,5 +501,7 @@
   "lastActiveHours": "{count, plural, one{Ultima activitate: acum {count} oră} few{Ultima activitate: acum {count} ore} other{Ultima activitate: acum {count} de ore}}",
   "lastActiveDays": "{count, plural, one{Ultima activitate: acum {count} zi} few{Ultima activitate: acum {count} zile} other{Ultima activitate: acum {count} de zile}}",
   "interests": "Interese",
-  "cannabis": "Canabis"
+  "cannabis": "Canabis",
+  "threeSuperlikesPerWeek": "3 Superlikes pe săptămână",
+  "sentAMessage": "A trimis un mesaj"
 }

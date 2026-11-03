@@ -501,5 +501,7 @@
   "lastActiveHours": "{count, plural, one{Mara ya mwisho kutumia: saa {count} iliyopita} other{Mara ya mwisho kutumia: saa {count} zilizopita}}",
   "lastActiveDays": "{count, plural, one{Mara ya mwisho kutumia: siku {count} iliyopita} other{Mara ya mwisho kutumia: siku {count} zilizopita}}",
   "interests": "Mambo ninayopenda",
-  "cannabis": "Bangi"
+  "cannabis": "Bangi",
+  "threeSuperlikesPerWeek": "Superlikes 3 kwa wiki",
+  "sentAMessage": "Ametuma ujumbe"
 }

@@ -154,7 +154,7 @@ class _LikesPageState extends State<LikesPage> {
                     child: Padding(
                         padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
                         child: Text(
-                            '${summary.totalCount} ${summary.totalCount == 1 ? 'like' : 'likes'}',
+                            '${summary.totalCount} · ${context.l10n.likes}',
                             style: const TextStyle(
                                 fontSize: 21, fontWeight: FontWeight.w800)))),
                 if (summary.totalCount == 0)

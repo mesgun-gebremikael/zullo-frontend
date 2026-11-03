@@ -501,5 +501,7 @@
   "lastActiveHours": "{count, plural, one{Остання активність: {count} годину тому} few{Остання активність: {count} години тому} many{Остання активність: {count} годин тому} other{Остання активність: {count} години тому}}",
   "lastActiveDays": "{count, plural, one{Остання активність: {count} день тому} few{Остання активність: {count} дні тому} many{Остання активність: {count} днів тому} other{Остання активність: {count} дня тому}}",
   "interests": "Інтереси",
-  "cannabis": "Канабіс"
+  "cannabis": "Канабіс",
+  "threeSuperlikesPerWeek": "3 суперлайки на тиждень",
+  "sentAMessage": "Надіслано повідомлення"
 }

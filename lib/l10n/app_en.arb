@@ -2175,5 +2175,13 @@
   },
   "@cannabis": {
     "description": "Lifestyle substance category."
+  },
+  "threeSuperlikesPerWeek": "3 Superlikes per week",
+  "sentAMessage": "Sent a message",
+  "@threeSuperlikesPerWeek": {
+    "description": "ZULLO Premium benefit: fixed allowance of three Superlikes each week."
+  },
+  "@sentAMessage": {
+    "description": "Notification-banner fallback after the sender name when the message text is unavailable. Never substitutes for actual user-authored message content."
   }
 }

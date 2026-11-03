@@ -501,5 +501,7 @@
   "lastActiveHours": "{count, plural, other{Terakhir aktif {count} jam lalu}}",
   "lastActiveDays": "{count, plural, other{Terakhir aktif {count} hari lalu}}",
   "interests": "Minat",
-  "cannabis": "Ganja"
+  "cannabis": "Ganja",
+  "threeSuperlikesPerWeek": "3 Superlike per minggu",
+  "sentAMessage": "Mengirim pesan"
 }

@@ -504,5 +504,8 @@
   "{value0} fot": "heightFeet",
   "{value0} tum": "heightInches",
   "Intressen": "interests",
-  "Cannabis": "cannabis"
+  "Cannabis": "cannabis",
+  "3 Superlikes per vecka": "threeSuperlikesPerWeek",
+  "Skickade ett meddelande": "sentAMessage",
+  "Inkognito": "premiumIncognito"
 }

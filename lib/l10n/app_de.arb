@@ -501,5 +501,7 @@
   "lastActiveHours": "{count, plural, one{Zuletzt aktiv vor {count} Stunde} other{Zuletzt aktiv vor {count} Stunden}}",
   "lastActiveDays": "{count, plural, one{Zuletzt aktiv vor {count} Tag} other{Zuletzt aktiv vor {count} Tagen}}",
   "interests": "Interessen",
-  "cannabis": "Cannabis"
+  "cannabis": "Cannabis",
+  "threeSuperlikesPerWeek": "3 Superlikes pro Woche",
+  "sentAMessage": "Hat eine Nachricht gesendet"
 }

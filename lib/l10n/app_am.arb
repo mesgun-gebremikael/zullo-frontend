@@ -501,5 +501,7 @@
   "lastActiveHours": "{count, plural, other{የመጨረሻ እንቅስቃሴ፦ ከ{count} ሰዓት በፊት}}",
   "lastActiveDays": "{count, plural, other{የመጨረሻ እንቅስቃሴ፦ ከ{count} ቀን በፊት}}",
   "interests": "ፍላጎቶች",
-  "cannabis": "ካናቢስ"
+  "cannabis": "ካናቢስ",
+  "threeSuperlikesPerWeek": "በሳምንት 3 ሱፐርላይኮች",
+  "sentAMessage": "መልእክት ልኳል"
 }

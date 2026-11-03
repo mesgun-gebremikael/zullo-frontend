@@ -501,5 +501,7 @@
   "lastActiveHours": "{count, plural, one{Sist aktiv for {count} time siden} other{Sist aktiv for {count} timer siden}}",
   "lastActiveDays": "{count, plural, one{Sist aktiv for {count} dag siden} other{Sist aktiv for {count} dager siden}}",
   "interests": "Interesser",
-  "cannabis": "Cannabis"
+  "cannabis": "Cannabis",
+  "threeSuperlikesPerWeek": "3 Superlikes per uke",
+  "sentAMessage": "Sendte en melding"
 }

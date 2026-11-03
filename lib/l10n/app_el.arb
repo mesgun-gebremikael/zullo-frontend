@@ -501,5 +501,7 @@
   "lastActiveHours": "{count, plural, one{Τελευταία δραστηριότητα πριν από {count} ώρα} other{Τελευταία δραστηριότητα πριν από {count} ώρες}}",
   "lastActiveDays": "{count, plural, one{Τελευταία δραστηριότητα πριν από {count} ημέρα} other{Τελευταία δραστηριότητα πριν από {count} ημέρες}}",
   "interests": "Ενδιαφέροντα",
-  "cannabis": "Κάνναβη"
+  "cannabis": "Κάνναβη",
+  "threeSuperlikesPerWeek": "3 Superlikes την εβδομάδα",
+  "sentAMessage": "Έστειλε μήνυμα"
 }

@@ -45,7 +45,7 @@ void main() {
       await Future<void>.delayed(const Duration(milliseconds: 30));
     });
     await tester.pumpAndSettle();
-    expect(find.text('1 like'), findsOneWidget);
+    expect(find.text('1 · Likes'), findsOneWidget);
     expect(
         find.bySemanticsLabel('Dold like. Visa med Premium'), findsOneWidget);
     expect(find.text('Inga nya likes än'), findsNothing);
@@ -57,7 +57,7 @@ void main() {
       await Future<void>.delayed(const Duration(milliseconds: 30));
     });
     await tester.pumpAndSettle();
-    expect(find.text('0 likes'), findsOneWidget);
+    expect(find.text('0 · Likes'), findsOneWidget);
     expect(find.bySemanticsLabel('Dold like. Visa med Premium'), findsNothing);
     await tester.pumpWidget(const SizedBox.shrink());
   });
@@ -74,7 +74,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(
         find.text('Kunde inte hämta dina likes. Försök igen.'), findsOneWidget);
-    expect(find.text('0 likes'), findsNothing);
+    expect(find.text('0 · Likes'), findsNothing);
     await tester.pumpWidget(const SizedBox.shrink());
   });
   testWidgets(

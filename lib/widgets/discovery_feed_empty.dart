@@ -61,7 +61,9 @@ class DiscoveryFeedEmpty extends StatelessWidget {
                               fontWeight: FontWeight.w800)),
                       const SizedBox(height: 12),
                       Text(
-                          paused ? context.l10n.pausedAtYourPace : context.l10n.broadenYourSearch,
+                          paused
+                              ? context.l10n.pausedAtYourPace
+                              : context.l10n.broadenYourSearch,
                           textAlign: TextAlign.center,
                           style: TextStyle(
                               color: ZulloPalette.ink,
@@ -71,8 +73,10 @@ class DiscoveryFeedEmpty extends StatelessWidget {
                       const SizedBox(height: 16),
                       Text(
                           paused
-                              ? context.l10n.yourProfileIsPausedYourMatchesAndConversationsWillBe
-                              : context.l10n.chooseALargerAreaOrAdjustYourFiltersToFind,
+                              ? context.l10n
+                                  .yourProfileIsPausedYourMatchesAndConversationsWillBe
+                              : context.l10n
+                                  .chooseALargerAreaOrAdjustYourFiltersToFind,
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                               color: ZulloPalette.muted,
@@ -93,8 +97,9 @@ class DiscoveryFeedEmpty extends StatelessWidget {
                                   foregroundColor: Colors.white,
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 24, vertical: 18)),
-                              label: Text(
-                                  paused ? context.l10n.managePause : context.l10n.adjustFilters))),
+                              label: Text(paused
+                                  ? context.l10n.managePause
+                                  : context.l10n.adjustFilters))),
                     ]))));
       });
 }

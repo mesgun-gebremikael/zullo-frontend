@@ -501,5 +501,7 @@
   "lastActiveHours": "{count, plural, other{Hoạt động lần cuối {count} giờ trước}}",
   "lastActiveDays": "{count, plural, other{Hoạt động lần cuối {count} ngày trước}}",
   "interests": "Sở thích",
-  "cannabis": "Cần sa"
+  "cannabis": "Cần sa",
+  "threeSuperlikesPerWeek": "3 Superlike mỗi tuần",
+  "sentAMessage": "Đã gửi một tin nhắn"
 }

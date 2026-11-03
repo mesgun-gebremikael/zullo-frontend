@@ -501,5 +501,7 @@
   "lastActiveHours": "{count, plural, one{Ugcine ukusebenzisa uhlelo ehoreni elingu-{count} eledlule} other{Ugcine ukusebenzisa uhlelo emahoreni angu-{count} adlule}}",
   "lastActiveDays": "{count, plural, one{Ugcine ukusebenzisa uhlelo osukwini olungu-{count} olwedlule} other{Ugcine ukusebenzisa uhlelo ezinsukwini ezingu-{count} ezidlule}}",
   "interests": "Izintshisekelo",
-  "cannabis": "Insangu"
+  "cannabis": "Insangu",
+  "threeSuperlikesPerWeek": "Ama-Superlikes angu-3 ngesonto",
+  "sentAMessage": "Uthumele umlayezo"
 }

@@ -501,5 +501,7 @@
   "lastActiveHours": "{count, plural, zero{آخر نشاط قبل {count} ساعة} one{آخر نشاط قبل ساعة واحدة} two{آخر نشاط قبل ساعتين} few{آخر نشاط قبل {count} ساعات} many{آخر نشاط قبل {count} ساعة} other{آخر نشاط قبل {count} ساعة}}",
   "lastActiveDays": "{count, plural, zero{آخر نشاط قبل {count} يوم} one{آخر نشاط قبل يوم واحد} two{آخر نشاط قبل يومين} few{آخر نشاط قبل {count} أيام} many{آخر نشاط قبل {count} يوم} other{آخر نشاط قبل {count} يوم}}",
   "interests": "الاهتمامات",
-  "cannabis": "القنب"
+  "cannabis": "القنب",
+  "threeSuperlikesPerWeek": "3 إعجابات مميزة في الأسبوع",
+  "sentAMessage": "أرسل رسالة"
 }

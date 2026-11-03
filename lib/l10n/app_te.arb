@@ -501,5 +501,7 @@
   "lastActiveHours": "{count, plural, one{చివరి కార్యాచరణ {count} గంట క్రితం} other{చివరి కార్యాచరణ {count} గంటల క్రితం}}",
   "lastActiveDays": "{count, plural, one{చివరి కార్యాచరణ {count} రోజు క్రితం} other{చివరి కార్యాచరణ {count} రోజుల క్రితం}}",
   "interests": "ఆసక్తులు",
-  "cannabis": "గంజాయి"
+  "cannabis": "గంజాయి",
+  "threeSuperlikesPerWeek": "వారానికి 3 Superlikes",
+  "sentAMessage": "ఒక సందేశం పంపారు"
 }

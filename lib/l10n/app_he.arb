@@ -501,5 +501,7 @@
   "lastActiveHours": "{count, plural, one{פעילות אחרונה לפני שעה} two{פעילות אחרונה לפני שעתיים} other{פעילות אחרונה לפני {count} שעות}}",
   "lastActiveDays": "{count, plural, one{פעילות אחרונה לפני יום} two{פעילות אחרונה לפני יומיים} other{פעילות אחרונה לפני {count} ימים}}",
   "interests": "תחומי עניין",
-  "cannabis": "קנאביס"
+  "cannabis": "קנאביס",
+  "threeSuperlikesPerWeek": "3 סופר לייקים בשבוע",
+  "sentAMessage": "נשלחה הודעה"
 }

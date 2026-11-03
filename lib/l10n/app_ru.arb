@@ -501,5 +501,7 @@
   "lastActiveHours": "{count, plural, one{Последняя активность: {count} час назад} few{Последняя активность: {count} часа назад} many{Последняя активность: {count} часов назад} other{Последняя активность: {count} часа назад}}",
   "lastActiveDays": "{count, plural, one{Последняя активность: {count} день назад} few{Последняя активность: {count} дня назад} many{Последняя активность: {count} дней назад} other{Последняя активность: {count} дня назад}}",
   "interests": "Интересы",
-  "cannabis": "Каннабис"
+  "cannabis": "Каннабис",
+  "threeSuperlikesPerWeek": "3 суперлайка в неделю",
+  "sentAMessage": "Отправлено сообщение"
 }

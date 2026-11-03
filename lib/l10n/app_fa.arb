@@ -501,5 +501,7 @@
   "lastActiveHours": "{count, plural, other{آخرین فعالیت: {count} ساعت پیش}}",
   "lastActiveDays": "{count, plural, other{آخرین فعالیت: {count} روز پیش}}",
   "interests": "علاقه‌مندی‌ها",
-  "cannabis": "کانابیس"
+  "cannabis": "کانابیس",
+  "threeSuperlikesPerWeek": "۳ سوپرلایک در هفته",
+  "sentAMessage": "پیامی فرستاد"
 }

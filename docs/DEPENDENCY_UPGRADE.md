@@ -8,6 +8,8 @@ Firebase Messaging stays on the latest compatible **16.7.1** family with Firebas
 
 The native app targets iOS 15 or newer (required by the updated Firebase family). Android follows the pinned Flutter SDK: minimum API 24, compile/target API 36, Java/Kotlin target 17, desugaring 2.1.4. Apple signing, APNs provisioning and production Android signing remain release prerequisites; a successful simulator/debug build does not validate these.
 
+RevenueCat `purchases_flutter` remains on the supported **10.19.0** family. Version 11 requires `PurchasesHybridCommon 20.0.0`, which the iOS CocoaPods source did not provide during verification. The compatible family resolves the available native SDK without activating payments or bypassing native dependency checks. Revisit that major upgrade only after both platforms can resolve and compile its published native dependencies.
+
 ## Secure storage migration
 
 flutter_secure_storage **10.3.4** is an intentional migration bridge from v9. Both authentication and onboarding draft storage use `resetOnError: false` and `migrateWithBackup: true`; v10's automatic cipher migration remains enabled. Failures must not silently clear an account's stored data. Android backup stays disabled because ciphertext restored without its device Keystore key cannot be read.

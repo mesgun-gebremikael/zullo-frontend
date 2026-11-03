@@ -501,5 +501,7 @@
   "lastActiveHours": "{count, plural, one{Laas aktief {count} uur gelede} other{Laas aktief {count} uur gelede}}",
   "lastActiveDays": "{count, plural, one{Laas aktief {count} dag gelede} other{Laas aktief {count} dae gelede}}",
   "interests": "Belangstellings",
-  "cannabis": "Dagga"
+  "cannabis": "Dagga",
+  "threeSuperlikesPerWeek": "3 Superlikes per week",
+  "sentAMessage": "Het ’n boodskap gestuur"
 }

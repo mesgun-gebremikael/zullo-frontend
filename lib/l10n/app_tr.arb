@@ -501,5 +501,7 @@
   "lastActiveHours": "{count, plural, other{Son etkinlik: {count} saat önce}}",
   "lastActiveDays": "{count, plural, other{Son etkinlik: {count} gün önce}}",
   "interests": "İlgi alanları",
-  "cannabis": "Esrar"
+  "cannabis": "Esrar",
+  "threeSuperlikesPerWeek": "Haftada 3 Süper Beğeni",
+  "sentAMessage": "Bir mesaj gönderdi"
 }

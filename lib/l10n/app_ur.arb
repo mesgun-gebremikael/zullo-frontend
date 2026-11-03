@@ -501,5 +501,7 @@
   "lastActiveHours": "{count, plural, one{آخری سرگرمی {count} گھنٹہ پہلے} other{آخری سرگرمی {count} گھنٹے پہلے}}",
   "lastActiveDays": "{count, plural, one{آخری سرگرمی {count} دن پہلے} other{آخری سرگرمی {count} دن پہلے}}",
   "interests": "دلچسپیاں",
-  "cannabis": "بھنگ"
+  "cannabis": "بھنگ",
+  "threeSuperlikesPerWeek": "ہر ہفتے 3 سپر لائکس",
+  "sentAMessage": "ایک پیغام بھیجا"
 }

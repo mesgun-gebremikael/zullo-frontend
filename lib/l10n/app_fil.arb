@@ -501,5 +501,7 @@
   "lastActiveHours": "{count, plural, other{Huling aktibo {count} oras ang nakalipas}}",
   "lastActiveDays": "{count, plural, other{Huling aktibo {count} araw ang nakalipas}}",
   "interests": "Mga hilig",
-  "cannabis": "Cannabis"
+  "cannabis": "Cannabis",
+  "threeSuperlikesPerWeek": "3 Superlike bawat linggo",
+  "sentAMessage": "Nagpadala ng mensahe"
 }

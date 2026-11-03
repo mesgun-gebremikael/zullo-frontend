@@ -501,5 +501,7 @@
   "lastActiveHours": "{count, plural, one{Viimeksi aktiivinen {count} tunti sitten} other{Viimeksi aktiivinen {count} tuntia sitten}}",
   "lastActiveDays": "{count, plural, one{Viimeksi aktiivinen {count} päivä sitten} other{Viimeksi aktiivinen {count} päivää sitten}}",
   "interests": "Kiinnostuksen kohteet",
-  "cannabis": "Kannabis"
+  "cannabis": "Kannabis",
+  "threeSuperlikesPerWeek": "3 Superlikea viikossa",
+  "sentAMessage": "Lähetti viestin"
 }

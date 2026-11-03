@@ -501,5 +501,7 @@
   "lastActiveHours": "{count, plural, one{आखिरी गतिविधि {count} घंटा पहले} other{आखिरी गतिविधि {count} घंटे पहले}}",
   "lastActiveDays": "{count, plural, one{आखिरी गतिविधि {count} दिन पहले} other{आखिरी गतिविधि {count} दिन पहले}}",
   "interests": "रुचियाँ",
-  "cannabis": "कैनबिस"
+  "cannabis": "कैनबिस",
+  "threeSuperlikesPerWeek": "हर हफ़्ते 3 Superlikes",
+  "sentAMessage": "एक संदेश भेजा"
 }

@@ -501,5 +501,7 @@
   "lastActiveHours": "{count, plural, other{Legutóbb aktív: {count} órával ezelőtt}}",
   "lastActiveDays": "{count, plural, other{Legutóbb aktív: {count} nappal ezelőtt}}",
   "interests": "Érdeklődési körök",
-  "cannabis": "Kannabisz"
+  "cannabis": "Kannabisz",
+  "threeSuperlikesPerWeek": "Heti 3 Superlike",
+  "sentAMessage": "Üzenetet küldött"
 }

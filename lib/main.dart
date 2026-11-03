@@ -1,3 +1,4 @@
+import 'widgets/localized_notification_channel.dart';
 import 'l10n/localization.dart';
 import 'l10n/app_localizations.dart';
 import 'l10n/locale_catalog.dart';
@@ -140,7 +141,7 @@ void _showInAppMessageOverlay({
           photoUrl: launch.photoUrl,
           senderName: launch.displayName,
           messageText:
-              messageText.isEmpty ? 'Skickade ett meddelande' : messageText,
+              messageText.isEmpty ? context.l10n.sentAMessage : messageText,
           onClose: _hideInAppMessageOverlay,
           onOpen: () {
             _hideInAppMessageOverlay();
@@ -348,6 +349,20 @@ class _ZulloAppState extends State<ZulloApp> {
         scaffoldMessengerKey: scaffoldMessengerKey,
         debugShowCheckedModeBanner: false,
         theme: zulloTheme(),
+        builder: (context, child) => LocalizedNotificationChannel(
+          onChange: (name, description) async {
+            await flutterLocalNotificationsPlugin
+                .resolvePlatformSpecificImplementation<
+                    AndroidFlutterLocalNotificationsPlugin>()
+                ?.createNotificationChannel(AndroidNotificationChannel(
+                  channel.id,
+                  name,
+                  description: description,
+                  importance: channel.importance,
+                ));
+          },
+          child: child ?? const SizedBox.shrink(),
+        ),
         home: initialHome,
       ),
     );
