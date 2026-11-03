@@ -19,7 +19,7 @@ class SwipeProfileCard extends StatefulWidget {
     required this.profile,
     required this.width,
     required this.height,
-    this.photoBarsTop = 66,
+    this.photoBarsTop = 16,
     this.distanceFallbackKm = 50,
     this.imageProvider,
   });

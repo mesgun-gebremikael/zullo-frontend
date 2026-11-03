@@ -503,5 +503,6 @@
   "interests": "ความสนใจ",
   "cannabis": "กัญชา",
   "threeSuperlikesPerWeek": "3 ซูเปอร์ไลก์ต่อสัปดาห์",
-  "sentAMessage": "ส่งข้อความมา"
+  "sentAMessage": "ส่งข้อความมา",
+  "likeAction": "ถูกใจ"
 }

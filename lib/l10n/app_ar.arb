@@ -503,5 +503,6 @@
   "interests": "الاهتمامات",
   "cannabis": "القنب",
   "threeSuperlikesPerWeek": "3 إعجابات مميزة في الأسبوع",
-  "sentAMessage": "أرسل رسالة"
+  "sentAMessage": "أرسل رسالة",
+  "likeAction": "إعجاب"
 }

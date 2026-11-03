@@ -503,5 +503,6 @@
   "interests": "İlgi alanları",
   "cannabis": "Esrar",
   "threeSuperlikesPerWeek": "Haftada 3 Süper Beğeni",
-  "sentAMessage": "Bir mesaj gönderdi"
+  "sentAMessage": "Bir mesaj gönderdi",
+  "likeAction": "Beğen"
 }

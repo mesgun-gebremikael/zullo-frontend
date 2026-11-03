@@ -503,5 +503,6 @@
   "interests": "Интересы",
   "cannabis": "Каннабис",
   "threeSuperlikesPerWeek": "3 суперлайка в неделю",
-  "sentAMessage": "Отправлено сообщение"
+  "sentAMessage": "Отправлено сообщение",
+  "likeAction": "Нравится"
 }

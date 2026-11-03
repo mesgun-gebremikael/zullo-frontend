@@ -503,5 +503,6 @@
   "interests": "Sở thích",
   "cannabis": "Cần sa",
   "threeSuperlikesPerWeek": "3 Superlike mỗi tuần",
-  "sentAMessage": "Đã gửi một tin nhắn"
+  "sentAMessage": "Đã gửi một tin nhắn",
+  "likeAction": "Thích"
 }

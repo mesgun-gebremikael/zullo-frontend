@@ -503,5 +503,6 @@
   "interests": "रुचियाँ",
   "cannabis": "कैनबिस",
   "threeSuperlikesPerWeek": "हर हफ़्ते 3 Superlikes",
-  "sentAMessage": "एक संदेश भेजा"
+  "sentAMessage": "एक संदेश भेजा",
+  "likeAction": "पसंद करें"
 }

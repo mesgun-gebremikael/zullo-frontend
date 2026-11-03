@@ -503,5 +503,6 @@
   "interests": "Інтереси",
   "cannabis": "Канабіс",
   "threeSuperlikesPerWeek": "3 суперлайки на тиждень",
-  "sentAMessage": "Надіслано повідомлення"
+  "sentAMessage": "Надіслано повідомлення",
+  "likeAction": "Подобається"
 }

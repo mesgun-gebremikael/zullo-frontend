@@ -503,5 +503,6 @@
   "interests": "Érdeklődési körök",
   "cannabis": "Kannabisz",
   "threeSuperlikesPerWeek": "Heti 3 Superlike",
-  "sentAMessage": "Üzenetet küldött"
+  "sentAMessage": "Üzenetet küldött",
+  "likeAction": "Kedvelés"
 }

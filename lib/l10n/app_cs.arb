@@ -503,5 +503,6 @@
   "interests": "Zájmy",
   "cannabis": "Konopí",
   "threeSuperlikesPerWeek": "3 Superlikes týdně",
-  "sentAMessage": "Odeslal(a) zprávu"
+  "sentAMessage": "Odeslal(a) zprávu",
+  "likeAction": "Líbí se mi"
 }

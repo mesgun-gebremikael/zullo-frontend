@@ -503,5 +503,6 @@
   "interests": "興味・関心",
   "cannabis": "大麻",
   "threeSuperlikesPerWeek": "毎週3回のスーパーライク",
-  "sentAMessage": "メッセージを送りました"
+  "sentAMessage": "メッセージを送りました",
+  "likeAction": "いいね"
 }

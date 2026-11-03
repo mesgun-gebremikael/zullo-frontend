@@ -503,5 +503,6 @@
   "interests": "Kiinnostuksen kohteet",
   "cannabis": "Kannabis",
   "threeSuperlikesPerWeek": "3 Superlikea viikossa",
-  "sentAMessage": "Lähetti viestin"
+  "sentAMessage": "Lähetti viestin",
+  "likeAction": "Tykkää"
 }

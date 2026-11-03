@@ -503,5 +503,6 @@
   "interests": "תחומי עניין",
   "cannabis": "קנאביס",
   "threeSuperlikesPerWeek": "3 סופר לייקים בשבוע",
-  "sentAMessage": "נשלחה הודעה"
+  "sentAMessage": "נשלחה הודעה",
+  "likeAction": "לייק"
 }

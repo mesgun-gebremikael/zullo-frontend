@@ -503,5 +503,6 @@
   "interests": "兴趣爱好",
   "cannabis": "大麻",
   "threeSuperlikesPerWeek": "每周 3 次超级喜欢",
-  "sentAMessage": "发来了一条消息"
+  "sentAMessage": "发来了一条消息",
+  "likeAction": "喜欢"
 }

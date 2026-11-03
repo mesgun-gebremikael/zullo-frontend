@@ -503,5 +503,6 @@
   "interests": "Centres d’intérêt",
   "cannabis": "Cannabis",
   "threeSuperlikesPerWeek": "3 Superlikes par semaine",
-  "sentAMessage": "A envoyé un message"
+  "sentAMessage": "A envoyé un message",
+  "likeAction": "J’aime"
 }

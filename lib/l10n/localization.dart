@@ -976,6 +976,8 @@ extension ZulloLocalization on BuildContext {
         return l10n.sentAMessage;
       case "Inkognito":
         return l10n.premiumIncognito;
+      case "Gilla":
+        return l10n.likeAction;
     }
     {
       final match =

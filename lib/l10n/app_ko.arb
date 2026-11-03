@@ -503,5 +503,6 @@
   "interests": "관심사",
   "cannabis": "대마초",
   "threeSuperlikesPerWeek": "매주 슈퍼라이크 3개",
-  "sentAMessage": "메시지를 보냈어요"
+  "sentAMessage": "메시지를 보냈어요",
+  "likeAction": "좋아요"
 }

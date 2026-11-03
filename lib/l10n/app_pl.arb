@@ -503,5 +503,6 @@
   "interests": "Zainteresowania",
   "cannabis": "Marihuana",
   "threeSuperlikesPerWeek": "3 Superlikes tygodniowo",
-  "sentAMessage": "Wysłano wiadomość"
+  "sentAMessage": "Wysłano wiadomość",
+  "likeAction": "Polub"
 }

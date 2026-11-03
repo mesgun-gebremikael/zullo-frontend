@@ -503,5 +503,6 @@
   "interests": "Intressen",
   "cannabis": "Cannabis",
   "threeSuperlikesPerWeek": "3 Superlikes per vecka",
-  "sentAMessage": "Skickade ett meddelande"
+  "sentAMessage": "Skickade ett meddelande",
+  "likeAction": "Gilla"
 }

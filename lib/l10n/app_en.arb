@@ -2183,5 +2183,9 @@
   },
   "@sentAMessage": {
     "description": "Notification-banner fallback after the sender name when the message text is unavailable. Never substitutes for actual user-authored message content."
+  },
+  "likeAction": "Like",
+  "@likeAction": {
+    "description": "Accessible label for the action that likes the shown profile."
   }
 }

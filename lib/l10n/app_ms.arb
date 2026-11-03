@@ -503,5 +503,6 @@
   "interests": "Minat",
   "cannabis": "Ganja",
   "threeSuperlikesPerWeek": "3 Superlike seminggu",
-  "sentAMessage": "Menghantar mesej"
+  "sentAMessage": "Menghantar mesej",
+  "likeAction": "Suka"
 }

@@ -503,5 +503,6 @@
   "interests": "Interesser",
   "cannabis": "Cannabis",
   "threeSuperlikesPerWeek": "3 Superlikes om ugen",
-  "sentAMessage": "Sendte en besked"
+  "sentAMessage": "Sendte en besked",
+  "likeAction": "Synes godt om"
 }

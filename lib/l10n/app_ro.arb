@@ -503,5 +503,6 @@
   "interests": "Interese",
   "cannabis": "Canabis",
   "threeSuperlikesPerWeek": "3 Superlikes pe săptămână",
-  "sentAMessage": "A trimis un mesaj"
+  "sentAMessage": "A trimis un mesaj",
+  "likeAction": "Îmi place"
 }
