@@ -70,7 +70,9 @@ class ConversationPromptEditor extends StatelessWidget {
                                   onTap: () =>
                                       Navigator.pop(context, entry.key)))))
                     ]))));
-    if (context.mounted && key != null && key != promptKey) onChanged(key, '');
+    if (context.mounted && key != null && key != promptKey) {
+      onChanged(key, answer);
+    }
   }
 
   @override
