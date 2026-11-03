@@ -496,5 +496,10 @@
   "photosCountOfSix": "{value0} / 6 صور",
   "heightCentimeters": "{value0} سم",
   "heightFeet": "{value0} قدم",
-  "heightInches": "{value0} بوصة"
+  "heightInches": "{value0} بوصة",
+  "lastActiveMinutes": "{count, plural, zero{آخر نشاط قبل {count} دقيقة} one{آخر نشاط قبل دقيقة واحدة} two{آخر نشاط قبل دقيقتين} few{آخر نشاط قبل {count} دقائق} many{آخر نشاط قبل {count} دقيقة} other{آخر نشاط قبل {count} دقيقة}}",
+  "lastActiveHours": "{count, plural, zero{آخر نشاط قبل {count} ساعة} one{آخر نشاط قبل ساعة واحدة} two{آخر نشاط قبل ساعتين} few{آخر نشاط قبل {count} ساعات} many{آخر نشاط قبل {count} ساعة} other{آخر نشاط قبل {count} ساعة}}",
+  "lastActiveDays": "{count, plural, zero{آخر نشاط قبل {count} يوم} one{آخر نشاط قبل يوم واحد} two{آخر نشاط قبل يومين} few{آخر نشاط قبل {count} أيام} many{آخر نشاط قبل {count} يوم} other{آخر نشاط قبل {count} يوم}}",
+  "interests": "الاهتمامات",
+  "cannabis": "القنب"
 }

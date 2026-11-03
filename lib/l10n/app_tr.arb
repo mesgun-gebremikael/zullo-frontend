@@ -496,5 +496,10 @@
   "photosCountOfSix": "{value0} / 6 fotoğraf",
   "heightCentimeters": "{value0} cm",
   "heightFeet": "{value0} fit",
-  "heightInches": "{value0} inç"
+  "heightInches": "{value0} inç",
+  "lastActiveMinutes": "{count, plural, other{Son etkinlik: {count} dakika önce}}",
+  "lastActiveHours": "{count, plural, other{Son etkinlik: {count} saat önce}}",
+  "lastActiveDays": "{count, plural, other{Son etkinlik: {count} gün önce}}",
+  "interests": "İlgi alanları",
+  "cannabis": "Esrar"
 }

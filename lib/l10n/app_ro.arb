@@ -496,5 +496,10 @@
   "photosCountOfSix": "{value0} / 6 fotografii",
   "heightCentimeters": "{value0} cm",
   "heightFeet": "{value0} picioare",
-  "heightInches": "{value0} inci"
+  "heightInches": "{value0} inci",
+  "lastActiveMinutes": "{count, plural, one{Ultima activitate: acum {count} minut} few{Ultima activitate: acum {count} minute} other{Ultima activitate: acum {count} de minute}}",
+  "lastActiveHours": "{count, plural, one{Ultima activitate: acum {count} oră} few{Ultima activitate: acum {count} ore} other{Ultima activitate: acum {count} de ore}}",
+  "lastActiveDays": "{count, plural, one{Ultima activitate: acum {count} zi} few{Ultima activitate: acum {count} zile} other{Ultima activitate: acum {count} de zile}}",
+  "interests": "Interese",
+  "cannabis": "Canabis"
 }

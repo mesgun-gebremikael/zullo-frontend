@@ -1,3 +1,4 @@
+import 'l10n/presence_text.dart';
 import 'l10n/localization.dart';
 import 'widgets/discovery_empty_state.dart';
 import 'services/commerce_service.dart';
@@ -585,7 +586,7 @@ class _MatchesPageState extends State<MatchesPage> {
                                       subtitleText,
                                       PresenceText.format(DateTime.tryParse(
                                           m['lastActivityUtc']?.toString() ??
-                                              ''))
+                                              ''), strings: context.l10n)
                                     ]
                                         .where((text) => text.isNotEmpty)
                                         .join(' · '),

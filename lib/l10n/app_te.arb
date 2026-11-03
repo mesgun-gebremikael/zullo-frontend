@@ -496,5 +496,10 @@
   "photosCountOfSix": "{value0} / 6 ఫోటోలు",
   "heightCentimeters": "{value0} cm",
   "heightFeet": "{value0} అడుగులు",
-  "heightInches": "{value0} అంగుళాలు"
+  "heightInches": "{value0} అంగుళాలు",
+  "lastActiveMinutes": "{count, plural, one{చివరి కార్యాచరణ {count} నిమిషం క్రితం} other{చివరి కార్యాచరణ {count} నిమిషాల క్రితం}}",
+  "lastActiveHours": "{count, plural, one{చివరి కార్యాచరణ {count} గంట క్రితం} other{చివరి కార్యాచరణ {count} గంటల క్రితం}}",
+  "lastActiveDays": "{count, plural, one{చివరి కార్యాచరణ {count} రోజు క్రితం} other{చివరి కార్యాచరణ {count} రోజుల క్రితం}}",
+  "interests": "ఆసక్తులు",
+  "cannabis": "గంజాయి"
 }

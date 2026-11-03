@@ -496,5 +496,10 @@
   "photosCountOfSix": "{value0} / 6张照片",
   "heightCentimeters": "{value0}厘米",
   "heightFeet": "{value0}英尺",
-  "heightInches": "{value0}英寸"
+  "heightInches": "{value0}英寸",
+  "lastActiveMinutes": "{count, plural, other{上次活跃：{count}分钟前}}",
+  "lastActiveHours": "{count, plural, other{上次活跃：{count}小时前}}",
+  "lastActiveDays": "{count, plural, other{上次活跃：{count}天前}}",
+  "interests": "兴趣爱好",
+  "cannabis": "大麻"
 }

@@ -496,5 +496,10 @@
   "photosCountOfSix": "{value0} / 6 bilder",
   "heightCentimeters": "{value0} cm",
   "heightFeet": "{value0} fot",
-  "heightInches": "{value0} tum"
+  "heightInches": "{value0} tum",
+  "lastActiveMinutes": "{count, plural, one{Senast aktiv för {count} minut sedan} other{Senast aktiv för {count} minuter sedan}}",
+  "lastActiveHours": "{count, plural, one{Senast aktiv för {count} timme sedan} other{Senast aktiv för {count} timmar sedan}}",
+  "lastActiveDays": "{count, plural, one{Senast aktiv för {count} dag sedan} other{Senast aktiv för {count} dagar sedan}}",
+  "interests": "Intressen",
+  "cannabis": "Cannabis"
 }

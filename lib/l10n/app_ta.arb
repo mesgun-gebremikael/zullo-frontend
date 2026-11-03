@@ -496,5 +496,10 @@
   "photosCountOfSix": "{value0} / 6 படங்கள்",
   "heightCentimeters": "{value0} cm",
   "heightFeet": "{value0} அடி",
-  "heightInches": "{value0} அங்குலம்"
+  "heightInches": "{value0} அங்குலம்",
+  "lastActiveMinutes": "{count, plural, one{{count} நிமிடத்திற்கு முன்பு செயல்பட்டார்} other{{count} நிமிடங்களுக்கு முன்பு செயல்பட்டார்}}",
+  "lastActiveHours": "{count, plural, one{{count} மணிநேரத்திற்கு முன்பு செயல்பட்டார்} other{{count} மணிநேரங்களுக்கு முன்பு செயல்பட்டார்}}",
+  "lastActiveDays": "{count, plural, one{{count} நாளுக்கு முன்பு செயல்பட்டார்} other{{count} நாட்களுக்கு முன்பு செயல்பட்டார்}}",
+  "interests": "ஆர்வங்கள்",
+  "cannabis": "கஞ்சா"
 }

@@ -496,5 +496,10 @@
   "photosCountOfSix": "{value0} / 6 φωτογραφίες",
   "heightCentimeters": "{value0} cm",
   "heightFeet": "{value0} πόδια",
-  "heightInches": "{value0} ίντσες"
+  "heightInches": "{value0} ίντσες",
+  "lastActiveMinutes": "{count, plural, one{Τελευταία δραστηριότητα πριν από {count} λεπτό} other{Τελευταία δραστηριότητα πριν από {count} λεπτά}}",
+  "lastActiveHours": "{count, plural, one{Τελευταία δραστηριότητα πριν από {count} ώρα} other{Τελευταία δραστηριότητα πριν από {count} ώρες}}",
+  "lastActiveDays": "{count, plural, one{Τελευταία δραστηριότητα πριν από {count} ημέρα} other{Τελευταία δραστηριότητα πριν από {count} ημέρες}}",
+  "interests": "Ενδιαφέροντα",
+  "cannabis": "Κάνναβη"
 }

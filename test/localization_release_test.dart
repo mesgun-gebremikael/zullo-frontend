@@ -1,3 +1,4 @@
+import 'package:zullo_app/welcome_page.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -26,6 +27,34 @@ void main() {
           reason: '$locale');
     }
   });
+
+  for (final locale in LocaleCatalog.supported) {
+    testWidgets('welcome actions remain usable in $locale on a compact screen',
+        (tester) async {
+      tester.view.physicalSize = const Size(320, 640);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final strings = await AppLocalizations.delegate.load(locale);
+      await tester.pumpWidget(MaterialApp(
+        locale: locale,
+        supportedLocales: LocaleCatalog.supported,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context)
+                .copyWith(textScaler: const TextScaler.linear(1.5)),
+            child: child!),
+        home: const WelcomePage(),
+      ));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text(strings.logIn));
+      expect(
+          find.widgetWithText(OutlinedButton, strings.logIn), findsOneWidget);
+      expect(find.widgetWithText(ElevatedButton, strings.createAccount),
+          findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
 
   for (final locale in [
     const Locale('en'),

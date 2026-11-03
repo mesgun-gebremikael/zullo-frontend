@@ -496,5 +496,10 @@
   "photosCountOfSix": "{value0} / ۶ عکس",
   "heightCentimeters": "{value0} سانتی‌متر",
   "heightFeet": "{value0} فوت",
-  "heightInches": "{value0} اینچ"
+  "heightInches": "{value0} اینچ",
+  "lastActiveMinutes": "{count, plural, other{آخرین فعالیت: {count} دقیقه پیش}}",
+  "lastActiveHours": "{count, plural, other{آخرین فعالیت: {count} ساعت پیش}}",
+  "lastActiveDays": "{count, plural, other{آخرین فعالیت: {count} روز پیش}}",
+  "interests": "علاقه‌مندی‌ها",
+  "cannabis": "کانابیس"
 }

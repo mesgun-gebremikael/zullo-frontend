@@ -19,27 +19,35 @@ void main() {
   });
 
   for (final register in [true, false]) {
-    test('authentication saves identity and registers push (register=$register)', () async {
+    test(
+        'authentication saves identity and registers push (register=$register)',
+        () async {
       final savedPush = Completer<void>();
       final paths = <String>[];
-      final auth = AuthService(pushTokenLoader: () async => 'device-token',
-        client: MockClient((request) async {
-          paths.add(request.url.path);
-          if (request.url.path == '/me/device-token') {
-            expect(request.headers['Authorization'], 'Bearer new-token');
-            expect(jsonDecode(request.body), {'token': 'device-token'});
-            savedPush.complete();
-            return http.Response('{}', 200);
-          }
-          return http.Response('{"token":"new-token","userId":"new-user"}', 200);
-        }));
+      final auth = AuthService(
+          pushTokenLoader: () async => 'device-token',
+          client: MockClient((request) async {
+            paths.add(request.url.path);
+            if (request.url.path == '/me/device-token') {
+              expect(request.headers['Authorization'], 'Bearer new-token');
+              expect(jsonDecode(request.body), {'token': 'device-token'});
+              savedPush.complete();
+              return http.Response('{}', 200);
+            }
+            return http.Response(
+                '{"token":"new-token","userId":"new-user"}', 200);
+          }));
       if (register) {
-        await auth.registerAndLogin(name: 'Test', email: 'test@example.test', password: 'password123');
+        await auth.registerAndLogin(
+            name: 'Test', email: 'test@example.test', password: 'password123');
       } else {
         await auth.login(email: 'test@example.test', password: 'password123');
       }
       await savedPush.future;
-      expect(paths, [register ? '/api/auth/register' : '/api/auth/login', '/me/device-token']);
+      expect(paths, [
+        register ? '/api/auth/register' : '/api/auth/login',
+        '/me/device-token'
+      ]);
       expect(await AuthStorage().getUserId(), 'new-user');
     });
   }
@@ -47,12 +55,14 @@ void main() {
   test('delayed push token cannot attach to a different account', () async {
     final token = Completer<String?>();
     var pushCalls = 0;
-    final auth = AuthService(pushTokenLoader: () => token.future,
-      client: MockClient((request) async {
-        if (request.url.path == '/me/device-token') pushCalls++;
-        return http.Response('{"token":"A-token","userId":"A"}', 200);
-      }));
-    await auth.registerAndLogin(name: 'A', email: 'a@example.test', password: 'password123');
+    final auth = AuthService(
+        pushTokenLoader: () => token.future,
+        client: MockClient((request) async {
+          if (request.url.path == '/me/device-token') pushCalls++;
+          return http.Response('{"token":"A-token","userId":"A"}', 200);
+        }));
+    await auth.registerAndLogin(
+        name: 'A', email: 'a@example.test', password: 'password123');
     await AuthStorage().saveAuth(token: 'B-token', userId: 'B');
     token.complete('old-device-token');
     await Future<void>.delayed(Duration.zero);
@@ -61,13 +71,17 @@ void main() {
   });
 
   test('push failure does not fail registration or automatic login', () async {
-    final auth = AuthService(pushTokenLoader: () async => throw StateError('FCM offline'),
-      client: MockClient((_) async => http.Response('{"token":"token","userId":"user"}', 200)));
-    await auth.registerAndLogin(name: 'Test', email: 'test@example.test', password: 'password123');
+    final auth = AuthService(
+        pushTokenLoader: () async => throw StateError('FCM offline'),
+        client: MockClient((_) async =>
+            http.Response('{"token":"token","userId":"user"}', 200)));
+    await auth.registerAndLogin(
+        name: 'Test', email: 'test@example.test', password: 'password123');
     expect(await AuthStorage().getToken(), 'token');
   });
 
-  test('account creation needs only email and password, no placeholder name', () async {
+  test('account creation needs only email and password, no placeholder name',
+      () async {
     final auth = AuthService(
       pushTokenLoader: () async => null,
       client: MockClient((request) async {
@@ -78,14 +92,20 @@ void main() {
         return http.Response('{"token":"new-token","userId":"new-user"}', 200);
       }),
     );
-    await auth.registerAndLogin(email: 'new@example.test', password: 'password123');
+    await auth.registerAndLogin(
+        email: 'new@example.test', password: 'password123');
     expect(await AuthStorage().getToken(), 'new-token');
   });
 
-  testWidgets('double taps send one request and duplicate-email error stays visible', (tester) async {
+  testWidgets(
+      'double taps send one request and duplicate-email error stays visible',
+      (tester) async {
     final response = Completer<http.Response>();
     var calls = 0;
-    final auth = AuthService(client: MockClient((_) { calls++; return response.future; }));
+    final auth = AuthService(client: MockClient((_) {
+      calls++;
+      return response.future;
+    }));
     await tester.pumpWidget(MaterialApp(home: RegisterPage(authService: auth)));
     final fields = find.byType(TextField);
     expect(fields, findsNWidgets(2));
@@ -101,6 +121,7 @@ void main() {
     expect(find.text('Skapar ditt konto…'), findsOneWidget);
     response.complete(http.Response('{"message":"User already exists."}', 400));
     await tester.pumpAndSettle();
-    expect(find.text('E-postadressen används redan. Logga in i stället.'), findsOneWidget);
+    expect(find.text('E-postadressen används redan. Logga in i stället.'),
+        findsOneWidget);
   });
 }

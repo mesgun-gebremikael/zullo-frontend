@@ -502,5 +502,7 @@
   "{value0} / 6 bilder": "photosCountOfSix",
   "{value0} cm": "heightCentimeters",
   "{value0} fot": "heightFeet",
-  "{value0} tum": "heightInches"
+  "{value0} tum": "heightInches",
+  "Intressen": "interests",
+  "Cannabis": "cannabis"
 }

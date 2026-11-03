@@ -1,3 +1,4 @@
+import 'l10n/localization.dart';
 import 'services/device_location_service.dart';
 import 'theme/zullo_palette.dart';
 import 'widgets/zullo_symbol.dart';
@@ -220,7 +221,7 @@ class _MainNavigationState extends State<MainNavigation>
           MaterialPageRoute(builder: (_) => const WelcomePage()), (_) => false);
     }
     if (messenger.mounted) {
-      messenger.showSnackBar(SnackBar(content: Text(message)));
+      messenger.showSnackBar(SnackBar(content: Text(context.tr(message))));
     }
   }
 
@@ -520,7 +521,9 @@ class _NavItem extends StatelessWidget {
           selected: isActive,
           onTap: onTap,
           excludeSemantics: true,
-          label: showDot ? "$label, olästa meddelanden" : label,
+          label: showDot
+              ? context.l10n.value0UnreadMessages(context.tr(label))
+              : context.tr(label),
           child: GestureDetector(
             onTap: onTap,
             behavior: HitTestBehavior.opaque,
@@ -581,7 +584,7 @@ class _NavItem extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      label,
+                      context.tr(label),
                       maxLines: 1,
                       overflow: TextOverflow.visible,
                       style: TextStyle(

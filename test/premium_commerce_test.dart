@@ -1,3 +1,5 @@
+import 'package:zullo_app/l10n/presence_text.dart';
+import 'package:zullo_app/l10n/app_localizations_sv.dart';
 import 'package:zullo_app/models/swipe_profile.dart';
 import 'package:zullo_app/widgets/swipe_profile_card.dart';
 import 'dart:async';
@@ -265,15 +267,19 @@ void main() {
   test('relative activity uses minutes and days and hides missing timestamps',
       () {
     final now = DateTime.utc(2026, 11, 1, 12);
-    expect(PresenceText.format(null, now: now), '');
+    expect(
+        PresenceText.format(null, now: now, strings: AppLocalizationsSv()), '');
     expect(
         PresenceText.format(now.subtract(const Duration(seconds: 30)),
-            now: now),
+            now: now, strings: AppLocalizationsSv()),
         'Online nu');
     expect(
-        PresenceText.format(now.subtract(const Duration(minutes: 4)), now: now),
+        PresenceText.format(now.subtract(const Duration(minutes: 4)),
+            now: now, strings: AppLocalizationsSv()),
         'Senast aktiv för 4 minuter sedan');
-    expect(PresenceText.format(now.subtract(const Duration(days: 3)), now: now),
+    expect(
+        PresenceText.format(now.subtract(const Duration(days: 3)),
+            now: now, strings: AppLocalizationsSv()),
         'Senast aktiv för 3 dagar sedan');
   });
   test('account change rejects stale commerce balances', () async {

@@ -496,5 +496,10 @@
   "photosCountOfSix": "{value0} / ۶ تصاویر",
   "heightCentimeters": "{value0} سینٹی میٹر",
   "heightFeet": "{value0} فٹ",
-  "heightInches": "{value0} انچ"
+  "heightInches": "{value0} انچ",
+  "lastActiveMinutes": "{count, plural, one{آخری سرگرمی {count} منٹ پہلے} other{آخری سرگرمی {count} منٹ پہلے}}",
+  "lastActiveHours": "{count, plural, one{آخری سرگرمی {count} گھنٹہ پہلے} other{آخری سرگرمی {count} گھنٹے پہلے}}",
+  "lastActiveDays": "{count, plural, one{آخری سرگرمی {count} دن پہلے} other{آخری سرگرمی {count} دن پہلے}}",
+  "interests": "دلچسپیاں",
+  "cannabis": "بھنگ"
 }

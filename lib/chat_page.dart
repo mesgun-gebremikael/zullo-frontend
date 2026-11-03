@@ -1,6 +1,6 @@
+import 'l10n/presence_text.dart';
 import 'l10n/localization.dart';
 import 'profile_page.dart';
-import 'services/commerce_service.dart';
 import 'services/relation_changes.dart';
 import 'dart:math';
 import 'services/chat_merge.dart';
@@ -473,7 +473,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       _mergeSnapshot(rows);
     } catch (_) {
       if (mounted && _sessionActive) {
-        ScaffoldMessenger.of(context).showSnackBar( SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text(context.l10n.olderMessagesCouldNotBeLoadedTryAgain)));
       }
     } finally {
@@ -712,7 +712,8 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       _pushCurrentMessagesToRepository();
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.couldNotSend((e).toString()))),
+        SnackBar(
+            content: Text(context.l10n.yourMessageCouldNotBeConfirmedTryAgain)),
       );
     } finally {
       if (mounted) {
@@ -733,7 +734,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
               profile: profile, imageProvider: widget.profileImageProvider)));
     } catch (_) {
       if (mounted && _sessionActive) {
-        ScaffoldMessenger.of(context).showSnackBar( SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text(context.l10n.thisProfileCouldNotBeOpenedTryAgain)));
       }
     } finally {
@@ -771,7 +772,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       if (!mounted || !_sessionActive) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(content: Text(context.l10n.thisPersonHasBeenBlocked)),
+        SnackBar(content: Text(context.l10n.thisPersonHasBeenBlocked)),
       );
 
       if (!_relationClosed) Navigator.pop(context, true);
@@ -779,7 +780,8 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       if (!mounted || !_sessionActive) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.couldNotBlock((e).toString()))),
+        SnackBar(
+            content: Text(context.l10n.yourRequestCouldNotBeConfirmedTryAgain)),
       );
     }
   }
@@ -846,12 +848,13 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
 
       if (!mounted || !_sessionActive) return;
       ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(content: Text(context.l10n.thisPersonHasBeenReported)),
+        SnackBar(content: Text(context.l10n.thisPersonHasBeenReported)),
       );
     } catch (e) {
       if (!mounted || !_sessionActive) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.couldNotReport((e).toString()))),
+        SnackBar(
+            content: Text(context.l10n.yourRequestCouldNotBeConfirmedTryAgain)),
       );
     }
   }
@@ -860,11 +863,12 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   bool _isSameDay(DateTime a, DateTime b) =>
       a.year == b.year && a.month == b.month && a.day == b.day;
 
-  String _formatTime(DateTime dt) => MaterialLocalizations.of(context).formatTimeOfDay(
-      TimeOfDay.fromDateTime(dt),
-      alwaysUse24HourFormat: MediaQuery.alwaysUse24HourFormatOf(context));
+  String _formatTime(DateTime dt) => MaterialLocalizations.of(context)
+      .formatTimeOfDay(TimeOfDay.fromDateTime(dt),
+          alwaysUse24HourFormat: MediaQuery.alwaysUse24HourFormatOf(context));
 
-  String _formatDateSw(DateTime dt) => MaterialLocalizations.of(context).formatMediumDate(dt);
+  String _formatDateSw(DateTime dt) =>
+      MaterialLocalizations.of(context).formatMediumDate(dt);
 
   DateTime? _parseUtcStringToLocal(dynamic raw) {
     if (raw == null) return null;
@@ -992,7 +996,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   String get _presenceText {
     for (final item in ChatRepository.instance.chatList) {
       if (item.userId == widget.userId) {
-        return PresenceText.format(item.lastActivityUtc);
+        return PresenceText.format(item.lastActivityUtc, strings: context.l10n);
       }
     }
     return '';
@@ -1034,7 +1038,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                   _confirmBlock();
                 }
               },
-              itemBuilder: (context) =>  [
+              itemBuilder: (context) => [
                 PopupMenuItem(
                   value: "report",
                   child: Row(children: [
@@ -1384,7 +1388,9 @@ class _MessageBubble extends StatelessWidget {
                 ] else if (isMe) ...[
                   const SizedBox(width: 6),
                   Text(
-                    readAtLocal != null ? context.l10n.seen : context.l10n.delivered,
+                    readAtLocal != null
+                        ? context.l10n.seen
+                        : context.l10n.delivered,
                     style: TextStyle(
                       fontSize: 10.5,
                       color: readAtLocal != null

@@ -2137,5 +2137,43 @@
         "type": "String"
       }
     }
+  },
+  "lastActiveMinutes": "{count, plural, one{Last active {count} minute ago} other{Last active {count} minutes ago}}",
+  "lastActiveHours": "{count, plural, one{Last active {count} hour ago} other{Last active {count} hours ago}}",
+  "lastActiveDays": "{count, plural, one{Last active {count} day ago} other{Last active {count} days ago}}",
+  "@lastActiveMinutes": {
+    "description": "Last activity relative time. Plural grammar applies to the entire phrase; count is elapsed whole units.",
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "@lastActiveHours": {
+    "description": "Last activity relative time. Plural grammar applies to the entire phrase; count is elapsed whole units.",
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "@lastActiveDays": {
+    "description": "Last activity relative time. Plural grammar applies to the entire phrase; count is elapsed whole units.",
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "interests": "Interests",
+  "cannabis": "Cannabis",
+  "@interests": {
+    "description": "Profile section title, not user-written interests."
+  },
+  "@cannabis": {
+    "description": "Lifestyle substance category."
   }
 }

@@ -496,5 +496,10 @@
   "photosCountOfSix": "{value0} / 6 billeder",
   "heightCentimeters": "{value0} cm",
   "heightFeet": "{value0} fod",
-  "heightInches": "{value0} tommer"
+  "heightInches": "{value0} tommer",
+  "lastActiveMinutes": "{count, plural, one{Senest aktiv for {count} minut siden} other{Senest aktiv for {count} minutter siden}}",
+  "lastActiveHours": "{count, plural, one{Senest aktiv for {count} time siden} other{Senest aktiv for {count} timer siden}}",
+  "lastActiveDays": "{count, plural, one{Senest aktiv for {count} dag siden} other{Senest aktiv for {count} dage siden}}",
+  "interests": "Interesser",
+  "cannabis": "Cannabis"
 }

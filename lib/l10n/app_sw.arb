@@ -496,5 +496,10 @@
   "photosCountOfSix": "Picha {value0} / 6",
   "heightCentimeters": "sentimita {value0}",
   "heightFeet": "futi {value0}",
-  "heightInches": "inchi {value0}"
+  "heightInches": "inchi {value0}",
+  "lastActiveMinutes": "{count, plural, one{Mara ya mwisho kutumia: dakika {count} iliyopita} other{Mara ya mwisho kutumia: dakika {count} zilizopita}}",
+  "lastActiveHours": "{count, plural, one{Mara ya mwisho kutumia: saa {count} iliyopita} other{Mara ya mwisho kutumia: saa {count} zilizopita}}",
+  "lastActiveDays": "{count, plural, one{Mara ya mwisho kutumia: siku {count} iliyopita} other{Mara ya mwisho kutumia: siku {count} zilizopita}}",
+  "interests": "Mambo ninayopenda",
+  "cannabis": "Bangi"
 }

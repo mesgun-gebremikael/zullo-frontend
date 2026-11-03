@@ -496,5 +496,10 @@
   "photosCountOfSix": "{value0} / 6 фото",
   "heightCentimeters": "{value0} см",
   "heightFeet": "{value0} фут.",
-  "heightInches": "{value0} дюйм."
+  "heightInches": "{value0} дюйм.",
+  "lastActiveMinutes": "{count, plural, one{Остання активність: {count} хвилину тому} few{Остання активність: {count} хвилини тому} many{Остання активність: {count} хвилин тому} other{Остання активність: {count} хвилини тому}}",
+  "lastActiveHours": "{count, plural, one{Остання активність: {count} годину тому} few{Остання активність: {count} години тому} many{Остання активність: {count} годин тому} other{Остання активність: {count} години тому}}",
+  "lastActiveDays": "{count, plural, one{Остання активність: {count} день тому} few{Остання активність: {count} дні тому} many{Остання активність: {count} днів тому} other{Остання активність: {count} дня тому}}",
+  "interests": "Інтереси",
+  "cannabis": "Канабіс"
 }

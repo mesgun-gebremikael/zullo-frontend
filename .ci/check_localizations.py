@@ -27,6 +27,11 @@ for code in sorted(ready):
         assert isinstance(value, str) and value.strip(), f'{code}: empty {key}'
         assert sorted(re.findall(r'\{(value\d+)\}', value)) == sorted(re.findall(r'\{(value\d+)\}', source[key])), f'{code}: placeholders {key}'
         assert value.count('\n') == source[key].count('\n'), f'{code}: newline {key}'
+        placeholders = set(source.get('@'+key, {}).get('placeholders', {}))
+        referenced = set(re.findall(r'\{([A-Za-z]\w*)\s*[,}]', value))
+        assert referenced == placeholders, f'{code}: ICU placeholder contract {key}: {referenced} != {placeholders}'
+        if ', plural,' in source[key]:
+            assert ', plural,' in value and 'other{' in value.replace(' ', ''), f'{code}: incomplete plural {key}'
     if code != 'en':
         unchanged = sum(data[key] == source[key] for key in keys)
         assert unchanged < len(keys) * .15, f'{code}: excessive untranslated English ({unchanged})'

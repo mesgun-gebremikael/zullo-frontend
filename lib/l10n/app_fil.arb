@@ -496,5 +496,10 @@
   "photosCountOfSix": "{value0} / 6 na larawan",
   "heightCentimeters": "{value0} cm",
   "heightFeet": "{value0} talampakan",
-  "heightInches": "{value0} pulgada"
+  "heightInches": "{value0} pulgada",
+  "lastActiveMinutes": "{count, plural, other{Huling aktibo {count} minuto ang nakalipas}}",
+  "lastActiveHours": "{count, plural, other{Huling aktibo {count} oras ang nakalipas}}",
+  "lastActiveDays": "{count, plural, other{Huling aktibo {count} araw ang nakalipas}}",
+  "interests": "Mga hilig",
+  "cannabis": "Cannabis"
 }

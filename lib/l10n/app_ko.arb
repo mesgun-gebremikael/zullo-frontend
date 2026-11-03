@@ -496,5 +496,10 @@
   "photosCountOfSix": "사진 {value0} / 6",
   "heightCentimeters": "{value0}cm",
   "heightFeet": "{value0}피트",
-  "heightInches": "{value0}인치"
+  "heightInches": "{value0}인치",
+  "lastActiveMinutes": "{count, plural, other{{count}분 전 활동}}",
+  "lastActiveHours": "{count, plural, other{{count}시간 전 활동}}",
+  "lastActiveDays": "{count, plural, other{{count}일 전 활동}}",
+  "interests": "관심사",
+  "cannabis": "대마초"
 }

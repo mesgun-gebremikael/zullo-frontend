@@ -496,5 +496,10 @@
   "photosCountOfSix": "{value0} / 6 фото",
   "heightCentimeters": "{value0} см",
   "heightFeet": "{value0} фут.",
-  "heightInches": "{value0} дюйм."
+  "heightInches": "{value0} дюйм.",
+  "lastActiveMinutes": "{count, plural, one{Последняя активность: {count} минуту назад} few{Последняя активность: {count} минуты назад} many{Последняя активность: {count} минут назад} other{Последняя активность: {count} минуты назад}}",
+  "lastActiveHours": "{count, plural, one{Последняя активность: {count} час назад} few{Последняя активность: {count} часа назад} many{Последняя активность: {count} часов назад} other{Последняя активность: {count} часа назад}}",
+  "lastActiveDays": "{count, plural, one{Последняя активность: {count} день назад} few{Последняя активность: {count} дня назад} many{Последняя активность: {count} дней назад} other{Последняя активность: {count} дня назад}}",
+  "interests": "Интересы",
+  "cannabis": "Каннабис"
 }

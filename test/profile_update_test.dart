@@ -198,8 +198,9 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     final data = OnboardingData()..interestedIn = 'Män';
-    await tester
-        .pumpWidget(MaterialApp(home: OnboardingWizard(data: data, initialStep:OnboardingStep.interestedIn)));
+    await tester.pumpWidget(MaterialApp(
+        home: OnboardingWizard(
+            data: data, initialStep: OnboardingStep.interestedIn)));
     expect(find.byIcon(Icons.check_rounded), findsOneWidget);
     await tester.tap(find.text('Kvinnor'));
     await tester.tap(find.text('Nästa'));
@@ -243,8 +244,8 @@ void main() {
       (tester) async {
     var attempts = 0;
     final auth = RoutingAuth(
-        client: MockClient(
-            (request) async => http.Response('{}', request.url.path == '/me/profile' && ++attempts == 1 ? 500 : 404)));
+        client: MockClient((request) async => http.Response('{}',
+            request.url.path == '/me/profile' && ++attempts == 1 ? 500 : 404)));
     await tester.runAsync(() async {
       await tester.pumpWidget(MaterialApp(
           home: SplashPage(authService: auth, startupDelay: Duration.zero)));

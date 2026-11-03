@@ -496,5 +496,10 @@
   "photosCountOfSix": "{value0} / 6 foto",
   "heightCentimeters": "{value0} cm",
   "heightFeet": "{value0} piedi",
-  "heightInches": "{value0} pollici"
+  "heightInches": "{value0} pollici",
+  "lastActiveMinutes": "{count, plural, one{Ultima attività {count} minuto fa} other{Ultima attività {count} minuti fa}}",
+  "lastActiveHours": "{count, plural, one{Ultima attività {count} ora fa} other{Ultima attività {count} ore fa}}",
+  "lastActiveDays": "{count, plural, one{Ultima attività {count} giorno fa} other{Ultima attività {count} giorni fa}}",
+  "interests": "Interessi",
+  "cannabis": "Cannabis"
 }

@@ -496,5 +496,10 @@
   "photosCountOfSix": "{value0} / ৬টি ছবি",
   "heightCentimeters": "{value0} সেমি",
   "heightFeet": "{value0} ফুট",
-  "heightInches": "{value0} ইঞ্চি"
+  "heightInches": "{value0} ইঞ্চি",
+  "lastActiveMinutes": "{count, plural, other{শেষ সক্রিয় ছিলেন {count} মিনিট আগে}}",
+  "lastActiveHours": "{count, plural, other{শেষ সক্রিয় ছিলেন {count} ঘণ্টা আগে}}",
+  "lastActiveDays": "{count, plural, other{শেষ সক্রিয় ছিলেন {count} দিন আগে}}",
+  "interests": "আগ্রহ",
+  "cannabis": "গাঁজা"
 }

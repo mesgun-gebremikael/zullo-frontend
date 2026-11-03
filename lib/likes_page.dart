@@ -102,11 +102,11 @@ class _LikesPageState extends State<LikesPage> {
     } on CommerceException catch (e) {
       if (mounted && AccountSession.isCurrent(_generation)) {
         ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(e.message)));
+            .showSnackBar(SnackBar(content: Text(context.tr(e.message))));
       }
     } catch (_) {
       if (mounted && AccountSession.isCurrent(_generation)) {
-        ScaffoldMessenger.of(context).showSnackBar( SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text(context.l10n.couldNotLikeThisPersonBackTryAgain)));
       }
     } finally {
@@ -140,7 +140,8 @@ class _LikesPageState extends State<LikesPage> {
                                   const Icon(Icons.cloud_off_outlined,
                                       size: 44),
                                   const SizedBox(height: 16),
-                                  Text(context.tr(_error!), textAlign: TextAlign.center),
+                                  Text(context.tr(_error!),
+                                      textAlign: TextAlign.center),
                                   TextButton(
                                       onPressed: () => _load(invalidate: true),
                                       child: Text(context.l10n.tryAgain)),
@@ -173,7 +174,7 @@ class _LikesPageState extends State<LikesPage> {
                         child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 24),
                             child: Text(
-                                '${summary.hiddenCount} ${summary.hiddenCount == 1 ? 'person har gillat dig' : 'personer har gillat dig'}. Se vilka med ZULLO Premium.',
+                                '${summary.hiddenCount} · ${context.l10n.seeWhoLikesYou}',
                                 style: const TextStyle(
                                     fontSize: 17,
                                     color: Color(0xFF626A77),
@@ -217,7 +218,7 @@ class _LikesPageState extends State<LikesPage> {
       child: Text(context.l10n.seeWhoLikesYou,
           style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)));
   Widget _lockedCard() => Semantics(
-      label: 'Dold like. Visa med Premium',
+      label: context.l10n.hiddenLikeRevealWithPremium,
       button: true,
       child: InkWell(
           onTap: _premium,

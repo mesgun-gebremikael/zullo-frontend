@@ -476,7 +476,7 @@
   "managePause": "Phatha ikhefu",
   "noProfile": "Ayikho iphrofayela",
   "notSynced": "Akuvumelanisiwe",
-  "couldNotBlock": "Akuvinjwangwa: {value0}",
+  "couldNotBlock": "Akuvinjekanga: {value0}",
   "couldNotReport": "Akubikekanga: {value0}",
   "couldNotSend": "Akuthumekanga: {value0}",
   "delivered": "Ulethiwe",
@@ -496,5 +496,10 @@
   "photosCountOfSix": "Izithombe {value0} / 6",
   "heightCentimeters": "{value0} cm",
   "heightFeet": "Amafidi angu-{value0}",
-  "heightInches": "Amayintshi angu-{value0}"
+  "heightInches": "Amayintshi angu-{value0}",
+  "lastActiveMinutes": "{count, plural, one{Ugcine ukusebenzisa uhlelo emzuzwini ongu-{count} owedlule} other{Ugcine ukusebenzisa uhlelo emizuzwini engu-{count} edlule}}",
+  "lastActiveHours": "{count, plural, one{Ugcine ukusebenzisa uhlelo ehoreni elingu-{count} eledlule} other{Ugcine ukusebenzisa uhlelo emahoreni angu-{count} adlule}}",
+  "lastActiveDays": "{count, plural, one{Ugcine ukusebenzisa uhlelo osukwini olungu-{count} olwedlule} other{Ugcine ukusebenzisa uhlelo ezinsukwini ezingu-{count} ezidlule}}",
+  "interests": "Izintshisekelo",
+  "cannabis": "Insangu"
 }

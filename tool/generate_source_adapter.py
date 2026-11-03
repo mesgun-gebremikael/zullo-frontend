@@ -16,10 +16,9 @@ for source, key in manifest.items():
     tokens = re.split(r'(\{value\d+\})', source)
     pattern = '^' + ''.join('(.*?)' if re.fullmatch(r'\{value\d+\}', token) else re.escape(token) for token in tokens) + '$'
     count = len(re.findall(r'\{value\d+\}', source))
-    escaped = pattern.replace("'", "\\'")
-    # Dart raw double quoted pattern avoids escaping apostrophes in natural text.
+    # JSON escapes backslashes; escape Dart interpolation anchors separately.
     pattern_literal = json.dumps(pattern, ensure_ascii=False).replace('$', '\\$')
     args = ', '.join(f'match.group({i})!' for i in range(1, count+1))
-    lines += ['    {', f'      final match = RegExp({pattern_literal}, dotAll: true).firstMatch(source);', f'      if (match != null) return l10n.{key}({args});', '    }']
+    lines += ['    {', f'      final match = RegExp({pattern_literal}, dotAll: true).firstMatch(source);', f'      if (match != null) {{ return l10n.{key}({args}); }}', '    }']
 lines += ['    return source;', '  }', '}']
 Path('lib/l10n/localization.dart').write_text('\n'.join(lines)+'\n')

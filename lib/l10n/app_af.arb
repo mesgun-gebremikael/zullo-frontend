@@ -496,5 +496,10 @@
   "photosCountOfSix": "{value0} / 6 foto's",
   "heightCentimeters": "{value0} cm",
   "heightFeet": "{value0} vt",
-  "heightInches": "{value0} duim"
+  "heightInches": "{value0} duim",
+  "lastActiveMinutes": "{count, plural, one{Laas aktief {count} minuut gelede} other{Laas aktief {count} minute gelede}}",
+  "lastActiveHours": "{count, plural, one{Laas aktief {count} uur gelede} other{Laas aktief {count} uur gelede}}",
+  "lastActiveDays": "{count, plural, one{Laas aktief {count} dag gelede} other{Laas aktief {count} dae gelede}}",
+  "interests": "Belangstellings",
+  "cannabis": "Dagga"
 }

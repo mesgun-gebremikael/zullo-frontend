@@ -284,7 +284,8 @@ class _ZulloAppState extends State<ZulloApp> {
     } else {
       scaffoldMessengerKey.currentState?.showSnackBar(SnackBar(
           content: Text(context.l10n.youReceivedASuperlike),
-          action: SnackBarAction(label: 'Visa', onPressed: showDiscovery)));
+          action: SnackBarAction(
+              label: context.l10n.show, onPressed: showDiscovery)));
     }
     return true;
   }

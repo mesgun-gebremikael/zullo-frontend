@@ -496,5 +496,10 @@
   "photosCountOfSix": "{value0} / 6 ảnh",
   "heightCentimeters": "{value0} cm",
   "heightFeet": "{value0} ft",
-  "heightInches": "{value0} inch"
+  "heightInches": "{value0} inch",
+  "lastActiveMinutes": "{count, plural, other{Hoạt động lần cuối {count} phút trước}}",
+  "lastActiveHours": "{count, plural, other{Hoạt động lần cuối {count} giờ trước}}",
+  "lastActiveDays": "{count, plural, other{Hoạt động lần cuối {count} ngày trước}}",
+  "interests": "Sở thích",
+  "cannabis": "Cần sa"
 }

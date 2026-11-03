@@ -496,5 +496,10 @@
   "photosCountOfSix": "{value0} / 6 फ़ोटो",
   "heightCentimeters": "{value0} सेमी",
   "heightFeet": "{value0} फ़ीट",
-  "heightInches": "{value0} इंच"
+  "heightInches": "{value0} इंच",
+  "lastActiveMinutes": "{count, plural, one{आखिरी गतिविधि {count} मिनट पहले} other{आखिरी गतिविधि {count} मिनट पहले}}",
+  "lastActiveHours": "{count, plural, one{आखिरी गतिविधि {count} घंटा पहले} other{आखिरी गतिविधि {count} घंटे पहले}}",
+  "lastActiveDays": "{count, plural, one{आखिरी गतिविधि {count} दिन पहले} other{आखिरी गतिविधि {count} दिन पहले}}",
+  "interests": "रुचियाँ",
+  "cannabis": "कैनबिस"
 }

@@ -496,5 +496,10 @@
   "photosCountOfSix": "{value0} / 6 kép",
   "heightCentimeters": "{value0} cm",
   "heightFeet": "{value0} láb",
-  "heightInches": "{value0} hüvelyk"
+  "heightInches": "{value0} hüvelyk",
+  "lastActiveMinutes": "{count, plural, other{Legutóbb aktív: {count} perccel ezelőtt}}",
+  "lastActiveHours": "{count, plural, other{Legutóbb aktív: {count} órával ezelőtt}}",
+  "lastActiveDays": "{count, plural, other{Legutóbb aktív: {count} nappal ezelőtt}}",
+  "interests": "Érdeklődési körök",
+  "cannabis": "Kannabisz"
 }

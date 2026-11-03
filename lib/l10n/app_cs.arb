@@ -496,5 +496,10 @@
   "photosCountOfSix": "{value0} / 6 fotek",
   "heightCentimeters": "{value0} cm",
   "heightFeet": "{value0} stop",
-  "heightInches": "{value0} palců"
+  "heightInches": "{value0} palců",
+  "lastActiveMinutes": "{count, plural, one{Poslední aktivita před {count} minutou} few{Poslední aktivita před {count} minutami} many{Poslední aktivita před {count} minutami} other{Poslední aktivita před {count} minutami}}",
+  "lastActiveHours": "{count, plural, one{Poslední aktivita před {count} hodinou} few{Poslední aktivita před {count} hodinami} many{Poslední aktivita před {count} hodinami} other{Poslední aktivita před {count} hodinami}}",
+  "lastActiveDays": "{count, plural, one{Poslední aktivita před {count} dnem} few{Poslední aktivita před {count} dny} many{Poslední aktivita před {count} dny} other{Poslední aktivita před {count} dny}}",
+  "interests": "Zájmy",
+  "cannabis": "Konopí"
 }

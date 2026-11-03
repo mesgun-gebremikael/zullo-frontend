@@ -496,5 +496,10 @@
   "photosCountOfSix": "{value0} / 6 ፎቶዎች",
   "heightCentimeters": "{value0} ሴ.ሜ",
   "heightFeet": "{value0} ጫማ",
-  "heightInches": "{value0} ኢንች"
+  "heightInches": "{value0} ኢንች",
+  "lastActiveMinutes": "{count, plural, other{የመጨረሻ እንቅስቃሴ፦ ከ{count} ደቂቃ በፊት}}",
+  "lastActiveHours": "{count, plural, other{የመጨረሻ እንቅስቃሴ፦ ከ{count} ሰዓት በፊት}}",
+  "lastActiveDays": "{count, plural, other{የመጨረሻ እንቅስቃሴ፦ ከ{count} ቀን በፊት}}",
+  "interests": "ፍላጎቶች",
+  "cannabis": "ካናቢስ"
 }

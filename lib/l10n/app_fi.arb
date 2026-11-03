@@ -496,5 +496,10 @@
   "photosCountOfSix": "{value0} / 6 kuvaa",
   "heightCentimeters": "{value0} cm",
   "heightFeet": "{value0} jalkaa",
-  "heightInches": "{value0} tuumaa"
+  "heightInches": "{value0} tuumaa",
+  "lastActiveMinutes": "{count, plural, one{Viimeksi aktiivinen {count} minuutti sitten} other{Viimeksi aktiivinen {count} minuuttia sitten}}",
+  "lastActiveHours": "{count, plural, one{Viimeksi aktiivinen {count} tunti sitten} other{Viimeksi aktiivinen {count} tuntia sitten}}",
+  "lastActiveDays": "{count, plural, one{Viimeksi aktiivinen {count} päivä sitten} other{Viimeksi aktiivinen {count} päivää sitten}}",
+  "interests": "Kiinnostuksen kohteet",
+  "cannabis": "Kannabis"
 }

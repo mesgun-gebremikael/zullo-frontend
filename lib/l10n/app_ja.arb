@@ -496,5 +496,10 @@
   "photosCountOfSix": "写真 {value0} / 6",
   "heightCentimeters": "{value0} cm",
   "heightFeet": "{value0}フィート",
-  "heightInches": "{value0}インチ"
+  "heightInches": "{value0}インチ",
+  "lastActiveMinutes": "{count, plural, other{最終アクティブ：{count}分前}}",
+  "lastActiveHours": "{count, plural, other{最終アクティブ：{count}時間前}}",
+  "lastActiveDays": "{count, plural, other{最終アクティブ：{count}日前}}",
+  "interests": "興味・関心",
+  "cannabis": "大麻"
 }

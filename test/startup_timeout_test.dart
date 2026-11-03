@@ -49,7 +49,9 @@ void main() {
     final auth = RoutingAuth(
         storage: storage,
         client: MockClient((request) {
-          if(request.url.path == '/me/onboarding') return Future.value(http.Response('{}',404));
+          if (request.url.path == '/me/onboarding') {
+            return Future.value(http.Response('{}', 404));
+          }
           attempts++;
           return attempts == 1
               ? pending.future

@@ -85,11 +85,13 @@ void main() {
     var foreground = true;
     final auth = LocationAuth()..value['automaticLocation'] = true;
     final place = FakePlace()..pending = Completer<DevicePlace?>();
-    final result = ForegroundLocationSync(auth, location: place, isActive: () => foreground).refresh();
+    final result = ForegroundLocationSync(auth,
+        location: place, isActive: () => foreground).refresh();
     await Future<void>.delayed(Duration.zero);
     foreground = false;
     place.pending!.complete(const DevicePlace(40, -3, 'Madrid'));
-    expect(await result, isFalse); expect(auth.writes, isEmpty);
+    expect(await result, isFalse);
+    expect(auth.writes, isEmpty);
   });
   testWidgets(
       'location permission failure keeps settings usable and does not save fake coordinates',

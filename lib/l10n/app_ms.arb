@@ -496,5 +496,10 @@
   "photosCountOfSix": "{value0} / 6 foto",
   "heightCentimeters": "{value0} cm",
   "heightFeet": "{value0} kaki",
-  "heightInches": "{value0} inci"
+  "heightInches": "{value0} inci",
+  "lastActiveMinutes": "{count, plural, other{Kali terakhir aktif {count} minit lalu}}",
+  "lastActiveHours": "{count, plural, other{Kali terakhir aktif {count} jam lalu}}",
+  "lastActiveDays": "{count, plural, other{Kali terakhir aktif {count} hari lalu}}",
+  "interests": "Minat",
+  "cannabis": "Ganja"
 }
