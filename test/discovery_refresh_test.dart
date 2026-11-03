@@ -1,3 +1,5 @@
+import 'package:zullo_app/services/commerce_service.dart';
+import 'package:zullo_app/widgets/swipe_profile_card.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -20,7 +22,33 @@ class FeedAuth extends AuthService {
   Future<List<dynamic>> getMatches() async => [];
 }
 
+class VisibleFeedAuth extends FeedAuth {
+  @override
+  Future<Map<String, dynamic>> getSwipeFeed({int minAge = 18, int maxAge = 99}) async {
+    calls++;
+    return {'profiles': [SwipeProfile.fromJson({'userId': 'peer', 'displayName': 'Nora', 'age': 28, 'photoUrls': <String>[]})], 'radiusKm': 50.0};
+  }
+}
+
 void main() {
+  testWidgets('location/discovery refresh waits until an active card gesture has ended', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(360, 740));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final auth = VisibleFeedAuth();
+    await tester.pumpWidget(MaterialApp(home: HomePage(authService: auth)));
+    await tester.pumpAndSettle();
+    final gesture = await tester.startGesture(tester.getCenter(find.byType(SwipeProfileCard).first));
+    await gesture.moveBy(const Offset(30, 0)); await tester.pump();
+    final before = auth.calls;
+    CommerceEvents.refreshDiscovery(); await tester.pump(const Duration(milliseconds: 500));
+    expect(auth.calls, before);
+    await gesture.up(); await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 600)); await tester.pumpAndSettle();
+    expect(auth.calls, greaterThan(before));
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox());
+  });
+
   testWidgets('empty discovery refreshes without overlap and stops offscreen and after logout', (tester) async {
     final auth = FeedAuth();
     Widget page(bool active) => MaterialApp(home: HomePage(active: active, authService: auth));
