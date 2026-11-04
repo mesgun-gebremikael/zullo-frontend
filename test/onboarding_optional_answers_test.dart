@@ -27,7 +27,7 @@ void main() {
       };
       final label = switch (scenario) {
         'intention' => 'Seriöst förhållande',
-        'religion' => 'Kristen',
+        'religion' => 'Kristendom',
         _ => 'Pluggar just nu',
       };
       await tester.pumpWidget(MaterialApp(home: page));

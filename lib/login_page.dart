@@ -1,3 +1,4 @@
+import 'l10n/localization.dart';
 import 'package:flutter/material.dart';
 import 'services/auth_service.dart';
 import 'register_page.dart';
@@ -57,7 +58,7 @@ class _LoginPageState extends State<LoginPage> {
       child: Scaffold(
           backgroundColor: Colors.white,
           appBar: AppBar(
-              title: const Text('Log in'),
+              title: Text(context.l10n.logIn),
               automaticallyImplyLeading: !_loading),
           body: SafeArea(
               child: SingleChildScrollView(
@@ -69,13 +70,12 @@ class _LoginPageState extends State<LoginPage> {
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
                                 const SizedBox(height: 24),
-                                const Text('Välkommen tillbaka',
+                                Text(context.l10n.welcomeBack,
                                     style: TextStyle(
                                         fontSize: 32,
                                         fontWeight: FontWeight.w800)),
                                 const SizedBox(height: 12),
-                                const Text(
-                                    'Logga in och fortsätt där du slutade.',
+                                Text(context.l10n.logInAndPickUpWhereYouLeftOff,
                                     style: TextStyle(
                                         fontSize: 16,
                                         color: Color(0xFF667085))),
@@ -88,8 +88,8 @@ class _LoginPageState extends State<LoginPage> {
                                       AutofillHints.username
                                     ],
                                     textInputAction: TextInputAction.next,
-                                    decoration: const InputDecoration(
-                                        labelText: 'E-postadress'),
+                                    decoration: InputDecoration(
+                                        labelText: context.l10n.emailAddress),
                                     validator: (value) => value == null ||
                                             !value.trim().contains('@')
                                         ? 'Ange din e-postadress.'
@@ -104,11 +104,11 @@ class _LoginPageState extends State<LoginPage> {
                                     ],
                                     onFieldSubmitted: (_) => _login(),
                                     decoration: InputDecoration(
-                                        labelText: 'Lösenord',
+                                        labelText: context.l10n.password,
                                         suffixIcon: IconButton(
                                             tooltip: _obscure
-                                                ? 'Visa lösenord'
-                                                : 'Dölj lösenord',
+                                                ? context.l10n.showPassword
+                                                : context.l10n.hidePassword,
                                             onPressed: () => setState(
                                                 () => _obscure = !_obscure),
                                             icon: Icon(_obscure
@@ -122,7 +122,7 @@ class _LoginPageState extends State<LoginPage> {
                                 if (_error != null)
                                   Padding(
                                       padding: const EdgeInsets.only(top: 16),
-                                      child: Text(_error!,
+                                      child: Text(context.tr(_error!),
                                           style: const TextStyle(
                                               color: Color(0xFFB42318)))),
                                 const SizedBox(height: 24),
@@ -135,7 +135,7 @@ class _LoginPageState extends State<LoginPage> {
                                             child: CircularProgressIndicator(
                                                 strokeWidth: 2,
                                                 color: Colors.white))
-                                        : const Text('Log in')),
+                                        : Text(context.l10n.logIn)),
                                 const SizedBox(height: 12),
                                 TextButton(
                                     onPressed: _loading
@@ -145,7 +145,7 @@ class _LoginPageState extends State<LoginPage> {
                                             MaterialPageRoute(
                                                 builder: (_) =>
                                                     const RegisterPage())),
-                                    child: const Text(
-                                        'Har du inget konto? Create account')),
+                                    child: Text(context
+                                        .l10n.donTHaveAnAccountCreateAccount)),
                               ])))))));
 }

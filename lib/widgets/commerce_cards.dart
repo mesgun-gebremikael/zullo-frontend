@@ -1,3 +1,4 @@
+import '../l10n/localization.dart';
 import 'package:flutter/material.dart';
 
 const commerceInk = Color(0xFF22262E);
@@ -58,13 +59,13 @@ class ProfilePurchaseCard extends StatelessWidget {
                   child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                    Text(title,
+                    Text(context.tr(title),
                         style: const TextStyle(
                             color: Color(0xFF555D6A),
                             fontSize: 19,
                             fontWeight: FontWeight.w500)),
                     const SizedBox(height: 3),
-                    Text(subtitle,
+                    Text(context.tr(subtitle),
                         style: TextStyle(
                             color: color,
                             fontSize: 17,
@@ -99,7 +100,7 @@ class PremiumBenefitsCard extends StatelessWidget {
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               const Row(children: [
-                ZulloMark(color: Color(0xFFB38A23), size: 34),
+                ZulloMark(color: Color(0xFFEC2863), size: 34),
                 SizedBox(width: 10),
                 Expanded(
                     child: Text('ZULLO Premium',
@@ -109,7 +110,7 @@ class PremiumBenefitsCard extends StatelessWidget {
                             fontWeight: FontWeight.w800)))
               ]),
               const SizedBox(height: 18),
-              const Text('Detta ingår',
+              Text(context.l10n.whatSIncluded,
                   style: TextStyle(
                       color: commerceInk,
                       fontSize: 21,
@@ -119,21 +120,21 @@ class PremiumBenefitsCard extends StatelessWidget {
                 'Se vem som gillar dig',
                 'Obegränsade likes',
                 'Dölj aktivitetsstatus',
-                'Inkognito',
+                context.l10n.premiumIncognito,
                 'Ångra en swipe',
-                '3 Superlikes per vecka',
+                context.l10n.threeSuperlikesPerWeek,
                 '1 Boost per månad'
               ])
                 Padding(
                     padding: const EdgeInsets.symmetric(vertical: 7),
                     child: Row(children: [
                       Expanded(
-                          child: Text(benefit,
+                          child: Text(context.tr(benefit),
                               style: const TextStyle(
                                   color: commerceInk, fontSize: 16))),
                       const SizedBox(width: 8),
                       const Icon(Icons.check_rounded,
-                          color: Color(0xFFB38A23), size: 23),
+                          color: Color(0xFFEC2863), size: 23),
                     ])),
               const SizedBox(height: 16),
               SizedBox(
@@ -145,7 +146,9 @@ class PremiumBenefitsCard extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(vertical: 15)),
                     onPressed: onTap,
                     child: Text(
-                        active ? 'Hantera Premium' : 'Se alla funktioner',
+                        active
+                            ? context.l10n.managePremium
+                            : context.l10n.seeAllFeatures,
                         style: const TextStyle(fontWeight: FontWeight.w800)),
                   )),
             ]),

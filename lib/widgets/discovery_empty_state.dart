@@ -1,3 +1,4 @@
+import '../l10n/localization.dart';
 import 'package:flutter/material.dart';
 
 class DiscoveryEmptyState extends StatelessWidget {
@@ -34,9 +35,9 @@ class DiscoveryEmptyState extends StatelessWidget {
           Text(
               likes
                   ? (premium
-                      ? 'Dina likes börjar här'
-                      : 'Se vem som gillar dig')
-                  : 'Börja swipa',
+                      ? context.l10n.yourLikesStartHere
+                      : context.l10n.seeWhoLikesYou)
+                  : context.l10n.startSwiping,
               textAlign: TextAlign.center,
               style: const TextStyle(
                   color: Color(0xFF555D6A),
@@ -46,9 +47,10 @@ class DiscoveryEmptyState extends StatelessWidget {
           Text(
               likes
                   ? (premium
-                      ? 'När någon gillar dig visas personen här.'
-                      : 'Med ZULLO Premium kan du se personer som har gillat dig. Dina Superlikes visas här även utan Premium.')
-                  : 'När du matchar med någon visas personen här, så att ni kan börja chatta.',
+                      ? context.l10n.whenSomeoneLikesYouTheyLlAppearHere
+                      : context
+                          .l10n.withZulloPremiumYouCanSeePeopleWhoHaveLiked)
+                  : context.l10n.whenYouMatchWithSomeoneTheyWillAppearHereSo,
               textAlign: TextAlign.center,
               style: const TextStyle(
                   color: Color(0xFF626A77), fontSize: 17, height: 1.5)),
@@ -67,7 +69,9 @@ class DiscoveryEmptyState extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 18, vertical: 17)),
                 child: Text(
-                    likes && !premium ? 'Se vem som gillar dig' : 'Börja swipa',
+                    likes && !premium
+                        ? context.l10n.seeWhoLikesYou
+                        : context.l10n.startSwiping,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                         fontSize: 17, fontWeight: FontWeight.w800)),

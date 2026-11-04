@@ -26,11 +26,13 @@ class TestStorage extends AuthStorage {
 
 class SettingsAuth extends AuthService {
   @override
-  Future<Map<String, dynamic>> discoverySettings({Map<String, dynamic>? update}) async {
+  Future<Map<String, dynamic>> discoverySettings(
+      {Map<String, dynamic>? update}) async {
     if (update?['interestedIn'] is String) preference = update!['interestedIn'];
     if (update?['radiusKm'] is int) savedRadius = update!['radiusKm'];
     return {'minAge': 18, 'maxAge': 99};
   }
+
   String preference = 'Kvinnor';
   int? savedRadius;
   final feedPreferences = <String>[];
@@ -140,7 +142,9 @@ void main() {
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('Spara inställningar'));
     await tester.tap(find.text('Spara inställningar'));
-    await tester.runAsync(() async { await Future<void>.delayed(const Duration(milliseconds: 30)); });
+    await tester.runAsync(() async {
+      await Future<void>.delayed(const Duration(milliseconds: 30));
+    });
     await tester.pumpAndSettle();
     expect(auth.preference, 'Män');
     expect(auth.savedRadius, 153);

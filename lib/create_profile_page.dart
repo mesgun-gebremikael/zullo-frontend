@@ -1,3 +1,5 @@
+import 'models/profile_choices.dart';
+import 'l10n/localization.dart';
 import 'services/auth_service.dart';
 import 'dart:convert';
 import 'dart:io';
@@ -25,11 +27,11 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
   final _age = TextEditingController(text: "24");
   final _gender = TextEditingController(text: "Man");
   final _bio = TextEditingController(
-    text: "Hej! Jag söker en seriös relation.",
+    text: "",
   );
 
   String _selectedIntention = "Relationship";
-  String _selectedReligion = "Private";
+  String _selectedReligion = "";
 
   final ImagePicker _picker = ImagePicker();
 
@@ -48,25 +50,54 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
   }
 
   Future<void> _pickAndUploadImage() async {
-    if (_isUploadingImage || _isLoading || _photoUrls.length >= 6 || !AccountSession.isCurrent(_photoGeneration)) return;
-    setState(() { _isUploadingImage = true; _error = null; });
+    if (_isUploadingImage ||
+        _isLoading ||
+        _photoUrls.length >= 6 ||
+        !AccountSession.isCurrent(_photoGeneration)) {
+      return;
+    }
+    setState(() {
+      _isUploadingImage = true;
+      _error = null;
+    });
     try {
-      final picked = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 82, maxWidth: 1920, maxHeight: 1920);
-      if (picked == null || !mounted || !AccountSession.isCurrent(_photoGeneration)) return;
+      final picked = await _picker.pickImage(
+          source: ImageSource.gallery,
+          imageQuality: 82,
+          maxWidth: 1920,
+          maxHeight: 1920);
+      if (picked == null ||
+          !mounted ||
+          !AccountSession.isCurrent(_photoGeneration)) {
+        return;
+      }
       final url = await PhotoService().uploadFile(File(picked.path));
       if (!mounted || !AccountSession.isCurrent(_photoGeneration)) return;
-      setState(() { if (!_photoUrls.contains(url)) _photoUrls.add(url); });
+      setState(() {
+        if (!_photoUrls.contains(url)) _photoUrls.add(url);
+      });
     } on PhotoUploadException catch (error) {
-      if (mounted && AccountSession.isCurrent(_photoGeneration)) setState(() => _error = error.message);
+      if (mounted && AccountSession.isCurrent(_photoGeneration)) {
+        setState(() => _error = error.message);
+      }
     } catch (_) {
-      if (mounted && AccountSession.isCurrent(_photoGeneration)) setState(() => _error = 'Kunde inte välja eller ladda upp bilden. Försök igen.');
+      if (mounted && AccountSession.isCurrent(_photoGeneration)) {
+        setState(() =>
+            _error = 'Kunde inte välja eller ladda upp bilden. Försök igen.');
+      }
     } finally {
-      if (mounted && AccountSession.isCurrent(_photoGeneration)) setState(() => _isUploadingImage = false);
+      if (mounted && AccountSession.isCurrent(_photoGeneration)) {
+        setState(() => _isUploadingImage = false);
+      }
     }
   }
 
   Future<void> _saveProfile() async {
-    if (_isLoading || _isUploadingImage || !AccountSession.isCurrent(_photoGeneration)) return;
+    if (_isLoading ||
+        _isUploadingImage ||
+        !AccountSession.isCurrent(_photoGeneration)) {
+      return;
+    }
     final name = _displayName.text.trim();
     final age = int.tryParse(_age.text.trim()) ?? 0;
     final gender = _gender.text.trim();
@@ -170,69 +201,58 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-  title: const Text("Skapa profil"),
-  actions: [
-    TextButton(
-      onPressed: () async {
-        await AuthStorage().clearAuth();
+        title: Text(context.l10n.createProfile),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              await AuthStorage().clearAuth();
 
-        if (!context.mounted) return;
+              if (!context.mounted) return;
 
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (_) => const WelcomePage()),
-          (route) => false,
-        );
-      },
-      child: const Text("Logga ut"),
-    ),
-  ],
-),
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const WelcomePage()),
+                (route) => false,
+              );
+            },
+            child: Text(context.l10n.logOut),
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(
-              "Snabbprofil (MVP)",
+            Text(
+              context.l10n.quickProfile,
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-
             TextField(
               controller: _displayName,
-              decoration: const InputDecoration(labelText: "Namn (display)"),
+              decoration: InputDecoration(labelText: context.l10n.displayName),
             ),
             const SizedBox(height: 12),
-
             TextField(
               controller: _age,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: "Ålder"),
+              decoration: InputDecoration(labelText: context.l10n.age),
             ),
             const SizedBox(height: 12),
-
             TextField(
               controller: _gender,
-              decoration: const InputDecoration(
-                labelText: "Kön (t.ex. Man/Kvinna)",
+              decoration: InputDecoration(
+                labelText: context.l10n.genderForExampleManOrWoman,
               ),
             ),
             const SizedBox(height: 12),
-
             DropdownButtonFormField<String>(
-              value: _selectedIntention,
-              decoration: const InputDecoration(
-                labelText: "Vad söker du?",
+              initialValue: _selectedIntention,
+              decoration: InputDecoration(
+                labelText: context.l10n.whatAreYouLookingFor,
               ),
-              items: const [
-                DropdownMenuItem(value: "Date", child: Text("Date")),
-                DropdownMenuItem(
-                  value: "Relationship",
-                  child: Text("Relationship"),
-                ),
-                DropdownMenuItem(value: "Marriage", child: Text("Marriage")),
-              ],
+              items: intentionOptions.entries.map((option) => DropdownMenuItem(value: option.key, child: Text(context.tr(option.value)))).toList(),
               onChanged: (value) {
                 if (value == null) return;
                 setState(() {
@@ -241,21 +261,12 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
               },
             ),
             const SizedBox(height: 12),
-
             DropdownButtonFormField<String>(
-              value: _selectedReligion,
-              decoration: const InputDecoration(
-                labelText: "Religion",
+              initialValue: _selectedReligion,
+              decoration: InputDecoration(
+                labelText: context.l10n.religion,
               ),
-              items: const [
-                DropdownMenuItem(
-                  value: "Christian",
-                  child: Text("Christian"),
-                ),
-                DropdownMenuItem(value: "Muslim", child: Text("Muslim")),
-                DropdownMenuItem(value: "Atheist", child: Text("Atheist")),
-                DropdownMenuItem(value: "Private", child: Text("Private")),
-              ],
+              items: [DropdownMenuItem(value: '', child: Text(context.l10n.skip)), ...religionOptions.entries.map((option) => DropdownMenuItem(value: option.key, child: Text(context.tr(option.value))))],
               onChanged: (value) {
                 if (value == null) return;
                 setState(() {
@@ -264,14 +275,12 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
               },
             ),
             const SizedBox(height: 12),
-
             TextField(
               controller: _bio,
               maxLines: 3,
-              decoration: const InputDecoration(labelText: "Om mig"),
+              decoration: InputDecoration(labelText: context.l10n.aboutMe),
             ),
             const SizedBox(height: 16),
-
             SizedBox(
               height: 48,
               child: OutlinedButton(
@@ -282,11 +291,10 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
                         width: 22,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Text("Lägg till bild från galleri"),
+                    : Text(context.l10n.addAPhotoFromYourGallery),
               ),
             ),
             const SizedBox(height: 12),
-
             if (_photoUrls.isNotEmpty)
               Wrap(
                 spacing: 8,
@@ -303,7 +311,6 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
                   );
                 }).toList(),
               ),
-
             if (_error != null) ...[
               const SizedBox(height: 12),
               Text(
@@ -311,20 +318,19 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
                 style: const TextStyle(color: Colors.red),
               ),
             ],
-
             const SizedBox(height: 20),
-
             SizedBox(
               height: 48,
               child: ElevatedButton(
-                onPressed: (_isLoading || _isUploadingImage) ? null : _saveProfile,
+                onPressed:
+                    (_isLoading || _isUploadingImage) ? null : _saveProfile,
                 child: _isLoading
                     ? const SizedBox(
                         height: 22,
                         width: 22,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Text("Spara och fortsätt"),
+                    : Text(context.l10n.saveAndContinue),
               ),
             ),
           ],

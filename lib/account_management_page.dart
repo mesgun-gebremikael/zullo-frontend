@@ -1,3 +1,4 @@
+import 'l10n/localization.dart';
 import 'package:flutter/material.dart';
 import 'services/account_service.dart';
 import 'services/account_session.dart';
@@ -61,19 +62,18 @@ class _AccountManagementPageState extends State<AccountManagementPage> {
   Widget build(BuildContext context) => !AccountSession.isCurrent(_generation)
       ? const SizedBox.shrink()
       : Scaffold(
-          appBar: AppBar(title: const Text('Hantera konto')),
+          appBar: AppBar(title: Text(context.l10n.manageAccount)),
           body: ListView(padding: const EdgeInsets.all(24), children: [
             const Icon(Icons.pause_circle_outline, size: 48),
             const SizedBox(height: 20),
             Text(
                 _paused == true
-                    ? 'Ditt konto är pausat'
-                    : 'Ta en paus när du vill',
+                    ? context.l10n.yourAccountIsPaused
+                    : context.l10n.takeABreakWheneverYouNeed,
                 style:
                     const TextStyle(fontSize: 27, fontWeight: FontWeight.w800)),
             const SizedBox(height: 12),
-            const Text(
-                'När kontot är pausat visas du inte i Swipa eller bland nya likes. Dina matchningar och chattar finns kvar. Du kan återaktivera kontot när du vill.',
+            Text(context.l10n.whileYourAccountIsPausedYouWillNotAppearIn,
                 style: TextStyle(fontSize: 17, height: 1.5)),
             const SizedBox(height: 24),
             if (_paused == null && _error == null)
@@ -83,24 +83,23 @@ class _AccountManagementPageState extends State<AccountManagementPage> {
                 child: Padding(
                     padding: const EdgeInsets.all(14),
                     child: Text(_busy
-                        ? 'Sparar…'
+                        ? context.l10n.saving
                         : _paused == true
-                            ? 'Återaktivera konto'
-                            : 'Pausa konto'))),
+                            ? context.l10n.reactivateAccount
+                            : context.l10n.pauseAccount))),
             if (_error != null) ...[
               const SizedBox(height: 16),
-              Text(_error!, style: const TextStyle(color: Colors.red)),
+              Text(context.tr(_error!), style: const TextStyle(color: Colors.red)),
               if (_paused == null)
-                TextButton(onPressed: _load, child: const Text('Försök igen'))
+                TextButton(onPressed: _load, child: Text(context.l10n.tryAgain))
             ],
             const SizedBox(height: 32),
             const Divider(),
             const SizedBox(height: 20),
-            const Text('Vill du lämna ZULLO?',
+            Text(context.l10n.leaveZullo,
                 style: TextStyle(fontSize: 23, fontWeight: FontWeight.w800)),
             const SizedBox(height: 12),
-            const Text(
-                'Du kan stänga kontot och begära att dina uppgifter raderas. Det går inte att återaktivera ett stängt konto.',
+            Text(context.l10n.youCanCloseYourAccountAndRequestDeletionOfYour,
                 style: TextStyle(fontSize: 16, height: 1.5)),
             const SizedBox(height: 20),
             OutlinedButton(
@@ -111,14 +110,15 @@ class _AccountManagementPageState extends State<AccountManagementPage> {
                         MaterialPageRoute(
                             builder: (_) =>
                                 AccountRemovalPage(service: _service))),
-                child: const Padding(
+                child:  Padding(
                     padding: EdgeInsets.all(14),
-                    child: Text('Stäng konto och begär radering',
+                    child: Text(context.l10n.closeAccountAndRequestDeletion,
                         textAlign: TextAlign.center,
                         style: TextStyle(color: Colors.red)))),
             const SizedBox(height: 24),
-            const Text(
-                'Paus eller kontostängning avslutar inte automatiskt abonnemang hos Apple eller Google. Hantera dem i butikens abonnemangsinställningar.',
+            Text(
+                context.l10n
+                    .pausingOrClosingYourAccountDoesNotAutomaticallyCancelApple,
                 style: TextStyle(color: Color(0xFF626A77), height: 1.5)),
           ]));
 }
@@ -177,18 +177,20 @@ class _AccountRemovalPageState extends State<AccountRemovalPage> {
       : PopScope(
           canPop: !_busy,
           child: Scaffold(
-              appBar: AppBar(title: const Text('Begär radering')),
+              appBar: AppBar(title: Text(context.l10n.requestDeletion)),
               body: ListView(padding: const EdgeInsets.all(24), children: [
-                const Text('Det här händer',
+                Text(context.l10n.whatHappensNext,
                     style:
                         TextStyle(fontSize: 27, fontWeight: FontWeight.w800)),
                 const SizedBox(height: 16),
-                const Text(
-                    'Kontot stängs direkt. Din profil och dina konversationer tas bort från ZULLO. Bildradering hos externa leverantörer behandlas separat. Vissa betalnings- och säkerhetsuppgifter kan behöva behållas.',
+                Text(
+                    context.l10n
+                        .yourAccountClosesImmediatelyYourProfileAndConversationsAreRemoved,
                     style: TextStyle(fontSize: 17, height: 1.5)),
                 const SizedBox(height: 16),
-                const Text(
-                    'Avsluta eventuella abonnemang i App Store eller Google Play. Kontostängningen avslutar inte butikens debitering.',
+                Text(
+                    context
+                        .l10n.cancelAnySubscriptionsInTheAppStoreOrGooglePlay,
                     style: TextStyle(
                         fontSize: 16,
                         height: 1.5,
@@ -200,8 +202,8 @@ class _AccountRemovalPageState extends State<AccountRemovalPage> {
                     enabled: !_busy,
                     onChanged: (_) => setState(() {}),
                     autofillHints: const [AutofillHints.password],
-                    decoration: const InputDecoration(
-                        labelText: 'Bekräfta med ditt lösenord')),
+                    decoration: InputDecoration(
+                        labelText: context.l10n.confirmWithYourPassword)),
                 const SizedBox(height: 16),
                 CheckboxListTile(
                     contentPadding: EdgeInsets.zero,
@@ -209,12 +211,12 @@ class _AccountRemovalPageState extends State<AccountRemovalPage> {
                     onChanged: _busy
                         ? null
                         : (value) => setState(() => _confirmed = value == true),
-                    title: const Text(
-                        'Jag förstår att kontot stängs och inte kan återaktiveras.')),
+                    title: Text(context
+                        .l10n.iUnderstandThatMyAccountWillBeClosedAndCannot)),
                 if (_error != null)
                   Padding(
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      child: Text(_error!,
+                      child: Text(context.tr(_error!),
                           style: const TextStyle(color: Colors.red))),
                 const SizedBox(height: 20),
                 FilledButton(
@@ -227,8 +229,8 @@ class _AccountRemovalPageState extends State<AccountRemovalPage> {
                         padding: const EdgeInsets.all(14),
                         child: Text(
                             _busy
-                                ? 'Behandlar…'
-                                : 'Stäng konto och begär radering',
+                                ? context.l10n.processing
+                                : context.l10n.closeAccountAndRequestDeletion,
                             textAlign: TextAlign.center))),
               ])));
 }

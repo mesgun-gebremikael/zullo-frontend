@@ -1,0 +1,2191 @@
+{
+  "@@locale": "en",
+  "languageSettingsTitle": "App language",
+  "@languageSettingsTitle": {
+    "description": "ZULLO interface text. Source: Appspråk"
+  },
+  "languageAutomatic": "Follow device language",
+  "@languageAutomatic": {
+    "description": "ZULLO interface text. Source: Följ mobilens språk"
+  },
+  "languageAutomaticDescription": "Use your phone’s language when supported.",
+  "@languageAutomaticDescription": {
+    "description": "ZULLO interface text. Source: Använd mobilens språk när det stöds."
+  },
+  "languageSavedError": "Could not save the language. Please try again.",
+  "@languageSavedError": {
+    "description": "ZULLO interface text. Source: Kunde inte spara språket. Försök igen."
+  },
+  "relationship": "Relationship",
+  "@relationship": {
+    "description": "ZULLO interface text. Source: Relation"
+  },
+  "getMarried": "Get married",
+  "@getMarried": {
+    "description": "ZULLO interface text. Source: Gifta mig"
+  },
+  "dating": "Dating",
+  "@dating": {
+    "description": "ZULLO interface text. Source: Dejta"
+  },
+  "haveSuperlikedYou": "Sent you a Superlike",
+  "@haveSuperlikedYou": {
+    "description": "ZULLO interface text. Source: Har supergillat dig"
+  },
+  "doNotWantPets": "Don’t want pets",
+  "@doNotWantPets": {
+    "description": "ZULLO interface text. Source: Vill inte ha husdjur"
+  },
+  "allergicToPets": "Allergic to pets",
+  "@allergicToPets": {
+    "description": "ZULLO interface text. Source: Allergisk mot husdjur"
+  },
+  "noAlcohol": "I don’t drink alcohol",
+  "@noAlcohol": {
+    "description": "ZULLO interface text. Source: Jag dricker inte alkohol"
+  },
+  "occasionalAlcohol": "I sometimes drink",
+  "@occasionalAlcohol": {
+    "description": "ZULLO interface text. Source: Jag dricker ibland"
+  },
+  "drinkAlcohol": "I drink alcohol",
+  "@drinkAlcohol": {
+    "description": "ZULLO interface text. Source: Jag dricker"
+  },
+  "onlineNow": "Online now",
+  "@onlineNow": {
+    "description": "ZULLO interface text. Source: Online nu"
+  },
+  "minuteSingular": "minute",
+  "@minuteSingular": {
+    "description": "ZULLO interface text. Source: minut"
+  },
+  "minutePlural": "minutes",
+  "@minutePlural": {
+    "description": "ZULLO interface text. Source: minuter"
+  },
+  "hourSingular": "hour",
+  "@hourSingular": {
+    "description": "ZULLO interface text. Source: timme"
+  },
+  "hourPlural": "hours",
+  "@hourPlural": {
+    "description": "ZULLO interface text. Source: timmar"
+  },
+  "daySingular": "day",
+  "@daySingular": {
+    "description": "ZULLO interface text. Source: dag"
+  },
+  "dayPlural": "days",
+  "@dayPlural": {
+    "description": "ZULLO interface text. Source: dagar"
+  },
+  "creatingAccount": "Creating your account…",
+  "@creatingAccount": {
+    "description": "ZULLO interface text. Source: Skapar ditt konto…"
+  },
+  "edit": "Edit",
+  "@edit": {
+    "description": "ZULLO interface text. Source: Redigera"
+  },
+  "unblockPersonQuestion": "Unblock {value0}?",
+  "@unblockPersonQuestion": {
+    "description": "ZULLO interface text. Source: Avblockera {value0}?",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "noBlockedProfiles": "You haven’t blocked anyone.",
+  "@noBlockedProfiles": {
+    "description": "ZULLO interface text. Source: Du har inga blockerade profiler."
+  },
+  "conversationPrompt": "Conversation prompt",
+  "@conversationPrompt": {
+    "description": "ZULLO interface text. Source: Samtalsfråga"
+  },
+  "location": "Location",
+  "@location": {
+    "description": "ZULLO interface text. Source: Plats"
+  },
+  "myProfile": "My profile",
+  "@myProfile": {
+    "description": "ZULLO interface text. Source: Min profil"
+  },
+  "exercise": "Exercise",
+  "@exercise": {
+    "description": "ZULLO interface text. Source: Träning"
+  },
+  "smoking": "Smoking",
+  "@smoking": {
+    "description": "ZULLO interface text. Source: Rökning"
+  },
+  "alcohol": "Alcohol",
+  "@alcohol": {
+    "description": "ZULLO interface text. Source: Alkohol"
+  },
+  "children": "Children",
+  "@children": {
+    "description": "ZULLO interface text. Source: Barn"
+  },
+  "futureChildren": "Children in the future",
+  "@futureChildren": {
+    "description": "ZULLO interface text. Source: Barn i framtiden"
+  },
+  "height": "Height",
+  "@height": {
+    "description": "ZULLO interface text. Source: Längd"
+  },
+  "work": "Work",
+  "@work": {
+    "description": "ZULLO interface text. Source: Arbete"
+  },
+  "education": "Education",
+  "@education": {
+    "description": "ZULLO interface text. Source: Utbildning"
+  },
+  "hometown": "From",
+  "@hometown": {
+    "description": "ZULLO interface text. Source: Hemort"
+  },
+  "currentCity": "Lives in",
+  "@currentCity": {
+    "description": "ZULLO interface text. Source: Bor i"
+  },
+  "zodiac": "Zodiac sign",
+  "@zodiac": {
+    "description": "ZULLO interface text. Source: Stjärntecken"
+  },
+  "perMonth": " per month",
+  "@perMonth": {
+    "description": "ZULLO interface text. Source:  per månad"
+  },
+  "boostPerBillingMonth": "1 Boost per billing month",
+  "@boostPerBillingMonth": {
+    "description": "ZULLO interface text. Source: 1 Boost per betalningsmånad"
+  },
+  "boostPerMonth": "1 Boost per month",
+  "@boostPerMonth": {
+    "description": "ZULLO interface text. Source: 1 Boost per månad"
+  },
+  "child": "1 child",
+  "@child": {
+    "description": "ZULLO interface text. Source: 1 barn"
+  },
+  "children4": "2 children",
+  "@children4": {
+    "description": "ZULLO interface text. Source: 2 barn"
+  },
+  "children5": "3 children",
+  "@children5": {
+    "description": "ZULLO interface text. Source: 3 barn"
+  },
+  "orMore": "4 or more",
+  "@orMore": {
+    "description": "ZULLO interface text. Source: 4 eller fler"
+  },
+  "yourSubscriptionRenewsAutomaticallyUntilYouCancelInTheApp": "Your subscription renews automatically until you cancel in the App Store or Google Play. Included weekly Superlikes and monthly Boosts do not roll over. Credits purchased separately stay in your account until you use them.",
+  "@yourSubscriptionRenewsAutomaticallyUntilYouCancelInTheApp": {
+    "description": "ZULLO interface text. Source: Abonnemanget förnyas automatiskt tills du säger upp det i App Store eller Google Play. Veckans inkluderade Superlikes och månadens inkluderade Boost sparas inte till nästa period. Separat köpta krediter finns kvar på ditt konto tills de används."
+  },
+  "agnostic": "Agnostic",
+  "@agnostic": {
+    "description": "ZULLO interface text. Source: Agnostisk"
+  },
+  "activityStatus": "Activity status",
+  "@activityStatus": {
+    "description": "ZULLO interface text. Source: Aktivitetsstatus"
+  },
+  "never": "Never",
+  "@never": {
+    "description": "ZULLO interface text. Source: Aldrig"
+  },
+  "neverBeenInARelationship": "Never been in a relationship",
+  "@neverBeenInARelationship": {
+    "description": "ZULLO interface text. Source: Aldrig haft ett förhållande"
+  },
+  "everyone": "Everyone",
+  "@everyone": {
+    "description": "ZULLO interface text. Source: Alla"
+  },
+  "alreadyHaveAnAccountLogIn": "Already have an account? Log in",
+  "@alreadyHaveAnAccountLogIn": {
+    "description": "ZULLO interface text. Source: Already have an account? Log in"
+  },
+  "spiritualWithoutAReligion": "Spiritual, without a religion",
+  "@spiritualWithoutAReligion": {
+    "description": "ZULLO interface text. Source: Andlig utan religion"
+  },
+  "enterYourPassword": "Enter your password.",
+  "@enterYourPassword": {
+    "description": "ZULLO interface text. Source: Ange ditt lösenord."
+  },
+  "anotherFaith": "Another faith",
+  "@anotherFaith": {
+    "description": "ZULLO interface text. Source: Annan tro"
+  },
+  "theConnectionTimedOutCheckYourInternetConnectionAndTry": "The connection timed out. Check your internet connection and try again.",
+  "@theConnectionTimedOutCheckYourInternetConnectionAndTry": {
+    "description": "ZULLO interface text. Source: Anslutningen tog för lång tid. Kontrollera internet och försök igen."
+  },
+  "thisPersonHasBeenBlocked": "This person has been blocked.",
+  "@thisPersonHasBeenBlocked": {
+    "description": "ZULLO interface text. Source: Användaren blockerades."
+  },
+  "thisPersonHasBeenReported": "This person has been reported.",
+  "@thisPersonHasBeenReported": {
+    "description": "ZULLO interface text. Source: Användaren har rapporterats."
+  },
+  "doYouUseNicotine": "Do you use nicotine?",
+  "@doYouUseNicotine": {
+    "description": "ZULLO interface text. Source: Använder du nikotin?"
+  },
+  "asmaraAddisAbabaStockholm": "Asmara, Addis Ababa, Stockholm…",
+  "@asmaraAddisAbabaStockholm": {
+    "description": "ZULLO interface text. Source: Asmara, Addis Abeba, Stockholm..."
+  },
+  "atheist": "Atheist",
+  "@atheist": {
+    "description": "ZULLO interface text. Source: Ateistisk"
+  },
+  "unblock": "Unblock",
+  "@unblock": {
+    "description": "ZULLO interface text. Source: Avblockera"
+  },
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "ZULLO interface text. Source: Avbryt"
+  },
+  "cancelAnySubscriptionsInTheAppStoreOrGooglePlay": "Cancel any subscriptions in the App Store or Google Play. Closing your account does not stop the store from charging you.",
+  "@cancelAnySubscriptionsInTheAppStoreOrGooglePlay": {
+    "description": "ZULLO interface text. Source: Avsluta eventuella abonnemang i App Store eller Google Play. Kontostängningen avslutar inte butikens debitering."
+  },
+  "bahaI": "Bahá’í",
+  "@bahaI": {
+    "description": "ZULLO interface text. Source: Bahá’í"
+  },
+  "hideActivityOnly": "Hide activity only",
+  "@hideActivityOnly": {
+    "description": "ZULLO interface text. Source: Bara Dölj aktivitet"
+  },
+  "onlyPeopleYouLikeCanSeeYourProfile": "Only people you like can see your profile",
+  "@onlyPeopleYouLikeCanSeeYourProfile": {
+    "description": "ZULLO interface text. Source: Bara personer som du gillar kan se din profil"
+  },
+  "requestDeletion": "Request deletion",
+  "@requestDeletion": {
+    "description": "ZULLO interface text. Source: Begär radering"
+  },
+  "confirmWithYourPassword": "Confirm with your password",
+  "@confirmWithYourPassword": {
+    "description": "ZULLO interface text. Source: Bekräfta med ditt lösenord"
+  },
+  "tellUsMoreAboutYourself": "Tell us more about yourself",
+  "@tellUsMoreAboutYourself": {
+    "description": "ZULLO interface text. Source: Berätta mer om dig själv"
+  },
+  "thePhotoAddressCouldNotBeVerifiedTryAgain": "The photo address could not be verified. Try again.",
+  "@thePhotoAddressCouldNotBeVerifiedTryAgain": {
+    "description": "ZULLO interface text. Source: Bildadressen kunde inte bekräftas. Försök igen."
+  },
+  "yourPhotoIsStillBeingProcessedTryAgainShortly": "Your photo is still being processed. Try again shortly.",
+  "@yourPhotoIsStillBeingProcessedTryAgainShortly": {
+    "description": "ZULLO interface text. Source: Bilden behandlas fortfarande. Försök igen om en stund."
+  },
+  "yourPhotoCouldNotBeUploadedRightNowTryAgain": "Your photo could not be uploaded right now. Try again.",
+  "@yourPhotoCouldNotBeUploadedRightNowTryAgain": {
+    "description": "ZULLO interface text. Source: Bilden kunde inte laddas upp just nu. Försök igen."
+  },
+  "thisPhotoIsTooLargeTheLimitIsMb": "This photo is too large. The limit is 10 MB.",
+  "@thisPhotoIsTooLargeTheLimitIsMb": {
+    "description": "ZULLO interface text. Source: Bilden är för stor. Max 10 MB."
+  },
+  "photoUploadsAreUnavailableRightNowYourSavedPhotosAre": "Photo uploads are unavailable right now. Your saved photos are unaffected.",
+  "@photoUploadsAreUnavailableRightNowYourSavedPhotosAre": {
+    "description": "ZULLO interface text. Source: Bilduppladdning är inte tillgänglig just nu. Dina sparade bilder påverkas inte."
+  },
+  "block": "Block",
+  "@block": {
+    "description": "ZULLO interface text. Source: Blockera"
+  },
+  "blockThisPerson": "Block this person?",
+  "@blockThisPerson": {
+    "description": "ZULLO interface text. Source: Blockera personen?"
+  },
+  "blocked": "Blocked",
+  "@blocked": {
+    "description": "ZULLO interface text. Source: Blockerad"
+  },
+  "blockedProfiles": "Blocked profiles",
+  "@blockedProfiles": {
+    "description": "ZULLO interface text. Source: Blockerade profiler"
+  },
+  "buddhism": "Buddhism",
+  "@buddhism": {
+    "description": "ZULLO interface text. Source: Buddhism"
+  },
+  "startSwiping": "Start swiping",
+  "@startSwiping": {
+    "description": "ZULLO interface text. Source: Börja swipa"
+  },
+  "chats": "Chats",
+  "@chats": {
+    "description": "ZULLO interface text. Source: Chattar"
+  },
+  "createAccount": "Create account",
+  "@createAccount": {
+    "description": "ZULLO interface text. Source: Create account"
+  },
+  "yourLocationOnZullo": "YOUR LOCATION ON ZULLO",
+  "@yourLocationOnZullo": {
+    "description": "ZULLO interface text. Source: DIN PLATS PÅ ZULLO"
+  },
+  "technologyFinanceHealthcare": "Technology, finance, healthcare…",
+  "@technologyFinanceHealthcare": {
+    "description": "ZULLO interface text. Source: Data, ekonomi, vård..."
+  },
+  "localChangesThatHaveNotSyncedWillBeReplacedBy": "Local changes that have not synced will be replaced by the draft saved to your account.",
+  "@localChangesThatHaveNotSyncedWillBeReplacedBy": {
+    "description": "ZULLO interface text. Source: De lokala val som inte har synkroniserats ersätts med utkastet på ditt konto."
+  },
+  "datingAndSeeingWhereItGoes": "Dating and seeing where it goes",
+  "@datingAndSeeingWhereItGoes": {
+    "description": "ZULLO interface text. Source: Dejta och se vart det leder"
+  },
+  "weNeedThisToCreateYourProfile": "We need this to create your profile.",
+  "@weNeedThisToCreateYourProfile": {
+    "description": "ZULLO interface text. Source: Det här behövs för att skapa din profil."
+  },
+  "whatHappensNext": "What happens next",
+  "@whatHappensNext": {
+    "description": "ZULLO interface text. Source: Det här händer"
+  },
+  "includedWithPremium": "Included with Premium",
+  "@includedWithPremium": {
+    "description": "ZULLO interface text. Source: Det här ingår i Premium"
+  },
+  "somethingICouldTalkAboutForHours": "Something I could talk about for hours",
+  "@somethingICouldTalkAboutForHours": {
+    "description": "ZULLO interface text. Source: Det här kan jag prata om i timmar"
+  },
+  "somethingIWouldLoveToLearn": "Something I would love to learn",
+  "@somethingIWouldLoveToLearn": {
+    "description": "ZULLO interface text. Source: Det här vill jag lära mig"
+  },
+  "thisAppearsOnYourProfile": "This appears on your profile.",
+  "@thisAppearsOnYourProfile": {
+    "description": "ZULLO interface text. Source: Det här visas på din profil."
+  },
+  "itSAMatch": "It’s a match!",
+  "@itSAMatch": {
+    "description": "ZULLO interface text. Source: Det är en match!"
+  },
+  "whatSIncluded": "What’s included",
+  "@whatSIncluded": {
+    "description": "ZULLO interface text. Source: Detta ingår"
+  },
+  "yourPremiumIsActive": "Your Premium is active",
+  "@yourPremiumIsActive": {
+    "description": "ZULLO interface text. Source: Din Premium är aktiv"
+  },
+  "yourLoginHasExpiredLogInAgain": "Your login has expired. Log in again.",
+  "@yourLoginHasExpiredLogInAgain": {
+    "description": "ZULLO interface text. Source: Din inloggning har gått ut. Logga in igen."
+  },
+  "yourLocationAndOptionsForAWiderSearch": "Your location and options for a wider search",
+  "@yourLocationAndOptionsForAWiderSearch": {
+    "description": "ZULLO interface text. Source: Din plats och val för en bredare sökning"
+  },
+  "yourBio": "Your bio",
+  "@yourBio": {
+    "description": "ZULLO interface text. Source: Din presentation"
+  },
+  "yourBioCanBeUpToCharactersLong": "Your bio can be up to 1,000 characters long.",
+  "@yourBioCanBeUpToCharactersLong": {
+    "description": "ZULLO interface text. Source: Din presentation får innehålla högst 1 000 tecken."
+  },
+  "yourBioAppearsOnYourFullProfileWithRoomTo": "Your bio appears on your full profile, with room to read it.",
+  "@yourBioAppearsOnYourFullProfileWithRoomTo": {
+    "description": "ZULLO interface text. Source: Din presentation visas i hela profilen, med plats att läsa."
+  },
+  "yourProfile": "Your profile",
+  "@yourProfile": {
+    "description": "ZULLO interface text. Source: Din profil"
+  },
+  "yourProfileIsStillHere": "Your profile is still here",
+  "@yourProfileIsStillHere": {
+    "description": "ZULLO interface text. Source: Din profil finns kvar"
+  },
+  "yourProfileAndConversationsWillBeHereWhenYouLog": "Your profile and conversations will be here when you log in again.",
+  "@yourProfileAndConversationsWillBeHereWhenYouLog": {
+    "description": "ZULLO interface text. Source: Din profil och dina samtal finns kvar när du loggar in igen."
+  },
+  "yourProfileIsPausedYourMatchesAndConversationsWillBe": "Your profile is paused. Your matches and conversations will be here when you want to continue.",
+  "@yourProfileIsPausedYourMatchesAndConversationsWillBe": {
+    "description": "ZULLO interface text. Source: Din profil är pausad. Dina matchningar och samtal finns kvar när du vill fortsätta."
+  },
+  "yourSessionHasExpiredLogInAgain": "Your session has expired. Log in again.",
+  "@yourSessionHasExpiredLogInAgain": {
+    "description": "ZULLO interface text. Source: Din session har gått ut. Logga in igen."
+  },
+  "yourPhotos": "Your photos",
+  "@yourPhotos": {
+    "description": "ZULLO interface text. Source: Dina bilder"
+  },
+  "yourLikesStartHere": "Your likes start here",
+  "@yourLikesStartHere": {
+    "description": "ZULLO interface text. Source: Dina likes börjar här"
+  },
+  "yourDiscoveryPreferences": "Your discovery preferences",
+  "@yourDiscoveryPreferences": {
+    "description": "ZULLO interface text. Source: Dina upptäcktsval"
+  },
+  "yourFirstName": "Your first name",
+  "@yourFirstName": {
+    "description": "ZULLO interface text. Source: Ditt förnamn"
+  },
+  "yourAccountIsPaused": "Your account is paused",
+  "@yourAccountIsPaused": {
+    "description": "ZULLO interface text. Source: Ditt konto är pausat"
+  },
+  "yourSeparateHideActivitySubscriptionIsManagedInTheApp": "Your separate Hide activity subscription is managed in the App Store or Google Play. Buying Premium does not automatically cancel it.",
+  "@yourSeparateHideActivitySubscriptionIsManagedInTheApp": {
+    "description": "ZULLO interface text. Source: Ditt separata abonnemang för Dölj aktivitet hanteras i App Store eller Google Play. Det avslutas inte automatiskt om du köper Premium."
+  },
+  "yourAnswer": "Your answer",
+  "@yourAnswer": {
+    "description": "ZULLO interface text. Source: Ditt svar"
+  },
+  "yourPreferencesValue0KmAgesValue1Value2": "Your preferences: {value0} km · ages {value1}–{value2}",
+  "@yourPreferencesValue0KmAgesValue1Value2": {
+    "description": "ZULLO interface text. Source: Ditt val: {value0} km · {value1}–{value2} år",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      },
+      "value1": {
+        "type": "String"
+      },
+      "value2": {
+        "type": "String"
+      }
+    }
+  },
+  "hiddenLikeRevealWithPremium": "Hidden like. Reveal with Premium",
+  "@hiddenLikeRevealWithPremium": {
+    "description": "ZULLO interface text. Source: Dold like. Visa med Premium"
+  },
+  "youReceivedASuperlike": "You received a Superlike ⭐",
+  "@youReceivedASuperlike": {
+    "description": "ZULLO interface text. Source: Du har fått en Superlike ⭐"
+  },
+  "youHaveReachedYourLikeLimit": "You have reached your like limit.",
+  "@youHaveReachedYourLikeLimit": {
+    "description": "ZULLO interface text. Source: Du har nått din like-gräns."
+  },
+  "youHaveReachedYourLikeLimit84": "You have reached your like limit ❤️",
+  "@youHaveReachedYourLikeLimit84": {
+    "description": "ZULLO interface text. Source: Du har nått like-gränsen ❤️"
+  },
+  "youCanCloseYourAccountAndRequestDeletionOfYour": "You can close your account and request deletion of your data. A closed account cannot be reactivated.",
+  "@youCanCloseYourAccountAndRequestDeletionOfYour": {
+    "description": "ZULLO interface text. Source: Du kan stänga kontot och begära att dina uppgifter raderas. Det går inte att återaktivera ett stängt konto."
+  },
+  "youWillBeLoggedOutYourAccountAndSavedAnswers": "You will be logged out. Your account and saved answers will stay so you can continue later.",
+  "@youWillBeLoggedOutYourAccountAndSavedAnswers": {
+    "description": "ZULLO interface text. Source: Du loggas ut. Ditt konto och redan sparade svar finns kvar så att du kan fortsätta senare."
+  },
+  "youNeedAtLeastProfilePhotos": "You need at least 2 profile photos.",
+  "@youNeedAtLeastProfilePhotos": {
+    "description": "ZULLO interface text. Source: Du måste ha minst 2 profilbilder."
+  },
+  "youMustBeAtLeastYearsOld": "You must be at least 18 years old.",
+  "@youMustBeAtLeastYearsOld": {
+    "description": "ZULLO interface text. Source: Du måste vara minst 18 år."
+  },
+  "youAndValue0LikeEachOtherSayHelloOrKeep": "You and {value0} like each other.\nSay hello or keep swiping.",
+  "@youAndValue0LikeEachOtherSayHelloOrKeep": {
+    "description": "ZULLO interface text. Source: Du och {value0} gillar varandra.\nSäg hej eller fortsätt swipa.",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "youAreSendingTooQuicklyWaitValue0SecondsAndTry": "You are sending too quickly. Wait {value0} seconds and try again.",
+  "@youAreSendingTooQuicklyWaitValue0SecondsAndTry": {
+    "description": "ZULLO interface text. Source: Du skickar för snabbt. Vänta {value0} sekunder och försök igen.",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "youAreNotLoggedInLogInAgain": "You are not logged in. Log in again.",
+  "@youAreNotLoggedInLogInAgain": {
+    "description": "ZULLO interface text. Source: Du är inte inloggad (meUserId saknas). Logga in igen."
+  },
+  "hideYourOnlineAndLastActiveStatusFromYourMatches": "Hide your online and last active status from your matches. Get Hide activity monthly on its own, or included with ZULLO Premium. Then choose your visibility in My account.",
+  "@hideYourOnlineAndLastActiveStatusFromYourMatches": {
+    "description": "ZULLO interface text. Source: Dölj Online nu och senast aktiv för dina matchningar. Köp bara Dölj aktivitet per månad, eller få det inkluderat i ZULLO Premium. Välj sedan din synlighet i Mitt konto."
+  },
+  "hideActivity": "Hide activity",
+  "@hideActivity": {
+    "description": "ZULLO interface text. Source: Dölj aktivitet"
+  },
+  "hideActivityIsIncludedForYou": "Hide activity is included for you",
+  "@hideActivityIsIncludedForYou": {
+    "description": "ZULLO interface text. Source: Dölj aktivitet ingår för dig"
+  },
+  "hideActivityStatus": "Hide activity status",
+  "@hideActivityStatus": {
+    "description": "ZULLO interface text. Source: Dölj aktivitetsstatus"
+  },
+  "hidePassword": "Hide password",
+  "@hidePassword": {
+    "description": "ZULLO interface text. Source: Dölj lösenord"
+  },
+  "email": "Email",
+  "@email": {
+    "description": "ZULLO interface text. Source: E-post"
+  },
+  "emailAddress": "Email address",
+  "@emailAddress": {
+    "description": "ZULLO interface text. Source: E-postadress"
+  },
+  "thisEmailAddressIsAlreadyInUseLogInInstead": "This email address is already in use. Log in instead.",
+  "@thisEmailAddressIsAlreadyInUseLogInInstead": {
+    "description": "ZULLO interface text. Source: E-postadressen används redan. Logga in i stället."
+  },
+  "aFirstDateIWouldEnjoy": "A first date I would enjoy",
+  "@aFirstDateIWouldEnjoy": {
+    "description": "ZULLO interface text. Source: En första dejt jag skulle gilla"
+  },
+  "aLittleThingThatMakesMyDay": "A little thing that makes my day",
+  "@aLittleThingThatMakesMyDay": {
+    "description": "ZULLO interface text. Source: En liten sak som gör min dag"
+  },
+  "aDishIWouldLoveToCookForYou": "A dish I would love to cook for you",
+  "@aDishIWouldLoveToCookForYou": {
+    "description": "ZULLO interface text. Source: En maträtt jag gärna lagar åt dig"
+  },
+  "somethingUnexpectedAboutMe": "Something unexpected about me",
+  "@somethingUnexpectedAboutMe": {
+    "description": "ZULLO interface text. Source: En oväntad sida av mig"
+  },
+  "aSurprisingTalentIHave": "A surprising talent I have",
+  "@aSurprisingTalentIHave": {
+    "description": "ZULLO interface text. Source: En oväntad talang jag har"
+  },
+  "aTripIWouldLoveToTellYouAbout": "A trip I would love to tell you about",
+  "@aTripIWouldLoveToTellYouAbout": {
+    "description": "ZULLO interface text. Source: En resa jag gärna berättar om"
+  },
+  "aLittleAboutMe": "A little about me",
+  "@aLittleAboutMe": {
+    "description": "ZULLO interface text. Source: En sak om mig"
+  },
+  "aSpontaneousPlanIWouldSayYesTo": "A spontaneous plan I would say yes to",
+  "@aSpontaneousPlanIWouldSayYesTo": {
+    "description": "ZULLO interface text. Source: En spontan idé jag säger ja till"
+  },
+  "aPhotoThatWasNotSavedHasExpiredAddIt": "A photo that was not saved has expired. Add it again.",
+  "@aPhotoThatWasNotSavedHasExpiredAddIt": {
+    "description": "ZULLO interface text. Source: En tidigare osparad bild har gått ut. Lägg till den igen."
+  },
+  "findSomeoneWhoSharesYourCultureValuesAndFuture": "Find someone who shares your culture, values, and future.",
+  "@findSomeoneWhoSharesYourCultureValuesAndFuture": {
+    "description": "ZULLO interface text. Source: Find someone who shares your culture, values, and future."
+  },
+  "pisces": "Pisces",
+  "@pisces": {
+    "description": "ZULLO interface text. Source: Fisk"
+  },
+  "moreLikesAndRewind": "More likes and rewind",
+  "@moreLikesAndRewind": {
+    "description": "ZULLO interface text. Source: Fler likes och ångra"
+  },
+  "continueAction": "Continue",
+  "@continueAction": {
+    "description": "ZULLO interface text. Source: Fortsätt"
+  },
+  "continueLater": "Continue later",
+  "@continueLater": {
+    "description": "ZULLO interface text. Source: Fortsätt senare"
+  },
+  "keepSwiping": "Keep swiping",
+  "@keepSwiping": {
+    "description": "ZULLO interface text. Source: Fortsätt swipa"
+  },
+  "askMeAbout": "Ask me about",
+  "@askMeAbout": {
+    "description": "ZULLO interface text. Source: Fråga mig gärna om"
+  },
+  "fromValue0": "From {value0}",
+  "@fromValue0": {
+    "description": "ZULLO interface text. Source: Från {value0}",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "fillInAllFields": "Fill in all fields.",
+  "@fillInAllFields": {
+    "description": "ZULLO interface text. Source: Fyll i alla fält."
+  },
+  "enterYourNameGenderAndAge": "Enter your name, gender, and age (18+).",
+  "@enterYourNameGenderAndAge": {
+    "description": "ZULLO interface text. Source: Fyll i namn, kön och ålder (18+)."
+  },
+  "getMore": "GET MORE",
+  "@getMore": {
+    "description": "ZULLO interface text. Source: FÅ MER"
+  },
+  "yourDateOfBirthIsMissing": "Your date of birth is missing.",
+  "@yourDateOfBirthIsMissing": {
+    "description": "ZULLO interface text. Source: Födelsedatum saknas."
+  },
+  "tooManyAttemptsWaitValue0SecondsAndTryAgain": "Too many attempts. Wait {value0} seconds and try again.",
+  "@tooManyAttemptsWaitValue0SecondsAndTryAgain": {
+    "description": "ZULLO interface text. Source: För många försök. Vänta {value0} sekunder och försök igen.",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "previousPhoto": "Previous photo",
+  "@previousPhoto": {
+    "description": "ZULLO interface text. Source: Föregående bild"
+  },
+  "companyLocationIndustry": "Company, location, industry…",
+  "@companyLocationIndustry": {
+    "description": "ZULLO interface text. Source: Företag, plats, bransch..."
+  },
+  "preview": "Preview",
+  "@preview": {
+    "description": "ZULLO interface text. Source: Förhandsvisa"
+  },
+  "firstName": "First name",
+  "@firstName": {
+    "description": "ZULLO interface text. Source: Förnamn"
+  },
+  "tryAgain": "Try again",
+  "@tryAgain": {
+    "description": "ZULLO interface text. Source: Försök igen"
+  },
+  "trySavingAgain": "Try saving again",
+  "@trySavingAgain": {
+    "description": "ZULLO interface text. Source: Försök spara igen"
+  },
+  "giveSomeoneAReasonToAskYouMore": "Give someone a reason to ask you more.",
+  "@giveSomeoneAReasonToAskYouMore": {
+    "description": "ZULLO interface text. Source: Ge någon en anledning att fråga mer."
+  },
+  "marriage": "Marriage",
+  "@marriage": {
+    "description": "ZULLO interface text. Source: Giftermål"
+  },
+  "likeBack": "Like back",
+  "@likeBack": {
+    "description": "ZULLO interface text. Source: Gilla tillbaka"
+  },
+  "theBasics": "The basics",
+  "@theBasics": {
+    "description": "ZULLO interface text. Source: Grunduppgifter"
+  },
+  "manageAccount": "Manage account",
+  "@manageAccount": {
+    "description": "ZULLO interface text. Source: Hantera konto"
+  },
+  "donTHaveAnAccountCreateAccount": "Don’t have an account? Create account",
+  "@donTHaveAnAccountCreateAccount": {
+    "description": "ZULLO interface text. Source: Har du inget konto? Create account"
+  },
+  "haveYouBeenInARelationship": "Have you been in a relationship?",
+  "@haveYouBeenInARelationship": {
+    "description": "ZULLO interface text. Source: Har du varit i en relation?"
+  },
+  "havePets": "Have pets",
+  "@havePets": {
+    "description": "ZULLO interface text. Source: Har husdjur"
+  },
+  "hiIMLookingForASeriousRelationship": "Hi! I’m looking for a serious relationship.",
+  "@hiIMLookingForASeriousRelationship": {
+    "description": "ZULLO interface text. Source: Hej! Jag söker en seriös relation."
+  },
+  "hinduism": "Hinduism",
+  "@hinduism": {
+    "description": "ZULLO interface text. Source: Hinduism"
+  },
+  "findPeopleWhoFitWhatYouReLookingFor": "Find people who fit what you’re looking for.",
+  "@findPeopleWhoFitWhatYouReLookingFor": {
+    "description": "ZULLO interface text. Source: Hitta personer som passar det du söker."
+  },
+  "skip": "Skip",
+  "@skip": {
+    "description": "ZULLO interface text. Source: Hoppa över"
+  },
+  "howTallAreYou": "How tall are you?",
+  "@howTallAreYou": {
+    "description": "ZULLO interface text. Source: Hur lång är du?"
+  },
+  "howFarWouldYouTravelToMeetSomeone": "How far would you travel to meet someone?",
+  "@howFarWouldYouTravelToMeetSomeone": {
+    "description": "ZULLO interface text. Source: Hur långt bort vill du träffa någon?"
+  },
+  "howManyChildrenDoYouHave": "How many children do you have?",
+  "@howManyChildrenDoYouHave": {
+    "description": "ZULLO interface text. Source: Hur många barn har du?"
+  },
+  "pets": "Pets",
+  "@pets": {
+    "description": "ZULLO interface text. Source: Husdjur"
+  },
+  "loading": "Loading…",
+  "@loading": {
+    "description": "ZULLO interface text. Source: Hämtar…"
+  },
+  "includedForYou": "INCLUDED FOR YOU",
+  "@includedForYou": {
+    "description": "ZULLO interface text. Source: INGÅR FÖR DIG"
+  },
+  "sometimes": "Sometimes",
+  "@sometimes": {
+    "description": "ZULLO interface text. Source: Ibland"
+  },
+  "nonBinary": "Non-binary",
+  "@nonBinary": {
+    "description": "ZULLO interface text. Source: Icke-binär"
+  },
+  "yourLocationIsNotUpdatedInTheBackground": "Your location is not updated in the background.",
+  "@yourLocationIsNotUpdatedInTheBackground": {
+    "description": "ZULLO interface text. Source: Ingen platsuppdatering i bakgrunden."
+  },
+  "noStandardLikeLimitRewindARegularSwipeButNot": "No standard like limit. Rewind a regular swipe, but not a match or Superlike.",
+  "@noStandardLikeLimitRewindARegularSwipeButNot": {
+    "description": "ZULLO interface text. Source: Ingen vanlig like-kvot. Ångra en vanlig swipe, men inte en match eller Superlike."
+  },
+  "nothingSerious": "Nothing serious",
+  "@nothingSerious": {
+    "description": "ZULLO interface text. Source: Inget seriöst"
+  },
+  "premiumIncognito": "Premium incognito",
+  "@premiumIncognito": {
+    "description": "ZULLO interface text. Source: Inkognito Premium"
+  },
+  "pleaseRenewYourLoginLogInAgain": "Please renew your login. Log in again.",
+  "@pleaseRenewYourLoginLogInAgain": {
+    "description": "ZULLO interface text. Source: Inloggningen behöver förnyas. Logga in igen."
+  },
+  "yourSettingsCouldNotBeLoadedTryAgain": "Your settings could not be loaded. Try again.",
+  "@yourSettingsCouldNotBeLoadedTryAgain": {
+    "description": "ZULLO interface text. Source: Inställningarna kunde inte hämtas. Försök igen."
+  },
+  "notSureYet": "Not sure yet",
+  "@notSureYet": {
+    "description": "ZULLO interface text. Source: Inte säker än"
+  },
+  "privacyPolicy": "Privacy policy",
+  "@privacyPolicy": {
+    "description": "ZULLO interface text. Source: Integritetspolicy"
+  },
+  "interestedIn": "Interested in",
+  "@interestedIn": {
+    "description": "ZULLO interface text. Source: Intresserad av"
+  },
+  "islam": "Islam",
+  "@islam": {
+    "description": "ZULLO interface text. Source: Islam"
+  },
+  "yes": "Yes",
+  "@yes": {
+    "description": "ZULLO interface text. Source: Ja"
+  },
+  "iDonTUseNicotine": "I don’t use nicotine",
+  "@iDonTUseNicotine": {
+    "description": "ZULLO interface text. Source: Jag använder inte nikotin"
+  },
+  "iUseNicotine": "I use nicotine",
+  "@iUseNicotine": {
+    "description": "ZULLO interface text. Source: Jag använder nikotin"
+  },
+  "iSometimesUseNicotine": "I sometimes use nicotine",
+  "@iSometimesUseNicotine": {
+    "description": "ZULLO interface text. Source: Jag använder nikotin ibland"
+  },
+  "iUnderstandThatMyAccountWillBeClosedAndCannot": "I understand that my account will be closed and cannot be reactivated.",
+  "@iUnderstandThatMyAccountWillBeClosedAndCannot": {
+    "description": "ZULLO interface text. Source: Jag förstår att kontot stängs och inte kan återaktiveras."
+  },
+  "iDonTHaveChildren": "I don’t have children",
+  "@iDonTHaveChildren": {
+    "description": "ZULLO interface text. Source: Jag har inga barn"
+  },
+  "iMLookingFor": "I’m looking for",
+  "@iMLookingFor": {
+    "description": "ZULLO interface text. Source: Jag söker"
+  },
+  "iFeelHappiestWhen": "I feel happiest when…",
+  "@iFeelHappiestWhen": {
+    "description": "ZULLO interface text. Source: Jag trivs bäst när…"
+  },
+  "stillFiguringItOut": "Still figuring it out",
+  "@stillFiguringItOut": {
+    "description": "ZULLO interface text. Source: Jag vet inte än"
+  },
+  "iWantChildren": "I want children",
+  "@iWantChildren": {
+    "description": "ZULLO interface text. Source: Jag vill ha barn"
+  },
+  "iDonTWantChildren": "I don’t want children",
+  "@iDonTWantChildren": {
+    "description": "ZULLO interface text. Source: Jag vill inte ha barn"
+  },
+  "jainism": "Jainism",
+  "@jainism": {
+    "description": "ZULLO interface text. Source: Jainism"
+  },
+  "currentlyWorking": "Currently working",
+  "@currentlyWorking": {
+    "description": "ZULLO interface text. Source: Jobbar just nu"
+  },
+  "joinZulloToday": "Join ZULLO today",
+  "@joinZulloToday": {
+    "description": "ZULLO interface text. Source: Join ZULLO today"
+  },
+  "judaism": "Judaism",
+  "@judaism": {
+    "description": "ZULLO interface text. Source: Judendom"
+  },
+  "virgo": "Virgo",
+  "@virgo": {
+    "description": "ZULLO interface text. Source: Jungfru"
+  },
+  "catholicChristianity": "Catholic Christianity",
+  "@catholicChristianity": {
+    "description": "ZULLO interface text. Source: Katolsk kristendom"
+  },
+  "accountSettings": "Account settings",
+  "@accountSettings": {
+    "description": "ZULLO interface text. Source: Kontoinställningar"
+  },
+  "yourAccountClosesImmediatelyYourProfileAndConversationsAreRemoved": "Your account closes immediately. Your profile and conversations are removed from ZULLO. Photos stored by external providers are deleted separately. Some payment and security records may need to be retained.",
+  "@yourAccountClosesImmediatelyYourProfileAndConversationsAreRemoved": {
+    "description": "ZULLO interface text. Source: Kontot stängs direkt. Din profil och dina konversationer tas bort från ZULLO. Bildradering hos externa leverantörer behandlas separat. Vissa betalnings- och säkerhetsuppgifter kan behöva behållas."
+  },
+  "yourAccountIsClosedYourDeletionRequestIsBeingProcessed": "Your account is closed. Your deletion request is being processed.",
+  "@yourAccountIsClosedYourDeletionRequestIsBeingProcessed": {
+    "description": "ZULLO interface text. Source: Kontot är stängt. Din raderingsbegäran behandlas."
+  },
+  "checkYourConnectionAndTryAgain": "Check your connection and try again.",
+  "@checkYourConnectionAndTryAgain": {
+    "description": "ZULLO interface text. Source: Kontrollera anslutningen och försök igen."
+  },
+  "thisConversationHasChangedOpenItAgain": "This conversation has changed. Open it again.",
+  "@thisConversationHasChangedOpenItAgain": {
+    "description": "ZULLO interface text. Source: Konversationen har ändrats. Öppna den igen."
+  },
+  "thisConversationIsNoLongerAvailable": "This conversation is no longer available.",
+  "@thisConversationIsNoLongerAvailable": {
+    "description": "ZULLO interface text. Source: Konversationen är inte längre tillgänglig."
+  },
+  "christianity": "Christianity",
+  "@christianity": {
+    "description": "ZULLO interface text. Source: Kristendom"
+  },
+  "cancer": "Cancer",
+  "@cancer": {
+    "description": "ZULLO interface text. Source: Kräfta"
+  },
+  "couldNotConnectCheckYourInternetConnectionAndTryAgain": "Could not connect. Check your internet connection and try again.",
+  "@couldNotConnectCheckYourInternetConnectionAndTryAgain": {
+    "description": "ZULLO interface text. Source: Kunde inte ansluta. Kontrollera internet och försök igen."
+  },
+  "couldNotUnblockThisPersonTryAgain": "Could not unblock this person. Try again.",
+  "@couldNotUnblockThisPersonTryAgain": {
+    "description": "ZULLO interface text. Source: Kunde inte avblockera. Försök igen."
+  },
+  "weCouldNotConfirmThatYourProfileWasSavedYour": "We could not confirm that your profile was saved. Your choices are still here. Try again.",
+  "@weCouldNotConfirmThatYourProfileWasSavedYour": {
+    "description": "ZULLO interface text. Source: Kunde inte bekräfta att profilen sparades. Dina val finns kvar. Försök igen."
+  },
+  "yourRequestCouldNotBeConfirmedTryAgain": "Your request could not be confirmed. Try again.",
+  "@yourRequestCouldNotBeConfirmedTryAgain": {
+    "description": "ZULLO interface text. Source: Kunde inte bekräfta begäran. Försök igen."
+  },
+  "yourPurchaseCouldNotBeConfirmedTryAgainOrRestore": "Your purchase could not be confirmed. Try again or restore purchases.",
+  "@yourPurchaseCouldNotBeConfirmedTryAgainOrRestore": {
+    "description": "ZULLO interface text. Source: Kunde inte bekräfta köpet. Försök igen eller återställ köp."
+  },
+  "yourChangeCouldNotBeConfirmedTryAgain": "Your change could not be confirmed. Try again.",
+  "@yourChangeCouldNotBeConfirmedTryAgain": {
+    "description": "ZULLO interface text. Source: Kunde inte bekräfta ändringen. Försök igen."
+  },
+  "couldNotLikeThisPersonBackTryAgain": "Could not like this person back. Try again.",
+  "@couldNotLikeThisPersonBackTryAgain": {
+    "description": "ZULLO interface text. Source: Kunde inte gilla tillbaka. Försök igen."
+  },
+  "premiumCouldNotBeLoadedTryAgain": "Premium could not be loaded. Try again.",
+  "@premiumCouldNotBeLoadedTryAgain": {
+    "description": "ZULLO interface text. Source: Kunde inte hämta Premium. Försök igen."
+  },
+  "blockedProfilesCouldNotBeLoaded": "Blocked profiles could not be loaded.",
+  "@blockedProfilesCouldNotBeLoaded": {
+    "description": "ZULLO interface text. Source: Kunde inte hämta blockerade profiler."
+  },
+  "yourUnfinishedProfileCouldNotBeLoadedYourSavedAnswers": "Your unfinished profile could not be loaded. Your saved answers have not changed.",
+  "@yourUnfinishedProfileCouldNotBeLoadedYourSavedAnswers": {
+    "description": "ZULLO interface text. Source: Kunde inte hämta din påbörjade profil. Dina sparade svar har inte ändrats."
+  },
+  "yourChatsCouldNotBeLoadedPullDownToTry": "Your chats could not be loaded. Pull down to try again.",
+  "@yourChatsCouldNotBeLoadedPullDownToTry": {
+    "description": "ZULLO interface text. Source: Kunde inte hämta dina chattar. Dra nedåt för att försöka igen."
+  },
+  "yourLikesCouldNotBeLoadedTryAgain": "Your likes could not be loaded. Try again.",
+  "@yourLikesCouldNotBeLoadedTryAgain": {
+    "description": "ZULLO interface text. Source: Kunde inte hämta dina likes. Försök igen."
+  },
+  "yourAccountCouldNotBeLoaded": "Your account could not be loaded.",
+  "@yourAccountCouldNotBeLoaded": {
+    "description": "ZULLO interface text. Source: Kunde inte hämta kontot."
+  },
+  "messagesCouldNotBeLoadedTryAgain": "Messages could not be loaded. Try again.",
+  "@messagesCouldNotBeLoadedTryAgain": {
+    "description": "ZULLO interface text. Source: Kunde inte hämta meddelanden. Försök igen."
+  },
+  "olderMessagesCouldNotBeLoadedTryAgain": "Older messages could not be loaded. Try again.",
+  "@olderMessagesCouldNotBeLoadedTryAgain": {
+    "description": "ZULLO interface text. Source: Kunde inte hämta äldre meddelanden. Försök igen."
+  },
+  "yourProfileCouldNotBeCheckedTryAgain": "Your profile could not be checked. Try again.",
+  "@yourProfileCouldNotBeCheckedTryAgain": {
+    "description": "ZULLO interface text. Source: Kunde inte kontrollera profilen. Försök igen."
+  },
+  "couldNotLogInCheckYourConnectionAndTryAgain": "Could not log in. Check your connection and try again.",
+  "@couldNotLogInCheckYourConnectionAndTryAgain": {
+    "description": "ZULLO interface text. Source: Kunde inte logga in. Kontrollera anslutningen och försök igen."
+  },
+  "couldNotLogOutTryAgain": "Could not log out. Try again.",
+  "@couldNotLogOutTryAgain": {
+    "description": "ZULLO interface text. Source: Kunde inte logga ut. Försök igen."
+  },
+  "yourPhotoCouldNotBeAddedTryAgain": "Your photo could not be added. Try again.",
+  "@yourPhotoCouldNotBeAddedTryAgain": {
+    "description": "ZULLO interface text. Source: Kunde inte lägga till bilden. Försök igen."
+  },
+  "yourLocalDraftCouldNotBeReadYouCanOpen": "Your local draft could not be read. You can open the version saved to your account.",
+  "@yourLocalDraftCouldNotBeReadYouCanOpen": {
+    "description": "ZULLO interface text. Source: Kunde inte läsa det lokala utkastet. Du kan öppna kontots sparade version."
+  },
+  "yourDiscoveryPreferencesCouldNotBeLoadedOrSaved": "Your discovery preferences could not be loaded or saved.",
+  "@yourDiscoveryPreferencesCouldNotBeLoadedOrSaved": {
+    "description": "ZULLO interface text. Source: Kunde inte läsa eller spara upptäcktsvalen."
+  },
+  "yourAccountStatusCouldNotBeLoadedTryAgain": "Your account status could not be loaded. Try again.",
+  "@yourAccountStatusCouldNotBeLoadedTryAgain": {
+    "description": "ZULLO interface text. Source: Kunde inte läsa kontostatus. Försök igen."
+  },
+  "yourAccountCouldNotBeCreatedTryAgainLater": "Your account could not be created. Try again later.",
+  "@yourAccountCouldNotBeCreatedTryAgainLater": {
+    "description": "ZULLO interface text. Source: Kunde inte skapa kontot. Försök igen senare."
+  },
+  "thisSettingCouldNotBeSavedTryAgain": "This setting could not be saved. Try again.",
+  "@thisSettingCouldNotBeSavedTryAgain": {
+    "description": "ZULLO interface text. Source: Kunde inte spara inställningen. Försök igen."
+  },
+  "couldNotSaveAndLeaveRightNowYourChoicesAre": "Could not save and leave right now. Your choices are still here. Try again.",
+  "@couldNotSaveAndLeaveRightNowYourChoicesAre": {
+    "description": "ZULLO interface text. Source: Kunde inte spara och lämna just nu. Dina val finns kvar här. Försök igen."
+  },
+  "yourProfileDraftCouldNotBeSavedYourChoicesAre": "Your profile draft could not be saved. Your choices are still on this device.",
+  "@yourProfileDraftCouldNotBeSavedYourChoicesAre": {
+    "description": "ZULLO interface text. Source: Kunde inte spara profilutkastet. Dina val finns kvar på den här enheten."
+  },
+  "yourDraftCouldNotBeSavedYourChoicesAreStill": "Your draft could not be saved. Your choices are still here. Try again before leaving.",
+  "@yourDraftCouldNotBeSavedYourChoicesAreStill": {
+    "description": "ZULLO interface text. Source: Kunde inte spara utkastet. Dina val finns kvar här. Försök igen innan du lämnar."
+  },
+  "couldNotSaveYourChangesYourPreviousSettingsStillApply": "Could not save your changes. Your previous settings still apply. Try again.",
+  "@couldNotSaveYourChangesYourPreviousSettingsStillApply": {
+    "description": "ZULLO interface text. Source: Kunde inte spara. Dina tidigare inställningar gäller fortfarande. Försök igen."
+  },
+  "yourChatCouldNotBeSyncedTryAgain": "Your chat could not be synced. Try again.",
+  "@yourChatCouldNotBeSyncedTryAgain": {
+    "description": "ZULLO interface text. Source: Kunde inte synkronisera chatten. Försök igen."
+  },
+  "couldNotUpdateTryAgain": "Could not update. Try again.",
+  "@couldNotUpdateTryAgain": {
+    "description": "ZULLO interface text. Source: Kunde inte uppdatera. Försök igen."
+  },
+  "yourPhotoCouldNotBeSelectedOrUploadedTryAgain": "Your photo could not be selected or uploaded. Try again.",
+  "@yourPhotoCouldNotBeSelectedOrUploadedTryAgain": {
+    "description": "ZULLO interface text. Source: Kunde inte välja eller ladda upp bilden. Försök igen."
+  },
+  "couldNotRewindTryAgain": "Could not rewind. Try again.",
+  "@couldNotRewindTryAgain": {
+    "description": "ZULLO interface text. Source: Kunde inte ångra. Försök igen."
+  },
+  "theAppCouldNotBeOpenedTryAgain": "The app could not be opened. Try again.",
+  "@theAppCouldNotBeOpenedTryAgain": {
+    "description": "ZULLO interface text. Source: Kunde inte öppna appen. Försök igen."
+  },
+  "woman": "Woman",
+  "@woman": {
+    "description": "ZULLO interface text. Source: Kvinna"
+  },
+  "women": "Women",
+  "@women": {
+    "description": "ZULLO interface text. Source: Kvinnor"
+  },
+  "buySeparately": "BUY SEPARATELY",
+  "@buySeparately": {
+    "description": "ZULLO interface text. Source: KÖP SEPARAT"
+  },
+  "gender": "Gender",
+  "@gender": {
+    "description": "ZULLO interface text. Source: Kön"
+  },
+  "genderForExampleManOrWoman": "Gender (for example, man or woman)",
+  "@genderForExampleManOrWoman": {
+    "description": "ZULLO interface text. Source: Kön (t.ex. Man/Kvinna)"
+  },
+  "buy": "Buy",
+  "@buy": {
+    "description": "ZULLO interface text. Source: Köp"
+  },
+  "purchasesAreUnavailableRightNow": "Purchases are unavailable right now.",
+  "@purchasesAreUnavailableRightNow": {
+    "description": "ZULLO interface text. Source: Köp är inte tillgängliga just nu."
+  },
+  "purchasesAreUnavailableRightNowYouCanKeepUsingZullo": "Purchases are unavailable right now. You can keep using ZULLO for free.",
+  "@purchasesAreUnavailableRightNowYouCanKeepUsingZullo": {
+    "description": "ZULLO interface text. Source: Köp är inte tillgängliga just nu. Du kan fortsätta använda ZULLO gratis."
+  },
+  "purchaseOptionsCouldNotBeLoadedTryAgainOrRestore": "Purchase options could not be loaded. Try again or restore purchases.",
+  "@purchaseOptionsCouldNotBeLoadedTryAgainOrRestore": {
+    "description": "ZULLO interface text. Source: Köpalternativen kunde inte laddas. Du kan försöka igen eller återställa köp."
+  },
+  "yourPurchaseIsAwaitingVerificationDoNotBuyAgainRefresh": "Your purchase is awaiting verification. Do not buy again. Refresh your balance shortly or restore purchases.",
+  "@yourPurchaseIsAwaitingVerificationDoNotBuyAgainRefresh": {
+    "description": "ZULLO interface text. Source: Köpet väntar på verifiering. Köp inte igen. Uppdatera saldot om en stund eller återställ köp."
+  },
+  "yourPurchaseHasNotBeenConfirmedYetTryRestoringPurchases": "Your purchase has not been confirmed yet. Try restoring purchases or refreshing your balance.",
+  "@yourPurchaseHasNotBeenConfirmedYetTryRestoringPurchases": {
+    "description": "ZULLO interface text. Source: Köpet är inte bekräftat ännu. Försök återställa köp eller uppdatera saldot."
+  },
+  "purchaseTerms": "Purchase terms",
+  "@purchaseTerms": {
+    "description": "ZULLO interface text. Source: Köpvillkor"
+  },
+  "leo": "Leo",
+  "@leo": {
+    "description": "ZULLO interface text. Source: Lejon"
+  },
+  "likes": "Likes",
+  "@likes": {
+    "description": "ZULLO interface text. Source: Likes"
+  },
+  "aLittleFartherAway": "A little farther away",
+  "@aLittleFartherAway": {
+    "description": "ZULLO interface text. Source: Lite längre bort"
+  },
+  "aLittleOutsideMyAgeRange": "A little outside my age range",
+  "@aLittleOutsideMyAgeRange": {
+    "description": "ZULLO interface text. Source: Lite utanför åldersintervallet"
+  },
+  "logIn": "Log in",
+  "@logIn": {
+    "description": "ZULLO interface text. Source: Log in"
+  },
+  "logInAndPickUpWhereYouLeftOff": "Log in and pick up where you left off.",
+  "@logInAndPickUpWhereYouLeftOff": {
+    "description": "ZULLO interface text. Source: Logga in och fortsätt där du slutade."
+  },
+  "logOut": "Log out",
+  "@logOut": {
+    "description": "ZULLO interface text. Source: Logga ut"
+  },
+  "logOutOfZullo": "Log out of ZULLO?",
+  "@logOutOfZullo": {
+    "description": "ZULLO interface text. Source: Logga ut från ZULLO?"
+  },
+  "addAPhotoFromYourGallery": "Add a photo from your gallery",
+  "@addAPhotoFromYourGallery": {
+    "description": "ZULLO interface text. Source: Lägg till bild från galleri"
+  },
+  "addYourPhotos": "Add your photos",
+  "@addYourPhotos": {
+    "description": "ZULLO interface text. Source: Lägg till dina bilder"
+  },
+  "addUpToPhotos": "Add up to 6 photos.",
+  "@addUpToPhotos": {
+    "description": "ZULLO interface text. Source: Lägg till max 6 bilder."
+  },
+  "addMoreDetails": "Add more details",
+  "@addMoreDetails": {
+    "description": "ZULLO interface text. Source: Lägg till mer info"
+  },
+  "addAtLeastPhotos": "Add at least 2 photos.",
+  "@addAtLeastPhotos": {
+    "description": "ZULLO interface text. Source: Lägg till minst 2 bilder."
+  },
+  "leave": "Leave",
+  "@leave": {
+    "description": "ZULLO interface text. Source: Lämna"
+  },
+  "leaveProfileSetup": "Leave profile setup",
+  "@leaveProfileSetup": {
+    "description": "ZULLO interface text. Source: Lämna profilskapandet"
+  },
+  "readTheFullProfile": "Read the full profile",
+  "@readTheFullProfile": {
+    "description": "ZULLO interface text. Source: Läs hela profilen"
+  },
+  "password": "Password",
+  "@password": {
+    "description": "ZULLO interface text. Source: Lösenord"
+  },
+  "yourPasswordNeedsAtLeastCharacters": "Your password needs at least 8 characters.",
+  "@yourPasswordNeedsAtLeastCharacters": {
+    "description": "ZULLO interface text. Source: Lösenordet behöver minst 8 tecken."
+  },
+  "man": "Man",
+  "@man": {
+    "description": "ZULLO interface text. Source: Man"
+  },
+  "maximumDistanceValue0Km": "Maximum distance · {value0} km",
+  "@maximumDistanceValue0Km": {
+    "description": "ZULLO interface text. Source: Maxavstånd · {value0} km",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "withZulloPremiumYouCanSeePeopleWhoHaveLiked": "With ZULLO Premium, you can see people who have liked you. Your Superlikes appear here even without Premium.",
+  "@withZulloPremiumYouCanSeePeopleWhoHaveLiked": {
+    "description": "ZULLO interface text. Source: Med ZULLO Premium kan du se personer som har gillat dig. Dina Superlikes visas här även utan Premium."
+  },
+  "messages": "Messages",
+  "@messages": {
+    "description": "ZULLO interface text. Source: Meddelanden"
+  },
+  "yourMessageCouldNotBeConfirmedTryAgain": "Your message could not be confirmed. Try again.",
+  "@yourMessageCouldNotBeConfirmedTryAgain": {
+    "description": "ZULLO interface text. Source: Meddelandet kunde inte bekräftas. Försök igen."
+  },
+  "myLifestyle": "My lifestyle",
+  "@myLifestyle": {
+    "description": "ZULLO interface text. Source: Min livsstil"
+  },
+  "myPerfectDayOff": "My perfect day off",
+  "@myPerfectDayOff": {
+    "description": "ZULLO interface text. Source: Min perfekta lediga dag"
+  },
+  "myPerfectWeekdayEvening": "My perfect weekday evening",
+  "@myPerfectWeekdayEvening": {
+    "description": "ZULLO interface text. Source: Min perfekta vardagskväll"
+  },
+  "myBoostsValue0": "My Boosts · {value0}",
+  "@myBoostsValue0": {
+    "description": "ZULLO interface text. Source: Mina Boosts · {value0}",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "atLeastPhotosAreRequiredYouCanAddUpTo": "At least 2 photos are required. You can add up to 6.",
+  "@atLeastPhotosAreRequiredYouCanAddUpTo": {
+    "description": "ZULLO interface text. Source: Minst 2 bilder krävs. Du kan ha högst 6."
+  },
+  "men": "Men",
+  "@men": {
+    "description": "ZULLO interface text. Source: Män"
+  },
+  "displayName": "Display name",
+  "@displayName": {
+    "description": "ZULLO interface text. Source: Namn (display)"
+  },
+  "no": "No",
+  "@no": {
+    "description": "ZULLO interface text. Source: Nej"
+  },
+  "youVeMatchedOpenChatsToSayHello": "You’ve matched! Open Chats to say hello.",
+  "@youVeMatchedOpenChatsToSayHello": {
+    "description": "ZULLO interface text. Source: Ni har matchat! Öppna Chattar för att säga hej."
+  },
+  "youMaySeeEachOtherInSwipeAgainIfYour": "You may see each other in Swipe again if your preferences match. You must match again to chat. Your old chat will not be restored.",
+  "@youMaySeeEachOtherInSwipeAgainIfYour": {
+    "description": "ZULLO interface text. Source: Ni kan visas i Swipa igen om era inställningar passar. Ni måste matcha på nytt för att chatta. Den gamla chatten återställs inte."
+  },
+  "youWillNoLongerBeAbleToContactEachOther": "You will no longer be able to contact each other. You can unblock this person in settings.",
+  "@youWillNoLongerBeAbleToContactEachOther": {
+    "description": "ZULLO interface text. Source: Ni kommer inte längre att kunna kontakta varandra. Du kan häva blockeringen i inställningarna."
+  },
+  "now": "Now",
+  "@now": {
+    "description": "ZULLO interface text. Source: Nu"
+  },
+  "whenYouMatchWithSomeoneTheyWillAppearHereSo": "When you match with someone, they will appear here so you can start chatting.",
+  "@whenYouMatchWithSomeoneTheyWillAppearHereSo": {
+    "description": "ZULLO interface text. Source: När du matchar med någon visas personen här, så att ni kan börja chatta."
+  },
+  "whenWereYouBorn": "When were you born?",
+  "@whenWereYouBorn": {
+    "description": "ZULLO interface text. Source: När föddes du?"
+  },
+  "whileYourAccountIsPausedYouWillNotAppearIn": "While your account is paused, you will not appear in Swipe or new likes. Your matches and chats stay. You can reactivate your account whenever you like.",
+  "@whileYourAccountIsPausedYouWillNotAppearIn": {
+    "description": "ZULLO interface text. Source: När kontot är pausat visas du inte i Swipa eller bland nya likes. Dina matchningar och chattar finns kvar. Du kan återaktivera kontot när du vill."
+  },
+  "whenSomeoneLikesYouTheyLlAppearHere": "When someone likes you, they’ll appear here.",
+  "@whenSomeoneLikesYouTheyLlAppearHere": {
+    "description": "ZULLO interface text. Source: När någon gillar dig visas personen här."
+  },
+  "next": "Next",
+  "@next": {
+    "description": "ZULLO interface text. Source: Nästa"
+  },
+  "nextPhoto": "Next photo",
+  "@nextPhoto": {
+    "description": "ZULLO interface text. Source: Nästa bild"
+  },
+  "networkErrorValue0": "Network error: {value0}",
+  "@networkErrorValue0": {
+    "description": "ZULLO interface text. Source: Nätverksfel: {value0}",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "somethingSerious": "Something serious",
+  "@somethingSerious": {
+    "description": "ZULLO interface text. Source: Något seriöst"
+  },
+  "unlimitedLikes": "Unlimited likes",
+  "@unlimitedLikes": {
+    "description": "ZULLO interface text. Source: Obegränsade likes"
+  },
+  "often": "Often",
+  "@often": {
+    "description": "ZULLO interface text. Source: Ofta"
+  },
+  "ifThereAreNoMoreProfilesMatchingYourPreferencesWe": "If there are no more profiles matching your preferences, we can show people up to 5 years outside your age range. Always 18+.",
+  "@ifThereAreNoMoreProfilesMatchingYourPreferencesWe": {
+    "description": "ZULLO interface text. Source: Om det inte finns fler profiler inom dina val kan vi visa upp till 5 år utanför intervallet. Alltid 18+."
+  },
+  "ifYourUsualFiltersShowNoProfilesWeCanSearch": "If your usual filters show no profiles, we can search a slightly wider area nearby.",
+  "@ifYourUsualFiltersShowNoProfilesWeCanSearch": {
+    "description": "ZULLO interface text. Source: Om dina vanliga filter inte ger profiler kan vi söka i ett närliggande, större område."
+  },
+  "aboutMe": "About me",
+  "@aboutMe": {
+    "description": "ZULLO interface text. Source: Om mig"
+  },
+  "orthodoxChristianity": "Orthodox Christianity",
+  "@orthodoxChristianity": {
+    "description": "ZULLO interface text. Source: Ortodox kristendom"
+  },
+  "taurus": "Taurus",
+  "@taurus": {
+    "description": "ZULLO interface text. Source: Oxe"
+  },
+  "pausingOrClosingYourAccountDoesNotAutomaticallyCancelApple": "Pausing or closing your account does not automatically cancel Apple or Google subscriptions. Manage them in your store’s subscription settings.",
+  "@pausingOrClosingYourAccountDoesNotAutomaticallyCancelApple": {
+    "description": "ZULLO interface text. Source: Paus eller kontostängning avslutar inte automatiskt abonnemang hos Apple eller Google. Hantera dem i butikens abonnemangsinställningar."
+  },
+  "peopleYouVeBlocked": "People you’ve blocked",
+  "@peopleYouVeBlocked": {
+    "description": "ZULLO interface text. Source: Personer du har blockerat"
+  },
+  "locationMoreDiscoveryOptions": "Location & more discovery options",
+  "@locationMoreDiscoveryOptions": {
+    "description": "ZULLO interface text. Source: Plats & fler upptäcktsval"
+  },
+  "locationDiscovery": "Location & discovery",
+  "@locationDiscovery": {
+    "description": "ZULLO interface text. Source: Plats & upptäckt"
+  },
+  "locationIsTurnedOff": "Location is turned off",
+  "@locationIsTurnedOff": {
+    "description": "ZULLO interface text. Source: Plats är inte aktiverad"
+  },
+  "yourLocationCouldNotBeFoundInTimeTryAgain": "Your location could not be found in time. Try again with better reception.",
+  "@yourLocationCouldNotBeFoundInTimeTryAgain": {
+    "description": "ZULLO interface text. Source: Platsen kunde inte hämtas i tid. Försök igen med bättre mottagning."
+  },
+  "yourLocationCouldNotBeUpdatedCheckYourConnectionAnd": "Your location could not be updated. Check your connection and try again.",
+  "@yourLocationCouldNotBeUpdatedCheckYourConnectionAnd": {
+    "description": "ZULLO interface text. Source: Platsen kunde inte uppdateras. Kontrollera anslutningen och försök igen."
+  },
+  "yourLocationIsNotAccurateEnoughTryAgainWhereYour": "Your location is not accurate enough. Try again where your phone has better reception.",
+  "@yourLocationIsNotAccurateEnoughTryAgainWhereYour": {
+    "description": "ZULLO interface text. Source: Platsen är för osäker. Försök igen där telefonen har bättre mottagning."
+  },
+  "currentlyStudying": "Currently studying",
+  "@currentlyStudying": {
+    "description": "ZULLO interface text. Source: Pluggar just nu"
+  },
+  "subscriptions": "Subscriptions",
+  "@subscriptions": {
+    "description": "ZULLO interface text. Source: Prenumerationer"
+  },
+  "priorityVisibilityForMinutesToPeopleWhosePreferencesMatch": "Priority visibility for 30 minutes to people whose preferences match.",
+  "@priorityVisibilityForMinutesToPeopleWhosePreferencesMatch": {
+    "description": "ZULLO interface text. Source: Prioriterad synlighet i 30 minuter för personer vars inställningar passar."
+  },
+  "profile": "Profile",
+  "@profile": {
+    "description": "ZULLO interface text. Source: Profil"
+  },
+  "thisProfileCouldNotBeOpenedTryAgain": "This profile could not be opened. Try again.",
+  "@thisProfileCouldNotBeOpenedTryAgain": {
+    "description": "ZULLO interface text. Source: Profilen kunde inte öppnas. Försök igen."
+  },
+  "thisProfileIsUnavailable": "This profile is unavailable.",
+  "@thisProfileIsUnavailable": {
+    "description": "ZULLO interface text. Source: Profilen är inte tillgänglig."
+  },
+  "protestantChristianity": "Protestant Christianity",
+  "@protestantChristianity": {
+    "description": "ZULLO interface text. Source: Protestantisk kristendom"
+  },
+  "notificationsCouldNotBeStartedYouCanStillUseThe": "Notifications could not be started. You can still use the app.",
+  "@notificationsCouldNotBeStartedYouCanStillUseThe": {
+    "description": "ZULLO interface text. Source: Push kunde inte initieras. Appen kan fortfarande användas."
+  },
+  "onYourMatchesCanSeeYourActivityTurnThisOff": "On: your matches can see your activity. Turn this off with Hide activity or ZULLO Premium to hide your online and last active status.",
+  "@onYourMatchesCanSeeYourActivityTurnThisOff": {
+    "description": "ZULLO interface text. Source: På: matchningar ser din aktivitet. Stäng av med Dölj aktivitet eller ZULLO Premium för att dölja online och senast aktiv."
+  },
+  "deleteOrPauseAccount": "Delete or pause account",
+  "@deleteOrPauseAccount": {
+    "description": "ZULLO interface text. Source: Radera eller pausa konto"
+  },
+  "report": "Report",
+  "@report": {
+    "description": "ZULLO interface text. Source: Rapportera"
+  },
+  "reportPerson": "Report person",
+  "@reportPerson": {
+    "description": "ZULLO interface text. Source: Rapportera användare"
+  },
+  "editProfile": "Edit profile",
+  "@editProfile": {
+    "description": "ZULLO interface text. Source: Redigera profil"
+  },
+  "religion": "Religion",
+  "@religion": {
+    "description": "ZULLO interface text. Source: Religion"
+  },
+  "clearSelection": "Clear selection",
+  "@clearSelection": {
+    "description": "ZULLO interface text. Source: Rensa val"
+  },
+  "smokingValue0": "Smoking: {value0}",
+  "@smokingValue0": {
+    "description": "ZULLO interface text. Source: Rökning: {value0}",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "conversationOptions": "Conversation options",
+  "@conversationOptions": {
+    "description": "ZULLO interface text. Source: Samtalsalternativ"
+  },
+  "seePlans": "See plans",
+  "@seePlans": {
+    "description": "ZULLO interface text. Source: Se planer"
+  },
+  "seeRegularIncomingLikesBeforeMatching": "See regular incoming likes before matching.",
+  "@seeRegularIncomingLikesBeforeMatching": {
+    "description": "ZULLO interface text. Source: Se vanliga inkommande likes före matchning."
+  },
+  "seeWhoLikesYou": "See who likes you",
+  "@seeWhoLikesYou": {
+    "description": "ZULLO interface text. Source: Se vem som gillar dig"
+  },
+  "lastActiveValue0Value1Ago": "Last active {value0} {value1} ago",
+  "@lastActiveValue0Value1Ago": {
+    "description": "ZULLO interface text. Source: Senast aktiv för {value0} {value1} sedan",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      },
+      "value1": {
+        "type": "String"
+      }
+    }
+  },
+  "lastSwipeUndone": "Last swipe undone",
+  "@lastSwipeUndone": {
+    "description": "ZULLO interface text. Source: Senaste swipen ångrades"
+  },
+  "seriousRelationship": "Serious relationship",
+  "@seriousRelationship": {
+    "description": "ZULLO interface text. Source: Seriöst förhållande"
+  },
+  "yourSessionHasChangedLogInAndTryAgain": "Your session has changed. Log in and try again.",
+  "@yourSessionHasChangedLogInAndTryAgain": {
+    "description": "ZULLO interface text. Source: Sessionen har ändrats. Försök igen efter inloggning."
+  },
+  "sikhism": "Sikhism",
+  "@sikhism": {
+    "description": "ZULLO interface text. Source: Sikhism"
+  },
+  "createProfile": "Create profile",
+  "@createProfile": {
+    "description": "ZULLO interface text. Source: Skapa profil"
+  },
+  "resend": "Resend",
+  "@resend": {
+    "description": "ZULLO interface text. Source: Skicka igen"
+  },
+  "scorpio": "Scorpio",
+  "@scorpio": {
+    "description": "ZULLO interface text. Source: Skorpion"
+  },
+  "writeAMessage": "Write a message…",
+  "@writeAMessage": {
+    "description": "ZULLO interface text. Source: Skriv ett meddelande…"
+  },
+  "answerTheConversationPromptOrRemoveIt": "Answer the conversation prompt or remove it.",
+  "@answerTheConversationPromptOrRemoveIt": {
+    "description": "ZULLO interface text. Source: Skriv ett svar på samtalsfrågan eller ta bort den."
+  },
+  "writeSomethingPersonal": "Write something personal…",
+  "@writeSomethingPersonal": {
+    "description": "ZULLO interface text. Source: Skriv något personligt…"
+  },
+  "sagittarius": "Sagittarius",
+  "@sagittarius": {
+    "description": "ZULLO interface text. Source: Skytt"
+  },
+  "turnOnLocationServicesOnYourPhoneAndTryAgain": "Turn on location services on your phone and try again.",
+  "@turnOnLocationServicesOnYourPhoneAndTryAgain": {
+    "description": "ZULLO interface text. Source: Slå på platstjänster på telefonen och försök igen."
+  },
+  "quickProfile": "Quick profile",
+  "@quickProfile": {
+    "description": "ZULLO interface text. Source: Snabbprofil (MVP)"
+  },
+  "save": "Save",
+  "@save": {
+    "description": "ZULLO interface text. Source: Spara"
+  },
+  "saveSettings": "Save settings",
+  "@saveSettings": {
+    "description": "ZULLO interface text. Source: Spara inställningar"
+  },
+  "saveAndContinue": "Save and continue",
+  "@saveAndContinue": {
+    "description": "ZULLO interface text. Source: Spara och fortsätt"
+  },
+  "saveChanges": "Save changes",
+  "@saveChanges": {
+    "description": "ZULLO interface text. Source: Spara ändringar"
+  },
+  "savedToYourAccount": "Saved to your account",
+  "@savedToYourAccount": {
+    "description": "ZULLO interface text. Source: Sparat på ditt konto"
+  },
+  "stay": "Stay",
+  "@stay": {
+    "description": "ZULLO interface text. Source: Stanna kvar"
+  },
+  "capricorn": "Capricorn",
+  "@capricorn": {
+    "description": "ZULLO interface text. Source: Stenbock"
+  },
+  "stockholmGothenburgOslo": "Stockholm, Gothenburg, Oslo…",
+  "@stockholmGothenburgOslo": {
+    "description": "ZULLO interface text. Source: Stockholm, Göteborg, Oslo..."
+  },
+  "stockholmUniversitySchool": "Stockholm, university, school…",
+  "@stockholmUniversitySchool": {
+    "description": "ZULLO interface text. Source: Stockholm, universitet, skola..."
+  },
+  "closeAccountAndRequestDeletion": "Close account and request deletion",
+  "@closeAccountAndRequestDeletion": {
+    "description": "ZULLO interface text. Source: Stäng konto och begär radering"
+  },
+  "swipe": "Swipe",
+  "@swipe": {
+    "description": "ZULLO interface text. Source: Swipa"
+  },
+  "sayHello": "Say hello",
+  "@sayHello": {
+    "description": "ZULLO interface text. Source: Säg hej"
+  },
+  "sayHello338": "Say hello 👋",
+  "@sayHello338": {
+    "description": "ZULLO interface text. Source: Säg hej 👋"
+  },
+  "lookingFor": "Looking for",
+  "@lookingFor": {
+    "description": "ZULLO interface text. Source: Söker"
+  },
+  "removePhoto": "Remove photo",
+  "@removePhoto": {
+    "description": "ZULLO interface text. Source: Ta bort bild"
+  },
+  "removeHeight": "Remove height",
+  "@removeHeight": {
+    "description": "ZULLO interface text. Source: Ta bort längd"
+  },
+  "removeConversationPrompt": "Remove conversation prompt",
+  "@removeConversationPrompt": {
+    "description": "ZULLO interface text. Source: Ta bort samtalsfrågan"
+  },
+  "takeABreakOrCloseYourAccount": "Take a break or close your account",
+  "@takeABreakOrCloseYourAccount": {
+    "description": "ZULLO interface text. Source: Ta en paus eller stäng ditt konto"
+  },
+  "takeABreakWheneverYouNeed": "Take a break whenever you need",
+  "@takeABreakWheneverYouNeed": {
+    "description": "ZULLO interface text. Source: Ta en paus när du vill"
+  },
+  "goToHome": "Go to home",
+  "@goToHome": {
+    "description": "ZULLO interface text. Source: Till startsidan"
+  },
+  "back": "Back",
+  "@back": {
+    "description": "ZULLO interface text. Source: Tillbaka"
+  },
+  "allowLocationAccessWhileUsingTheAppInYourPhone": "Allow location access while using the app in your phone’s settings.",
+  "@allowLocationAccessWhileUsingTheAppInYourPhone": {
+    "description": "ZULLO interface text. Source: Tillåt platsåtkomst när appen används i telefonens inställningar."
+  },
+  "traditionalOrIndigenousBeliefs": "Traditional or Indigenous beliefs",
+  "@traditionalOrIndigenousBeliefs": {
+    "description": "ZULLO interface text. Source: Traditionell eller ursprunglig tro"
+  },
+  "faithAndBeliefs": "Faith and beliefs",
+  "@faithAndBeliefs": {
+    "description": "ZULLO interface text. Source: Tro och livsåskådning"
+  },
+  "meetSomeoneWhoSharesYourCultureYourValuesAndYour": "Meet someone who shares your culture,\nyour values, and your future.",
+  "@meetSomeoneWhoSharesYourCultureYourValuesAndYour": {
+    "description": "ZULLO interface text. Source: Träffa någon som delar din kultur,\ndina värderingar och din framtid."
+  },
+  "doYouExercise": "Do you exercise?",
+  "@doYouExercise": {
+    "description": "ZULLO interface text. Source: Tränar du?"
+  },
+  "exerciseValue0": "Exercise: {value0}",
+  "@exerciseValue0": {
+    "description": "ZULLO interface text. Source: Träning: {value0}",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "gemini": "Gemini",
+  "@gemini": {
+    "description": "ZULLO interface text. Source: Tvilling"
+  },
+  "updateMyLocation": "Update my location",
+  "@updateMyLocation": {
+    "description": "ZULLO interface text. Source: Uppdatera min plats"
+  },
+  "updateWhileIUseTheApp": "Update while I use the app",
+  "@updateWhileIUseTheApp": {
+    "description": "ZULLO interface text. Source: Uppdatera när jag använder appen"
+  },
+  "refreshBalance": "Refresh balance",
+  "@refreshBalance": {
+    "description": "ZULLO interface text. Source: Uppdatera saldo"
+  },
+  "yourUploadHasEndedSelectThePhotoAgain": "Your upload has ended. Select the photo again.",
+  "@yourUploadHasEndedSelectThePhotoAgain": {
+    "description": "ZULLO interface text. Source: Uppladdningen har avslutats. Välj bilden igen."
+  },
+  "yourUploadCouldNotBeConfirmedTryAgain": "Your upload could not be confirmed. Try again.",
+  "@yourUploadCouldNotBeConfirmedTryAgain": {
+    "description": "ZULLO interface text. Source: Uppladdningen kunde inte bekräftas. Försök igen."
+  },
+  "yourUploadCouldNotBeConfirmedCheckYourConnectionAnd": "Your upload could not be confirmed. Check your connection and try again.",
+  "@yourUploadCouldNotBeConfirmedCheckYourConnectionAnd": {
+    "description": "ZULLO interface text. Source: Uppladdningen kunde inte bekräftas. Kontrollera anslutningen och försök igen."
+  },
+  "discoverMorePossibilitiesMatchingAndChattingStayFree": "Discover more possibilities. Matching and chatting stay free.",
+  "@discoverMorePossibilitiesMatchingAndChattingStayFree": {
+    "description": "ZULLO interface text. Source: Upptäck fler möjligheter. Matchning och chatt finns kvar gratis."
+  },
+  "discoverPeopleNearbyEvenWhenYouTravelYourExactLocation": "Discover people nearby, even when you travel. Your exact location is not shown to others.",
+  "@discoverPeopleNearbyEvenWhenYouTravelYourExactLocation": {
+    "description": "ZULLO interface text. Source: Upptäck personer nära dig, även när du reser. Din exakta position visas inte för andra."
+  },
+  "discoveryFilters": "Discovery filters",
+  "@discoveryFilters": {
+    "description": "ZULLO interface text. Source: Upptäcktsfilter"
+  },
+  "yourDraftHasChangedOnAnotherDeviceYouCanOpen": "Your draft has changed on another device. You can open the draft saved to your account. Your local choices are only replaced if you choose to do so.",
+  "@yourDraftHasChangedOnAnotherDeviceYouCanOpen": {
+    "description": "ZULLO interface text. Source: Utkastet har ändrats på en annan enhet. Du kan öppna kontots sparade utkast. Dina lokala val ersätts först när du väljer det."
+  },
+  "yourDraftIsSavedOnThisDeviceConnectToThe": "Your draft is saved on this device. Connect to the internet to save it to your account.",
+  "@yourDraftIsSavedOnThisDeviceConnectToThe": {
+    "description": "ZULLO interface text. Source: Utkastet är sparat på enheten. Anslut till internet för att spara på kontot."
+  },
+  "developerTeacherDriver": "Developer, teacher, driver…",
+  "@developerTeacherDriver": {
+    "description": "ZULLO interface text. Source: Utvecklare, lärare, chaufför..."
+  },
+  "broadenYourSearch": "Broaden your search",
+  "@broadenYourSearch": {
+    "description": "ZULLO interface text. Source: Utöka din sökning"
+  },
+  "whatIsYourJobTitle": "What is your job title?",
+  "@whatIsYourJobTitle": {
+    "description": "ZULLO interface text. Source: Vad har du för jobbtitel?"
+  },
+  "whatIsYourFirstName": "What is your first name?",
+  "@whatIsYourFirstName": {
+    "description": "ZULLO interface text. Source: Vad heter du i förnamn?"
+  },
+  "whatDoYouDoForWork": "What do you do for work?",
+  "@whatDoYouDoForWork": {
+    "description": "ZULLO interface text. Source: Vad jobbar du med?"
+  },
+  "whatDoYouStudy": "What do you study?",
+  "@whatDoYouStudy": {
+    "description": "ZULLO interface text. Source: Vad pluggar du?"
+  },
+  "whatAreYouLookingFor": "What are you looking for?",
+  "@whatAreYouLookingFor": {
+    "description": "ZULLO interface text. Source: Vad söker du?"
+  },
+  "whatIsYourZodiacSign": "What is your zodiac sign?",
+  "@whatIsYourZodiacSign": {
+    "description": "ZULLO interface text. Source: Vad är ditt stjärntecken?"
+  },
+  "optionalYouCanSkipThisAndChangeItLater": "Optional. You can skip this and change it later.",
+  "@optionalYouCanSkipThisAndChangeItLater": {
+    "description": "ZULLO interface text. Source: Valfritt. Du kan hoppa över och ändra senare."
+  },
+  "optionalLeaveThisBlankIfYouPreferNotToShow": "Optional. Leave this blank if you prefer not to show it.",
+  "@optionalLeaveThisBlankIfYouPreferNotToShow": {
+    "description": "ZULLO interface text. Source: Valfritt. Lämna tomt om du inte vill visa detta."
+  },
+  "whereDoYouLive": "Where do you live?",
+  "@whereDoYouLive": {
+    "description": "ZULLO interface text. Source: Var bor du?"
+  },
+  "whereDoYouWork": "Where do you work?",
+  "@whereDoYouWork": {
+    "description": "ZULLO interface text. Source: Var jobbar du?"
+  },
+  "whereAreYouFrom": "Where are you from?",
+  "@whereAreYouFrom": {
+    "description": "ZULLO interface text. Source: Var kommer du ifrån?"
+  },
+  "whereDoYouStudy": "Where do you study?",
+  "@whereDoYouStudy": {
+    "description": "ZULLO interface text. Source: Var pluggar du?"
+  },
+  "haveBeenInARelationship": "Have been in a relationship",
+  "@haveBeenInARelationship": {
+    "description": "ZULLO interface text. Source: Varit i ett förhållande"
+  },
+  "aquarius": "Aquarius",
+  "@aquarius": {
+    "description": "ZULLO interface text. Source: Vattuman"
+  },
+  "whoWouldYouLikeToMeet": "Who would you like to meet?",
+  "@whoWouldYouLikeToMeet": {
+    "description": "ZULLO interface text. Source: Vem vill du träffa?"
+  },
+  "whoAreYouInterestedIn": "Who are you interested in?",
+  "@whoAreYouInterestedIn": {
+    "description": "ZULLO interface text. Source: Vem är du intresserad av?"
+  },
+  "verifyProfile": "Verify profile",
+  "@verifyProfile": {
+    "description": "ZULLO interface text. Source: Verifiera profil"
+  },
+  "verificationIsNotAvailableYet": "Verification is not available yet",
+  "@verificationIsNotAvailableYet": {
+    "description": "ZULLO interface text. Source: Verifiering är inte tillgänglig ännu"
+  },
+  "weSearchWithinYourChosenDistance": "We search within your chosen distance.",
+  "@weSearchWithinYourChosenDistance": {
+    "description": "ZULLO interface text. Source: Vi söker inom avståndet du väljer."
+  },
+  "wouldYouLikeChildrenInTheFuture": "Would you like children in the future?",
+  "@wouldYouLikeChildrenInTheFuture": {
+    "description": "ZULLO interface text. Source: Vill du ha barn i framtiden?"
+  },
+  "leaveZullo": "Leave ZULLO?",
+  "@leaveZullo": {
+    "description": "ZULLO interface text. Source: Vill du lämna ZULLO?"
+  },
+  "leaveProfileSetup388": "Leave profile setup?",
+  "@leaveProfileSetup388": {
+    "description": "ZULLO interface text. Source: Vill du lämna profilskapandet?"
+  },
+  "wantPets": "Want pets",
+  "@wantPets": {
+    "description": "ZULLO interface text. Source: Vill ha husdjur"
+  },
+  "donTWantAny": "Don’t want any",
+  "@donTWantAny": {
+    "description": "ZULLO interface text. Source: Vill inte ha"
+  },
+  "show": "Show",
+  "@show": {
+    "description": "ZULLO interface text. Source: Visa"
+  },
+  "showExtraInterestAMatchStillNeedsALikeBack": "Show extra interest. A match still needs a like back.",
+  "@showExtraInterestAMatchStillNeedsALikeBack": {
+    "description": "ZULLO interface text. Source: Visa extra intresse. Matchning kräver fortfarande ett gensvar."
+  },
+  "showPassword": "Show password",
+  "@showPassword": {
+    "description": "ZULLO interface text. Source: Visa lösenord"
+  },
+  "showOlderMessages": "Show older messages",
+  "@showOlderMessages": {
+    "description": "ZULLO interface text. Source: Visa äldre meddelanden"
+  },
+  "shownBecauseYouChoseToSearchALittleBeyondYour": "Shown because you chose to search a little beyond your filters.",
+  "@shownBecauseYouChoseToSearchALittleBeyondYour": {
+    "description": "ZULLO interface text. Source: Visas genom ditt val att söka lite utanför filtren."
+  },
+  "aries": "Aries",
+  "@aries": {
+    "description": "ZULLO interface text. Source: Vädur"
+  },
+  "chooseYourHeightInCentimetresOrFeet": "Choose your height in centimetres or feet.",
+  "@chooseYourHeightInCentimetresOrFeet": {
+    "description": "ZULLO interface text. Source: Välj din längd i cm eller fot."
+  },
+  "chooseAPhotoNoLargerThanMb": "Choose a photo no larger than 10 MB.",
+  "@chooseAPhotoNoLargerThanMb": {
+    "description": "ZULLO interface text. Source: Välj en bild på högst 10 MB."
+  },
+  "chooseAConversationPrompt": "Choose a conversation prompt",
+  "@chooseAConversationPrompt": {
+    "description": "ZULLO interface text. Source: Välj en samtalsfråga"
+  },
+  "chooseALargerAreaOrAdjustYourFiltersToFind": "Choose a larger area or adjust your filters to find more people.",
+  "@chooseALargerAreaOrAdjustYourFiltersToFind": {
+    "description": "ZULLO interface text. Source: Välj ett större område eller justera dina filter för att hitta fler personer."
+  },
+  "chooseYourDateOfBirth": "Choose your date of birth",
+  "@chooseYourDateOfBirth": {
+    "description": "ZULLO interface text. Source: Välj födelsedatum"
+  },
+  "chooseSomethingThatSoundsLikeYouYourAnswerCouldStart": "Choose something that sounds like you. Your answer could start a conversation.",
+  "@chooseSomethingThatSoundsLikeYouYourAnswerCouldStart": {
+    "description": "ZULLO interface text. Source: Välj något som låter som du. Svaret kan bli början på ett samtal."
+  },
+  "chooseWhoCanDiscoverYouAndWhetherMatchesCanSee": "Choose who can discover you and whether matches can see your recent activity.",
+  "@chooseWhoCanDiscoverYouAndWhetherMatchesCanSee": {
+    "description": "ZULLO interface text. Source: Välj vem som kan upptäcka dig och om matchningar ser din senaste aktivitet."
+  },
+  "chooseWhichProfilesYouWantToSee": "Choose which profiles you want to see.",
+  "@chooseWhichProfilesYouWantToSee": {
+    "description": "ZULLO interface text. Source: Välj vilka profiler du vill se."
+  },
+  "chooseWhichProfilesYouWantToDiscover": "Choose which profiles you want to discover.",
+  "@chooseWhichProfilesYouWantToDiscover": {
+    "description": "ZULLO interface text. Source: Välj vilka profiler du vill upptäcka."
+  },
+  "welcomeBack": "Welcome back",
+  "@welcomeBack": {
+    "description": "ZULLO interface text. Source: Välkommen tillbaka"
+  },
+  "friends": "Friends",
+  "@friends": {
+    "description": "ZULLO interface text. Source: Vänner"
+  },
+  "waitingForTheServerTheFirstConnectionMayTakeA": "Waiting for the server. The first connection may take a moment.",
+  "@waitingForTheServerTheFirstConnectionMayTakeA": {
+    "description": "ZULLO interface text. Source: Väntar på servern. Första anslutningen kan ta en stund."
+  },
+  "libra": "Libra",
+  "@libra": {
+    "description": "ZULLO interface text. Source: Våg"
+  },
+  "want": "Want",
+  "@want": {
+    "description": "ZULLO interface text. Source: Want"
+  },
+  "zullo": "ZULLO",
+  "@zullo": {
+    "description": "ZULLO interface text. Source: ZULLO"
+  },
+  "zulloDiscover": "ZULLO · DISCOVER",
+  "@zulloDiscover": {
+    "description": "ZULLO interface text. Source: ZULLO · UPPTÄCK"
+  },
+  "value0Superlikes": "{value0} Superlikes",
+  "@value0Superlikes": {
+    "description": "ZULLO interface text. Source: {value0} Superlikes",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "value0Km": "{value0} km",
+  "@value0Km": {
+    "description": "ZULLO interface text. Source: {value0} km",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "value0Years": "{value0} years",
+  "@value0Years": {
+    "description": "ZULLO interface text. Source: {value0} år",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "value0UnreadMessages": "{value0}, unread messages",
+  "@value0UnreadMessages": {
+    "description": "ZULLO interface text. Source: {value0}, olästa meddelanden",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "changeYourDistanceAgeRangeAndWhoYouWantTo": "Change your distance, age range, and who you want to meet using the Discovery filters.",
+  "@changeYourDistanceAgeRangeAndWhoYouWantTo": {
+    "description": "ZULLO interface text. Source: Ändra avstånd, ålder och vem du vill träffa via filtret i Upptäck."
+  },
+  "adjustFilters": "Adjust filters",
+  "@adjustFilters": {
+    "description": "ZULLO interface text. Source: Ändra filter"
+  },
+  "yourChangeCouldNotBeSavedYourPreviousPreferencesStill": "Your change could not be saved. Your previous preferences still apply.",
+  "@yourChangeCouldNotBeSavedYourPreviousPreferencesStill": {
+    "description": "ZULLO interface text. Source: Ändringen kunde inte sparas. Dina tidigare val gäller fortfarande."
+  },
+  "age": "Age",
+  "@age": {
+    "description": "ZULLO interface text. Source: Ålder"
+  },
+  "yourAgeMustBeBetweenAnd": "Your age must be between 18 and 100.",
+  "@yourAgeMustBeBetweenAnd": {
+    "description": "ZULLO interface text. Source: Åldern måste vara mellan 18 och 100 år."
+  },
+  "ageRangeValue0Value1": "Age range · {value0}–{value1}",
+  "@ageRangeValue0Value1": {
+    "description": "ZULLO interface text. Source: Åldersspann · {value0}–{value1}",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      },
+      "value1": {
+        "type": "String"
+      }
+    }
+  },
+  "rewindASwipe": "Rewind a swipe",
+  "@rewindASwipe": {
+    "description": "ZULLO interface text. Source: Ångra en swipe"
+  },
+  "rewindLastSwipe": "Rewind last swipe",
+  "@rewindLastSwipe": {
+    "description": "ZULLO interface text. Source: Ångra senaste swipe"
+  },
+  "reactivateAccount": "Reactivate account",
+  "@reactivateAccount": {
+    "description": "ZULLO interface text. Source: Återaktivera konto"
+  },
+  "restorePurchases": "Restore purchases",
+  "@restorePurchases": {
+    "description": "ZULLO interface text. Source: Återställ köp"
+  },
+  "openYourProfile": "Open your profile",
+  "@openYourProfile": {
+    "description": "ZULLO interface text. Source: Öppna din profil"
+  },
+  "openTheDraftSavedToYourAccount": "Open the draft saved to your account?",
+  "@openTheDraftSavedToYourAccount": {
+    "description": "ZULLO interface text. Source: Öppna kontots sparade utkast?"
+  },
+  "openAccountDraft": "Open account draft",
+  "@openAccountDraft": {
+    "description": "ZULLO interface text. Source: Öppna kontots utkast"
+  },
+  "openValue0SProfile": "Open {value0}’s profile",
+  "@openValue0SProfile": {
+    "description": "ZULLO interface text. Source: Öppna profilen för {value0}",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "openDraft": "Open draft",
+  "@openDraft": {
+    "description": "ZULLO interface text. Source: Öppna utkast"
+  },
+  "openYourDraftAgain": "Open your draft again.",
+  "@openYourDraftAgain": {
+    "description": "ZULLO interface text. Source: Öppna utkastet igen."
+  },
+  "openingTheApp": "Opening the app…",
+  "@openingTheApp": {
+    "description": "ZULLO interface text. Source: Öppnar appen…"
+  },
+  "openingYourUnfinishedProfile": "Opening your unfinished profile…",
+  "@openingYourUnfinishedProfile": {
+    "description": "ZULLO interface text. Source: Öppnar din påbörjade profil…"
+  },
+  "activateBoost30Minutes": "Activate Boost · 30 minutes",
+  "@activateBoost30Minutes": {
+    "description": "ZULLO interface text. Source: Aktivera Boost · 30 minuter"
+  },
+  "processing": "Processing…",
+  "@processing": {
+    "description": "ZULLO interface text. Source: Behandlar…"
+  },
+  "boostActiveRemaining": "Boost active · {value0} remaining",
+  "@boostActiveRemaining": {
+    "description": "ZULLO interface text. Source: Boost aktiv · {value0} kvar",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "currentLocation": "Your current location",
+  "@currentLocation": {
+    "description": "ZULLO interface text. Source: Din aktuella plats"
+  },
+  "profileStep": "Your profile · {value0} of {value1}",
+  "@profileStep": {
+    "description": "ZULLO interface text. Source: Din profil · {value0} av {value1}",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      },
+      "value1": {
+        "type": "String"
+      }
+    }
+  },
+  "savedLocation": "Your saved location",
+  "@savedLocation": {
+    "description": "ZULLO interface text. Source: Din sparade plats"
+  },
+  "answersSavedAutomatically": "Your answers are saved automatically",
+  "@answersSavedAutomatically": {
+    "description": "ZULLO interface text. Source: Dina svar sparas automatiskt"
+  },
+  "notSpecified": "Not specified",
+  "@notSpecified": {
+    "description": "ZULLO interface text. Source: Ej angivet"
+  },
+  "pausedAtYourPace": "Take a break at your own pace.",
+  "@pausedAtYourPace": {
+    "description": "ZULLO interface text. Source: En paus, i din takt."
+  },
+  "likesYou": "Likes you",
+  "@likesYou": {
+    "description": "ZULLO interface text. Source: Gillar dig"
+  },
+  "managePremium": "Manage Premium",
+  "@managePremium": {
+    "description": "ZULLO interface text. Source: Hantera Premium"
+  },
+  "managePause": "Manage pause",
+  "@managePause": {
+    "description": "ZULLO interface text. Source: Hantera paus"
+  },
+  "noProfile": "No profile",
+  "@noProfile": {
+    "description": "ZULLO interface text. Source: Ingen profil"
+  },
+  "notSynced": "Not synced",
+  "@notSynced": {
+    "description": "ZULLO interface text. Source: Inte synkroniserat"
+  },
+  "couldNotBlock": "Could not block: {value0}",
+  "@couldNotBlock": {
+    "description": "ZULLO interface text. Source: Kunde inte blockera: {value0}",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "couldNotReport": "Could not report: {value0}",
+  "@couldNotReport": {
+    "description": "ZULLO interface text. Source: Kunde inte rapportera: {value0}",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "couldNotSend": "Could not send: {value0}",
+  "@couldNotSend": {
+    "description": "ZULLO interface text. Source: Kunde inte skicka: {value0}",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "delivered": "Delivered",
+  "@delivered": {
+    "description": "ZULLO interface text. Source: Levererad"
+  },
+  "likeSent": "Like sent.",
+  "@likeSent": {
+    "description": "ZULLO interface text. Source: Like skickad."
+  },
+  "signInAgain": "Log in again",
+  "@signInAgain": {
+    "description": "ZULLO interface text. Source: Logga in igen"
+  },
+  "failed": "Failed",
+  "@failed": {
+    "description": "ZULLO interface text. Source: Misslyckades"
+  },
+  "newMatches": "New matches",
+  "@newMatches": {
+    "description": "ZULLO interface text. Source: Nya matchningar"
+  },
+  "pauseAccount": "Pause account",
+  "@pauseAccount": {
+    "description": "ZULLO interface text. Source: Pausa konto"
+  },
+  "profileSaved": "Profile saved.",
+  "@profileSaved": {
+    "description": "ZULLO interface text. Source: Profilen sparades."
+  },
+  "seeAllFeatures": "See all features",
+  "@seeAllFeatures": {
+    "description": "ZULLO interface text. Source: Se alla funktioner"
+  },
+  "seen": "Seen",
+  "@seen": {
+    "description": "ZULLO interface text. Source: Sedd"
+  },
+  "sending": "Sending…",
+  "@sending": {
+    "description": "ZULLO interface text. Source: Skickar…"
+  },
+  "saveProfile": "Save profile",
+  "@saveProfile": {
+    "description": "ZULLO interface text. Source: Spara profil"
+  },
+  "saving": "Saving…",
+  "@saving": {
+    "description": "ZULLO interface text. Source: Sparar…"
+  },
+  "optional": "Optional",
+  "@optional": {
+    "description": "ZULLO interface text. Source: Valfritt"
+  },
+  "feetUnit": "ft",
+  "@feetUnit": {
+    "description": "ZULLO interface text. Source: fot"
+  },
+  "photosCountOfSix": "{value0} / 6 photos",
+  "@photosCountOfSix": {
+    "description": "ZULLO interface text. Source: {value0} / 6 bilder",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "heightCentimeters": "{value0} cm",
+  "@heightCentimeters": {
+    "description": "ZULLO interface text. Source: {value0} cm",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "heightFeet": "{value0} ft",
+  "@heightFeet": {
+    "description": "ZULLO interface text. Source: {value0} fot",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "heightInches": "{value0} in",
+  "@heightInches": {
+    "description": "ZULLO interface text. Source: {value0} tum",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "lastActiveMinutes": "{count, plural, one{Last active {count} minute ago} other{Last active {count} minutes ago}}",
+  "lastActiveHours": "{count, plural, one{Last active {count} hour ago} other{Last active {count} hours ago}}",
+  "lastActiveDays": "{count, plural, one{Last active {count} day ago} other{Last active {count} days ago}}",
+  "@lastActiveMinutes": {
+    "description": "Last activity relative time. Plural grammar applies to the entire phrase; count is elapsed whole units.",
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "@lastActiveHours": {
+    "description": "Last activity relative time. Plural grammar applies to the entire phrase; count is elapsed whole units.",
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "@lastActiveDays": {
+    "description": "Last activity relative time. Plural grammar applies to the entire phrase; count is elapsed whole units.",
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "interests": "Interests",
+  "cannabis": "Cannabis",
+  "@interests": {
+    "description": "Profile section title, not user-written interests."
+  },
+  "@cannabis": {
+    "description": "Lifestyle substance category."
+  },
+  "threeSuperlikesPerWeek": "3 Superlikes per week",
+  "sentAMessage": "Sent a message",
+  "@threeSuperlikesPerWeek": {
+    "description": "ZULLO Premium benefit: fixed allowance of three Superlikes each week."
+  },
+  "@sentAMessage": {
+    "description": "Notification-banner fallback after the sender name when the message text is unavailable. Never substitutes for actual user-authored message content."
+  },
+  "likeAction": "Like",
+  "@likeAction": {
+    "description": "Accessible label for the action that likes the shown profile."
+  }
+}

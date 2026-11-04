@@ -1,290 +1,102 @@
-import 'theme/zullo_palette.dart';
+import 'l10n/localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'theme/zullo_palette.dart';
 
 class SwipePage extends StatelessWidget {
-  final bool isLoading;
-  final bool hasActiveProfile;
-  final bool hasUnreadMessages;
-
+  final bool isLoading, hasActiveProfile, hasUnreadMessages;
   final ValueListenable<Offset> dragListenable;
-
   final Widget? nextCard;
-  final Widget activeCard;
-  final Widget emptyState;
-
-  final VoidCallback onOpenRadiusSheet;
-  final VoidCallback onOpenMatchesPage;
-  final VoidCallback onOpenEditProfile;
-  final VoidCallback onSwipeLeft;
-  final VoidCallback onSwipeUp;
-  final VoidCallback onSwipeRight;
-
+  final Widget activeCard, emptyState;
+  final VoidCallback onOpenRadiusSheet,
+      onOpenMatchesPage,
+      onSwipeLeft,
+      onSwipeUp,
+      onSwipeRight;
   final VoidCallback? onRewind;
-
-  const SwipePage({
-    super.key,
-    this.onRewind,
-    required this.isLoading,
-    required this.hasActiveProfile,
-    required this.hasUnreadMessages,
-    required this.dragListenable,
-    required this.nextCard,
-    required this.activeCard,
-    required this.emptyState,
-    required this.onOpenRadiusSheet,
-    required this.onOpenMatchesPage,
-    required this.onOpenEditProfile,
-    required this.onSwipeLeft,
-    required this.onSwipeUp,
-    required this.onSwipeRight,
-  });
-
+  const SwipePage(
+      {super.key,
+      this.onRewind,
+      required this.isLoading,
+      required this.hasActiveProfile,
+      required this.hasUnreadMessages,
+      required this.dragListenable,
+      required this.nextCard,
+      required this.activeCard,
+      required this.emptyState,
+      required this.onOpenRadiusSheet,
+      required this.onOpenMatchesPage,
+      required this.onSwipeLeft,
+      required this.onSwipeUp,
+      required this.onSwipeRight});
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => Scaffold(
       backgroundColor: hasActiveProfile ? Colors.black : ZulloPalette.canvas,
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Stack(
-              children: [
-                Positioned.fill(
-                  child: ColoredBox(color: hasActiveProfile ? Colors.black : ZulloPalette.canvas),
-                ),
-                Positioned.fill(
-                  child: Stack(
-                    children: [
-                      if (nextCard != null) nextCard!,
-                      Positioned.fill(
-                        child: hasActiveProfile ? activeCard : Padding(
-                          padding: const EdgeInsets.only(top: 80, bottom: 100), child: emptyState),
-                      ),
-                    ],
-                  ),
-                ),
-                _TopOverlayBar(
-                  onOpenRadiusSheet: onOpenRadiusSheet,
-                  onOpenProfile: onOpenEditProfile,
-                  light: !hasActiveProfile,
-                  onRewind: hasActiveProfile ? onRewind : null,
-                ),
-                if (hasActiveProfile)
-                  _BottomActionBar(
-                    dragListenable: dragListenable,
-                    onOpenEditProfile: onOpenEditProfile,
-                    onSwipeLeft: onSwipeLeft,
-                    onSwipeUp: onSwipeUp,
-                    onSwipeRight: onSwipeRight,
-                  ),
-              ],
-            ),
-    );
-  }
-}
-
-class _TopOverlayBar extends StatelessWidget {
-  final VoidCallback onOpenRadiusSheet, onOpenProfile;
-  final VoidCallback? onRewind;
-  final bool light;
-  const _TopOverlayBar({required this.onOpenRadiusSheet, required this.onOpenProfile,
-    required this.light, this.onRewind});
-  @override
-  Widget build(BuildContext context) {
-    final ink = light ? ZulloPalette.ink : Colors.white;
-    Widget action(IconData icon, String label, VoidCallback tap) => IconButton(
-      tooltip: label, onPressed: tap, icon: Icon(icon, color: ink, size: 23),
-      style: IconButton.styleFrom(backgroundColor: light ? Colors.white : Colors.black26));
-    return Positioned(top: 0, left: 0, right: 0, child: SafeArea(bottom: false,
-      child: Padding(padding: const EdgeInsets.fromLTRB(18, 12, 18, 12), child: Row(children: [
-        action(Icons.tune_rounded, 'Upptäcktsfilter', onOpenRadiusSheet),
-        const SizedBox(width: 12),
-        Expanded(child: Text('ZULLO', style: TextStyle(color: ink, fontSize: 23,
-          letterSpacing: 3, fontWeight: FontWeight.w800))),
-        if (onRewind != null) action(Icons.undo_rounded, 'Ångra senaste swipe', onRewind!),
-        const SizedBox(width: 8),
-        action(Icons.person_outline_rounded, 'Min profil', onOpenProfile),
-      ]))));
-  }
-}
-
-class _BottomActionBar extends StatelessWidget {
-  final ValueListenable<Offset> dragListenable;
-  final VoidCallback onOpenEditProfile;
-  final VoidCallback onSwipeLeft;
-  final VoidCallback onSwipeUp;
-  final VoidCallback onSwipeRight;
-
-  const _BottomActionBar({
-    required this.dragListenable,
-    required this.onOpenEditProfile,
-    required this.onSwipeLeft,
-    required this.onSwipeUp,
-    required this.onSwipeRight,
-  });
-
-  double _likeProgress(Offset drag) {
-    return (drag.dx / 140).clamp(0.0, 1.0).toDouble();
-  }
-
-  double _nopeProgress(Offset drag) {
-    return (-drag.dx / 140).clamp(0.0, 1.0).toDouble();
-  }
-
-  double _superProgress(Offset drag) {
-    final raw = (-drag.dy / 170).clamp(0.0, 1.0).toDouble();
-    if (drag.dy >= 0) return 0.0;
-    if (drag.dy.abs() < drag.dx.abs() * 0.55) return 0.0;
-    return raw;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ValueListenableBuilder<Offset>(
+      body: SafeArea(
+          bottom: false,
+          child: Column(children: [
+            Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: IconButton(
+                        tooltip: context.l10n.discoveryFilters,
+                        onPressed: onOpenRadiusSheet,
+                        icon: Icon(Icons.tune_rounded,
+                            color: hasActiveProfile
+                                ? Colors.white
+                                : ZulloPalette.ink)))),
+            Expanded(
+                child: isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : hasActiveProfile
+                        ? Padding(
+                            padding: const EdgeInsets.fromLTRB(8, 0, 8, 10),
+                            child: ClipRRect(
+                                borderRadius: BorderRadius.circular(30),
+                                child: Stack(fit: StackFit.expand, children: [
+                                  if (nextCard != null) nextCard!,
+                                  activeCard,
+                                  Positioned(
+                                      left: 0,
+                                      right: 0,
+                                      bottom: 12,
+                                      child: _actions()),
+                                ])))
+                        : emptyState),
+          ])));
+  Widget _actions() => ValueListenableBuilder<Offset>(
       valueListenable: dragListenable,
-      builder: (context, drag, _) {
-        final likeProgress = _likeProgress(drag);
-        final nopeProgress = _nopeProgress(drag);
-        final superProgress = _superProgress(drag);
-        final isDraggingAny =
-            likeProgress > 0 || nopeProgress > 0 || superProgress > 0;
-
-        return Positioned(
-          left: 0,
-          right: 0,
-          bottom: 18,
-          child: SafeArea(
-            top: false,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                AnimatedScale(
-                  duration: const Duration(milliseconds: 90),
-                  scale: nopeProgress > 0 ? 1.22 : 1.0,
-                  child: AnimatedOpacity(
-                    duration: const Duration(milliseconds: 90),
-                    opacity: likeProgress > 0 || superProgress > 0 ? 0.10 : 1.0,
-                    child: _SwipeActionButton(
-                      size: 62,
-                      onTap: onSwipeLeft,
-                      label: 'Passa',
-                      child: const _ThickXIcon(
-                        color: Color(0xFFFF2D75),
-                        size: 34,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 14),
-                AnimatedScale(
-                  duration: const Duration(milliseconds: 90),
-                  scale: superProgress > 0 ? 1.22 : 1.0,
-                  child: AnimatedOpacity(
-                    duration: const Duration(milliseconds: 90),
-                    opacity: likeProgress > 0 || nopeProgress > 0 ? 0.10 : 1.0,
-                    child: _SwipeActionButton(
-                      size: 54,
-                      onTap: onSwipeUp,
-                      label: 'Superlike',
-                      child: const Icon(
-                        Icons.star_rounded,
-                        size: 28,
-                        color: Colors.blue,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 14),
-                AnimatedScale(
-                  duration: const Duration(milliseconds: 90),
-                  scale: likeProgress > 0 ? 1.22 : 1.0,
-                  child: AnimatedOpacity(
-                    duration: const Duration(milliseconds: 90),
-                    opacity: nopeProgress > 0 || superProgress > 0 ? 0.10 : 1.0,
-                    child: _SwipeActionButton(
-                      size: 62,
-                      onTap: onSwipeRight,
-                      label: 'Gilla',
-                      child: const Icon(
-                        Icons.favorite,
-                        size: 34,
-                        color: Color(0xFF7BEA3A),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 14),
-                AnimatedOpacity(
-                  duration: const Duration(milliseconds: 90),
-                  opacity: isDraggingAny ? 0.10 : 1.0,
-                  child: _SwipeActionButton(
-                    size: 52,
-                    onTap: onOpenEditProfile,
-                    label: 'Redigera profil',
-                    child: const Icon(
-                      Icons.edit_outlined,
-                      size: 24,
-                      color: Colors.lightBlue,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _SwipeActionButton extends StatelessWidget {
-  final Widget child;
-  final VoidCallback onTap;
-  final String label;
-  final double size;
-  const _SwipeActionButton(
-      {required this.child,
-      required this.onTap,
-      required this.label,
-      this.size = 64});
-  @override
-  Widget build(BuildContext context) => Tooltip(
-      message: label,
-      child: Semantics(
-          button: true,
-          label: label,
-          child: Material(
-              color: const Color(0xFF0E0E0E),
-              shape: const CircleBorder(),
-              elevation: 4,
-              child: InkWell(
-                  onTap: onTap,
-                  customBorder: const CircleBorder(),
-                  child: SizedBox(
-                      width: size,
-                      height: size,
-                      child: Center(child: child))))));
-}
-
-class _ThickXIcon extends StatelessWidget {
-  final Color color;
-  final double size;
-
-  const _ThickXIcon({
-    required this.color,
-    this.size = 34,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        Icon(Icons.close, size: size, color: color),
-        Transform.translate(
-          offset: const Offset(0.7, 0.7),
-          child: Icon(Icons.close, size: size, color: color.withOpacity(0.9)),
-        ),
-      ],
-    );
-  }
+      builder: (context, drag, _) =>
+          Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            _action(context.l10n.rewindLastSwipe, Icons.replay_rounded,
+                const Color(0xFFFFB533), onRewind,
+                size: 48, iconSize: 27),
+            const SizedBox(width: 12),
+            _action(context.l10n.skip, Icons.close_rounded,
+                const Color(0xFFFF2D75), onSwipeLeft,
+                size: 62, iconSize: 38),
+            const SizedBox(width: 12),
+            _action('Superlike', Icons.star_rounded, const Color(0xFF1EADFF),
+                onSwipeUp,
+                size: 52, iconSize: 30),
+            const SizedBox(width: 12),
+            _action(context.l10n.likeAction, Icons.favorite_rounded,
+                const Color(0xFF77E539), onSwipeRight,
+                size: 62, iconSize: 36),
+          ]));
+  Widget _action(String label, IconData icon, Color color, VoidCallback? action,
+          {required double size, required double iconSize}) =>
+      SizedBox.square(
+          dimension: size,
+          child: IconButton(
+              tooltip: label,
+              onPressed: action,
+              style: IconButton.styleFrom(
+                  backgroundColor: const Color(0xFF111317),
+                  disabledBackgroundColor: const Color(0xFF111317),
+                  foregroundColor: color,
+                  disabledForegroundColor: color.withValues(alpha: .35),
+                  padding: EdgeInsets.zero),
+              icon: Icon(icon, size: iconSize)));
 }

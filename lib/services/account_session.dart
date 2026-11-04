@@ -23,6 +23,7 @@ class AccountSession {
     _expiredGeneration = generation;
     _expired.add(null);
   }
+
   static final _closed = StreamController<void>.broadcast();
   static Stream<void> get closedStream => _closed.stream;
   static void notifyClosed() => _closed.add(null);

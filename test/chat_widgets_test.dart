@@ -62,51 +62,90 @@ void main() {
           }),
           200);
 
-  testWidgets('chat profile header opens all current photos and gallery swipes', (tester) async {
+  testWidgets('chat profile header opens all current photos and gallery swipes',
+      (tester) async {
     final auth = GalleryAuth();
-    final client = MockClient((request) async => request.url.path.endsWith('/thread-page')
-      ? page([]) : http.Response('{}', 200));
-    await settleIo(tester, () => tester.pumpWidget(MaterialApp(theme: zulloTheme(), home: ChatPage(
-      userId: 'B', displayName: 'Peer', photoUrl: '', initialMeUserId: 'A',
-      initialThreadData: const [], authService: auth,
-      profileImageProvider: (_) => MemoryImage(base64Decode('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7')),
-      messagesService: MessagesService('http://test', AuthStorage(), client: client),
-      liveService: SignalRService(transport: FakeChatTransport()), refreshBadge: () async {}))));
-    await tester.tap(find.byTooltip('Samtalsalternativ')); await tester.pumpAndSettle();
-    expect(tester.widget<PopupMenuButton<String>>(find.byType(PopupMenuButton<String>)).color, Colors.white);
-    await tester.tap(find.text('Rapportera')); await tester.pumpAndSettle();
-    expect(tester.widget<AlertDialog>(find.byType(AlertDialog)).backgroundColor, Colors.white);
-    await tester.tap(find.text('Avbryt')); await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('Samtalsalternativ')); await tester.pumpAndSettle();
-    await tester.tap(find.text('Blockera')); await tester.pumpAndSettle();
+    final client = MockClient((request) async =>
+        request.url.path.endsWith('/thread-page')
+            ? page([])
+            : http.Response('{}', 200));
+    await settleIo(
+        tester,
+        () => tester.pumpWidget(MaterialApp(
+            theme: zulloTheme(),
+            home: ChatPage(
+                userId: 'B',
+                displayName: 'Peer',
+                photoUrl: '',
+                initialMeUserId: 'A',
+                initialThreadData: const [],
+                authService: auth,
+                profileImageProvider: (_) => MemoryImage(base64Decode(
+                    'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7')),
+                messagesService: MessagesService('http://test', AuthStorage(),
+                    client: client),
+                liveService: SignalRService(transport: FakeChatTransport()),
+                refreshBadge: () async {}))));
+    await tester.tap(find.byTooltip('Samtalsalternativ'));
+    await tester.pumpAndSettle();
+    expect(
+        tester
+            .widget<PopupMenuButton<String>>(
+                find.byType(PopupMenuButton<String>))
+            .color,
+        Colors.white);
+    await tester.tap(find.text('Rapportera'));
+    await tester.pumpAndSettle();
+    expect(tester.widget<AlertDialog>(find.byType(AlertDialog)).backgroundColor,
+        Colors.white);
+    await tester.tap(find.text('Avbryt'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Samtalsalternativ'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Blockera'));
+    await tester.pumpAndSettle();
     expect(find.text('Blockera personen?'), findsOneWidget);
-    await tester.tap(find.text('Avbryt')); await tester.pumpAndSettle();
-    await tester.tap(find.text('Peer')); await tester.pumpAndSettle();
+    await tester.tap(find.text('Avbryt'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Peer'));
+    await tester.pumpAndSettle();
     expect(find.byType(ProfilePage), findsOneWidget);
     expect(auth.opens, 1);
     expect(find.text('1 / 2'), findsOneWidget);
-    await tester.drag(find.byType(PageView), const Offset(-600, 0)); await tester.pumpAndSettle();
+    await tester.drag(find.byType(PageView), const Offset(-600, 0));
+    await tester.pumpAndSettle();
     expect(find.text('2 / 2'), findsOneWidget);
-    RelationChanges.notify('B'); await tester.pumpAndSettle();
+    RelationChanges.notify('B');
+    await tester.pumpAndSettle();
     expect(find.byType(ProfilePage), findsNothing);
     await close(tester);
   });
 
-  testWidgets('relationship change closes an open chat and clears its messages', (tester) async {
+  testWidgets('relationship change closes an open chat and clears its messages',
+      (tester) async {
     final transport = FakeChatTransport();
-    final client = MockClient((request) async => request.url.path.endsWith('/thread-page')
-        ? page([row(1, 'Private old message')]) : http.Response('{}', 200));
+    final client = MockClient((request) async =>
+        request.url.path.endsWith('/thread-page')
+            ? page([row(1, 'Private old message')])
+            : http.Response('{}', 200));
     final navigator = GlobalKey<NavigatorState>();
-    await settleIo(tester, () => tester.pumpWidget(MaterialApp(
-      navigatorKey: navigator,
-      home: const Scaffold(body: Text('Chat list')),
-    )));
+    await settleIo(
+        tester,
+        () => tester.pumpWidget(MaterialApp(
+              navigatorKey: navigator,
+              home: const Scaffold(body: Text('Chat list')),
+            )));
     await settleIo(tester, () async {
-      unawaited(navigator.currentState!.push(MaterialPageRoute<void>(builder: (_) => ChatPage(
-        userId: 'B', displayName: 'Peer', photoUrl: '',
-        messagesService: MessagesService('http://test', AuthStorage(), client: client),
-        liveService: SignalRService(transport: transport), refreshBadge: () async {},
-      ))));
+      unawaited(navigator.currentState!.push(MaterialPageRoute<void>(
+          builder: (_) => ChatPage(
+                userId: 'B',
+                displayName: 'Peer',
+                photoUrl: '',
+                messagesService: MessagesService('http://test', AuthStorage(),
+                    client: client),
+                liveService: SignalRService(transport: transport),
+                refreshBadge: () async {},
+              ))));
       await tester.pump();
     });
     expect(find.text('Private old message'), findsOneWidget);
@@ -406,7 +445,12 @@ class GalleryAuth extends AuthService {
   @override
   Future<SwipeProfile> getMatchedProfile(String userId) async {
     opens++;
-    return SwipeProfile.fromJson({'userId': userId, 'displayName': 'Peer', 'age': 28,
-      'bio': 'En riktig presentation', 'photoUrls': ['https://images.test/one', 'https://images.test/two']});
+    return SwipeProfile.fromJson({
+      'userId': userId,
+      'displayName': 'Peer',
+      'age': 28,
+      'bio': 'En riktig presentation',
+      'photoUrls': ['https://images.test/one', 'https://images.test/two']
+    });
   }
 }

@@ -1,3 +1,4 @@
+import 'l10n/localization.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -166,8 +167,9 @@ class _PremiumPageState extends State<PremiumPage> {
       appBar: AppBar(
           backgroundColor: Colors.white,
           foregroundColor: const Color(0xFF22262E),
-          title:
-              Text(widget.activityOnly ? 'Dölj aktivitet' : 'ZULLO Premium')),
+          title: Text(widget.activityOnly
+              ? context.l10n.hideActivity
+              : 'ZULLO Premium')),
       body: state == null && _error == null
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
@@ -178,21 +180,21 @@ class _PremiumPageState extends State<PremiumPage> {
                   decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(24),
                       gradient: const LinearGradient(
-                          colors: [Color(0xFF805326), Color(0xFF33243A)])),
+                          colors: [Color(0xFF20242C), Color(0xFF49243D)])),
                   child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Icon(Icons.workspace_premium_rounded,
-                            color: Color(0xFFFFD99D), size: 40),
+                            color: Color(0xFFFF83AF), size: 40),
                         const SizedBox(height: 12),
                         Text(
                             widget.activityOnly
                                 ? (state?.canHideActivity == true
-                                    ? 'Dölj aktivitet ingår för dig'
-                                    : 'Din aktivitet, ditt val')
+                                    ? context.l10n.hideActivityIsIncludedForYou
+                                    : context.l10n.hideActivity)
                                 : (state?.premium == true
-                                    ? 'Din Premium är aktiv'
-                                    : 'Mer av ZULLO'),
+                                    ? context.l10n.yourPremiumIsActive
+                                    : context.l10n.getMore),
                             style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 28,
@@ -200,8 +202,10 @@ class _PremiumPageState extends State<PremiumPage> {
                         const SizedBox(height: 8),
                         Text(
                             widget.activityOnly
-                                ? 'Dölj Online nu och senast aktiv för dina matchningar. Köp bara Dölj aktivitet per månad, eller få det inkluderat i ZULLO Premium. Välj sedan din synlighet i Mitt konto.'
-                                : 'Upptäck fler möjligheter. Matchning och chatt finns kvar gratis.',
+                                ? context.l10n
+                                    .hideYourOnlineAndLastActiveStatusFromYourMatches
+                                : context.l10n
+                                    .discoverMorePossibilitiesMatchingAndChattingStayFree,
                             style: const TextStyle(
                                 color: Colors.white70, height: 1.5)),
                       ]),
@@ -237,18 +241,19 @@ class _PremiumPageState extends State<PremiumPage> {
                                           : () => _action(_commerce.boost),
                                   icon: const Icon(Icons.bolt),
                                   label: Text(boostActive
-                                      ? 'Boost aktiv · $_boostTime kvar'
-                                      : 'Aktivera Boost · 30 minuter'),
+                                      ? context.l10n.boostActiveRemaining(
+                                          (_boostTime).toString())
+                                      : context.l10n.activateBoost30Minutes),
                                 )),
                           ]))),
                 const SizedBox(height: 12),
                 if (!widget.activityOnly) ...[
-                  const Text('Det här ingår i Premium',
+                  Text(context.l10n.includedWithPremium,
                       style: TextStyle(
                           color: Color(0xFF22262E),
                           fontSize: 21,
                           fontWeight: FontWeight.w700)),
-                  for (final feature in const [
+                  for (final feature in [
                     (
                       Icons.favorite,
                       'Se vem som gillar dig',
@@ -261,7 +266,7 @@ class _PremiumPageState extends State<PremiumPage> {
                     ),
                     (
                       Icons.star,
-                      '3 Superlikes per vecka',
+                      context.l10n.threeSuperlikesPerWeek,
                       'Visa extra intresse. Matchning kräver fortfarande ett gensvar.'
                     ),
                     (
@@ -271,32 +276,33 @@ class _PremiumPageState extends State<PremiumPage> {
                     ),
                     (
                       Icons.visibility_off,
-                      'Inkognito och dold aktivitet',
+                      context.l10n.premiumIncognito,
                       'Välj vem som kan upptäcka dig och om matchningar ser din senaste aktivitet.'
                     ),
                   ])
                     ListTile(
                         contentPadding: EdgeInsets.zero,
                         leading:
-                            Icon(feature.$1, color: const Color(0xFFB38A23)),
-                        title: Text(feature.$2,
+                            Icon(feature.$1, color: const Color(0xFFEC2863)),
+                        title: Text(context.tr(feature.$2),
                             style: const TextStyle(color: Color(0xFF22262E))),
-                        subtitle: Text(feature.$3,
+                        subtitle: Text(context.tr(feature.$3),
                             style: const TextStyle(color: Color(0xFF626A77)))),
                 ],
                 const SizedBox(height: 16),
                 if (offers.isEmpty)
-                  const Text(
-                      'Köp är inte tillgängliga just nu. Du kan fortsätta använda ZULLO gratis.',
+                  Text(
+                      context.l10n
+                          .purchasesAreUnavailableRightNowYouCanKeepUsingZullo,
                       style: TextStyle(color: Color(0xFF626A77))),
                 for (final offer in offers)
                   Card(
                       child: ListTile(
                     title: Text(offer.id == 'zullo_hide_activity_monthly'
-                        ? 'Bara Dölj aktivitet'
+                        ? context.l10n.hideActivityOnly
                         : offer.title),
                     subtitle: Text(
-                        '${offer.price}${offer.id == 'zullo_premium_monthly' || offer.id == 'zullo_hide_activity_monthly' ? ' per månad' : ''}'),
+                        '${offer.price}${offer.id == 'zullo_premium_monthly' || offer.id == 'zullo_hide_activity_monthly' ? context.l10n.perMonth : ''}'),
                     trailing: FilledButton(
                         onPressed: _busy ||
                                 (offer.id == 'zullo_premium_monthly' &&
@@ -305,22 +311,24 @@ class _PremiumPageState extends State<PremiumPage> {
                                     state?.canHideActivity == true)
                             ? null
                             : () => _action(() => _buy(offer)),
-                        child: const Text('Köp')),
+                        child: Text(context.l10n.buy)),
                   )),
                 if (state?.activityPrivacyUntil?.isAfter(DateTime.now()) ==
                     true)
-                  const Padding(
+                  Padding(
                       padding: EdgeInsets.symmetric(vertical: 12),
                       child: Text(
-                          'Ditt separata abonnemang för Dölj aktivitet hanteras i App Store eller Google Play. Det avslutas inte automatiskt om du köper Premium.',
+                          context.l10n
+                              .yourSeparateHideActivitySubscriptionIsManagedInTheApp,
                           style: TextStyle(color: Color(0xFF626A77)))),
                 if (offers.isNotEmpty)
-                  const Padding(
+                  Padding(
                       padding: EdgeInsets.symmetric(vertical: 12),
                       child: Text(
-                          'Abonnemanget förnyas automatiskt tills du säger upp det i App Store eller Google Play. Veckans inkluderade Superlikes och månadens inkluderade Boost sparas inte till nästa period. Separat köpta krediter finns kvar på ditt konto tills de används.',
-                          style:
-                              TextStyle(color: Color(0xFF626A77), height: 1.4))),
+                          context.l10n
+                              .yourSubscriptionRenewsAutomaticallyUntilYouCancelInTheApp,
+                          style: TextStyle(
+                              color: Color(0xFF626A77), height: 1.4))),
                 TextButton(
                     onPressed: _busy ||
                             state?.checkoutEnabled != true ||
@@ -331,25 +339,25 @@ class _PremiumPageState extends State<PremiumPage> {
                               await _billing.restore(_userId!);
                               return _commerce.sync();
                             }),
-                    child: const Text('Återställ köp')),
+                    child: Text(context.l10n.restorePurchases)),
                 TextButton(
                     onPressed: _busy ? null : () => _action(_commerce.sync),
-                    child: const Text('Uppdatera saldo')),
+                    child: Text(context.l10n.refreshBalance)),
                 if (RevenueCatBilling.termsUrl.isNotEmpty)
                   TextButton(
                       onPressed: () =>
                           launchUrl(Uri.parse(RevenueCatBilling.termsUrl)),
-                      child: const Text('Köpvillkor')),
+                      child: Text(context.l10n.purchaseTerms)),
                 if (RevenueCatBilling.privacyUrl.isNotEmpty)
                   TextButton(
                       onPressed: () =>
                           launchUrl(Uri.parse(RevenueCatBilling.privacyUrl)),
-                      child: const Text('Integritetspolicy')),
+                      child: Text(context.l10n.privacyPolicy)),
                 if (_busy) const LinearProgressIndicator(),
                 if (_error != null)
                   Padding(
                       padding: const EdgeInsets.all(12),
-                      child: Text(_error!,
+                      child: Text(context.tr(_error!),
                           style: const TextStyle(color: Color(0xFFFFA6AD)))),
               ]),
             ),

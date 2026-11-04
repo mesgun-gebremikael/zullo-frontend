@@ -207,18 +207,3 @@ class CommerceEvents {
     walletChanged();
   }
 }
-
-class PresenceText {
-  static String format(DateTime? last, {DateTime? now}) {
-    if (last == null) return '';
-    final elapsed = (now ?? DateTime.now()).toUtc().difference(last.toUtc());
-    if (elapsed.inSeconds < 90) return 'Online nu';
-    if (elapsed.inMinutes < 60) {
-      return 'Senast aktiv för ${elapsed.inMinutes} ${elapsed.inMinutes == 1 ? 'minut' : 'minuter'} sedan';
-    }
-    if (elapsed.inHours < 24) {
-      return 'Senast aktiv för ${elapsed.inHours} ${elapsed.inHours == 1 ? 'timme' : 'timmar'} sedan';
-    }
-    return 'Senast aktiv för ${elapsed.inDays} ${elapsed.inDays == 1 ? 'dag' : 'dagar'} sedan';
-  }
-}

@@ -1,0 +1,207 @@
+{
+  "en": {
+    "lastActiveMinutes": "{count, plural, one{Last active {count} minute ago} other{Last active {count} minutes ago}}",
+    "lastActiveHours": "{count, plural, one{Last active {count} hour ago} other{Last active {count} hours ago}}",
+    "lastActiveDays": "{count, plural, one{Last active {count} day ago} other{Last active {count} days ago}}"
+  },
+  "sv": {
+    "lastActiveMinutes": "{count, plural, one{Senast aktiv för {count} minut sedan} other{Senast aktiv för {count} minuter sedan}}",
+    "lastActiveHours": "{count, plural, one{Senast aktiv för {count} timme sedan} other{Senast aktiv för {count} timmar sedan}}",
+    "lastActiveDays": "{count, plural, one{Senast aktiv för {count} dag sedan} other{Senast aktiv för {count} dagar sedan}}"
+  },
+  "da": {
+    "lastActiveMinutes": "{count, plural, one{Senest aktiv for {count} minut siden} other{Senest aktiv for {count} minutter siden}}",
+    "lastActiveHours": "{count, plural, one{Senest aktiv for {count} time siden} other{Senest aktiv for {count} timer siden}}",
+    "lastActiveDays": "{count, plural, one{Senest aktiv for {count} dag siden} other{Senest aktiv for {count} dage siden}}"
+  },
+  "nb": {
+    "lastActiveMinutes": "{count, plural, one{Sist aktiv for {count} minutt siden} other{Sist aktiv for {count} minutter siden}}",
+    "lastActiveHours": "{count, plural, one{Sist aktiv for {count} time siden} other{Sist aktiv for {count} timer siden}}",
+    "lastActiveDays": "{count, plural, one{Sist aktiv for {count} dag siden} other{Sist aktiv for {count} dager siden}}"
+  },
+  "fi": {
+    "lastActiveMinutes": "{count, plural, one{Viimeksi aktiivinen {count} minuutti sitten} other{Viimeksi aktiivinen {count} minuuttia sitten}}",
+    "lastActiveHours": "{count, plural, one{Viimeksi aktiivinen {count} tunti sitten} other{Viimeksi aktiivinen {count} tuntia sitten}}",
+    "lastActiveDays": "{count, plural, one{Viimeksi aktiivinen {count} päivä sitten} other{Viimeksi aktiivinen {count} päivää sitten}}"
+  },
+  "de": {
+    "lastActiveMinutes": "{count, plural, one{Zuletzt aktiv vor {count} Minute} other{Zuletzt aktiv vor {count} Minuten}}",
+    "lastActiveHours": "{count, plural, one{Zuletzt aktiv vor {count} Stunde} other{Zuletzt aktiv vor {count} Stunden}}",
+    "lastActiveDays": "{count, plural, one{Zuletzt aktiv vor {count} Tag} other{Zuletzt aktiv vor {count} Tagen}}"
+  },
+  "fr": {
+    "lastActiveMinutes": "{count, plural, one{Dernière activité il y a {count} minute} other{Dernière activité il y a {count} minutes}}",
+    "lastActiveHours": "{count, plural, one{Dernière activité il y a {count} heure} other{Dernière activité il y a {count} heures}}",
+    "lastActiveDays": "{count, plural, one{Dernière activité il y a {count} jour} other{Dernière activité il y a {count} jours}}"
+  },
+  "es": {
+    "lastActiveMinutes": "{count, plural, one{Última actividad hace {count} minuto} other{Última actividad hace {count} minutos}}",
+    "lastActiveHours": "{count, plural, one{Última actividad hace {count} hora} other{Última actividad hace {count} horas}}",
+    "lastActiveDays": "{count, plural, one{Última actividad hace {count} día} other{Última actividad hace {count} días}}"
+  },
+  "it": {
+    "lastActiveMinutes": "{count, plural, one{Ultima attività {count} minuto fa} other{Ultima attività {count} minuti fa}}",
+    "lastActiveHours": "{count, plural, one{Ultima attività {count} ora fa} other{Ultima attività {count} ore fa}}",
+    "lastActiveDays": "{count, plural, one{Ultima attività {count} giorno fa} other{Ultima attività {count} giorni fa}}"
+  },
+  "pt": {
+    "lastActiveMinutes": "{count, plural, one{Última atividade há {count} minuto} other{Última atividade há {count} minutos}}",
+    "lastActiveHours": "{count, plural, one{Última atividade há {count} hora} other{Última atividade há {count} horas}}",
+    "lastActiveDays": "{count, plural, one{Última atividade há {count} dia} other{Última atividade há {count} dias}}"
+  },
+  "nl": {
+    "lastActiveMinutes": "{count, plural, one{Laatst actief {count} minuut geleden} other{Laatst actief {count} minuten geleden}}",
+    "lastActiveHours": "{count, plural, one{Laatst actief {count} uur geleden} other{Laatst actief {count} uur geleden}}",
+    "lastActiveDays": "{count, plural, one{Laatst actief {count} dag geleden} other{Laatst actief {count} dagen geleden}}"
+  },
+  "el": {
+    "lastActiveMinutes": "{count, plural, one{Τελευταία δραστηριότητα πριν από {count} λεπτό} other{Τελευταία δραστηριότητα πριν από {count} λεπτά}}",
+    "lastActiveHours": "{count, plural, one{Τελευταία δραστηριότητα πριν από {count} ώρα} other{Τελευταία δραστηριότητα πριν από {count} ώρες}}",
+    "lastActiveDays": "{count, plural, one{Τελευταία δραστηριότητα πριν από {count} ημέρα} other{Τελευταία δραστηριότητα πριν από {count} ημέρες}}"
+  },
+  "af": {
+    "lastActiveMinutes": "{count, plural, one{Laas aktief {count} minuut gelede} other{Laas aktief {count} minute gelede}}",
+    "lastActiveHours": "{count, plural, one{Laas aktief {count} uur gelede} other{Laas aktief {count} uur gelede}}",
+    "lastActiveDays": "{count, plural, one{Laas aktief {count} dag gelede} other{Laas aktief {count} dae gelede}}"
+  },
+  "tr": {
+    "lastActiveMinutes": "{count, plural, other{Son etkinlik: {count} dakika önce}}",
+    "lastActiveHours": "{count, plural, other{Son etkinlik: {count} saat önce}}",
+    "lastActiveDays": "{count, plural, other{Son etkinlik: {count} gün önce}}"
+  },
+  "hu": {
+    "lastActiveMinutes": "{count, plural, other{Legutóbb aktív: {count} perccel ezelőtt}}",
+    "lastActiveHours": "{count, plural, other{Legutóbb aktív: {count} órával ezelőtt}}",
+    "lastActiveDays": "{count, plural, other{Legutóbb aktív: {count} nappal ezelőtt}}"
+  },
+  "pl": {
+    "lastActiveMinutes": "{count, plural, one{Ostatnia aktywność: {count} minutę temu} few{Ostatnia aktywność: {count} minuty temu} many{Ostatnia aktywność: {count} minut temu} other{Ostatnia aktywność: {count} minuty temu}}",
+    "lastActiveHours": "{count, plural, one{Ostatnia aktywność: {count} godzinę temu} few{Ostatnia aktywność: {count} godziny temu} many{Ostatnia aktywność: {count} godzin temu} other{Ostatnia aktywność: {count} godziny temu}}",
+    "lastActiveDays": "{count, plural, one{Ostatnia aktywność: {count} dzień temu} few{Ostatnia aktywność: {count} dni temu} many{Ostatnia aktywność: {count} dni temu} other{Ostatnia aktywność: {count} dnia temu}}"
+  },
+  "ru": {
+    "lastActiveMinutes": "{count, plural, one{Последняя активность: {count} минуту назад} few{Последняя активность: {count} минуты назад} many{Последняя активность: {count} минут назад} other{Последняя активность: {count} минуты назад}}",
+    "lastActiveHours": "{count, plural, one{Последняя активность: {count} час назад} few{Последняя активность: {count} часа назад} many{Последняя активность: {count} часов назад} other{Последняя активность: {count} часа назад}}",
+    "lastActiveDays": "{count, plural, one{Последняя активность: {count} день назад} few{Последняя активность: {count} дня назад} many{Последняя активность: {count} дней назад} other{Последняя активность: {count} дня назад}}"
+  },
+  "uk": {
+    "lastActiveMinutes": "{count, plural, one{Остання активність: {count} хвилину тому} few{Остання активність: {count} хвилини тому} many{Остання активність: {count} хвилин тому} other{Остання активність: {count} хвилини тому}}",
+    "lastActiveHours": "{count, plural, one{Остання активність: {count} годину тому} few{Остання активність: {count} години тому} many{Остання активність: {count} годин тому} other{Остання активність: {count} години тому}}",
+    "lastActiveDays": "{count, plural, one{Остання активність: {count} день тому} few{Остання активність: {count} дні тому} many{Остання активність: {count} днів тому} other{Остання активність: {count} дня тому}}"
+  },
+  "cs": {
+    "lastActiveMinutes": "{count, plural, one{Poslední aktivita před {count} minutou} few{Poslední aktivita před {count} minutami} many{Poslední aktivita před {count} minutami} other{Poslední aktivita před {count} minutami}}",
+    "lastActiveHours": "{count, plural, one{Poslední aktivita před {count} hodinou} few{Poslední aktivita před {count} hodinami} many{Poslední aktivita před {count} hodinami} other{Poslední aktivita před {count} hodinami}}",
+    "lastActiveDays": "{count, plural, one{Poslední aktivita před {count} dnem} few{Poslední aktivita před {count} dny} many{Poslední aktivita před {count} dny} other{Poslední aktivita před {count} dny}}"
+  },
+  "ro": {
+    "lastActiveMinutes": "{count, plural, one{Ultima activitate: acum {count} minut} few{Ultima activitate: acum {count} minute} other{Ultima activitate: acum {count} de minute}}",
+    "lastActiveHours": "{count, plural, one{Ultima activitate: acum {count} oră} few{Ultima activitate: acum {count} ore} other{Ultima activitate: acum {count} de ore}}",
+    "lastActiveDays": "{count, plural, one{Ultima activitate: acum {count} zi} few{Ultima activitate: acum {count} zile} other{Ultima activitate: acum {count} de zile}}"
+  },
+  "ar": {
+    "lastActiveMinutes": "{count, plural, zero{آخر نشاط قبل {count} دقيقة} one{آخر نشاط قبل دقيقة واحدة} two{آخر نشاط قبل دقيقتين} few{آخر نشاط قبل {count} دقائق} many{آخر نشاط قبل {count} دقيقة} other{آخر نشاط قبل {count} دقيقة}}",
+    "lastActiveHours": "{count, plural, zero{آخر نشاط قبل {count} ساعة} one{آخر نشاط قبل ساعة واحدة} two{آخر نشاط قبل ساعتين} few{آخر نشاط قبل {count} ساعات} many{آخر نشاط قبل {count} ساعة} other{آخر نشاط قبل {count} ساعة}}",
+    "lastActiveDays": "{count, plural, zero{آخر نشاط قبل {count} يوم} one{آخر نشاط قبل يوم واحد} two{آخر نشاط قبل يومين} few{آخر نشاط قبل {count} أيام} many{آخر نشاط قبل {count} يوم} other{آخر نشاط قبل {count} يوم}}"
+  },
+  "he": {
+    "lastActiveMinutes": "{count, plural, one{פעילות אחרונה לפני דקה} two{פעילות אחרונה לפני שתי דקות} other{פעילות אחרונה לפני {count} דקות}}",
+    "lastActiveHours": "{count, plural, one{פעילות אחרונה לפני שעה} two{פעילות אחרונה לפני שעתיים} other{פעילות אחרונה לפני {count} שעות}}",
+    "lastActiveDays": "{count, plural, one{פעילות אחרונה לפני יום} two{פעילות אחרונה לפני יומיים} other{פעילות אחרונה לפני {count} ימים}}"
+  },
+  "fa": {
+    "lastActiveMinutes": "{count, plural, other{آخرین فعالیت: {count} دقیقه پیش}}",
+    "lastActiveHours": "{count, plural, other{آخرین فعالیت: {count} ساعت پیش}}",
+    "lastActiveDays": "{count, plural, other{آخرین فعالیت: {count} روز پیش}}"
+  },
+  "ur": {
+    "lastActiveMinutes": "{count, plural, one{آخری سرگرمی {count} منٹ پہلے} other{آخری سرگرمی {count} منٹ پہلے}}",
+    "lastActiveHours": "{count, plural, one{آخری سرگرمی {count} گھنٹہ پہلے} other{آخری سرگرمی {count} گھنٹے پہلے}}",
+    "lastActiveDays": "{count, plural, one{آخری سرگرمی {count} دن پہلے} other{آخری سرگرمی {count} دن پہلے}}"
+  },
+  "hi": {
+    "lastActiveMinutes": "{count, plural, one{आखिरी गतिविधि {count} मिनट पहले} other{आखिरी गतिविधि {count} मिनट पहले}}",
+    "lastActiveHours": "{count, plural, one{आखिरी गतिविधि {count} घंटा पहले} other{आखिरी गतिविधि {count} घंटे पहले}}",
+    "lastActiveDays": "{count, plural, one{आखिरी गतिविधि {count} दिन पहले} other{आखिरी गतिविधि {count} दिन पहले}}"
+  },
+  "bn": {
+    "lastActiveMinutes": "{count, plural, other{শেষ সক্রিয় ছিলেন {count} মিনিট আগে}}",
+    "lastActiveHours": "{count, plural, other{শেষ সক্রিয় ছিলেন {count} ঘণ্টা আগে}}",
+    "lastActiveDays": "{count, plural, other{শেষ সক্রিয় ছিলেন {count} দিন আগে}}"
+  },
+  "ta": {
+    "lastActiveMinutes": "{count, plural, one{{count} நிமிடத்திற்கு முன்பு செயல்பட்டார்} other{{count} நிமிடங்களுக்கு முன்பு செயல்பட்டார்}}",
+    "lastActiveHours": "{count, plural, one{{count} மணிநேரத்திற்கு முன்பு செயல்பட்டார்} other{{count} மணிநேரங்களுக்கு முன்பு செயல்பட்டார்}}",
+    "lastActiveDays": "{count, plural, one{{count} நாளுக்கு முன்பு செயல்பட்டார்} other{{count} நாட்களுக்கு முன்பு செயல்பட்டார்}}"
+  },
+  "te": {
+    "lastActiveMinutes": "{count, plural, one{చివరి కార్యాచరణ {count} నిమిషం క్రితం} other{చివరి కార్యాచరణ {count} నిమిషాల క్రితం}}",
+    "lastActiveHours": "{count, plural, one{చివరి కార్యాచరణ {count} గంట క్రితం} other{చివరి కార్యాచరణ {count} గంటల క్రితం}}",
+    "lastActiveDays": "{count, plural, one{చివరి కార్యాచరణ {count} రోజు క్రితం} other{చివరి కార్యాచరణ {count} రోజుల క్రితం}}"
+  },
+  "zh_Hans": {
+    "lastActiveMinutes": "{count, plural, other{上次活跃：{count}分钟前}}",
+    "lastActiveHours": "{count, plural, other{上次活跃：{count}小时前}}",
+    "lastActiveDays": "{count, plural, other{上次活跃：{count}天前}}"
+  },
+  "zh_Hant": {
+    "lastActiveMinutes": "{count, plural, other{上次活躍：{count}分鐘前}}",
+    "lastActiveHours": "{count, plural, other{上次活躍：{count}小時前}}",
+    "lastActiveDays": "{count, plural, other{上次活躍：{count}天前}}"
+  },
+  "zh": {
+    "lastActiveMinutes": "{count, plural, other{上次活跃：{count}分钟前}}",
+    "lastActiveHours": "{count, plural, other{上次活跃：{count}小时前}}",
+    "lastActiveDays": "{count, plural, other{上次活跃：{count}天前}}"
+  },
+  "ja": {
+    "lastActiveMinutes": "{count, plural, other{最終アクティブ：{count}分前}}",
+    "lastActiveHours": "{count, plural, other{最終アクティブ：{count}時間前}}",
+    "lastActiveDays": "{count, plural, other{最終アクティブ：{count}日前}}"
+  },
+  "ko": {
+    "lastActiveMinutes": "{count, plural, other{{count}분 전 활동}}",
+    "lastActiveHours": "{count, plural, other{{count}시간 전 활동}}",
+    "lastActiveDays": "{count, plural, other{{count}일 전 활동}}"
+  },
+  "th": {
+    "lastActiveMinutes": "{count, plural, other{ใช้งานล่าสุดเมื่อ {count} นาทีที่แล้ว}}",
+    "lastActiveHours": "{count, plural, other{ใช้งานล่าสุดเมื่อ {count} ชั่วโมงที่แล้ว}}",
+    "lastActiveDays": "{count, plural, other{ใช้งานล่าสุดเมื่อ {count} วันที่แล้ว}}"
+  },
+  "vi": {
+    "lastActiveMinutes": "{count, plural, other{Hoạt động lần cuối {count} phút trước}}",
+    "lastActiveHours": "{count, plural, other{Hoạt động lần cuối {count} giờ trước}}",
+    "lastActiveDays": "{count, plural, other{Hoạt động lần cuối {count} ngày trước}}"
+  },
+  "id": {
+    "lastActiveMinutes": "{count, plural, other{Terakhir aktif {count} menit lalu}}",
+    "lastActiveHours": "{count, plural, other{Terakhir aktif {count} jam lalu}}",
+    "lastActiveDays": "{count, plural, other{Terakhir aktif {count} hari lalu}}"
+  },
+  "ms": {
+    "lastActiveMinutes": "{count, plural, other{Kali terakhir aktif {count} minit lalu}}",
+    "lastActiveHours": "{count, plural, other{Kali terakhir aktif {count} jam lalu}}",
+    "lastActiveDays": "{count, plural, other{Kali terakhir aktif {count} hari lalu}}"
+  },
+  "fil": {
+    "lastActiveMinutes": "{count, plural, other{Huling aktibo {count} minuto ang nakalipas}}",
+    "lastActiveHours": "{count, plural, other{Huling aktibo {count} oras ang nakalipas}}",
+    "lastActiveDays": "{count, plural, other{Huling aktibo {count} araw ang nakalipas}}"
+  },
+  "sw": {
+    "lastActiveMinutes": "{count, plural, one{Mara ya mwisho kutumia: dakika {count} iliyopita} other{Mara ya mwisho kutumia: dakika {count} zilizopita}}",
+    "lastActiveHours": "{count, plural, one{Mara ya mwisho kutumia: saa {count} iliyopita} other{Mara ya mwisho kutumia: saa {count} zilizopita}}",
+    "lastActiveDays": "{count, plural, one{Mara ya mwisho kutumia: siku {count} iliyopita} other{Mara ya mwisho kutumia: siku {count} zilizopita}}"
+  },
+  "am": {
+    "lastActiveMinutes": "{count, plural, other{የመጨረሻ እንቅስቃሴ፦ ከ{count} ደቂቃ በፊት}}",
+    "lastActiveHours": "{count, plural, other{የመጨረሻ እንቅስቃሴ፦ ከ{count} ሰዓት በፊት}}",
+    "lastActiveDays": "{count, plural, other{የመጨረሻ እንቅስቃሴ፦ ከ{count} ቀን በፊት}}"
+  },
+  "zu": {
+    "lastActiveMinutes": "{count, plural, one{Ugcine ukusebenzisa uhlelo emzuzwini ongu-{count} owedlule} other{Ugcine ukusebenzisa uhlelo emizuzwini engu-{count} edlule}}",
+    "lastActiveHours": "{count, plural, one{Ugcine ukusebenzisa uhlelo ehoreni elingu-{count} eledlule} other{Ugcine ukusebenzisa uhlelo emahoreni angu-{count} adlule}}",
+    "lastActiveDays": "{count, plural, one{Ugcine ukusebenzisa uhlelo osukwini olungu-{count} olwedlule} other{Ugcine ukusebenzisa uhlelo ezinsukwini ezingu-{count} ezidlule}}"
+  }
+}

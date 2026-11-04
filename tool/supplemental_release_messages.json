@@ -1,0 +1,216 @@
+{
+  "description": "Reviewed supplemental release UI translations. Brand terms may remain Superlike/Superlikes; all surrounding UI text is translated. This file records source messages and the actual authored values for every catalog.",
+  "source": {
+    "threeSuperlikesPerWeek": "3 Superlikes per week",
+    "sentAMessage": "Sent a message"
+  },
+  "translations": {
+    "en": {
+      "threeSuperlikesPerWeek": "3 Superlikes per week",
+      "sentAMessage": "Sent a message"
+    },
+    "sv": {
+      "threeSuperlikesPerWeek": "3 Superlikes per vecka",
+      "sentAMessage": "Skickade ett meddelande"
+    },
+    "da": {
+      "threeSuperlikesPerWeek": "3 Superlikes om ugen",
+      "sentAMessage": "Sendte en besked"
+    },
+    "nb": {
+      "threeSuperlikesPerWeek": "3 Superlikes per uke",
+      "sentAMessage": "Sendte en melding"
+    },
+    "fi": {
+      "threeSuperlikesPerWeek": "3 Superlikea viikossa",
+      "sentAMessage": "Lähetti viestin"
+    },
+    "de": {
+      "threeSuperlikesPerWeek": "3 Superlikes pro Woche",
+      "sentAMessage": "Hat eine Nachricht gesendet"
+    },
+    "fr": {
+      "threeSuperlikesPerWeek": "3 Superlikes par semaine",
+      "sentAMessage": "A envoyé un message"
+    },
+    "es": {
+      "threeSuperlikesPerWeek": "3 Superlikes por semana",
+      "sentAMessage": "Envió un mensaje"
+    },
+    "it": {
+      "threeSuperlikesPerWeek": "3 Superlike a settimana",
+      "sentAMessage": "Ha inviato un messaggio"
+    },
+    "pt": {
+      "threeSuperlikesPerWeek": "3 Superlikes por semana",
+      "sentAMessage": "Enviou uma mensagem"
+    },
+    "nl": {
+      "threeSuperlikesPerWeek": "3 Superlikes per week",
+      "sentAMessage": "Heeft een bericht gestuurd"
+    },
+    "pl": {
+      "threeSuperlikesPerWeek": "3 Superlikes tygodniowo",
+      "sentAMessage": "Wysłano wiadomość"
+    },
+    "cs": {
+      "threeSuperlikesPerWeek": "3 Superlikes týdně",
+      "sentAMessage": "Odeslal(a) zprávu"
+    },
+    "ro": {
+      "threeSuperlikesPerWeek": "3 Superlikes pe săptămână",
+      "sentAMessage": "A trimis un mesaj"
+    },
+    "el": {
+      "threeSuperlikesPerWeek": "3 Superlikes την εβδομάδα",
+      "sentAMessage": "Έστειλε μήνυμα"
+    },
+    "uk": {
+      "threeSuperlikesPerWeek": "3 суперлайки на тиждень",
+      "sentAMessage": "Надіслано повідомлення"
+    },
+    "ru": {
+      "threeSuperlikesPerWeek": "3 суперлайка в неделю",
+      "sentAMessage": "Отправлено сообщение"
+    },
+    "tr": {
+      "threeSuperlikesPerWeek": "Haftada 3 Süper Beğeni",
+      "sentAMessage": "Bir mesaj gönderdi"
+    },
+    "ar": {
+      "threeSuperlikesPerWeek": "3 إعجابات مميزة في الأسبوع",
+      "sentAMessage": "أرسل رسالة"
+    },
+    "he": {
+      "threeSuperlikesPerWeek": "3 סופר לייקים בשבוע",
+      "sentAMessage": "נשלחה הודעה"
+    },
+    "fa": {
+      "threeSuperlikesPerWeek": "۳ سوپرلایک در هفته",
+      "sentAMessage": "پیامی فرستاد"
+    },
+    "ur": {
+      "threeSuperlikesPerWeek": "ہر ہفتے 3 سپر لائکس",
+      "sentAMessage": "ایک پیغام بھیجا"
+    },
+    "hi": {
+      "threeSuperlikesPerWeek": "हर हफ़्ते 3 Superlikes",
+      "sentAMessage": "एक संदेश भेजा"
+    },
+    "bn": {
+      "threeSuperlikesPerWeek": "প্রতি সপ্তাহে ৩টি Superlikes",
+      "sentAMessage": "একটি বার্তা পাঠিয়েছেন"
+    },
+    "ta": {
+      "threeSuperlikesPerWeek": "வாரத்திற்கு 3 Superlikes",
+      "sentAMessage": "ஒரு செய்தியை அனுப்பியுள்ளார்"
+    },
+    "te": {
+      "threeSuperlikesPerWeek": "వారానికి 3 Superlikes",
+      "sentAMessage": "ఒక సందేశం పంపారు"
+    },
+    "zh_Hans": {
+      "threeSuperlikesPerWeek": "每周 3 次超级喜欢",
+      "sentAMessage": "发来了一条消息"
+    },
+    "zh_Hant": {
+      "threeSuperlikesPerWeek": "每週 3 次超級喜歡",
+      "sentAMessage": "傳送了一則訊息"
+    },
+    "zh": {
+      "threeSuperlikesPerWeek": "每周 3 次超级喜欢",
+      "sentAMessage": "发来了一条消息"
+    },
+    "ja": {
+      "threeSuperlikesPerWeek": "毎週3回のスーパーライク",
+      "sentAMessage": "メッセージを送りました"
+    },
+    "ko": {
+      "threeSuperlikesPerWeek": "매주 슈퍼라이크 3개",
+      "sentAMessage": "메시지를 보냈어요"
+    },
+    "th": {
+      "threeSuperlikesPerWeek": "3 ซูเปอร์ไลก์ต่อสัปดาห์",
+      "sentAMessage": "ส่งข้อความมา"
+    },
+    "vi": {
+      "threeSuperlikesPerWeek": "3 Superlike mỗi tuần",
+      "sentAMessage": "Đã gửi một tin nhắn"
+    },
+    "id": {
+      "threeSuperlikesPerWeek": "3 Superlike per minggu",
+      "sentAMessage": "Mengirim pesan"
+    },
+    "ms": {
+      "threeSuperlikesPerWeek": "3 Superlike seminggu",
+      "sentAMessage": "Menghantar mesej"
+    },
+    "sw": {
+      "threeSuperlikesPerWeek": "Superlikes 3 kwa wiki",
+      "sentAMessage": "Ametuma ujumbe"
+    },
+    "am": {
+      "threeSuperlikesPerWeek": "በሳምንት 3 ሱፐርላይኮች",
+      "sentAMessage": "መልእክት ልኳል"
+    },
+    "af": {
+      "threeSuperlikesPerWeek": "3 Superlikes per week",
+      "sentAMessage": "Het ’n boodskap gestuur"
+    },
+    "zu": {
+      "threeSuperlikesPerWeek": "Ama-Superlikes angu-3 ngesonto",
+      "sentAMessage": "Uthumele umlayezo"
+    },
+    "fil": {
+      "threeSuperlikesPerWeek": "3 Superlike bawat linggo",
+      "sentAMessage": "Nagpadala ng mensahe"
+    },
+    "hu": {
+      "threeSuperlikesPerWeek": "Heti 3 Superlike",
+      "sentAMessage": "Üzenetet küldött"
+    }
+  },
+  "likeAction": {
+    "en": "Like",
+    "sv": "Gilla",
+    "da": "Synes godt om",
+    "nb": "Liker",
+    "fi": "Tykkää",
+    "de": "Gefällt mir",
+    "fr": "J’aime",
+    "es": "Me gusta",
+    "it": "Mi piace",
+    "pt": "Curtir",
+    "nl": "Vind ik leuk",
+    "pl": "Polub",
+    "cs": "Líbí se mi",
+    "ro": "Îmi place",
+    "el": "Μου αρέσει",
+    "uk": "Подобається",
+    "ru": "Нравится",
+    "tr": "Beğen",
+    "ar": "إعجاب",
+    "he": "לייק",
+    "fa": "پسندیدن",
+    "ur": "پسند کریں",
+    "hi": "पसंद करें",
+    "bn": "পছন্দ করুন",
+    "ta": "விருப்பம்",
+    "te": "ఇష్టం",
+    "zh": "喜欢",
+    "zh_Hans": "喜欢",
+    "zh_Hant": "喜歡",
+    "ja": "いいね",
+    "ko": "좋아요",
+    "th": "ถูกใจ",
+    "vi": "Thích",
+    "id": "Suka",
+    "ms": "Suka",
+    "sw": "Penda",
+    "am": "ወደድኩት",
+    "af": "Hou van",
+    "zu": "Thanda",
+    "fil": "Gusto",
+    "hu": "Kedvelés"
+  }
+}

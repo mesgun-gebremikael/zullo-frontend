@@ -1,3 +1,4 @@
+import '../l10n/localization.dart';
 import '../discovery_location_page.dart';
 import 'package:flutter/material.dart';
 
@@ -37,11 +38,11 @@ class _DiscoverySettingsSheetState extends State<DiscoverySettingsSheet> {
                 child: Padding(
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                     child: Column(mainAxisSize: MainAxisSize.min, children: [
-                      const Text('Intresserad av',
+                      Text(context.l10n.interestedIn,
                           style: TextStyle(
                               fontSize: 24, fontWeight: FontWeight.w800)),
                       const SizedBox(height: 8),
-                      const Text('Välj vilka profiler du vill upptäcka.',
+                      Text(context.l10n.chooseWhichProfilesYouWantToDiscover,
                           style: TextStyle(color: Color(0xFF626A77))),
                       const SizedBox(height: 20),
                       for (final value in ['Kvinnor', 'Män', 'Alla'])
@@ -57,7 +58,7 @@ class _DiscoverySettingsSheetState extends State<DiscoverySettingsSheet> {
                                     shape: RoundedRectangleBorder(
                                         borderRadius:
                                             BorderRadius.circular(20)),
-                                    title: Text(value,
+                                    title: Text(context.tr(value),
                                         style: const TextStyle(
                                             fontSize: 18,
                                             fontWeight: FontWeight.w600)),
@@ -110,24 +111,36 @@ class _DiscoverySettingsSheetState extends State<DiscoverySettingsSheet> {
                 controller: controller,
                 padding: const EdgeInsets.fromLTRB(24, 4, 24, 28),
                 children: [
-              const Text('Dina upptäcktsval',
+              Text(context.l10n.yourDiscoveryPreferences,
                   style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800)),
               const SizedBox(height: 8),
-              const Text('Hitta personer som passar det du söker.',
+              Text(context.l10n.findPeopleWhoFitWhatYouReLookingFor,
                   style: TextStyle(fontSize: 16, color: Color(0xFF626A77))),
-              ListTile(contentPadding: EdgeInsets.zero, leading: const Icon(Icons.near_me_outlined),
-                title: const Text('Plats & fler upptäcktsval'), trailing: const Icon(Icons.chevron_right_rounded),
-                onTap: _busy ? null : () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DiscoveryLocationPage()))),
+              ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.near_me_outlined),
+                  title: Text(context.l10n.locationMoreDiscoveryOptions),
+                  trailing: Icon(Directionality.of(context) == TextDirection.rtl
+                      ? Icons.chevron_left_rounded
+                      : Icons.chevron_right_rounded),
+                  onTap: _busy
+                      ? null
+                      : () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const DiscoveryLocationPage()))),
               const SizedBox(height: 28),
               _card(ListTile(
                   contentPadding: const EdgeInsets.all(18),
                   leading: const Icon(Icons.favorite_outline),
-                  title: const Text('Intresserad av',
+                  title: Text(context.l10n.interestedIn,
                       style: TextStyle(fontWeight: FontWeight.w700)),
-                  subtitle: Text(_interest,
+                  subtitle: Text(context.tr(_interest),
                       style: const TextStyle(
                           fontSize: 18, color: Color(0xFFE6296B))),
-                  trailing: const Icon(Icons.chevron_right),
+                  trailing: Icon(Directionality.of(context) == TextDirection.rtl
+                      ? Icons.chevron_left
+                      : Icons.chevron_right),
                   onTap: _busy ? null : _chooseInterest)),
               const SizedBox(height: 18),
               _card(Padding(
@@ -135,7 +148,9 @@ class _DiscoverySettingsSheetState extends State<DiscoverySettingsSheet> {
                   child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Maxavstånd · ${_radius.round()} km',
+                        Text(
+                            context.l10n.maximumDistanceValue0Km(
+                                (_radius.round()).toString()),
                             style: const TextStyle(
                                 fontSize: 19, fontWeight: FontWeight.w700)),
                         const SizedBox(height: 12),
@@ -144,11 +159,12 @@ class _DiscoverySettingsSheetState extends State<DiscoverySettingsSheet> {
                             min: 1,
                             max: 300,
                             divisions: 299,
-                            label: '${_radius.round()} km',
+                            label: context.l10n
+                                .value0Km(_radius.round().toString()),
                             onChanged: _busy
                                 ? null
                                 : (value) => setState(() => _radius = value)),
-                        const Text('Vi söker inom avståndet du väljer.',
+                        Text(context.l10n.weSearchWithinYourChosenDistance,
                             style: TextStyle(color: Color(0xFF626A77))),
                       ]))),
               const SizedBox(height: 18),
@@ -158,7 +174,9 @@ class _DiscoverySettingsSheetState extends State<DiscoverySettingsSheet> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                            'Åldersspann · ${_ages.start.round()}–${_ages.end.round()}',
+                            context.l10n.ageRangeValue0Value1(
+                                (_ages.start.round()).toString(),
+                                (_ages.end.round()).toString()),
                             style: const TextStyle(
                                 fontSize: 19, fontWeight: FontWeight.w700)),
                         const SizedBox(height: 12),
@@ -175,13 +193,16 @@ class _DiscoverySettingsSheetState extends State<DiscoverySettingsSheet> {
               if (_error != null)
                 Padding(
                     padding: const EdgeInsets.only(bottom: 16),
-                    child: Text(_error!,
+                    child: Text(context.tr(_error!),
                         style: const TextStyle(color: Colors.red))),
               FilledButton(
                   onPressed: _busy ? null : _save,
                   child: Padding(
                       padding: const EdgeInsets.all(16),
-                      child: Text(_busy ? 'Sparar…' : 'Spara inställningar',
+                      child: Text(
+                          _busy
+                              ? context.l10n.saving
+                              : context.l10n.saveSettings,
                           style: const TextStyle(
                               fontSize: 17, fontWeight: FontWeight.w700)))),
             ])),

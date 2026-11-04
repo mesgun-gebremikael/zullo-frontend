@@ -1,3 +1,5 @@
+import '../l10n/localization.dart';
+import 'profile_story.dart' show localizedProfileChoice;
 import '../profile_page.dart';
 import '../services/profile_images.dart';
 import 'package:flutter/material.dart';
@@ -17,7 +19,7 @@ class SwipeProfileCard extends StatefulWidget {
     required this.profile,
     required this.width,
     required this.height,
-    this.photoBarsTop = 66,
+    this.photoBarsTop = 16,
     this.distanceFallbackKm = 50,
     this.imageProvider,
   });
@@ -56,7 +58,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
     });
   }
 
-    @override
+  @override
   void didUpdateWidget(covariant SwipeProfileCard oldWidget) {
     super.didUpdateWidget(oldWidget);
 
@@ -75,7 +77,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
       _resolveVisibleImage(newUrl);
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
-          _precacheNextPhoto();
+        _precacheNextPhoto();
       });
     }
   }
@@ -97,7 +99,8 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
     return photos[imageIndex];
   }
 
-  ImageProvider _provider(String url) => widget.imageProvider?.call(url) ?? ProfileImages.card(url);
+  ImageProvider _provider(String url) =>
+      widget.imageProvider?.call(url) ?? ProfileImages.card(url);
 
   void _removeImageListener() {
     if (_imageStream != null && _imageListener != null) {
@@ -184,9 +187,10 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
     );
   }
 
-    bool _hasBackgroundData(SwipeProfile profile) {
+  bool _hasBackgroundData(SwipeProfile profile) {
     return profile.originPlace.trim().isNotEmpty ||
-        profile.religion.trim().isNotEmpty;
+        localizedProfileChoice(context, 'religion', profile.religion)
+            .isNotEmpty;
   }
 
   bool _hasAboutLifeData(SwipeProfile profile) {
@@ -234,7 +238,8 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
       groups.add(_CardContentGroup.lookingFor);
     }
 
-    final targetCount = profile.photoUrls.isNotEmpty ? profile.photoUrls.length : 1;
+    final targetCount =
+        profile.photoUrls.isNotEmpty ? profile.photoUrls.length : 1;
 
     while (groups.length < targetCount) {
       groups.add(groups.last);
@@ -259,7 +264,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
           BoxShadow(
             blurRadius: 18,
             offset: const Offset(0, 8),
-            color: Colors.black.withOpacity(0.22),
+            color: Colors.black.withValues(alpha: 0.22),
           ),
         ],
       ),
@@ -274,7 +279,9 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
 
                 final tapX = details.localPosition.dx;
 
-                if (tapX > width / 2) {
+                final forward = (tapX > width / 2) !=
+                    (Directionality.of(context) == TextDirection.rtl);
+                if (forward) {
                   if (imageIndex < profile.photoUrls.length - 1) {
                     _changeImage(imageIndex + 1);
                   }
@@ -335,7 +342,6 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
                       ),
                     ),
             ),
-
             Positioned(
               top: widget.photoBarsTop,
               left: 16,
@@ -347,13 +353,13 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
                   return Expanded(
                     child: Container(
                       height: 2.4,
-                      margin: EdgeInsets.only(
-                        right: index == profile.photoUrls.length - 1 ? 0 : 4,
+                      margin: EdgeInsetsDirectional.only(
+                        end: index == profile.photoUrls.length - 1 ? 0 : 4,
                       ),
                       decoration: BoxDecoration(
                         color: isActive
                             ? Colors.white
-                            : Colors.white.withOpacity(0.28),
+                            : Colors.white.withValues(alpha: 0.28),
                         borderRadius: BorderRadius.circular(999),
                       ),
                     ),
@@ -361,7 +367,6 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
                 }),
               ),
             ),
-
             Positioned(
               left: 0,
               right: 0,
@@ -373,15 +378,14 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Colors.black.withOpacity(0.28),
-                      Colors.black.withOpacity(0.10),
+                      Colors.black.withValues(alpha: 0.28),
+                      Colors.black.withValues(alpha: 0.10),
                       Colors.transparent,
                     ],
                   ),
                 ),
               ),
             ),
-
             Positioned(
               left: 0,
               right: 0,
@@ -393,24 +397,36 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Colors.black.withOpacity(0.0),
-                      Colors.black.withOpacity(0.18),
-                      Colors.black.withOpacity(0.82),
+                      Colors.black.withValues(alpha: 0.0),
+                      Colors.black.withValues(alpha: 0.18),
+                      Colors.black.withValues(alpha: 0.82),
                     ],
                   ),
                 ),
               ),
             ),
-
             _buildBottomContent(profile),
-            if (profile.superLikedYou) Positioned(
-              top: widget.photoBarsTop + 14, left: 16,
-              child: DecoratedBox(decoration: BoxDecoration(color: const Color(0xFF1879D8), borderRadius: BorderRadius.circular(20)),
-                child: const Padding(padding: EdgeInsets.symmetric(horizontal: 14, vertical: 9), child: Row(mainAxisSize: MainAxisSize.min, children: [
-                  Icon(Icons.star_rounded, color: Colors.white, size: 19), SizedBox(width: 6),
-                  Text('Har supergillat dig', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
-                ]))),
-            ),
+            if (profile.superLikedYou)
+              PositionedDirectional(
+                top: widget.photoBarsTop + 14,
+                start: 16,
+                child: DecoratedBox(
+                    decoration: BoxDecoration(
+                        color: const Color(0xFF1879D8),
+                        borderRadius: BorderRadius.circular(20)),
+                    child: Padding(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+                        child: Row(mainAxisSize: MainAxisSize.min, children: [
+                          Icon(Icons.star_rounded,
+                              color: Colors.white, size: 19),
+                          SizedBox(width: 6),
+                          Text(context.l10n.haveSuperlikedYou,
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w700)),
+                        ]))),
+              ),
           ],
         ),
       ),
@@ -418,19 +434,21 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
   }
 
   Widget _detailsButton(SwipeProfile profile) => IconButton(
-    tooltip: 'Läs hela profilen',
-    onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => ProfilePage(profile: profile))),
-    style: IconButton.styleFrom(backgroundColor: Colors.black.withValues(alpha: .42),
-      foregroundColor: Colors.white, minimumSize: const Size(48, 48)),
-    icon: const Icon(Icons.open_in_full_rounded, size: 21),
-  );
+        tooltip: context.l10n.readTheFullProfile,
+        onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => ProfilePage(profile: profile))),
+        style: IconButton.styleFrom(
+            backgroundColor: Colors.black.withValues(alpha: .42),
+            foregroundColor: Colors.white,
+            minimumSize: const Size(48, 48)),
+        icon: const Icon(Icons.arrow_upward_rounded, size: 21),
+      );
 
-     Widget _buildBottomContent(SwipeProfile profile) {
+  Widget _buildBottomContent(SwipeProfile profile) {
     final groups = _contentGroupsForProfile(profile);
 
-    final safeIndex = imageIndex < groups.length
-        ? imageIndex
-        : groups.length - 1;
+    final safeIndex =
+        imageIndex < groups.length ? imageIndex : groups.length - 1;
 
     final group = groups[safeIndex];
 
@@ -447,23 +465,16 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
         return _buildImage4(profile);
     }
   }
-  
 
-
-  
- Widget _buildImage0(SwipeProfile profile) {
+  Widget _buildImage0(SwipeProfile profile) {
     final livingText = profile.livePlace.trim().isNotEmpty
-        ? "Bor i ${profile.livePlace.trim()}"
+        ? "${context.l10n.currentCity} · ${profile.livePlace.trim()}"
         : "";
-    final distanceText = "${profile.distanceKm.round()} km bort";
+    final distanceText =
+        context.l10n.value0Km(profile.distanceKm.round().toString());
 
     return Stack(
       children: [
-        Positioned(
-          right: 20,
-          bottom: 188,
-          child: _detailsButton(profile),
-        ),
         Positioned(
           left: 20,
           right: 20,
@@ -472,7 +483,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildBottomName(profile.displayName, profile.age),
+              _buildBottomName(profile),
               const SizedBox(height: 8),
               _infoRow(
                 icon: Icons.location_on_outlined,
@@ -492,21 +503,14 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
     );
   }
 
-
-
-
-
-     Widget _buildImage1(SwipeProfile profile) {
+  Widget _buildImage1(SwipeProfile profile) {
     final hasOrigin = profile.originPlace.trim().isNotEmpty;
-    final hasReligion = profile.religion.trim().isNotEmpty;
+    final hasReligion =
+        localizedProfileChoice(context, 'religion', profile.religion)
+            .isNotEmpty;
 
     return Stack(
       children: [
-        Positioned(
-          right: 20,
-          bottom: 188,
-          child: _detailsButton(profile),
-        ),
         Positioned(
           left: 20,
           right: 20,
@@ -515,7 +519,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildBottomName(profile.displayName, profile.age),
+              _buildBottomName(profile),
               const SizedBox(height: 8),
               if (hasOrigin)
                 Padding(
@@ -533,7 +537,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
               if (!hasOrigin && !hasReligion)
                 _infoRow(
                   icon: Icons.info_outline_rounded,
-                  text: "Lägg till mer info",
+                  text: context.l10n.addMoreDetails,
                 ),
             ],
           ),
@@ -542,13 +546,11 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
     );
   }
 
-
-
-
-    
   Widget _buildImage2(SwipeProfile profile) {
     final aboutLifeItems = <MapEntry<IconData, String>>[
-      if (_formatRelationshipHistory(profile.relationshipHistory).trim().isNotEmpty)
+      if (_formatRelationshipHistory(profile.relationshipHistory)
+          .trim()
+          .isNotEmpty)
         MapEntry(
           _relationshipHistoryIcon(profile.relationshipHistory),
           _formatRelationshipHistory(profile.relationshipHistory).trim(),
@@ -556,7 +558,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
       if (profile.zodiacSign.trim().isNotEmpty)
         MapEntry(
           _zodiacIcon(profile.zodiacSign),
-          profile.zodiacSign.trim(),
+          localizedProfileChoice(context, 'zodiacSign', profile.zodiacSign),
         ),
       if (_formatWantChildren(profile.wantChildren).trim().isNotEmpty)
         MapEntry(
@@ -595,11 +597,6 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
     return Stack(
       children: [
         Positioned(
-          right: 20,
-          bottom: 188,
-          child: _detailsButton(profile),
-        ),
-        Positioned(
           left: 20,
           right: 20,
           bottom: 88,
@@ -607,7 +604,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildBottomName(profile.displayName, profile.age),
+              _buildBottomName(profile),
               const SizedBox(height: 8),
               _sectionTitle(
                 icon: Icons.tune_rounded,
@@ -631,31 +628,30 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
     );
   }
 
-
-
-
-
-
-    Widget _buildImage3(SwipeProfile profile) {
+  Widget _buildImage3(SwipeProfile profile) {
     final details = <MapEntry<IconData, String>>[
       if (_formatHeight(profile.heightCm).trim().isNotEmpty)
         MapEntry(
           Icons.height_rounded,
           _formatHeight(profile.heightCm).trim(),
         ),
-      if (profile.studyPlace.trim().isNotEmpty || profile.studySubject.trim().isNotEmpty)
+      if (profile.studyPlace.trim().isNotEmpty ||
+          profile.studySubject.trim().isNotEmpty)
         MapEntry(
           Icons.school_rounded,
-          profile.studyPlace.trim().isNotEmpty && profile.studySubject.trim().isNotEmpty
+          profile.studyPlace.trim().isNotEmpty &&
+                  profile.studySubject.trim().isNotEmpty
               ? "${profile.studyPlace.trim()} • ${profile.studySubject.trim()}"
               : profile.studyPlace.trim().isNotEmpty
                   ? profile.studyPlace.trim()
                   : profile.studySubject.trim(),
         ),
-      if (profile.jobTitle.trim().isNotEmpty || profile.workPlace.trim().isNotEmpty)
+      if (profile.jobTitle.trim().isNotEmpty ||
+          profile.workPlace.trim().isNotEmpty)
         MapEntry(
           Icons.work_outline_rounded,
-          profile.jobTitle.trim().isNotEmpty && profile.workPlace.trim().isNotEmpty
+          profile.jobTitle.trim().isNotEmpty &&
+                  profile.workPlace.trim().isNotEmpty
               ? "${profile.jobTitle.trim()} • ${profile.workPlace.trim()}"
               : profile.jobTitle.trim().isNotEmpty
                   ? profile.jobTitle.trim()
@@ -666,11 +662,6 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
     return Stack(
       children: [
         Positioned(
-          right: 20,
-          bottom: 188,
-          child: _detailsButton(profile),
-        ),
-        Positioned(
           left: 20,
           right: 20,
           bottom: 96,
@@ -678,7 +669,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildBottomName(profile.displayName, profile.age),
+              _buildBottomName(profile),
               const SizedBox(height: 18),
               if (details.isNotEmpty)
                 ...details.map((item) {
@@ -693,7 +684,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
               if (details.isEmpty)
                 _infoRow(
                   icon: Icons.info_outline_rounded,
-                  text: "Lägg till mer info",
+                  text: context.l10n.addMoreDetails,
                 ),
             ],
           ),
@@ -702,10 +693,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
     );
   }
 
-
-
-
-     Widget _buildImage4(SwipeProfile profile) {
+  Widget _buildImage4(SwipeProfile profile) {
     final lookingItems = <MapEntry<IconData, String>>[
       if (_formatIntention(profile.intention).trim().isNotEmpty)
         MapEntry(
@@ -717,11 +705,6 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
     return Stack(
       children: [
         Positioned(
-          right: 20,
-          bottom: 188,
-          child: _detailsButton(profile),
-        ),
-        Positioned(
           left: 20,
           right: 20,
           bottom: 96,
@@ -729,7 +712,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildBottomName(profile.displayName, profile.age),
+              _buildBottomName(profile),
               const SizedBox(height: 8),
 
               // 🔍 Titel som Tinder
@@ -757,10 +740,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
     );
   }
 
-
-
-
-    Widget _sectionTitle({
+  Widget _sectionTitle({
     required IconData icon,
     required String title,
   }) {
@@ -775,7 +755,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
         ),
         const SizedBox(width: 7),
         Text(
-          title,
+          context.tr(title),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(
@@ -790,27 +770,24 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
     );
   }
 
-
-
   Widget _infoRow({required IconData icon, required String text}) {
     return Row(
       children: [
         icon == Icons.straighten
-    ? Transform.rotate(
-        angle: -1.18, // 90 grader
-        
-        child: Icon(
-          icon,
-          color: Colors.white.withOpacity(0.9),
-          size: 17,
-        ),
-      )
-    : Icon(
-        icon,
-        color: Colors.white.withOpacity(0.9),
-        size: 17,
-      ),
+            ? Transform.rotate(
+                angle: -1.18, // 90 grader
 
+                child: Icon(
+                  icon,
+                  color: Colors.white.withValues(alpha: 0.9),
+                  size: 17,
+                ),
+              )
+            : Icon(
+                icon,
+                color: Colors.white.withValues(alpha: 0.9),
+                size: 17,
+              ),
         const SizedBox(width: 6),
         Expanded(
           child: Text(
@@ -818,7 +795,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.90),
+              color: Colors.white.withValues(alpha: 0.90),
               fontSize: 14.5,
               fontWeight: FontWeight.w500,
               height: 1.1,
@@ -829,23 +806,31 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
     );
   }
 
-   Widget _buildBottomName(String name, int age) {
-    return Text(
-      "$name $age",
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-      style: const TextStyle(
-        color: Colors.white,
-        fontSize: 28,
-        fontWeight: FontWeight.w800,
-        height: 1.0,
-        letterSpacing: -0.4,
-      ),
-    );
-  }
+  Widget _buildBottomName(SwipeProfile profile) => Row(
+        children: [
+          Expanded(
+              child: DefaultTextStyle(
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 28,
+              fontWeight: FontWeight.w800,
+              height: 1.0,
+              letterSpacing: -0.4,
+            ),
+            child: Row(children: [
+              Flexible(
+                  child: Text(profile.displayName,
+                      maxLines: 1, overflow: TextOverflow.ellipsis)),
+              const SizedBox(width: 8),
+              Text(profile.age.toString(), maxLines: 1),
+            ]),
+          )),
+          const SizedBox(width: 12),
+          _detailsButton(profile),
+        ],
+      );
 
-
-    Widget _religionRow(String religion) {
+  Widget _religionRow(String religion) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -854,10 +839,10 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
           height: 22,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.28),
+            color: Colors.black.withValues(alpha: 0.28),
             shape: BoxShape.circle,
             border: Border.all(
-              color: Colors.white.withOpacity(0.18),
+              color: Colors.white.withValues(alpha: 0.18),
             ),
           ),
           child: Text(
@@ -873,11 +858,11 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
         const SizedBox(width: 8),
         Expanded(
           child: Text(
-            religion,
+            localizedProfileChoice(context, 'religion', religion),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.90),
+              color: Colors.white.withValues(alpha: 0.90),
               fontSize: 15,
               fontWeight: FontWeight.w500,
               height: 1.15,
@@ -888,33 +873,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
     );
   }
 
-
-  Widget _chipWrap(List<String> items) {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: items.take(6).map((item) {
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-          decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.68),
-            borderRadius: BorderRadius.circular(999),
-          ),
-          child: Text(
-            item,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              height: 1.0,
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-   Widget _iconChip({
+  Widget _iconChip({
     required IconData icon,
     required String text,
   }) {
@@ -923,9 +882,9 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
         maxWidth: 170,
       ),
       child: Container(
-       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.72),
+          color: Colors.black.withValues(alpha: 0.72),
           borderRadius: BorderRadius.circular(999),
         ),
         child: Row(
@@ -957,73 +916,32 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
     );
   }
 
-
-   Widget _iconChipWrap(List<MapEntry<IconData, String>> items) {
+  Widget _iconChipWrap(List<MapEntry<IconData, String>> items) {
     return Wrap(
       spacing: 6,
       runSpacing: 6,
-     children: items.take(8).map((item) {
-  return _iconChip(
-    icon: item.key,
-    text: item.value,
-  );
-}).toList(),
-
+      children: items.take(8).map((item) {
+        return _iconChip(
+          icon: item.key,
+          text: item.value,
+        );
+      }).toList(),
     );
   }
 
+  String _formatWorkout(String value) =>
+      localizedProfileChoice(context, 'workout', value);
 
+  String _formatPets(String value) =>
+      localizedProfileChoice(context, 'pets', value);
 
-   String _formatWorkout(String value) {
-  switch (value) {
-    case 'Never':
-      return 'Aldrig';
-    case 'Sometimes':
-      return 'Ibland';
-    case 'Often':
-      return 'Ofta';
-    default:
-      return value;
-  }
-}
+  String _formatIntention(String value) =>
+      localizedProfileChoice(context, 'intention', value);
 
-String _formatPets(String value) {
-  switch (value) {
-    case 'Have':
-      return 'Har husdjur';
-    case 'Want':
-      return 'Vill ha husdjur';
-    case 'No':
-      return 'Vill inte ha husdjur';
-    case 'Allergic':
-      return 'Allergisk mot husdjur';
-    default:
-      return value;
-  }
-}
-  
-
-  
-String _formatIntention(String value) {
-  switch (value) {
-    case 'Relationship':
-      return 'Relation';
-    case 'Marriage':
-      return 'Gifta mig';
-    case 'Date':
-      return 'Dejta';
-    case 'Serious':
-      return 'Något seriöst';
-    case 'NotSure':
-      return 'Jag vet inte än';
-    default:
-      return '';
-  }
-}  
-
-
- IconData _intentionIcon(String value) {
+  IconData _intentionIcon(String value) {
     switch (value.trim()) {
+      case 'Friendship':
+        return Icons.people_outline_rounded;
       case 'Date':
         return Icons.local_bar_rounded;
       case 'Relationship':
@@ -1039,77 +957,21 @@ String _formatIntention(String value) {
     }
   }
 
-
-
-String _formatHeight(int? value) {
-  if (value == null || value <= 0) return '';
-  return '$value cm';
-}
-
-String _formatRelationshipHistory(String value) {
-  switch (value) {
-    case 'relationship':
-    case 'Relationship':
-      return 'Varit i ett förhållande';
-    case 'casual':
-    case 'Casual':
-      return 'Inget seriöst';
-    case 'never':
-    case 'Never':
-      return 'Aldrig haft ett förhållande';
-    default:
-      return ''; // 🔥 viktigt
+  String _formatHeight(int? value) {
+    if (value == null || value <= 0) return '';
+    return context.l10n.heightCentimeters(value.toString());
   }
-}
 
+  String _formatRelationshipHistory(String value) =>
+      localizedProfileChoice(context, 'relationshipHistory', value);
 
-String _formatWantChildren(String value) {
-  switch (value) {
-    case 'yes':
-    case 'Yes':
-      return 'Jag vill ha barn';
-    case 'maybe':
-    case 'Maybe':
-      return 'Inte säker än';
-    case 'no':
-    case 'No':
-      return 'Jag vill inte ha barn';
-    default:
-      return value;
-  }
-}
+  String _formatWantChildren(String value) =>
+      localizedProfileChoice(context, 'wantChildren', value);
 
-String _formatChildrenCount(String value) {
-  switch (value) {
-    case '0':
-      return 'Jag har inga barn';
-    case '1':
-      return '1 barn';
-    case '2':
-      return '2 barn';
-    case '3':
-      return '3 barn';
-    case '4+':
-      return '4 eller fler barn';
-    default:
-      return value;
-  }
-}
+  String _formatChildrenCount(String value) =>
+      localizedProfileChoice(context, 'childrenCount', value);
 
-String _formatWorkStatus(String value) {
-  switch (value) {
-    case 'study':
-    case 'Study':
-      return 'Pluggar just nu';
-    case 'work':
-    case 'Work':
-      return 'Jobbar just nu';
-    default:
-      return ''; // om ingen bild finns retunera tom
-  }
-}
-
- String _religionSymbol(String value) {
+  String _religionSymbol(String value) {
     switch (value.trim()) {
       case 'Ortodox':
       case 'Orthodox':
@@ -1144,35 +1006,13 @@ String _formatWorkStatus(String value) {
     }
   }
 
+  String _formatSmoking(String value) =>
+      localizedProfileChoice(context, 'smoking', value);
 
+  String _formatAlcohol(String value) =>
+      localizedProfileChoice(context, 'alcohol', value);
 
-String _formatSmoking(String value) {
-  switch (value) {
-    case 'No':
-      return 'Jag använder inte nikotin';
-    case 'Sometimes':
-      return 'Jag använder nikotin ibland';
-    case 'Yes':
-      return 'Jag använder nikotin';
-    default:
-      return value;
-  }
-}
-
-String _formatAlcohol(String value) {
-  switch (value) {
-    case 'Never':
-      return 'Jag dricker inte alkohol';
-    case 'Sometimes':
-      return 'Jag dricker ibland';
-    case 'Often':
-      return 'Jag dricker';
-    default:
-      return value;
-  }
-}
-
- IconData _relationshipHistoryIcon(String value) {
+  IconData _relationshipHistoryIcon(String value) {
     switch (value) {
       case 'relationship':
       case 'Relationship':
@@ -1262,6 +1102,4 @@ String _formatAlcohol(String value) {
   IconData _zodiacIcon(String value) {
     return Icons.auto_awesome_rounded;
   }
-
-
 }

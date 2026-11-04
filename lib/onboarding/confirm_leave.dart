@@ -1,3 +1,4 @@
+import '../l10n/localization.dart';
 import 'package:flutter/material.dart';
 
 Future<bool> confirmLeaveProfile(BuildContext context) async {
@@ -6,16 +7,16 @@ Future<bool> confirmLeaveProfile(BuildContext context) async {
           context: context,
           builder: (context) => AlertDialog(
                   scrollable: true,
-                  title: const Text('Vill du lämna profilskapandet?'),
-                  content: const Text(
-                      'Du loggas ut. Ditt konto och redan sparade svar finns kvar så att du kan fortsätta senare.'),
+                  title: Text(context.l10n.leaveProfileSetup388),
+                  content: Text(context
+                      .l10n.youWillBeLoggedOutYourAccountAndSavedAnswers),
                   actions: [
                     TextButton(
                         onPressed: () => Navigator.pop(context, false),
-                        child: const Text('Fortsätt')),
+                        child: Text(context.l10n.continueAction)),
                     FilledButton(
                         onPressed: () => Navigator.pop(context, true),
-                        child: const Text('Lämna'))
+                        child: Text(context.l10n.leave))
                   ])) ??
       false;
 }

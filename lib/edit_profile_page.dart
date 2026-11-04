@@ -1,3 +1,5 @@
+import 'l10n/localization.dart';
+import 'models/profile_choices.dart';
 import 'widgets/conversation_prompt_editor.dart';
 import 'theme/zullo_palette.dart';
 import 'services/profile_images.dart';
@@ -12,7 +14,6 @@ import 'models/swipe_profile.dart';
 import 'widgets/swipe_profile_card.dart';
 import 'dart:math' as math;
 import 'package:flutter/cupertino.dart';
-
 
 class EditProfilePage extends StatefulWidget {
   final bool startInPreviewMode;
@@ -31,7 +32,7 @@ class EditProfilePage extends StatefulWidget {
 class _EditProfilePageState extends State<EditProfilePage> {
   final int _photoGeneration = AccountSession.generation;
   late final AuthService _authService = widget.authService ?? AuthService();
-   SwipeProfile? _cachedPreviewProfile;
+  SwipeProfile? _cachedPreviewProfile;
   final _displayName = TextEditingController();
   final _age = TextEditingController();
   final _gender = TextEditingController();
@@ -39,63 +40,62 @@ class _EditProfilePageState extends State<EditProfilePage> {
   String _promptKey = '', _promptAnswer = '';
   final _bio = TextEditingController();
 
-List<String> _photoUrls = [];
-List<String> _interests = [];
+  List<String> _photoUrls = [];
+  List<String> _interests = [];
 
-String _intention = "";
-String _religion = "";
-String _workout = "";
-String _smoking = "";
-String _pets = "";
-String _childrenCount = "";
-String _wantChildren = "";
+  String _intention = "";
+  String _religion = "";
+  String _workout = "";
+  String _smoking = "";
+  String _pets = "";
+  String _childrenCount = "";
+  String _wantChildren = "";
 
-String _relationshipHistory = "";
-String _zodiacSign = "";
-String _alcohol = "";
-String _cannabis = "";
+  String _relationshipHistory = "";
+  String _zodiacSign = "";
+  String _alcohol = "";
+  String _cannabis = "";
 
-String _workStatus = "";
-final _studyPlace = TextEditingController();
-final _studySubject = TextEditingController();
-final _workPlace = TextEditingController();
-final _jobTitle = TextEditingController();
-final _livePlace = TextEditingController();
-final _originPlace = TextEditingController();
+  String _workStatus = "";
+  final _studyPlace = TextEditingController();
+  final _studySubject = TextEditingController();
+  final _workPlace = TextEditingController();
+  final _jobTitle = TextEditingController();
+  final _livePlace = TextEditingController();
+  final _originPlace = TextEditingController();
 
+  int? _heightCm;
+  String _interestedIn = "Alla";
 
+  bool _isUploadingPhoto = false;
 
-int? _heightCm;
-String _interestedIn = "Alla";
-
-bool _isUploadingPhoto = false;
-
-bool _isLoading = true;
-bool _isSaving = false;
-bool _isPreviewMode = false;
-String? _error;
-
- @override
-void initState() {
-  super.initState();
-  _isPreviewMode = widget.startInPreviewMode;
-  _loadMyProfile();
-}
+  bool _isLoading = true;
+  bool _isSaving = false;
+  bool _isPreviewMode = false;
+  String? _error;
 
   @override
-void dispose() {
-  _displayName.dispose();
-  _age.dispose();
-  _gender.dispose();
-  _bio.dispose();
-  _studyPlace.dispose();
-_studySubject.dispose();
-_workPlace.dispose();
-_jobTitle.dispose();
-_livePlace.dispose();
-_originPlace.dispose();
-  super.dispose();
-}
+  void initState() {
+    super.initState();
+    _isPreviewMode = widget.startInPreviewMode;
+    _loadMyProfile();
+  }
+
+  @override
+  void dispose() {
+    _displayName.dispose();
+    _age.dispose();
+    _gender.dispose();
+    _bio.dispose();
+    _studyPlace.dispose();
+    _studySubject.dispose();
+    _workPlace.dispose();
+    _jobTitle.dispose();
+    _livePlace.dispose();
+    _originPlace.dispose();
+    super.dispose();
+  }
+
   Future<void> _loadMyProfile() async {
     setState(() {
       _isLoading = true;
@@ -107,104 +107,139 @@ _originPlace.dispose();
       if (!mounted) return;
 
       _displayName.text = (profile["displayName"] ?? "").toString();
-_age.text = (profile["age"] ?? "").toString();
-_gender.text = (profile["gender"] ?? "").toString();
-_bio.text = (profile["bio"] ?? "").toString();
-_promptKey = (profile["promptKey"] ?? "").toString();
-_promptAnswer = (profile["promptAnswer"] ?? "").toString();
+      _age.text = (profile["age"] ?? "").toString();
+      _gender.text = (profile["gender"] ?? "").toString();
+      _bio.text = (profile["bio"] ?? "").toString();
+      _promptKey = (profile["promptKey"] ?? "").toString();
+      _promptAnswer = (profile["promptAnswer"] ?? "").toString();
 
-_photoUrls = ((profile["photoUrls"] as List?) ?? [])
-    .map((e) => e.toString())
-    .toList();
+      _photoUrls = ((profile["photoUrls"] as List?) ?? [])
+          .map((e) => e.toString())
+          .toList();
 
-_interests = ((profile["interests"] as List?) ?? [])
-    .map((e) => e.toString())
-    .toList();
+      _interests = ((profile["interests"] as List?) ?? [])
+          .map((e) => e.toString())
+          .toList();
 
-_intention = (profile["intention"] ?? "").toString();
-_religion = (profile["religion"] ?? "").toString();
-_workout = (profile["workout"] ?? "").toString();
-_smoking = (profile["smoking"] ?? "").toString();
-_pets = (profile["pets"] ?? "").toString();
-_heightCm = (profile["heightCm"] as num?)?.toInt();
-_interestedIn = (profile["interestedIn"] ?? "").toString();
-if (_interestedIn.isEmpty) _interestedIn = "Alla";
+      _intention = (profile["intention"] ?? "").toString();
+      _religion = (profile["religion"] ?? "").toString();
+      _workout = (profile["workout"] ?? "").toString();
+      _smoking = (profile["smoking"] ?? "").toString();
+      _pets = (profile["pets"] ?? "").toString();
+      _heightCm = (profile["heightCm"] as num?)?.toInt();
+      _interestedIn = (profile["interestedIn"] ?? "").toString();
+      if (_interestedIn.isEmpty) _interestedIn = "Alla";
 
-_relationshipHistory = (profile["relationshipHistory"] ?? "").toString();
-_zodiacSign = (profile["zodiacSign"] ?? "").toString();
+      _relationshipHistory = (profile["relationshipHistory"] ?? "").toString();
+      _zodiacSign = (profile["zodiacSign"] ?? "").toString();
 
-_alcohol = (profile["alcohol"] ?? "").toString();
-_cannabis = (profile["cannabis"] ?? "").toString();
+      _alcohol = (profile["alcohol"] ?? "").toString();
+      _cannabis = (profile["cannabis"] ?? "").toString();
 
-_childrenCount = (profile["childrenCount"] ?? "").toString();
-_wantChildren = (profile["wantChildren"] ?? "").toString();
+      _childrenCount = (profile["childrenCount"] ?? "").toString();
+      _wantChildren = (profile["wantChildren"] ?? "").toString();
 
-_workStatus = (profile["workStatus"] ?? "").toString();
-_studyPlace.text = (profile["studyPlace"] ?? "").toString();
-_studySubject.text = (profile["studySubject"] ?? "").toString();
-_workPlace.text = (profile["workPlace"] ?? "").toString();
-_jobTitle.text = (profile["jobTitle"] ?? "").toString();
+      _workStatus = (profile["workStatus"] ?? "").toString();
+      _studyPlace.text = (profile["studyPlace"] ?? "").toString();
+      _studySubject.text = (profile["studySubject"] ?? "").toString();
+      _workPlace.text = (profile["workPlace"] ?? "").toString();
+      _jobTitle.text = (profile["jobTitle"] ?? "").toString();
 
-_livePlace.text = (profile["livePlace"] ?? "").toString();
-_originPlace.text = (profile["originPlace"] ?? "").toString();
-
+      _livePlace.text = (profile["livePlace"] ?? "").toString();
+      _originPlace.text = (profile["originPlace"] ?? "").toString();
 
       if (!mounted) return;
 
       setState(() {
         _isLoading = false;
       });
-    } catch (e) {
+    } catch (_) {
       if (!mounted) return;
 
       setState(() {
-        _error = "Kunde inte ladda profil: $e";
+        _error = "Kunde inte kontrollera profilen. Försök igen.";
         _isLoading = false;
       });
     }
   }
-  
+
   Future<void> _addPhoto() async {
-    if (_isUploadingPhoto || _isSaving || !AccountSession.isCurrent(_photoGeneration)) return;
-    if (_photoUrls.length >= 6) { setState(() => _error = 'Du kan ha max 6 bilder.'); return; }
-    setState(() { _isUploadingPhoto = true; _error = null; });
+    if (_isUploadingPhoto ||
+        _isSaving ||
+        !AccountSession.isCurrent(_photoGeneration)) {
+      return;
+    }
+    if (_photoUrls.length >= 6) {
+      setState(() => _error = 'Lägg till max 6 bilder.');
+      return;
+    }
+    setState(() {
+      _isUploadingPhoto = true;
+      _error = null;
+    });
     try {
-      final picked = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 82, maxWidth: 1920, maxHeight: 1920);
-      if (picked == null || !mounted || !AccountSession.isCurrent(_photoGeneration)) return;
+      final picked = await ImagePicker().pickImage(
+          source: ImageSource.gallery,
+          imageQuality: 82,
+          maxWidth: 1920,
+          maxHeight: 1920);
+      if (picked == null ||
+          !mounted ||
+          !AccountSession.isCurrent(_photoGeneration)) {
+        return;
+      }
       final url = await PhotoService().uploadFile(File(picked.path));
       if (!mounted || !AccountSession.isCurrent(_photoGeneration)) return;
-      setState(() { if (!_photoUrls.contains(url)) _photoUrls.add(url); });
+      setState(() {
+        if (!_photoUrls.contains(url)) _photoUrls.add(url);
+      });
     } on PhotoUploadException catch (error) {
-      if (mounted && AccountSession.isCurrent(_photoGeneration)) setState(() => _error = error.message);
+      if (mounted && AccountSession.isCurrent(_photoGeneration)) {
+        setState(() => _error = error.message);
+      }
     } catch (_) {
-      if (mounted && AccountSession.isCurrent(_photoGeneration)) setState(() => _error = 'Kunde inte välja eller ladda upp bilden. Försök igen.');
+      if (mounted && AccountSession.isCurrent(_photoGeneration)) {
+        setState(() =>
+            _error = 'Kunde inte välja eller ladda upp bilden. Försök igen.');
+      }
     } finally {
-      if (mounted && AccountSession.isCurrent(_photoGeneration)) setState(() => _isUploadingPhoto = false);
+      if (mounted && AccountSession.isCurrent(_photoGeneration)) {
+        setState(() => _isUploadingPhoto = false);
+      }
     }
   }
 
-void _removePhotoAt(int index) {
-  if (_isSaving || _isUploadingPhoto || !AccountSession.isCurrent(_photoGeneration)) return;
-  setState(() {
-    _photoUrls.removeAt(index);
-    _error = null;
-  });
-}
-
-
+  void _removePhotoAt(int index) {
+    if (_isSaving ||
+        _isUploadingPhoto ||
+        !AccountSession.isCurrent(_photoGeneration)) {
+      return;
+    }
+    setState(() {
+      _photoUrls.removeAt(index);
+      _error = null;
+    });
+  }
 
   Future<void> _saveProfile() async {
-    if (_isSaving || _isUploadingPhoto || !AccountSession.isCurrent(_photoGeneration)) return;
+    if (_isSaving ||
+        _isUploadingPhoto ||
+        !AccountSession.isCurrent(_photoGeneration)) {
+      return;
+    }
     final name = _displayName.text.trim();
     final age = int.tryParse(_age.text.trim()) ?? 0;
     final gender = _gender.text.trim();
     final bio = _bio.text.trim();
 
     if (_promptKey.isNotEmpty && _promptAnswer.trim().isEmpty) {
-      setState(() => _error = 'Skriv ett svar på samtalsfrågan eller ta bort den.'); return;
+      setState(
+          () => _error = 'Skriv ett svar på samtalsfrågan eller ta bort den.');
+      return;
     }
     if (bio.length > 1000) {
-      setState(() => _error = 'Din presentation får innehålla högst 1 000 tecken.');
+      setState(
+          () => _error = 'Din presentation får innehålla högst 1 000 tecken.');
       return;
     }
     if (name.isEmpty || age < 18 || gender.isEmpty) {
@@ -215,11 +250,11 @@ void _removePhotoAt(int index) {
     }
 
     if (_photoUrls.length < 2) {
-  setState(() {
-    _error = "Du måste ha minst 2 profilbilder.";
-  });
-  return;
-}
+      setState(() {
+        _error = "Du måste ha minst 2 profilbilder.";
+      });
+      return;
+    }
 
     setState(() {
       _isSaving = true;
@@ -227,49 +262,50 @@ void _removePhotoAt(int index) {
     });
 
     try {
-  await _authService.saveProfile(
-  displayName: _displayName.text,
-  age: int.parse(_age.text),
-  gender: _gender.text,
-  bio: _bio.text, promptKey: _promptKey, promptAnswer: _promptAnswer,
-  photoUrls: _photoUrls,
-  interests: _interests,
-  intention: _intention,
-  religion: _religion,
-  workout: _workout,
-  smoking: _smoking,
-  pets: _pets,
+      await _authService.saveProfile(
+        displayName: _displayName.text,
+        age: int.parse(_age.text),
+        gender: _gender.text,
+        bio: _bio.text, promptKey: _promptKey, promptAnswer: _promptAnswer,
+        photoUrls: _photoUrls,
+        interests: _interests,
+        intention: _intention,
+        religion: _religion,
+        workout: _workout,
+        smoking: _smoking,
+        pets: _pets,
 
-  // 🔥 NYA FÄLT (DETTA VAR BUGGEN)
-  heightCm: _heightCm,
-  clearHeight: _heightCm == null,
-  interestedIn: _interestedIn,
-  relationshipHistory: _relationshipHistory,
-  zodiacSign: _zodiacSign,
-  alcohol: _alcohol,
-  cannabis: _cannabis,
-  childrenCount: _childrenCount,
-  wantChildren: _wantChildren,
-  workStatus: _workStatus,
-  studyPlace: _studyPlace.text,
-  studySubject: _studySubject.text,
-  workPlace: _workPlace.text,
-  jobTitle: _jobTitle.text,
-  livePlace: _livePlace.text,
-  originPlace: _originPlace.text,
-);
+        // 🔥 NYA FÄLT (DETTA VAR BUGGEN)
+        heightCm: _heightCm,
+        clearHeight: _heightCm == null,
+        interestedIn: _interestedIn,
+        relationshipHistory: _relationshipHistory,
+        zodiacSign: _zodiacSign,
+        alcohol: _alcohol,
+        cannabis: _cannabis,
+        childrenCount: _childrenCount,
+        wantChildren: _wantChildren,
+        workStatus: _workStatus,
+        studyPlace: _studyPlace.text,
+        studySubject: _studySubject.text,
+        workPlace: _workPlace.text,
+        jobTitle: _jobTitle.text,
+        livePlace: _livePlace.text,
+        originPlace: _originPlace.text,
+      );
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Profilen sparades.")),
+        SnackBar(content: Text(context.l10n.profileSaved)),
       );
 
       Navigator.pop(context, true);
-    } catch (e) {
+    } catch (_) {
       if (!mounted) return;
 
       setState(() {
-        _error = "Kunde inte spara profil: $e";
+        _error =
+            "Kunde inte bekräfta att profilen sparades. Dina val finns kvar. Försök igen.";
       });
     } finally {
       if (mounted) {
@@ -281,1548 +317,1366 @@ void _removePhotoAt(int index) {
   }
 
   Widget _buildTopToggle() => SegmentedButton<bool>(
-    segments: const [
-      ButtonSegment(value: false, label: Text('Redigera')),
-      ButtonSegment(value: true, label: Text('Förhandsvisa')),
-    ],
-    selected: {_isPreviewMode},
-    showSelectedIcon: false,
-    style: SegmentedButton.styleFrom(selectedBackgroundColor: ZulloPalette.tint,
-      selectedForegroundColor: ZulloPalette.rose, backgroundColor: Colors.white,
-      foregroundColor: ZulloPalette.muted, padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14)),
-    onSelectionChanged: (value) => setState(() {
-      _cachedPreviewProfile = null;
-      _isPreviewMode = value.first;
-    }),
-  );
+        segments: [
+          ButtonSegment(value: false, label: Text(context.l10n.edit)),
+          ButtonSegment(value: true, label: Text(context.l10n.preview)),
+        ],
+        selected: {_isPreviewMode},
+        showSelectedIcon: false,
+        style: SegmentedButton.styleFrom(
+            selectedBackgroundColor: ZulloPalette.tint,
+            selectedForegroundColor: ZulloPalette.rose,
+            backgroundColor: Colors.white,
+            foregroundColor: ZulloPalette.muted,
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14)),
+        onSelectionChanged: (value) => setState(() {
+          _cachedPreviewProfile = null;
+          _isPreviewMode = value.first;
+        }),
+      );
 
-List<String> _buildPreviewChips() {
-  final chips = <String>[];
-
-  if (_intention.trim().isNotEmpty) chips.add(_intention.trim());
-  if (_religion.trim().isNotEmpty) chips.add(_religion.trim());
-  if (_workout.trim().isNotEmpty) chips.add(_workout.trim());
-  if (_smoking.trim().isNotEmpty) chips.add(_smoking.trim());
-  if (_pets.trim().isNotEmpty) chips.add(_pets.trim());
-
-  chips.addAll(
-    _interests
-        .map((e) => e.trim())
-        .where((e) => e.isNotEmpty),
-  );
-
-  return chips;
-}
-
-SwipeProfile _buildPreviewProfile() {
-  if (_cachedPreviewProfile != null) {
-    return _cachedPreviewProfile!;
-  }
+  SwipeProfile _buildPreviewProfile() {
+    if (_cachedPreviewProfile != null) {
+      return _cachedPreviewProfile!;
+    }
 
     final profile = SwipeProfile(
-    userId: 'preview-user',
-    displayName: _displayName.text.trim().isEmpty
-        ? 'Din profil'
-        : _displayName.text.trim(),
-    age: int.tryParse(_age.text.trim()) ?? 18,
-    countryCode: '',
-    intention: _intention,
-    photoUrls: _photoUrls,
-    bio: _bio.text.trim(), promptKey: _promptKey, promptAnswer: _promptAnswer,
-    religion: _religion,
-    workout: _workout,
-    smoking: _smoking,
-    pets: _pets,
+      userId: 'preview-user',
+      displayName: _displayName.text.trim().isEmpty
+          ? context.l10n.yourProfile
+          : _displayName.text.trim(),
+      age: int.tryParse(_age.text.trim()) ?? 18,
+      countryCode: '',
+      intention: _intention,
+      photoUrls: _photoUrls,
+      bio: _bio.text.trim(),
+      promptKey: _promptKey,
+      promptAnswer: _promptAnswer,
+      religion: _religion,
+      workout: _workout,
+      smoking: _smoking,
+      pets: _pets,
+      heightCm: _heightCm,
+      relationshipHistory: _relationshipHistory,
+      zodiacSign: _zodiacSign,
+      alcohol: _alcohol,
+      cannabis: _cannabis,
+      childrenCount: _childrenCount,
+      wantChildren: _wantChildren,
+      workStatus: _workStatus,
+      studyPlace: _studyPlace.text.trim(),
+      studySubject: _studySubject.text.trim(),
+      workPlace: _workPlace.text.trim(),
+      jobTitle: _jobTitle.text.trim(),
+      livePlace: _livePlace.text.trim(),
+      originPlace: _originPlace.text.trim(),
+      interests: _interests,
+      distanceKm: 0,
+    );
 
-    heightCm: _heightCm,
-    relationshipHistory: _relationshipHistory,
-    zodiacSign: _zodiacSign,
-    alcohol: _alcohol,
-    cannabis: _cannabis,
-    childrenCount: _childrenCount,
-    wantChildren: _wantChildren,
-    workStatus: _workStatus,
-    studyPlace: _studyPlace.text.trim(),
-    studySubject: _studySubject.text.trim(),
-    workPlace: _workPlace.text.trim(),
-    jobTitle: _jobTitle.text.trim(),
-    livePlace: _livePlace.text.trim(),
-    originPlace: _originPlace.text.trim(),
+    _cachedPreviewProfile = profile;
+    return profile;
+  }
 
-    interests: _interests,
-    distanceKm: 0,
-  );
-
-  _cachedPreviewProfile = profile;
-  return profile;
-}
-
-Widget _buildChoiceChip({
-  required String label,
-  required bool selected,
-  required VoidCallback onTap,
-}) {
-  return GestureDetector(
-    onTap: onTap,
-    child: Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: selected ? const Color(0xFFE91E63) : Colors.white,
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(
-          color: selected ? const Color(0xFFE91E63) : Colors.grey.shade300,
-        ),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: selected ? Colors.white : Colors.black87,
-          fontSize: 15,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    ),
-  );
-}
-
-Widget _buildQuestionTitle({
-  required IconData icon,
-  required String title,
-  String? subtitle,
-}) {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(
-            icon,
-            color: const Color(0xFFE91E63),
-            size: 28,
+  Widget _buildChoiceChip({
+    required String label,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: selected ? const Color(0xFFE91E63) : Colors.white,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(
+            color: selected ? const Color(0xFFE91E63) : Colors.grey.shade300,
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black,
-                  ),
-                ),
-                if (subtitle != null) ...[
-                  const SizedBox(height: 6),
+        ),
+        child: Text(
+          context.tr(label),
+          style: TextStyle(
+            color: selected ? Colors.white : Colors.black87,
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuestionTitle({
+    required IconData icon,
+    required String title,
+    String? subtitle,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(
+              icon,
+              color: const Color(0xFFE91E63),
+              size: 28,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontSize: 15,
-                      color: Colors.grey.shade700,
+                    context.tr(title),
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black,
                     ),
                   ),
+                  if (subtitle != null) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      context.tr(subtitle),
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: Colors.grey.shade700,
+                      ),
+                    ),
+                  ],
                 ],
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInterestedInSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildQuestionTitle(
+            icon: Icons.people_outline,
+            title: 'Vem är du intresserad av?',
+            subtitle: 'Välj vilka profiler du vill se.'),
+        const SizedBox(height: 12),
+        Wrap(
+            spacing: 8,
+            children: ['Män', 'Kvinnor', 'Alla']
+                .map((value) => ChoiceChip(
+                      label: Text(context.tr(value)),
+                      selected: _interestedIn == value,
+                      onSelected: (_) => setState(() => _interestedIn = value),
+                    ))
+                .toList()),
+      ],
+    );
+  }
+
+  Widget _buildIntentionSection() =>
+      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        _buildQuestionTitle(
+            icon: Icons.favorite_outline_rounded, title: 'Vad söker du?'),
+        const SizedBox(height: 14),
+        Wrap(
+            spacing: 8,
+            runSpacing: 10,
+            children: intentionOptions.entries
+                .map((option) => ChoiceChip(
+                      label: Text(context.tr(option.value)),
+                      selected: _intention == option.key,
+                      onSelected: (selected) => setState(() {
+                        _intention = selected ? option.key : '';
+                        _cachedPreviewProfile = null;
+                      }),
+                    ))
+                .toList()),
+      ]);
+
+  Widget _buildReligionSection() =>
+      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        _buildQuestionTitle(
+            icon: Icons.diversity_2_outlined, title: 'Tro och livsåskådning'),
+        const SizedBox(height: 8),
+        Text(context.l10n.optionalLeaveThisBlankIfYouPreferNotToShow),
+        const SizedBox(height: 16),
+        Wrap(
+            spacing: 8,
+            runSpacing: 10,
+            children: religionOptions.entries
+                .map((option) => ChoiceChip(
+                      label: Text(context.tr(option.value)),
+                      selected: _religion == option.key,
+                      onSelected: (selected) => setState(() {
+                        _religion = selected ? option.key : '';
+                        _cachedPreviewProfile = null;
+                      }),
+                    ))
+                .toList()),
+        if (_religion.isNotEmpty)
+          TextButton(
+              onPressed: () => setState(() {
+                    _religion = '';
+                    _cachedPreviewProfile = null;
+                  }),
+              child: Text(context.l10n.clearSelection)),
+      ]);
+
+  Widget _buildLifestyleSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildQuestionTitle(
+          icon: Icons.fitness_center_outlined,
+          title: "Tränar du?",
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: [
+            _buildChoiceChip(
+              label: "Aldrig",
+              selected: _workout == "Aldrig",
+              onTap: () {
+                setState(() {
+                  _workout = "Aldrig";
+                  _cachedPreviewProfile = null;
+                });
+              },
+            ),
+            _buildChoiceChip(
+              label: "Ibland",
+              selected: _workout == "Ibland",
+              onTap: () {
+                setState(() {
+                  _workout = "Ibland";
+                  _cachedPreviewProfile = null;
+                });
+              },
+            ),
+            _buildChoiceChip(
+              label: "Ofta",
+              selected: _workout == "Ofta",
+              onTap: () {
+                setState(() {
+                  _workout = "Ofta";
+                  _cachedPreviewProfile = null;
+                });
+              },
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
+        _buildQuestionTitle(
+          icon: Icons.pets_outlined,
+          title: "Husdjur",
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: [
+            _buildChoiceChip(
+              label: "Har husdjur",
+              selected: _pets == "Har husdjur",
+              onTap: () {
+                setState(() {
+                  _pets = "Har husdjur";
+                  _cachedPreviewProfile = null;
+                });
+              },
+            ),
+            _buildChoiceChip(
+              label: "Vill ha husdjur",
+              selected: _pets == "Vill ha husdjur",
+              onTap: () {
+                setState(() {
+                  _pets = "Vill ha husdjur";
+                  _cachedPreviewProfile = null;
+                });
+              },
+            ),
+            _buildChoiceChip(
+              label: "Vill inte ha",
+              selected: _pets == "Vill inte ha",
+              onTap: () {
+                setState(() {
+                  _pets = "Vill inte ha";
+                  _cachedPreviewProfile = null;
+                });
+              },
+            ),
+            _buildChoiceChip(
+              label: "Allergisk",
+              selected: _pets == "Allergisk",
+              onTap: () {
+                setState(() {
+                  _pets = "Allergisk";
+                  _cachedPreviewProfile = null;
+                });
+              },
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
+        _buildQuestionTitle(
+          icon: Icons.smoking_rooms_outlined,
+          title: "Använder du nikotin?",
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: [
+            _buildChoiceChip(
+              label: "Nej",
+              selected: _smoking == "Nej",
+              onTap: () {
+                setState(() {
+                  _smoking = "Nej";
+                  _cachedPreviewProfile = null;
+                });
+              },
+            ),
+            _buildChoiceChip(
+              label: "Ibland",
+              selected: _smoking == "Ibland",
+              onTap: () {
+                setState(() {
+                  _smoking = "Ibland";
+                  _cachedPreviewProfile = null;
+                });
+              },
+            ),
+            _buildChoiceChip(
+              label: "Ja",
+              selected: _smoking == "Ja",
+              onTap: () {
+                setState(() {
+                  _smoking = "Ja";
+                  _cachedPreviewProfile = null;
+                });
+              },
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRelationshipHistorySection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildQuestionTitle(
+          icon: Icons.favorite_outline_rounded,
+          title: "Har du varit i en relation?",
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: [
+            _buildChoiceChip(
+              label: "Varit i ett förhållande",
+              selected: _relationshipHistory == "Varit i ett förhållande",
+              onTap: () {
+                setState(() {
+                  _relationshipHistory = "Varit i ett förhållande";
+                  _cachedPreviewProfile = null;
+                });
+              },
+            ),
+            _buildChoiceChip(
+              label: "Inget seriöst",
+              selected: _relationshipHistory == "Inget seriöst",
+              onTap: () {
+                setState(() {
+                  _relationshipHistory = "Inget seriöst";
+                  _cachedPreviewProfile = null;
+                });
+              },
+            ),
+            _buildChoiceChip(
+              label: "Aldrig haft ett förhållande",
+              selected: _relationshipHistory == "Aldrig haft ett förhållande",
+              onTap: () {
+                setState(() {
+                  _relationshipHistory = "Aldrig haft ett förhållande";
+                  _cachedPreviewProfile = null;
+                });
+              },
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildZodiacSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildQuestionTitle(
+          icon: Icons.auto_awesome_outlined,
+          title: "Vad är ditt stjärntecken?",
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: [
+            _buildChoiceChip(
+              label: "Vattuman",
+              selected: _zodiacSign == "Vattuman",
+              onTap: () {
+                setState(() {
+                  _zodiacSign = "Vattuman";
+                  _cachedPreviewProfile = null;
+                });
+              },
+            ),
+            _buildChoiceChip(
+              label: "Vädur",
+              selected: _zodiacSign == "Vädur",
+              onTap: () {
+                setState(() {
+                  _zodiacSign = "Vädur";
+                  _cachedPreviewProfile = null;
+                });
+              },
+            ),
+            _buildChoiceChip(
+              label: "Kräfta",
+              selected: _zodiacSign == "Kräfta",
+              onTap: () {
+                setState(() {
+                  _zodiacSign = "Kräfta";
+                  _cachedPreviewProfile = null;
+                });
+              },
+            ),
+            _buildChoiceChip(
+              label: "Stenbock",
+              selected: _zodiacSign == "Stenbock",
+              onTap: () {
+                setState(() {
+                  _zodiacSign = "Stenbock";
+                  _cachedPreviewProfile = null;
+                });
+              },
+            ),
+            _buildChoiceChip(
+              label: "Tvilling",
+              selected: _zodiacSign == "Tvilling",
+              onTap: () {
+                setState(() {
+                  _zodiacSign = "Tvilling";
+                  _cachedPreviewProfile = null;
+                });
+              },
+            ),
+            _buildChoiceChip(
+              label: "Lejon",
+              selected: _zodiacSign == "Lejon",
+              onTap: () {
+                setState(() {
+                  _zodiacSign = "Lejon";
+                  _cachedPreviewProfile = null;
+                });
+              },
+            ),
+            _buildChoiceChip(
+              label: "Våg",
+              selected: _zodiacSign == "Våg",
+              onTap: () {
+                setState(() {
+                  _zodiacSign = "Våg";
+                  _cachedPreviewProfile = null;
+                });
+              },
+            ),
+            _buildChoiceChip(
+              label: "Fisk",
+              selected: _zodiacSign == "Fisk",
+              onTap: () {
+                setState(() {
+                  _zodiacSign = "Fisk";
+                  _cachedPreviewProfile = null;
+                });
+              },
+            ),
+            _buildChoiceChip(
+              label: "Skytt",
+              selected: _zodiacSign == "Skytt",
+              onTap: () {
+                setState(() {
+                  _zodiacSign = "Skytt";
+                  _cachedPreviewProfile = null;
+                });
+              },
+            ),
+            _buildChoiceChip(
+              label: "Skorpion",
+              selected: _zodiacSign == "Skorpion",
+              onTap: () {
+                setState(() {
+                  _zodiacSign = "Skorpion";
+                  _cachedPreviewProfile = null;
+                });
+              },
+            ),
+            _buildChoiceChip(
+              label: "Oxe",
+              selected: _zodiacSign == "Oxe",
+              onTap: () {
+                setState(() {
+                  _zodiacSign = "Oxe";
+                  _cachedPreviewProfile = null;
+                });
+              },
+            ),
+            _buildChoiceChip(
+              label: "Jungfru",
+              selected: _zodiacSign == "Jungfru",
+              onTap: () {
+                setState(() {
+                  _zodiacSign = "Jungfru";
+                  _cachedPreviewProfile = null;
+                });
+              },
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  String _heightDisplayCm() {
+    return _heightCm == null
+        ? context.l10n.notSpecified
+        : context.l10n.heightCentimeters(_heightCm.toString());
+  }
+
+  String _heightDisplayFt() {
+    if (_heightCm == null) return "";
+    final totalInches = (_heightCm! / 2.54).round();
+    final feet = totalInches ~/ 12;
+    final inches = totalInches % 12;
+    return "$feet'$inches\"";
+  }
+
+  int _cmToFeet(int cm) {
+    final totalInches = (cm / 2.54).round();
+    return totalInches ~/ 12;
+  }
+
+  int _cmToInchesPart(int cm) {
+    final totalInches = (cm / 2.54).round();
+    return totalInches % 12;
+  }
+
+  int _feetAndInchesToCm(int feet, int inches) {
+    final totalInches = (feet * 12) + inches;
+    return (totalInches * 2.54).round();
+  }
+
+  Future<void> _openHeightPicker() async {
+    int tempCm = _heightCm ?? 170;
+
+    int tempFeet = _cmToFeet(_heightCm ?? 170);
+    int tempInches = _cmToInchesPart(_heightCm ?? 170);
+
+    final cmController = FixedExtentScrollController(
+      initialItem: math.max(0, tempCm - 140),
+    );
+
+    final feetController = FixedExtentScrollController(
+      initialItem: math.max(0, tempFeet - 4),
+    );
+
+    await showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (context) {
+        bool useCm = true;
+
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final maxInchesForFeet = tempFeet >= 8 ? 6 : 11;
+
+            return SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 42,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: Colors.black12,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            context.l10n.howTallAreYou,
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _heightCm = tempCm.clamp(140, 260);
+                              _cachedPreviewProfile = null;
+                            });
+                            Navigator.pop(context);
+                          },
+                          child: Container(
+                            width: 48,
+                            height: 48,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF1F2430),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.check,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 18),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              setModalState(() {
+                                useCm = true;
+                              });
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              decoration: BoxDecoration(
+                                color: useCm
+                                    ? const Color(0xFFE91E63)
+                                    : Colors.grey.shade100,
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                              child: Text(
+                                "cm",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: useCm ? Colors.white : Colors.black87,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              setModalState(() {
+                                useCm = false;
+                              });
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              decoration: BoxDecoration(
+                                color: !useCm
+                                    ? const Color(0xFFE91E63)
+                                    : Colors.grey.shade100,
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                              child: Text(
+                                context.l10n.feetUnit,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: !useCm ? Colors.white : Colors.black87,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      height: 220,
+                      child: useCm
+                          ? CupertinoPicker(
+                              scrollController: cmController,
+                              itemExtent: 44,
+                              onSelectedItemChanged: (index) {
+                                tempCm = 140 + index;
+                                tempFeet = _cmToFeet(tempCm);
+                                tempInches = _cmToInchesPart(tempCm);
+                              },
+                              children: List.generate(
+                                121,
+                                (index) {
+                                  final cm = 140 + index;
+                                  return Center(
+                                    child: Text(
+                                      context.l10n
+                                          .heightCentimeters((cm).toString()),
+                                      style: const TextStyle(fontSize: 24),
+                                    ),
+                                  );
+                                },
+                              ),
+                            )
+                          : Row(
+                              children: [
+                                Expanded(
+                                  child: CupertinoPicker(
+                                    scrollController: feetController,
+                                    itemExtent: 44,
+                                    onSelectedItemChanged: (index) {
+                                      tempFeet = 4 + index;
+
+                                      final maxAllowedInches =
+                                          tempFeet >= 8 ? 6 : 11;
+
+                                      if (tempInches > maxAllowedInches) {
+                                        tempInches = maxAllowedInches;
+                                      }
+
+                                      tempCm = _feetAndInchesToCm(
+                                        tempFeet,
+                                        tempInches,
+                                      ).clamp(140, 260);
+                                    },
+                                    children: List.generate(
+                                      5,
+                                      (index) {
+                                        final ft = 4 + index;
+                                        return Center(
+                                          child: Text(
+                                            context.l10n
+                                                .heightFeet((ft).toString()),
+                                            style:
+                                                const TextStyle(fontSize: 24),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: CupertinoPicker(
+                                    scrollController:
+                                        FixedExtentScrollController(
+                                      initialItem:
+                                          tempInches.clamp(0, maxInchesForFeet),
+                                    ),
+                                    itemExtent: 44,
+                                    onSelectedItemChanged: (index) {
+                                      tempInches = index;
+                                      tempCm = _feetAndInchesToCm(
+                                        tempFeet,
+                                        tempInches,
+                                      ).clamp(140, 260);
+                                    },
+                                    children: List.generate(
+                                      maxInchesForFeet + 1,
+                                      (index) {
+                                        return Center(
+                                          child: Text(
+                                            context.l10n.heightInches(
+                                                (index).toString()),
+                                            style:
+                                                const TextStyle(fontSize: 24),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                    ),
+                    const SizedBox(height: 14),
+                    Text(
+                      "${context.l10n.heightCentimeters(tempCm.toString())} • ${_cmToFeet(tempCm)}'${_cmToInchesPart(tempCm)}\"",
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey.shade700,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildHeightSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildQuestionTitle(
+          icon: Icons.height_rounded,
+          title: "Hur lång är du?",
+          subtitle: "Välj din längd i cm eller fot.",
+        ),
+        const SizedBox(height: 14),
+        GestureDetector(
+          onTap: _openHeightPicker,
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF7F7F7),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.grey.shade200),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _heightCm == null
+                        ? context.l10n.notSpecified
+                        : "${_heightDisplayCm()} • ${_heightDisplayFt()}",
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ),
+                if (_heightCm != null)
+                  IconButton(
+                    tooltip: context.l10n.removeHeight,
+                    icon: const Icon(Icons.close),
+                    onPressed: () => setState(() => _heightCm = null),
+                  ),
+                const Icon(
+                  Icons.unfold_more_rounded,
+                  color: Color(0xFFE91E63),
+                ),
               ],
             ),
           ),
-        ],
-      ),
-    ],
-  );
-}
+        ),
+      ],
+    );
+  }
 
-Widget _buildInterestedInSection() {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      _buildQuestionTitle(icon: Icons.people_outline, title: 'Vem är du intresserad av?', subtitle: 'Välj vilka profiler du vill se.'),
-      const SizedBox(height: 12),
-      Wrap(spacing: 8, children: ['Män', 'Kvinnor', 'Alla'].map((value) => ChoiceChip(
-        label: Text(value), selected: _interestedIn == value,
-        onSelected: (_) => setState(() => _interestedIn = value),
-      )).toList()),
-    ],
-  );
-}
-
-Widget _buildIntentionSection() {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      _buildQuestionTitle(
-        icon: Icons.favorite_border_rounded,
-        title: "Vad hoppas du hitta här?",
-        subtitle: "Välj det som passar dig bäst just nu.",
-      ),
-      const SizedBox(height: 14),
-      Wrap(
-        spacing: 10,
-        runSpacing: 10,
-        children: [
-          _buildChoiceChip(
-            label: "Date",
-            selected: _intention == "Date",
-            onTap: () {
-              setState(() {
-                _intention = "Date";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-          _buildChoiceChip(
-            label: "Relation",
-            selected: _intention == "Relationship",
-            onTap: () {
-              setState(() {
-                _intention = "Relationship";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-          _buildChoiceChip(
-            label: "Gifta mig",
-            selected: _intention == "Marriage",
-            onTap: () {
-              setState(() {
-                _intention = "Marriage";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-          _buildChoiceChip(
-            label: "Något seriöst",
-            selected: _intention == "Serious",
-            onTap: () {
-              setState(() {
-                _intention = "Serious";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-          _buildChoiceChip(
-            label: "Jag vet inte än",
-            selected: _intention == "NotSure",
-            onTap: () {
-              setState(() {
-                _intention = "NotSure";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-        ],
-      ),
-    ],
-  );
-}
-
-Widget _buildReligionSection() {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      _buildQuestionTitle(
-        icon: Icons.spa_outlined,
-        title: "Är du religiös?",
-      ),
-      const SizedBox(height: 14),
-      Wrap(
-        spacing: 10,
-        runSpacing: 10,
-        children: [
-          _buildChoiceChip(
-            label: "Agnostiker",
-            selected: _religion == "Agnostiker",
-            onTap: () {
-              setState(() {
-                _religion = "Agnostiker";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-          _buildChoiceChip(
-            label: "Ateist",
-            selected: _religion == "Ateist",
-            onTap: () {
-              setState(() {
-                _religion = "Ateist";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-          _buildChoiceChip(
-            label: "Buddhist",
-            selected: _religion == "Buddhist",
-            onTap: () {
-              setState(() {
-                _religion = "Buddhist";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-          _buildChoiceChip(
-            label: "Katolik",
-            selected: _religion == "Katolik",
-            onTap: () {
-              setState(() {
-                _religion = "Katolik";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-          _buildChoiceChip(
-            label: "Kristen",
-            selected: _religion == "Kristen",
-            onTap: () {
-              setState(() {
-                _religion = "Kristen";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-          _buildChoiceChip(
-            label: "Hindu",
-            selected: _religion == "Hindu",
-            onTap: () {
-              setState(() {
-                _religion = "Hindu";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-          _buildChoiceChip(
-            label: "Judisk",
-            selected: _religion == "Judisk",
-            onTap: () {
-              setState(() {
-                _religion = "Judisk";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-          _buildChoiceChip(
-            label: "Muslim",
-            selected: _religion == "Muslim",
-            onTap: () {
-              setState(() {
-                _religion = "Muslim";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-          _buildChoiceChip(
-  label: "Ortodox",
-  selected: _religion == "Ortodox",
-  onTap: () {
-    setState(() {
-      _religion = "Ortodox";
-      _cachedPreviewProfile = null;
-    });
-  },
-),
-          _buildChoiceChip(
-            label: "Sikh",
-            selected: _religion == "Sikh",
-            onTap: () {
-              setState(() {
-                _religion = "Sikh";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-          _buildChoiceChip(
-            label: "Andlig, inte religiös",
-            selected: _religion == "Andlig, inte religiös",
-            onTap: () {
-              setState(() {
-                _religion = "Andlig, inte religiös";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-          _buildChoiceChip(
-            label: "Annat",
-            selected: _religion == "Annat",
-            onTap: () {
-              setState(() {
-                _religion = "Annat";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-        ],
-      ),
-    ],
-  );
-}
-
-Widget _buildLifestyleSection() {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      _buildQuestionTitle(
-        icon: Icons.fitness_center_outlined,
-        title: "Tränar du?",
-      ),
-      const SizedBox(height: 12),
-      Wrap(
-        spacing: 10,
-        runSpacing: 10,
-        children: [
-          _buildChoiceChip(
-            label: "Aldrig",
-            selected: _workout == "Aldrig",
-            onTap: () {
-              setState(() {
-                _workout = "Aldrig";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-          _buildChoiceChip(
-            label: "Ibland",
-            selected: _workout == "Ibland",
-            onTap: () {
-              setState(() {
-                _workout = "Ibland";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-          _buildChoiceChip(
-            label: "Ofta",
-            selected: _workout == "Ofta",
-            onTap: () {
-              setState(() {
-                _workout = "Ofta";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-        ],
-      ),
-
-      const SizedBox(height: 24),
-
-      _buildQuestionTitle(
-        icon: Icons.pets_outlined,
-        title: "Husdjur",
-      ),
-      const SizedBox(height: 12),
-      Wrap(
-        spacing: 10,
-        runSpacing: 10,
-        children: [
-          _buildChoiceChip(
-            label: "Har husdjur",
-            selected: _pets == "Har husdjur",
-            onTap: () {
-              setState(() {
-                _pets = "Har husdjur";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-          _buildChoiceChip(
-            label: "Vill ha husdjur",
-            selected: _pets == "Vill ha husdjur",
-            onTap: () {
-              setState(() {
-                _pets = "Vill ha husdjur";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-          _buildChoiceChip(
-            label: "Vill inte ha",
-            selected: _pets == "Vill inte ha",
-            onTap: () {
-              setState(() {
-                _pets = "Vill inte ha";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-          _buildChoiceChip(
-            label: "Allergisk",
-            selected: _pets == "Allergisk",
-            onTap: () {
-              setState(() {
-                _pets = "Allergisk";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-        ],
-      ),
-
-      const SizedBox(height: 24),
-
-      _buildQuestionTitle(
-        icon: Icons.smoking_rooms_outlined,
-        title: "Använder du nikotin?",
-      ),
-      const SizedBox(height: 12),
-      Wrap(
-        spacing: 10,
-        runSpacing: 10,
-        children: [
-          _buildChoiceChip(
-            label: "Nej",
-            selected: _smoking == "Nej",
-            onTap: () {
-              setState(() {
-                _smoking = "Nej";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-          _buildChoiceChip(
-            label: "Ibland",
-            selected: _smoking == "Ibland",
-            onTap: () {
-              setState(() {
-                _smoking = "Ibland";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-          _buildChoiceChip(
-            label: "Ja",
-            selected: _smoking == "Ja",
-            onTap: () {
-              setState(() {
-                _smoking = "Ja";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-        ],
-      ),
-    ],
-  );
-}
-
-
-Widget _buildRelationshipHistorySection() {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      _buildQuestionTitle(
-        icon: Icons.favorite_outline_rounded,
-        title: "Har du varit i en relation?",
-      ),
-      const SizedBox(height: 12),
-      Wrap(
-        spacing: 10,
-        runSpacing: 10,
-        children: [
-          _buildChoiceChip(
-            label: "Varit i ett förhållande",
-            selected: _relationshipHistory == "Varit i ett förhållande",
-            onTap: () {
-              setState(() {
-                _relationshipHistory = "Varit i ett förhållande";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-          _buildChoiceChip(
-            label: "Inget seriöst",
-            selected: _relationshipHistory == "Inget seriöst",
-            onTap: () {
-              setState(() {
-                _relationshipHistory = "Inget seriöst";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-          _buildChoiceChip(
-            label: "Aldrig haft ett förhållande",
-            selected:
-                _relationshipHistory == "Aldrig haft ett förhållande",
-            onTap: () {
-              setState(() {
-                _relationshipHistory = "Aldrig haft ett förhållande";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-        ],
-      ),
-    ],
-  );
-}
-
-Widget _buildZodiacSection() {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      _buildQuestionTitle(
-        icon: Icons.auto_awesome_outlined,
-        title: "Vad är ditt stjärntecken?",
-      ),
-      const SizedBox(height: 12),
-      Wrap(
-        spacing: 10,
-        runSpacing: 10,
-        children: [
-          _buildChoiceChip(
-            label: "Vattuman",
-            selected: _zodiacSign == "Vattuman",
-            onTap: () {
-              setState(() {
-                _zodiacSign = "Vattuman";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-          _buildChoiceChip(
-            label: "Vädur",
-            selected: _zodiacSign == "Vädur",
-            onTap: () {
-              setState(() {
-                _zodiacSign = "Vädur";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-          _buildChoiceChip(
-            label: "Kräfta",
-            selected: _zodiacSign == "Kräfta",
-            onTap: () {
-              setState(() {
-                _zodiacSign = "Kräfta";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-          _buildChoiceChip(
-            label: "Stenbock",
-            selected: _zodiacSign == "Stenbock",
-            onTap: () {
-              setState(() {
-                _zodiacSign = "Stenbock";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-          _buildChoiceChip(
-            label: "Tvilling",
-            selected: _zodiacSign == "Tvilling",
-            onTap: () {
-              setState(() {
-                _zodiacSign = "Tvilling";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-          _buildChoiceChip(
-            label: "Lejon",
-            selected: _zodiacSign == "Lejon",
-            onTap: () {
-              setState(() {
-                _zodiacSign = "Lejon";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-          _buildChoiceChip(
-            label: "Våg",
-            selected: _zodiacSign == "Våg",
-            onTap: () {
-              setState(() {
-                _zodiacSign = "Våg";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-          _buildChoiceChip(
-            label: "Fisk",
-            selected: _zodiacSign == "Fisk",
-            onTap: () {
-              setState(() {
-                _zodiacSign = "Fisk";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-          _buildChoiceChip(
-            label: "Skytt",
-            selected: _zodiacSign == "Skytt",
-            onTap: () {
-              setState(() {
-                _zodiacSign = "Skytt";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-          _buildChoiceChip(
-            label: "Skorpion",
-            selected: _zodiacSign == "Skorpion",
-            onTap: () {
-              setState(() {
-                _zodiacSign = "Skorpion";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-          _buildChoiceChip(
-            label: "Oxe",
-            selected: _zodiacSign == "Oxe",
-            onTap: () {
-              setState(() {
-                _zodiacSign = "Oxe";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-          _buildChoiceChip(
-            label: "Jungfru",
-            selected: _zodiacSign == "Jungfru",
-            onTap: () {
-              setState(() {
-                _zodiacSign = "Jungfru";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-        ],
-      ),
-    ],
-  );
-}
-
-String _heightDisplayCm() {
-  return _heightCm == null ? "Ej angivet" : "$_heightCm cm";
-}
-
-String _heightDisplayFt() {
-  if (_heightCm == null) return "";
-  final totalInches = (_heightCm! / 2.54).round();
-  final feet = totalInches ~/ 12;
-  final inches = totalInches % 12;
-  return "$feet'$inches\"";
-}
-
-int _cmToFeet(int cm) {
-  final totalInches = (cm / 2.54).round();
-  return totalInches ~/ 12;
-}
-
-int _cmToInchesPart(int cm) {
-  final totalInches = (cm / 2.54).round();
-  return totalInches % 12;
-}
-
-int _feetAndInchesToCm(int feet, int inches) {
-  final totalInches = (feet * 12) + inches;
-  return (totalInches * 2.54).round();
-}
-
-Future<void> _openHeightPicker() async {
-  int tempCm = _heightCm ?? 170;
-
-  int tempFeet = _cmToFeet(_heightCm ?? 170);
-  int tempInches = _cmToInchesPart(_heightCm ?? 170);
-
-  final cmController = FixedExtentScrollController(
-    initialItem: math.max(0, tempCm - 140),
-  );
-
-  final feetController = FixedExtentScrollController(
-    initialItem: math.max(0, tempFeet - 4),
-  );
-
-  final inchesController = FixedExtentScrollController(
-    initialItem: tempInches.clamp(0, 11),
-  );
-
-  await showModalBottomSheet(
-    context: context,
-    backgroundColor: Colors.white,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-    ),
-    builder: (context) {
-      bool useCm = true;
-
-      return StatefulBuilder(
-        builder: (context, setModalState) {
-          final maxInchesForFeet = tempFeet >= 8 ? 6 : 11;
-
-          return SafeArea(
-            top: false,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 42,
-                    height: 5,
-                    decoration: BoxDecoration(
-                      color: Colors.black12,
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-                  Row(
-                    children: [
-                      const Expanded(
-                        child: Text(
-                          "Hur lång är du?",
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _heightCm = tempCm.clamp(140, 260);
-                            _cachedPreviewProfile = null;
-                          });
-                          Navigator.pop(context);
-                        },
-                        child: Container(
-                          width: 48,
-                          height: 48,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF1F2430),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.check,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 18),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () {
-                            setModalState(() {
-                              useCm = true;
-                            });
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            decoration: BoxDecoration(
-                              color: useCm
-                                  ? const Color(0xFFE91E63)
-                                  : Colors.grey.shade100,
-                              borderRadius: BorderRadius.circular(999),
-                            ),
-                            child: Text(
-                              "cm",
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: useCm ? Colors.white : Colors.black87,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () {
-                            setModalState(() {
-                              useCm = false;
-                            });
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            decoration: BoxDecoration(
-                              color: !useCm
-                                  ? const Color(0xFFE91E63)
-                                  : Colors.grey.shade100,
-                              borderRadius: BorderRadius.circular(999),
-                            ),
-                            child: Text(
-                              "fot",
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: !useCm ? Colors.white : Colors.black87,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    height: 220,
-                    child: useCm
-                        ? CupertinoPicker(
-                            scrollController: cmController,
-                            itemExtent: 44,
-                            onSelectedItemChanged: (index) {
-                              tempCm = 140 + index;
-                              tempFeet = _cmToFeet(tempCm);
-                              tempInches = _cmToInchesPart(tempCm);
-                            },
-                            children: List.generate(
-                              121,
-                              (index) {
-                                final cm = 140 + index;
-                                return Center(
-                                  child: Text(
-                                    "$cm cm",
-                                    style: const TextStyle(fontSize: 24),
-                                  ),
-                                );
-                              },
-                            ),
-                          )
-                        : Row(
-                            children: [
-                              Expanded(
-                                child: CupertinoPicker(
-                                  scrollController: feetController,
-                                  itemExtent: 44,
-                                  onSelectedItemChanged: (index) {
-                                    tempFeet = 4 + index;
-
-                                    final maxAllowedInches =
-                                        tempFeet >= 8 ? 6 : 11;
-
-                                    if (tempInches > maxAllowedInches) {
-                                      tempInches = maxAllowedInches;
-                                    }
-
-                                    tempCm = _feetAndInchesToCm(
-                                      tempFeet,
-                                      tempInches,
-                                    ).clamp(140, 260);
-                                  },
-                                  children: List.generate(
-                                    5,
-                                    (index) {
-                                      final ft = 4 + index;
-                                      return Center(
-                                        child: Text(
-                                          "$ft fot",
-                                          style: const TextStyle(fontSize: 24),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ),
-                              Expanded(
-                                child: CupertinoPicker(
-                                  scrollController: FixedExtentScrollController(
-                                    initialItem: tempInches.clamp(0, maxInchesForFeet),
-                                  ),
-                                  itemExtent: 44,
-                                  onSelectedItemChanged: (index) {
-                                    tempInches = index;
-                                    tempCm = _feetAndInchesToCm(
-                                      tempFeet,
-                                      tempInches,
-                                    ).clamp(140, 260);
-                                  },
-                                  children: List.generate(
-                                    maxInchesForFeet + 1,
-                                    (index) {
-                                      return Center(
-                                        child: Text(
-                                          "$index tum",
-                                          style: const TextStyle(fontSize: 24),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                  ),
-                  const SizedBox(height: 14),
-                  Text(
-                    "$tempCm cm • ${_cmToFeet(tempCm)}'${_cmToInchesPart(tempCm)}\"",
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey.shade700,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
+  Widget _buildChildrenCountSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildQuestionTitle(
+          icon: Icons.child_care_outlined,
+          title: "Hur många barn har du?",
+        ),
+        const SizedBox(height: 14),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: [
+            _buildChoiceChip(
+              label: "Jag har inga barn",
+              selected: _childrenCount == "Jag har inga barn",
+              onTap: () {
+                setState(() {
+                  _childrenCount = "Jag har inga barn";
+                  _cachedPreviewProfile = null;
+                });
+              },
             ),
-          );
-        },
-      );
-    },
-  );
-}
-
-Widget _buildHeightSection() {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      _buildQuestionTitle(
-        icon: Icons.height_rounded,
-        title: "Hur lång är du?",
-        subtitle: "Välj din längd i cm eller fot.",
-      ),
-      const SizedBox(height: 14),
-      GestureDetector(
-        onTap: _openHeightPicker,
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-         decoration: BoxDecoration(
-  color: const Color(0xFFF7F7F7),
-  borderRadius: BorderRadius.circular(20),
-  border: Border.all(color: Colors.grey.shade200),
-),
-            
-          
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  _heightCm == null ? 'Ej angivet' : "${_heightDisplayCm()} • ${_heightDisplayFt()}",
-                  style: const TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black87,
-                  ),
-                ),
-              ),
-              if (_heightCm != null) IconButton(
-                tooltip: 'Ta bort längd', icon: const Icon(Icons.close),
-                onPressed: () => setState(() => _heightCm = null),
-              ),
-              const Icon(
-                Icons.unfold_more_rounded,
-                color: Color(0xFFE91E63),
-              ),
-            ],
-          ),
+            _buildChoiceChip(
+              label: "1 barn",
+              selected: _childrenCount == "1 barn",
+              onTap: () {
+                setState(() {
+                  _childrenCount = "1 barn";
+                  _cachedPreviewProfile = null;
+                });
+              },
+            ),
+            _buildChoiceChip(
+              label: "2 barn",
+              selected: _childrenCount == "2 barn",
+              onTap: () {
+                setState(() {
+                  _childrenCount = "2 barn";
+                  _cachedPreviewProfile = null;
+                });
+              },
+            ),
+            _buildChoiceChip(
+              label: "3 barn",
+              selected: _childrenCount == "3 barn",
+              onTap: () {
+                setState(() {
+                  _childrenCount = "3 barn";
+                  _cachedPreviewProfile = null;
+                });
+              },
+            ),
+            _buildChoiceChip(
+              label: "4 eller fler",
+              selected: _childrenCount == "4 eller fler",
+              onTap: () {
+                setState(() {
+                  _childrenCount = "4 eller fler";
+                  _cachedPreviewProfile = null;
+                });
+              },
+            ),
+          ],
         ),
-      ),
-    ],
-  );
-}
+      ],
+    );
+  }
 
-Widget _buildChildrenCountSection() {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      _buildQuestionTitle(
-        icon: Icons.child_care_outlined,
-        title: "Hur många barn har du?",
-      ),
-      const SizedBox(height: 14),
-      Wrap(
-        spacing: 10,
-        runSpacing: 10,
-        children: [
-          _buildChoiceChip(
-            label: "Jag har inga barn",
-            selected: _childrenCount == "Jag har inga barn",
-            onTap: () {
-              setState(() {
-                _childrenCount = "Jag har inga barn";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-          _buildChoiceChip(
-            label: "1 barn",
-            selected: _childrenCount == "1 barn",
-            onTap: () {
-              setState(() {
-                _childrenCount = "1 barn";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-          _buildChoiceChip(
-            label: "2 barn",
-            selected: _childrenCount == "2 barn",
-            onTap: () {
-              setState(() {
-                _childrenCount = "2 barn";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-          _buildChoiceChip(
-            label: "3 barn",
-            selected: _childrenCount == "3 barn",
-            onTap: () {
-              setState(() {
-                _childrenCount = "3 barn";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-          _buildChoiceChip(
-            label: "4 eller fler",
-            selected: _childrenCount == "4 eller fler",
-            onTap: () {
-              setState(() {
-                _childrenCount = "4 eller fler";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-        ],
-      ),
-    ],
-  );
-}
-
-Widget _buildWantChildrenSection() {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      _buildQuestionTitle(
-        icon: Icons.stroller_outlined,
-        title: "Vill du ha barn i framtiden?",
-      ),
-      const SizedBox(height: 14),
-      Wrap(
-        spacing: 10,
-        runSpacing: 10,
-        children: [
-          _buildChoiceChip(
-            label: "Jag vill ha barn",
-            selected: _wantChildren == "Jag vill ha barn",
-            onTap: () {
-              setState(() {
-                _wantChildren = "Jag vill ha barn";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-          _buildChoiceChip(
-            label: "Inte säker än",
-            selected: _wantChildren == "Inte säker än",
-            onTap: () {
-              setState(() {
-                _wantChildren = "Inte säker än";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-          _buildChoiceChip(
-            label: "Jag vill inte ha barn",
-            selected: _wantChildren == "Jag vill inte ha barn",
-            onTap: () {
-              setState(() {
-                _wantChildren = "Jag vill inte ha barn";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-        ],
-      ),
-    ],
-  );
-}
-
-Widget _buildWorkStudySection() {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      _buildQuestionTitle(
-        icon: Icons.work_outline_rounded,
-        title: "Vad jobbar du med?",
-      ),
-      const SizedBox(height: 14),
-      Wrap(
-        spacing: 10,
-        runSpacing: 10,
-        children: [
-          _buildChoiceChip(
-            label: "Pluggar just nu",
-            selected: _workStatus == "study",
-            onTap: () {
-              setState(() {
-                _workStatus = "study";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-          _buildChoiceChip(
-            label: "Jobbar just nu",
-            selected: _workStatus == "work",
-            onTap: () {
-              setState(() {
-                _workStatus = "work";
-                _cachedPreviewProfile = null;
-              });
-            },
-          ),
-        ],
-      ),
-
-      if (_workStatus == "study") ...[
-        const SizedBox(height: 24),
+  Widget _buildWantChildrenSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
         _buildQuestionTitle(
-          icon: Icons.school_outlined,
-          title: "Var pluggar du?",
+          icon: Icons.stroller_outlined,
+          title: "Vill du ha barn i framtiden?",
+        ),
+        const SizedBox(height: 14),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: [
+            _buildChoiceChip(
+              label: "Jag vill ha barn",
+              selected: _wantChildren == "Jag vill ha barn",
+              onTap: () {
+                setState(() {
+                  _wantChildren = "Jag vill ha barn";
+                  _cachedPreviewProfile = null;
+                });
+              },
+            ),
+            _buildChoiceChip(
+              label: "Inte säker än",
+              selected: _wantChildren == "Inte säker än",
+              onTap: () {
+                setState(() {
+                  _wantChildren = "Inte säker än";
+                  _cachedPreviewProfile = null;
+                });
+              },
+            ),
+            _buildChoiceChip(
+              label: "Jag vill inte ha barn",
+              selected: _wantChildren == "Jag vill inte ha barn",
+              onTap: () {
+                setState(() {
+                  _wantChildren = "Jag vill inte ha barn";
+                  _cachedPreviewProfile = null;
+                });
+              },
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildWorkStudySection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildQuestionTitle(
+          icon: Icons.work_outline_rounded,
+          title: "Vad jobbar du med?",
+        ),
+        const SizedBox(height: 14),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: [
+            _buildChoiceChip(
+              label: "Pluggar just nu",
+              selected: _workStatus == "study",
+              onTap: () {
+                setState(() {
+                  _workStatus = "study";
+                  _cachedPreviewProfile = null;
+                });
+              },
+            ),
+            _buildChoiceChip(
+              label: "Jobbar just nu",
+              selected: _workStatus == "work",
+              onTap: () {
+                setState(() {
+                  _workStatus = "work";
+                  _cachedPreviewProfile = null;
+                });
+              },
+            ),
+          ],
+        ),
+        if (_workStatus == "study") ...[
+          const SizedBox(height: 24),
+          _buildQuestionTitle(
+            icon: Icons.school_outlined,
+            title: "Var pluggar du?",
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _studyPlace,
+            decoration: InputDecoration(
+              hintText: context.l10n.stockholmUniversitySchool,
+            ),
+            onChanged: (_) {
+              _cachedPreviewProfile = null;
+            },
+          ),
+          const SizedBox(height: 20),
+          _buildQuestionTitle(
+            icon: Icons.menu_book_outlined,
+            title: "Vad pluggar du?",
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _studySubject,
+            decoration: InputDecoration(
+              hintText: context.l10n.technologyFinanceHealthcare,
+            ),
+            onChanged: (_) {
+              _cachedPreviewProfile = null;
+            },
+          ),
+        ],
+        if (_workStatus == "work") ...[
+          const SizedBox(height: 24),
+          _buildQuestionTitle(
+            icon: Icons.business_outlined,
+            title: "Var jobbar du?",
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _workPlace,
+            decoration: InputDecoration(
+              hintText: context.l10n.companyLocationIndustry,
+            ),
+            onChanged: (_) {
+              _cachedPreviewProfile = null;
+            },
+          ),
+          const SizedBox(height: 20),
+          _buildQuestionTitle(
+            icon: Icons.badge_outlined,
+            title: "Vad har du för jobbtitel?",
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _jobTitle,
+            decoration: InputDecoration(
+              hintText: context.l10n.developerTeacherDriver,
+            ),
+            onChanged: (_) {
+              _cachedPreviewProfile = null;
+            },
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildLivePlaceSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildQuestionTitle(
+          icon: Icons.location_on_outlined,
+          title: "Var bor du?",
         ),
         const SizedBox(height: 12),
         TextField(
-          controller: _studyPlace,
-          decoration: const InputDecoration(
-            hintText: "Stockholm, universitet, skola...",
-          ),
-          onChanged: (_) {
-            _cachedPreviewProfile = null;
-          },
-        ),
-        const SizedBox(height: 20),
-        _buildQuestionTitle(
-          icon: Icons.menu_book_outlined,
-          title: "Vad pluggar du?",
-        ),
-        const SizedBox(height: 12),
-        TextField(
-          controller: _studySubject,
-          decoration: const InputDecoration(
-            hintText: "Data, ekonomi, vård...",
+          controller: _livePlace,
+          decoration: InputDecoration(
+            hintText: context.l10n.stockholmGothenburgOslo,
           ),
           onChanged: (_) {
             _cachedPreviewProfile = null;
           },
         ),
       ],
+    );
+  }
 
-      if (_workStatus == "work") ...[
-        const SizedBox(height: 24),
+  Widget _buildOriginPlaceSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
         _buildQuestionTitle(
-          icon: Icons.business_outlined,
-          title: "Var jobbar du?",
+          icon: Icons.home_outlined,
+          title: "Var kommer du ifrån?",
         ),
         const SizedBox(height: 12),
         TextField(
-          controller: _workPlace,
-          decoration: const InputDecoration(
-            hintText: "Företag, plats, bransch...",
-          ),
-          onChanged: (_) {
-            _cachedPreviewProfile = null;
-          },
-        ),
-        const SizedBox(height: 20),
-        _buildQuestionTitle(
-          icon: Icons.badge_outlined,
-          title: "Vad har du för jobbtitel?",
-        ),
-        const SizedBox(height: 12),
-        TextField(
-          controller: _jobTitle,
-          decoration: const InputDecoration(
-            hintText: "Utvecklare, lärare, chaufför...",
+          controller: _originPlace,
+          decoration: InputDecoration(
+            hintText: context.l10n.asmaraAddisAbabaStockholm,
           ),
           onChanged: (_) {
             _cachedPreviewProfile = null;
           },
         ),
       ],
-    ],
-  );
-}
-
-Widget _buildLivePlaceSection() {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      _buildQuestionTitle(
-        icon: Icons.location_on_outlined,
-        title: "Var bor du?",
-      ),
-      const SizedBox(height: 12),
-      TextField(
-        controller: _livePlace,
-        decoration: const InputDecoration(
-          hintText: "Stockholm, Göteborg, Oslo...",
-        ),
-        onChanged: (_) {
-          _cachedPreviewProfile = null;
-        },
-      ),
-    ],
-  );
-}
-
-Widget _buildOriginPlaceSection() {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      _buildQuestionTitle(
-        icon: Icons.home_outlined,
-        title: "Var kommer du ifrån?",
-      ),
-      const SizedBox(height: 12),
-      TextField(
-        controller: _originPlace,
-        decoration: const InputDecoration(
-          hintText: "Asmara, Addis Abeba, Stockholm...",
-        ),
-        onChanged: (_) {
-          _cachedPreviewProfile = null;
-        },
-      ),
-    ],
-  );
-}
-
-Widget _buildPreviewChip(String text) {
-  return Container(
-    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-    decoration: BoxDecoration(
-      color: Colors.white.withOpacity(0.16),
-      borderRadius: BorderRadius.circular(24),
-    ),
-    child: Text(
-      text,
-      style: const TextStyle(
-        color: Colors.white,
-        fontSize: 15,
-        fontWeight: FontWeight.w500,
-      ),
-    ),
-  );
-}
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-  backgroundColor: ZulloPalette.canvas,
-  appBar: AppBar(
-    backgroundColor: ZulloPalette.canvas, surfaceTintColor: Colors.transparent,
-    elevation: 0, centerTitle: false,
-    title: const Text('Din profil', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: ZulloPalette.ink)),
-    actions: [Padding(padding: const EdgeInsets.only(right: 16), child: TextButton(
-      onPressed: (_isLoading || _isSaving || _isUploadingPhoto) ? null : _saveProfile,
-      style: TextButton.styleFrom(foregroundColor: ZulloPalette.rose,
-        backgroundColor: ZulloPalette.tint, padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12)),
-      child: _isSaving ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2))
-        : const Text('Spara', style: TextStyle(fontWeight: FontWeight.w800)),
-    ))],
-  ),
-     body: _isLoading
-    ? const Center(child: CircularProgressIndicator())
-    : _error != null && _displayName.text.isEmpty
-        ? Center(child: Text(_error!))
-        : _isPreviewMode
-            ? Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const SizedBox(height: 8),
-                    _buildTopToggle(),
-                    const SizedBox(height: 24),
-                   Expanded(
-  child: LayoutBuilder(
-    builder: (context, constraints) {
-      return Center(
-        child: SizedBox(
-          width: constraints.maxWidth,
-          height: constraints.maxHeight,
-          child: SwipeProfileCard(
-            profile: _buildPreviewProfile(),
-            width: constraints.maxWidth,
-            height: constraints.maxHeight,
-            photoBarsTop: 66,
-            distanceFallbackKm: 0,
-          ),
-        ),
-      );
-    },
-  ),
-),
-                  ],
-                ),
-              )
-            : SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const SizedBox(height: 8),
-                    _buildTopToggle(),
-                    const SizedBox(height: 24),
-
-                    const Text(
-                      "Dina bilder",
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      "Lägg till max 6 bilder.",
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey.shade700,
-                      ),
-                    ),
-                    const SizedBox(height: 18),
-
-                    GridView.count(
-                      crossAxisCount: 3,
-                      shrinkWrap: true,
-                      crossAxisSpacing: 10,
-                      mainAxisSpacing: 10,
-                      physics: const NeverScrollableScrollPhysics(),
-                      children: [
-                        ..._photoUrls.asMap().entries.map((entry) {
-                          final index = entry.key;
-                          final url = entry.value;
-
-                          return Stack(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
-                                child: Image(
-                                  image: ProfileImages.thumbnail(url),
-                                  fit: BoxFit.cover,
-                                  width: double.infinity,
-                                  height: double.infinity,
-                                ),
-                              ),
-                              Positioned(
-                                top: 5,
-                                right: 5,
-                                child: GestureDetector(
-                                  onTap: () => _removePhotoAt(index),
-                                  child: Container(
-                                    decoration: const BoxDecoration(
-                                      color: Colors.black,
-                                      shape: BoxShape.circle,
+      backgroundColor: ZulloPalette.canvas,
+      appBar: AppBar(
+        backgroundColor: ZulloPalette.canvas,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: false,
+        title: Text(context.l10n.yourProfile,
+            style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
+                color: ZulloPalette.ink)),
+        actions: [
+          Padding(
+              padding: const EdgeInsetsDirectional.only(end: 16),
+              child: TextButton(
+                onPressed: (_isLoading || _isSaving || _isUploadingPhoto)
+                    ? null
+                    : _saveProfile,
+                style: TextButton.styleFrom(
+                    foregroundColor: ZulloPalette.rose,
+                    backgroundColor: ZulloPalette.tint,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 18, vertical: 12)),
+                child: _isSaving
+                    ? const SizedBox.square(
+                        dimension: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2))
+                    : Text(context.l10n.save,
+                        style: TextStyle(fontWeight: FontWeight.w800)),
+              ))
+        ],
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _error != null && _displayName.text.isEmpty
+              ? Center(child: Text(context.tr(_error!)))
+              : _isPreviewMode
+                  ? Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const SizedBox(height: 8),
+                          _buildTopToggle(),
+                          const SizedBox(height: 24),
+                          Expanded(
+                            child: LayoutBuilder(
+                              builder: (context, constraints) {
+                                return Center(
+                                  child: SizedBox(
+                                    width: constraints.maxWidth,
+                                    height: constraints.maxHeight,
+                                    child: SwipeProfileCard(
+                                      profile: _buildPreviewProfile(),
+                                      width: constraints.maxWidth,
+                                      height: constraints.maxHeight,
+                                      photoBarsTop: 16,
+                                      distanceFallbackKm: 0,
                                     ),
-                                    padding: const EdgeInsets.all(4),
-                                    child: const Icon(
-                                      Icons.close,
-                                      color: Colors.white,
-                                      size: 16,
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : SingleChildScrollView(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const SizedBox(height: 8),
+                          _buildTopToggle(),
+                          const SizedBox(height: 24),
+                          Text(
+                            context.l10n.yourPhotos,
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            context.l10n.addUpToPhotos,
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey.shade700,
+                            ),
+                          ),
+                          const SizedBox(height: 18),
+                          GridView.count(
+                            crossAxisCount: 3,
+                            shrinkWrap: true,
+                            crossAxisSpacing: 10,
+                            mainAxisSpacing: 10,
+                            physics: const NeverScrollableScrollPhysics(),
+                            children: [
+                              ..._photoUrls.asMap().entries.map((entry) {
+                                final index = entry.key;
+                                final url = entry.value;
+
+                                return Stack(
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: Image(
+                                        image: ProfileImages.thumbnail(url),
+                                        fit: BoxFit.cover,
+                                        width: double.infinity,
+                                        height: double.infinity,
+                                      ),
+                                    ),
+                                    PositionedDirectional(
+                                      top: 5,
+                                      end: 5,
+                                      child: GestureDetector(
+                                        onTap: () => _removePhotoAt(index),
+                                        child: Container(
+                                          decoration: const BoxDecoration(
+                                            color: Colors.black,
+                                            shape: BoxShape.circle,
+                                          ),
+                                          padding: const EdgeInsets.all(4),
+                                          child: const Icon(
+                                            Icons.close,
+                                            color: Colors.white,
+                                            size: 16,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              }),
+                              if (_photoUrls.length < 6)
+                                GestureDetector(
+                                  onTap: _addPhoto,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(12),
+                                      color: const Color(0xFFF3E4E9),
+                                    ),
+                                    child: const Center(
+                                      child: Icon(
+                                        Icons.add_photo_alternate_outlined,
+                                        color: ZulloPalette.rose,
+                                        size: 30,
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
                             ],
-                          );
-                        }),
-
-                        if (_photoUrls.length < 6)
-                          GestureDetector(
-                            onTap: _addPhoto,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(12),
-                                color: const Color(0xFFF3E4E9),
-                              ),
-                              child: const Center(
-                                child: Icon(
-                                  Icons.add_photo_alternate_outlined,
-                                  color: ZulloPalette.rose,
-                                  size: 30,
-                                ),
-                              ),
+                          ),
+                          const SizedBox(height: 20),
+                          ProfileBasicsSection(
+                              name: _displayName,
+                              age: _age,
+                              gender: _gender,
+                              bio: _bio),
+                          const SizedBox(height: 24),
+                          ConversationPromptEditor(
+                              promptKey: _promptKey,
+                              answer: _promptAnswer,
+                              onChanged: (key, answer) => setState(() {
+                                    _promptKey = key;
+                                    _promptAnswer = answer;
+                                    _cachedPreviewProfile = null;
+                                  })),
+                          const SizedBox(height: 28),
+                          _buildWorkStudySection(),
+                          const SizedBox(height: 24),
+                          _buildLivePlaceSection(),
+                          const SizedBox(height: 24),
+                          _buildOriginPlaceSection(),
+                          const SizedBox(height: 24),
+                          _buildInterestedInSection(),
+                          const SizedBox(height: 20),
+                          _buildIntentionSection(),
+                          const SizedBox(height: 24),
+                          _buildHeightSection(),
+                          const SizedBox(height: 24),
+                          _buildLifestyleSection(),
+                          const SizedBox(height: 24),
+                          _buildRelationshipHistorySection(),
+                          const SizedBox(height: 24),
+                          _buildZodiacSection(),
+                          const SizedBox(height: 24),
+                          _buildReligionSection(),
+                          const SizedBox(height: 24),
+                          _buildChildrenCountSection(),
+                          const SizedBox(height: 24),
+                          _buildWantChildrenSection(),
+                          const SizedBox(height: 24),
+                          if (_error != null) ...[
+                            const SizedBox(height: 12),
+                            Text(
+                              context.tr(_error!),
+                              style: const TextStyle(color: Colors.red),
+                            ),
+                          ],
+                          const SizedBox(height: 20),
+                          SizedBox(
+                            height: 48,
+                            child: ElevatedButton(
+                              onPressed: (_isSaving || _isUploadingPhoto)
+                                  ? null
+                                  : _saveProfile,
+                              child: _isSaving
+                                  ? const SizedBox(
+                                      height: 22,
+                                      width: 22,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : Text(context.l10n.saveChanges),
                             ),
                           ),
-                      ],
-                    ),
-
-                   const SizedBox(height: 20),
-
-                  ProfileBasicsSection(name: _displayName, age: _age,
-                    gender: _gender, bio: _bio),
-                  const SizedBox(height: 24),
-                  ConversationPromptEditor(promptKey: _promptKey, answer: _promptAnswer,
-                    onChanged: (key, answer) => setState(() { _promptKey = key; _promptAnswer = answer; _cachedPreviewProfile = null; })),
-                  const SizedBox(height: 28),
-                  _buildWorkStudySection(),
-const SizedBox(height: 24),
-
-_buildLivePlaceSection(),
-const SizedBox(height: 24),
-
-_buildOriginPlaceSection(),
-const SizedBox(height: 24),
-
- _buildInterestedInSection(),
- const SizedBox(height: 20),
- _buildIntentionSection(),
-const SizedBox(height: 24),
-
-_buildHeightSection(),
-const SizedBox(height: 24),
-
-_buildLifestyleSection(),
-const SizedBox(height: 24),
-
-_buildRelationshipHistorySection(),
-const SizedBox(height: 24),
-
-_buildZodiacSection(),
-const SizedBox(height: 24),
-
-_buildReligionSection(),
-const SizedBox(height: 24),
-
-_buildChildrenCountSection(),
-const SizedBox(height: 24),
-
-_buildWantChildrenSection(),
-const SizedBox(height: 24),   
-
-
-
-
-                        
-
-                    if (_error != null) ...[
-                      const SizedBox(height: 12),
-                      Text(
-                        _error!,
-                        style: const TextStyle(color: Colors.red),
-                      ),
-                    ],
-
-                    const SizedBox(height: 20),
-
-                    SizedBox(
-                      height: 48,
-                      child: ElevatedButton(
-                        onPressed: (_isSaving || _isUploadingPhoto) ? null : _saveProfile,
-                        child: _isSaving
-                            ? const SizedBox(
-                                height: 22,
-                                width: 22,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : const Text("Spara ändringar"),
+                        ],
                       ),
                     ),
-                  ],
-                ),
-              ),
     );
   }
-  
 }
-
-

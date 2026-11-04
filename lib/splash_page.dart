@@ -1,3 +1,4 @@
+import 'l10n/localization.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'services/account_session.dart';
@@ -48,7 +49,9 @@ class _SplashPageState extends State<SplashPage> {
     if (token == null || token.isEmpty) return const WelcomePage();
     final exists = await (widget.authService ?? AuthService()).hasProfile();
     AccountSession.check(generation);
-    return exists ? const MainNavigation() : OnboardingStartPage(authService: widget.authService);
+    return exists
+        ? const MainNavigation()
+        : OnboardingStartPage(authService: widget.authService);
   }
 
   Future<void> _checkLogin() async {
@@ -103,24 +106,24 @@ class _SplashPageState extends State<SplashPage> {
         body: Center(
             child: _error == null
                 ? Column(mainAxisSize: MainAxisSize.min, children: [
-                    const Text('ZULLO',
+                    Text(context.l10n.zullo,
                         style: TextStyle(
                             fontSize: 36, fontWeight: FontWeight.bold)),
                     if (!widget.skipNavigation) ...[
                       const SizedBox(height: 24),
                       const CircularProgressIndicator(),
                       const SizedBox(height: 16),
-                      const Text('Öppnar appen…'),
+                      Text(context.l10n.openingTheApp),
                     ],
                   ])
                 : Column(mainAxisSize: MainAxisSize.min, children: [
                     Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 24),
-                        child: Text(_error!, textAlign: TextAlign.center)),
+                        child: Text(context.tr(_error!), textAlign: TextAlign.center)),
                     const SizedBox(height: 16),
                     ElevatedButton(
                         onPressed: _checkLogin,
-                        child: const Text('Försök igen')),
+                        child: Text(context.l10n.tryAgain)),
                   ])),
       );
 }

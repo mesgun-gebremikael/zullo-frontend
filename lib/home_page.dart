@@ -1,3 +1,4 @@
+import 'l10n/localization.dart';
 import 'widgets/discovery_feed_empty.dart';
 import 'services/profile_images.dart';
 import 'account_management_page.dart';
@@ -14,7 +15,6 @@ import 'premium_page.dart';
 import 'matches_page.dart';
 import 'profile_page.dart';
 import 'chat_page.dart';
-import 'edit_profile_page.dart';
 import 'swipe_page.dart';
 import 'widgets/swipe_profile_card.dart';
 
@@ -28,6 +28,7 @@ class HomePage extends StatefulWidget {
   @override
   State<HomePage> createState() => _HomePageState();
 }
+
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late final AuthService _authService = widget.authService ?? AuthService();
@@ -43,8 +44,14 @@ class _HomePageState extends State<HomePage>
   bool _isPaused = false;
 
   void _refreshEmptyFeed() {
-    if (!mounted || !widget.active || !_foreground || _feedRequestRunning ||
-        !AccountSession.isCurrent(_sessionGeneration) || error == 'Kunde inte ladda feed') { return; }
+    if (!mounted ||
+        !widget.active ||
+        !_foreground ||
+        _feedRequestRunning ||
+        !AccountSession.isCurrent(_sessionGeneration) ||
+        error == 'Kunde inte ladda feed') {
+      return;
+    }
     if (currentIndex >= profiles.length) unawaited(loadFeed(background: true));
   }
 
@@ -53,17 +60,15 @@ class _HomePageState extends State<HomePage>
     super.didUpdateWidget(oldWidget);
     if (widget.active && !oldWidget.active) _refreshEmptyFeed();
   }
- 
-  
+
   List<SwipeProfile> profiles = [];
- List<SwipeProfile> _prefetchedProfiles = [];
-bool _isPrefetching = false;
+  List<SwipeProfile> _prefetchedProfiles = [];
+  bool _isPrefetching = false;
 
   static const double _cardCornerRadius = 34;
-static const double _nextCardScale = 1.0;
-static const double _nextCardOffsetY = 0;
-static const double _nextCardOpacity = 0.55;
-static const double _activeCardLift = 0;
+  static const double _nextCardScale = 1.0;
+  static const double _nextCardOffsetY = 0;
+  static const double _activeCardLift = 0;
   bool isLoading = true;
   String? error;
   int currentIndex = 0;
@@ -75,18 +80,21 @@ static const double _activeCardLift = 0;
     _deferredDiscoveryRefresh?.cancel();
     if (!mounted || !AccountSession.isCurrent(_sessionGeneration)) return;
     if (_isDragging || _isAnimating) {
-      _deferredDiscoveryRefresh = Timer(const Duration(milliseconds: 400), _refreshDiscoveryWhenIdle);
+      _deferredDiscoveryRefresh =
+          Timer(const Duration(milliseconds: 400), _refreshDiscoveryWhenIdle);
       return;
     }
-    _feedRevision++; _prefetchedProfiles = [];
+    _feedRevision++;
+    _prefetchedProfiles = [];
     unawaited(loadFeed());
   }
+
   String _interestedIn = 'Alla';
   String? _preferenceUserId;
   int _minAge = 18;
   int _maxAge = 99;
 
-    Offset _drag = Offset.zero;
+  Offset _drag = Offset.zero;
   bool _isDragging = false;
 
   final ValueNotifier<Offset> _dragNotifier = ValueNotifier(Offset.zero);
@@ -108,14 +116,20 @@ static const double _activeCardLift = 0;
       vsync: this,
       duration: const Duration(milliseconds: 200),
     );
-    _emptyFeedTimer = Timer.periodic(const Duration(seconds: 20), (_) => _refreshEmptyFeed());
+    _emptyFeedTimer =
+        Timer.periodic(const Duration(seconds: 20), (_) => _refreshEmptyFeed());
     _relationChanges = RelationChanges.stream.listen((_) {
       if (!mounted || !AccountSession.isCurrent(_sessionGeneration)) return;
       _feedRevision++;
-      setState(() { profiles = []; _prefetchedProfiles = []; currentIndex = 0; });
+      setState(() {
+        profiles = [];
+        _prefetchedProfiles = [];
+        currentIndex = 0;
+      });
       unawaited(loadFeed());
     });
-    _commerceEvents = CommerceEvents.stream.listen((_) => _refreshDiscoveryWhenIdle());
+    _commerceEvents =
+        CommerceEvents.stream.listen((_) => _refreshDiscoveryWhenIdle());
     loadFeed();
     _loadMyFilterValues();
     loadUnreadStatus();
@@ -153,7 +167,10 @@ static const double _activeCardLift = 0;
     final revision = _feedRevision;
     _feedRequestRunning = true;
     if (!background) {
-      setState(() { isLoading = true; error = null; });
+      setState(() {
+        isLoading = true;
+        error = null;
+      });
     }
 
     try {
@@ -163,7 +180,10 @@ static const double _activeCardLift = 0;
       );
 
       if (!mounted || !AccountSession.isCurrent(_sessionGeneration)) return;
-      if (revision != _feedRevision) { _feedReloadPending = true; return; }
+      if (revision != _feedRevision) {
+        _feedReloadPending = true;
+        return;
+      }
       final loadedProfiles = List<SwipeProfile>.from(data['profiles']);
       final loadedRadius = (data['radiusKm'] as num).toDouble();
 
@@ -179,7 +199,11 @@ static const double _activeCardLift = 0;
       _precacheNextProfile();
       if (loadedProfiles.isNotEmpty) _prefetchMoreProfiles();
     } catch (e) {
-      if (!mounted || !AccountSession.isCurrent(_sessionGeneration) || background) return;
+      if (!mounted ||
+          !AccountSession.isCurrent(_sessionGeneration) ||
+          background) {
+        return;
+      }
       debugPrint('LOAD FEED ERROR: $e');
 
       setState(() {
@@ -223,7 +247,7 @@ static const double _activeCardLift = 0;
     } catch (_) {}
   }
 
-    void nextProfile() {
+  void nextProfile() {
     if (!mounted) return;
     if (profiles.isEmpty) return;
 
@@ -265,7 +289,7 @@ static const double _activeCardLift = 0;
     }
   }
 
-    Future<void> _prefetchMoreProfiles() async {
+  Future<void> _prefetchMoreProfiles() async {
     if (_isPrefetching) return;
     if (_prefetchedProfiles.isNotEmpty) return;
 
@@ -320,20 +344,6 @@ static const double _activeCardLift = 0;
     );
   }
 
-  Future<void> _openEditProfile() async {
-    final changed = await Navigator.push<bool>(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const EditProfilePage(),
-      ),
-    );
-
-    if (changed == true) {
-      await loadFeed();
-      await loadUnreadStatus();
-    }
-  }
-
   Future<void> showMatchPopup({required SwipeProfile other}) async {
     if (!mounted) return;
 
@@ -352,13 +362,13 @@ static const double _activeCardLift = 0;
               color: const Color(0xFF111111),
               borderRadius: BorderRadius.circular(28),
               border: Border.all(
-                color: Colors.white.withOpacity(0.08),
+                color: Colors.white.withValues(alpha: 0.08),
                 width: 1,
               ),
               boxShadow: [
                 BoxShadow(
                   blurRadius: 36,
-                  color: Colors.black.withOpacity(0.45),
+                  color: Colors.black.withValues(alpha: 0.45),
                   offset: const Offset(0, 18),
                 ),
               ],
@@ -380,7 +390,7 @@ static const double _activeCardLift = 0;
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      "Det är en match!",
+                      context.l10n.itSAMatch,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 30,
@@ -391,7 +401,7 @@ static const double _activeCardLift = 0;
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      "Du och ${other.displayName} gillar varandra.\nSäg hej eller fortsätt swipa.",
+                      context.l10n.youAndValue0LikeEachOtherSayHelloOrKeep((other.displayName).toString()),
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         color: Colors.white70,
@@ -412,8 +422,9 @@ static const double _activeCardLift = 0;
                         onPressed: () async {
                           Navigator.pop(ctx);
 
-                          final otherPhoto =
-                              other.photoUrls.isNotEmpty ? other.photoUrls.first : "";
+                          final otherPhoto = other.photoUrls.isNotEmpty
+                              ? other.photoUrls.first
+                              : "";
 
                           await Navigator.push(
                             context,
@@ -437,7 +448,7 @@ static const double _activeCardLift = 0;
                             fontWeight: FontWeight.w700,
                           ),
                         ),
-                        child: const Text("Säg hej"),
+                        child: Text(context.l10n.sayHello),
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -448,7 +459,8 @@ static const double _activeCardLift = 0;
                         onPressed: () => Navigator.pop(ctx),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: Colors.white,
-                          side: const BorderSide(color: Colors.white30, width: 1.2),
+                          side: const BorderSide(
+                              color: Colors.white30, width: 1.2),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(999),
                           ),
@@ -457,7 +469,7 @@ static const double _activeCardLift = 0;
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-                        child: const Text("Fortsätt swipa"),
+                        child: Text(context.l10n.keepSwiping),
                       ),
                     ),
                   ],
@@ -483,7 +495,7 @@ static const double _activeCardLift = 0;
           border: Border.all(color: Colors.white, width: 3),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.25),
+              color: Colors.black.withValues(alpha: 0.25),
               blurRadius: 16,
               offset: const Offset(0, 8),
             ),
@@ -498,7 +510,8 @@ static const double _activeCardLift = 0;
                     return Container(
                       color: Colors.white10,
                       child: const Center(
-                        child: Icon(Icons.person, color: Colors.white, size: 44),
+                        child:
+                            Icon(Icons.person, color: Colors.white, size: 44),
                       ),
                     );
                   },
@@ -548,7 +561,7 @@ static const double _activeCardLift = 0;
         ],
       ),
     );
-  } 
+  }
 
   SwipeDir? _decideDir(Size screen) {
     const dxThreshold = 100.0;
@@ -573,7 +586,8 @@ static const double _activeCardLift = 0;
     final curve = CurvedAnimation(parent: _anim, curve: Curves.fastOutSlowIn);
 
     _animOffset = Tween<Offset>(begin: _drag, end: end).animate(curve);
-    _animRotate = Tween<double>(begin: _rotationForDrag(), end: rotateEnd).animate(curve);
+    _animRotate =
+        Tween<double>(begin: _rotationForDrag(), end: rotateEnd).animate(curve);
     _animFade = Tween<double>(begin: 1.0, end: fadeEnd).animate(curve);
 
     setState(() => _isAnimating = true);
@@ -598,21 +612,6 @@ static const double _activeCardLift = 0;
     return rot;
   }
 
-  double _likeProgress() {
-    return (_drag.dx / 140).clamp(0.0, 1.0).toDouble();
-  }
-
-  double _nopeProgress() {
-    return (-_drag.dx / 140).clamp(0.0, 1.0).toDouble();
-  }
-
-  double _superProgress() {
-    final raw = (-_drag.dy / 170).clamp(0.0, 1.0).toDouble();
-    if (_drag.dy >= 0) return 0.0;
-    if (_drag.dy.abs() < _drag.dx.abs() * 0.55) return 0.0;
-    return raw;
-  }
-
   Future<void> _performSwipe(SwipeDir dir) async {
     if (profiles.isEmpty || currentIndex >= profiles.length) return;
     if (_isAnimating) return;
@@ -625,7 +624,8 @@ static const double _activeCardLift = 0;
       } catch (_) {}
     } else {
       try {
-        final matched = await _authService.like(p.userId, superLike: dir == SwipeDir.up);
+        final matched =
+            await _authService.like(p.userId, superLike: dir == SwipeDir.up);
         if (dir == SwipeDir.up) CommerceEvents.walletChanged();
         if (matched) {
           await showMatchPopup(other: p);
@@ -633,9 +633,13 @@ static const double _activeCardLift = 0;
           showToast("Super Like skickad ⭐");
         }
       } catch (e) {
-        if ((e is CommerceException && (e.status == 429 || e.status == 402)) || e.toString().contains("429")) {
-          showToast(dir == SwipeDir.up ? "Du har inga Superlikes kvar ⭐" : "Du har nått like-gränsen ❤️");
+        if ((e is CommerceException && (e.status == 429 || e.status == 402)) ||
+            e.toString().contains("429")) {
+          showToast(dir == SwipeDir.up
+              ? "Du har inga Superlikes kvar ⭐"
+              : "Du har nått like-gränsen ❤️");
 
+          if (!mounted) return;
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -654,6 +658,7 @@ static const double _activeCardLift = 0;
       }
     }
 
+    if (!mounted) return;
     final size = MediaQuery.of(context).size;
     final offX = size.width * 1.35;
     final offY = size.height * 0.34;
@@ -671,8 +676,8 @@ static const double _activeCardLift = 0;
     };
 
     await _animateTo(end, rotateEnd: rotEnd, fadeEnd: 0.0);
-    
-    if (profiles.length - currentIndex < 3){
+
+    if (profiles.length - currentIndex < 3) {
       loadFeed();
     }
 
@@ -691,17 +696,24 @@ static const double _activeCardLift = 0;
       showToast('Senaste swipen ångrades');
     } on CommerceException catch (error) {
       if (!mounted) return;
-      if (error.status == 402) { await Navigator.push(context, MaterialPageRoute(builder: (_) => const PremiumPage())); }
-      else { showToast(error.message); }
-    } catch (_) { if (mounted) showToast('Kunde inte ångra. Försök igen.'); }
-    finally { _rewindInFlight = false; }
+      if (error.status == 402) {
+        await Navigator.push(
+            context, MaterialPageRoute(builder: (_) => const PremiumPage()));
+      } else {
+        showToast(error.message);
+      }
+    } catch (_) {
+      if (mounted) showToast('Kunde inte ångra. Försök igen.');
+    } finally {
+      _rewindInFlight = false;
+    }
   }
 
   Future<void> _snapBack() async {
     await _animateTo(Offset.zero, rotateEnd: 0.0, fadeEnd: 1.0);
   }
 
-    void _precacheNextProfile() {
+  void _precacheNextProfile() {
     if (!mounted || profiles.isEmpty) return;
 
     final startIndex = currentIndex + 1;
@@ -726,24 +738,41 @@ static const double _activeCardLift = 0;
     try {
       final me = await _authService.getMyProfile();
       final user = (me['userId'] ?? '').toString();
-      final preferences = user.isEmpty ? null : await SharedPreferences.getInstance();
+      final preferences =
+          user.isEmpty ? null : await SharedPreferences.getInstance();
       final previousMinAge = _minAge;
       final previousMaxAge = _maxAge;
-      final savedAges = preferences?.getString('discovery_age_$user')?.split(',').map(int.tryParse).toList();
+      final savedAges = preferences
+          ?.getString('discovery_age_$user')
+          ?.split(',')
+          .map(int.tryParse)
+          .toList();
       if (!mounted || !AccountSession.isCurrent(_sessionGeneration)) return;
       setState(() {
         _preferenceUserId = user.isEmpty ? null : user;
-        if (savedAges != null && savedAges.length == 2 && savedAges[0] != null && savedAges[1] != null && savedAges[0]! >= 18 && savedAges[1]! <= 100 && savedAges[0]! <= savedAges[1]!) {
-          _minAge = savedAges[0]!; _maxAge = savedAges[1]!;
+        if (savedAges != null &&
+            savedAges.length == 2 &&
+            savedAges[0] != null &&
+            savedAges[1] != null &&
+            savedAges[0]! >= 18 &&
+            savedAges[1]! <= 100 &&
+            savedAges[0]! <= savedAges[1]!) {
+          _minAge = savedAges[0]!;
+          _maxAge = savedAges[1]!;
         }
-        if ((me['discoveryAgeConfigured'] == true || savedAges == null) && me['discoveryMinAge'] is num && me['discoveryMaxAge'] is num) {
-          _minAge = (me['discoveryMinAge'] as num).toInt(); _maxAge = (me['discoveryMaxAge'] as num).toInt();
+        if ((me['discoveryAgeConfigured'] == true || savedAges == null) &&
+            me['discoveryMinAge'] is num &&
+            me['discoveryMaxAge'] is num) {
+          _minAge = (me['discoveryMinAge'] as num).toInt();
+          _maxAge = (me['discoveryMaxAge'] as num).toInt();
         }
         _interestedIn = (me["interestedIn"] ?? "Alla").toString();
         _radiusKm = (me["matchRadiusKm"] as num?)?.toDouble() ?? _radiusKm;
       });
       if (previousMinAge != _minAge || previousMaxAge != _maxAge) {
-        _feedRevision++; _prefetchedProfiles = []; unawaited(loadFeed());
+        _feedRevision++;
+        _prefetchedProfiles = [];
+        unawaited(loadFeed());
       }
     } catch (_) {}
   }
@@ -751,28 +780,48 @@ static const double _activeCardLift = 0;
   Future<void> _openRadiusSheet() async {
     await _loadMyFilterValues();
     if (!mounted || !AccountSession.isCurrent(_sessionGeneration)) return;
-    await showModalBottomSheet<void>(context: context, isScrollControlled: true,
-      showDragHandle: true, backgroundColor: Colors.white,
-      builder: (_) => DiscoverySettingsSheet(
-        initial: DiscoveryPreferences(interestedIn: _interestedIn, radiusKm: _radiusKm.round(), minAge: _minAge, maxAge: _maxAge),
-        onSave: (values) async {
-          final user = _preferenceUserId;
-          AccountSession.check(_sessionGeneration);
-          final preferences = user == null ? null : await SharedPreferences.getInstance();
-          await _authService.discoverySettings(update: {'radiusKm': values.radiusKm, 'interestedIn': values.interestedIn,
-            'minAge': values.minAge, 'maxAge': values.maxAge});
-          AccountSession.check(_sessionGeneration);
-          // Keep an account-scoped offline copy of the server age preferences.
-          await preferences?.setString('discovery_age_$user', '${values.minAge},${values.maxAge}');
-          if (!mounted || !AccountSession.isCurrent(_sessionGeneration)) return;
-          setState(() {
-            _feedRevision++; _prefetchedProfiles = []; profiles = []; currentIndex = 0;
-            _interestedIn = values.interestedIn; _radiusKm = values.radiusKm.toDouble();
-            _minAge = values.minAge; _maxAge = values.maxAge;
-          });
-          unawaited(loadFeed());
-        },
-      ));
+    await showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        showDragHandle: true,
+        backgroundColor: Colors.white,
+        builder: (_) => DiscoverySettingsSheet(
+              initial: DiscoveryPreferences(
+                  interestedIn: _interestedIn,
+                  radiusKm: _radiusKm.round(),
+                  minAge: _minAge,
+                  maxAge: _maxAge),
+              onSave: (values) async {
+                final user = _preferenceUserId;
+                AccountSession.check(_sessionGeneration);
+                final preferences =
+                    user == null ? null : await SharedPreferences.getInstance();
+                await _authService.discoverySettings(update: {
+                  'radiusKm': values.radiusKm,
+                  'interestedIn': values.interestedIn,
+                  'minAge': values.minAge,
+                  'maxAge': values.maxAge
+                });
+                AccountSession.check(_sessionGeneration);
+                // Keep an account-scoped offline copy of the server age preferences.
+                await preferences?.setString(
+                    'discovery_age_$user', '${values.minAge},${values.maxAge}');
+                if (!mounted || !AccountSession.isCurrent(_sessionGeneration)) {
+                  return;
+                }
+                setState(() {
+                  _feedRevision++;
+                  _prefetchedProfiles = [];
+                  profiles = [];
+                  currentIndex = 0;
+                  _interestedIn = values.interestedIn;
+                  _radiusKm = values.radiusKm.toDouble();
+                  _minAge = values.minAge;
+                  _maxAge = values.maxAge;
+                });
+                unawaited(loadFeed());
+              },
+            ));
   }
 
   Future<void> _openMatchesPage() async {
@@ -785,18 +834,20 @@ static const double _activeCardLift = 0;
     await loadUnreadStatus();
   }
 
-
   Future<void> _openAccountManagement() async {
-    await Navigator.push(context, MaterialPageRoute(builder: (_) => const AccountManagementPage()));
-    if (mounted && AccountSession.isCurrent(_sessionGeneration)) await loadFeed();
+    await Navigator.push(context,
+        MaterialPageRoute(builder: (_) => const AccountManagementPage()));
+    if (mounted && AccountSession.isCurrent(_sessionGeneration)) {
+      await loadFeed();
+    }
   }
 
   Widget _buildEmptyFeedState() => DiscoveryFeedEmpty(
-    paused: _isPaused,
-    onAction: _isPaused ? _openAccountManagement : _openRadiusSheet,
-  );
+        paused: _isPaused,
+        onAction: _isPaused ? _openAccountManagement : _openRadiusSheet,
+      );
 
-    @override
+  @override
   Widget build(BuildContext context) {
     final hasProfile = profiles.isNotEmpty && currentIndex < profiles.length;
     final currentProfile = hasProfile ? profiles[currentIndex] : null;
@@ -806,7 +857,7 @@ static const double _activeCardLift = 0;
       nextProfile = profiles[currentIndex + 1];
     }
 
-       return SwipePage(
+    return SwipePage(
       isLoading: isLoading,
       hasActiveProfile: currentProfile != null,
       hasUnreadMessages: hasUnreadMessages,
@@ -814,7 +865,6 @@ static const double _activeCardLift = 0;
       onRewind: _rewind,
       onOpenRadiusSheet: _openRadiusSheet,
       onOpenMatchesPage: _openMatchesPage,
-      onOpenEditProfile: _openEditProfile,
       onSwipeLeft: () {
         if (!_isAnimating && !isLoading) {
           _performSwipe(SwipeDir.left);
@@ -837,12 +887,12 @@ static const double _activeCardLift = 0;
       emptyState: _buildEmptyFeedState(),
     );
   }
-  
+
   Widget _buildNextCard(SwipeProfile nextProfile) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final cardWidth = constraints.maxWidth;
-        final cardHeight = constraints.maxHeight - 120;
+        final cardHeight = constraints.maxHeight;
         return Center(
           child: Transform.translate(
             offset: const Offset(0, _nextCardOffsetY),
@@ -860,16 +910,16 @@ static const double _activeCardLift = 0;
                         borderRadius: BorderRadius.circular(_cardCornerRadius),
                         child: ColorFiltered(
                           colorFilter: ColorFilter.mode(
-                            Colors.black.withOpacity(0.03),
+                            Colors.black.withValues(alpha: 0.03),
                             BlendMode.darken,
                           ),
                           child: SwipeProfileCard(
-  profile: nextProfile,
-  width: cardWidth,
-  height: cardHeight,
-  photoBarsTop: 66,
-  distanceFallbackKm: _radiusKm,
-),
+                            profile: nextProfile,
+                            width: cardWidth,
+                            height: cardHeight,
+                            photoBarsTop: 16,
+                            distanceFallbackKm: _radiusKm,
+                          ),
                         ),
                       ),
                     ),
@@ -884,26 +934,27 @@ static const double _activeCardLift = 0;
   }
 
   Widget? _getNextCard(SwipeProfile? nextProfile) {
-  if (nextProfile == null) {
-    _cachedNextCard = null;
-    _cachedNextCardUserId = null;
-    return null; 
-  }
+    if (nextProfile == null) {
+      _cachedNextCard = null;
+      _cachedNextCardUserId = null;
+      return null;
+    }
 
-  if (_cachedNextCardUserId == nextProfile.userId && _cachedNextCard != null) {
+    if (_cachedNextCardUserId == nextProfile.userId &&
+        _cachedNextCard != null) {
+      return _cachedNextCard;
+    }
+
+    _cachedNextCardUserId = nextProfile.userId;
+    _cachedNextCard = _buildNextCard(nextProfile);
     return _cachedNextCard;
   }
 
-  _cachedNextCardUserId = nextProfile.userId;
-  _cachedNextCard = _buildNextCard(nextProfile);
-  return _cachedNextCard;
-}
-
-    Widget _buildActiveCard(SwipeProfile p) {
+  Widget _buildActiveCard(SwipeProfile p) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final cardWidth = constraints.maxWidth;
-        final cardHeight = constraints.maxHeight - 120;
+        final cardHeight = constraints.maxHeight;
         return ValueListenableBuilder<Offset>(
           valueListenable: _dragNotifier,
           builder: (context, dragValue, _) {
@@ -911,8 +962,8 @@ static const double _activeCardLift = 0;
               valueListenable: _isDraggingNotifier,
               builder: (context, draggingValue, __) {
                 final activeOffset = _animOffset?.value ?? dragValue;
-                final activeRot =
-                    _animRotate?.value ?? (dragValue.dx / 520.0).clamp(-0.11, 0.11);
+                final activeRot = _animRotate?.value ??
+                    (dragValue.dx / 520.0).clamp(-0.11, 0.11);
                 final activeFade = _animFade?.value ?? 1.0;
 
                 return Center(
@@ -968,12 +1019,12 @@ static const double _activeCardLift = 0;
                                     clipBehavior: Clip.none,
                                     children: [
                                       SwipeProfileCard(
-  profile: p,
-  width: cardWidth,
-  height: cardHeight,
-  photoBarsTop: 66,
-  distanceFallbackKm: _radiusKm,
-),
+                                        profile: p,
+                                        width: cardWidth,
+                                        height: cardHeight,
+                                        photoBarsTop: 16,
+                                        distanceFallbackKm: _radiusKm,
+                                      ),
                                       if (draggingValue && !_isAnimating)
                                         _CardSwipeStamp(drag: dragValue),
                                     ],
@@ -994,9 +1045,7 @@ static const double _activeCardLift = 0;
       },
     );
   }
-
 }
-
 
 class _CardSwipeStamp extends StatelessWidget {
   final Offset drag;
@@ -1037,7 +1086,6 @@ class _CardSwipeStamp extends StatelessWidget {
                 ),
               ),
             ),
-
           if (nopeOpacity > 0 && !showSuper)
             Positioned(
               top: 118,
@@ -1054,7 +1102,6 @@ class _CardSwipeStamp extends StatelessWidget {
                 ),
               ),
             ),
-
           if (showSuper)
             Positioned(
               top: 108,
@@ -1076,4 +1123,3 @@ class _CardSwipeStamp extends StatelessWidget {
     );
   }
 }
-

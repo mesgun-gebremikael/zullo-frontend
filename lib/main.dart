@@ -1,3 +1,9 @@
+import 'services/notification_startup.dart';
+import 'widgets/localized_notification_channel.dart';
+import 'l10n/localization.dart';
+import 'l10n/app_localizations.dart';
+import 'l10n/locale_catalog.dart';
+import 'l10n/locale_controller.dart';
 import 'theme/zullo_theme.dart';
 import 'services/commerce_service.dart';
 import 'services/push_token_service.dart';
@@ -21,9 +27,6 @@ import 'services/badge_service.dart';
 import 'main_navigation.dart';
 import 'services/chat_coordinator.dart';
 import 'models/chat_open_request.dart';
-import 'services/chat_thread_cache_service.dart';
-
-
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
@@ -34,12 +37,8 @@ OverlayEntry? _activeMessageOverlay;
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
-const AndroidNotificationChannel channel = AndroidNotificationChannel(
-  'messages',
-  'Messages',
-  description: 'Chat messages',
-  importance: Importance.max,
-);
+const _messageChannelId = 'messages';
+const _messageImportance = Importance.max;
 
 Route<T> _instantRoute<T>(Widget page) {
   return PageRouteBuilder<T>(
@@ -55,19 +54,19 @@ void _hideInAppMessageOverlay() {
 }
 
 class NotificationLaunchData {
- final String userId;
- final String recipientUserId;
-final String displayName;
-final String photoUrl;
-final String messageText;
+  final String userId;
+  final String recipientUserId;
+  final String displayName;
+  final String photoUrl;
+  final String messageText;
 
- const NotificationLaunchData({
-  required this.userId,
-  required this.recipientUserId,
-  required this.displayName,
-  required this.photoUrl,
-  required this.messageText,
-});
+  const NotificationLaunchData({
+    required this.userId,
+    required this.recipientUserId,
+    required this.displayName,
+    required this.photoUrl,
+    required this.messageText,
+  });
 }
 
 NotificationLaunchData? _parseNotificationLaunch(RemoteMessage? message) {
@@ -81,43 +80,42 @@ NotificationLaunchData? _parseNotificationLaunch(RemoteMessage? message) {
   final senderUserId = data['senderUserId'];
   if (senderUserId == null || senderUserId.isEmpty) return null;
 
- return NotificationLaunchData(
-  userId: senderUserId,
-  recipientUserId: recipientUserId,
-  displayName: data['senderName'] ?? 'Chat',
-  photoUrl: data['senderPhotoUrl'] ?? '',
-  messageText: (data['messageText'] ?? message.notification?.body ?? '').toString(),
-);
+  return NotificationLaunchData(
+    userId: senderUserId,
+    recipientUserId: recipientUserId,
+    displayName: data['senderName'] ?? 'Chat',
+    photoUrl: data['senderPhotoUrl'] ?? '',
+    messageText:
+        (data['messageText'] ?? message.notification?.body ?? '').toString(),
+  );
 }
 
 Future<void> _openChatFromLaunch(NotificationLaunchData launch) async {
   final generation = AccountSession.generation;
-  final canOpen = await NotificationAccess.canOpen(launch.userId, launch.recipientUserId);
+  final canOpen =
+      await NotificationAccess.canOpen(launch.userId, launch.recipientUserId);
   if (!AccountSession.isCurrent(generation)) return;
 
   if (!canOpen) return;
 
-  final existingThread = ChatThreadCacheService.getThread(launch.userId);
+  ChatCoordinator.instance.requestOpenChat(
+    ChatOpenRequest(
+      userId: launch.userId,
+      displayName: launch.displayName,
+      photoUrl: launch.photoUrl,
+      openChatsListOnExit: true,
+      fromNotification: true,
+      forceRefreshThread: true,
+      previewMessageText: launch.messageText,
+      previewMessageAtUtc: DateTime.now().toUtc().toIso8601String(),
+    ),
+  );
 
-ChatCoordinator.instance.requestOpenChat(
- ChatOpenRequest(
-  userId: launch.userId,
-  displayName: launch.displayName,
-  photoUrl: launch.photoUrl,
-  openChatsListOnExit: true,
-  fromNotification: true,
-  forceRefreshThread: true,
-  previewMessageText: launch.messageText,
-  previewMessageAtUtc: DateTime.now().toUtc().toIso8601String(),
-),
-);
-
-navigatorKey.currentState?.pushAndRemoveUntil(
-  _instantRoute(const MainNavigation(initialIndex: AppTabs.chats)),
-  (route) => false,
-);
+  navigatorKey.currentState?.pushAndRemoveUntil(
+    _instantRoute(const MainNavigation(initialIndex: AppTabs.chats)),
+    (route) => false,
+  );
 }
-
 
 void _showInAppMessageOverlay({
   required NotificationLaunchData launch,
@@ -139,9 +137,8 @@ void _showInAppMessageOverlay({
         child: _FloatingMessageBanner(
           photoUrl: launch.photoUrl,
           senderName: launch.displayName,
-          messageText: messageText.isEmpty
-              ? 'Skickade ett meddelande'
-              : messageText,
+          messageText:
+              messageText.isEmpty ? context.l10n.sentAMessage : messageText,
           onClose: _hideInAppMessageOverlay,
           onOpen: () {
             _hideInAppMessageOverlay();
@@ -154,32 +151,27 @@ void _showInAppMessageOverlay({
 
   overlayState.insert(_activeMessageOverlay!);
 
-   Future.delayed(const Duration(seconds: 4), () {
+  Future.delayed(const Duration(seconds: 4), () {
     _hideInAppMessageOverlay();
   });
 }
 
-void _openChatFromMessage(RemoteMessage message) {
-  final launch = _parseNotificationLaunch(message);
-  if (launch == null) return;
-
-  _openChatFromLaunch(launch);
-}
-
-Future<RemoteMessage?> _prepareNotifications() async {
+Future<void> _registerNotifications() async {
   try {
-    await flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(channel);
-    await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
-      alert: true, badge: true, sound: true,
+    await FirebaseMessaging.instance
+        .setForegroundNotificationPresentationOptions(
+      alert: true,
+      badge: true,
+      sound: true,
     );
     await FirebaseMessaging.instance.requestPermission();
     // Subscribe before the first lookup: APNs may not be ready at startup.
     FirebaseMessaging.instance.onTokenRefresh.listen((token) async {
       if (token.isEmpty) return;
       try {
-        await AuthService().saveDeviceToken(token).timeout(const Duration(seconds: 5));
+        await AuthService()
+            .saveDeviceToken(token)
+            .timeout(const Duration(seconds: 5));
       } catch (_) {
         debugPrint('Pushregistrering kunde inte uppdateras.');
       }
@@ -187,20 +179,21 @@ Future<RemoteMessage?> _prepareNotifications() async {
     final token = await PushTokenService.currentToken();
     if (token != null) {
       try {
-        await AuthService().saveDeviceToken(token).timeout(const Duration(seconds: 5));
+        await AuthService()
+            .saveDeviceToken(token)
+            .timeout(const Duration(seconds: 5));
       } catch (_) {
         // A signed-out user registers again after login.
       }
     }
     try {
-      await BadgeService.refreshUnreadBadge().timeout(const Duration(seconds: 5));
+      await BadgeService.refreshUnreadBadge()
+          .timeout(const Duration(seconds: 5));
     } catch (_) {
       // Refresh again after startup when the backend is reachable.
     }
-    return await FirebaseMessaging.instance.getInitialMessage().timeout(const Duration(seconds: 5));
   } catch (_) {
     debugPrint('Push kunde inte initieras. Appen kan fortfarande användas.');
-    return null;
   }
 }
 
@@ -212,23 +205,13 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  final initialMessage = await _prepareNotifications();
-  final launchFromNotification = _parseNotificationLaunch(initialMessage);
-
-  runApp(
-    ZulloApp(
-      launchFromNotification: launchFromNotification,
-    ),
-  );
+  // Rendering starts before permission prompts, APNs, token registration or
+  // unread-count requests. Push startup runs independently after the first frame.
+  runApp(const ZulloApp());
 }
 
 class ZulloApp extends StatefulWidget {
-  final NotificationLaunchData? launchFromNotification;
-
-  const ZulloApp({
-    super.key,
-    this.launchFromNotification,
-  });
+  const ZulloApp({super.key});
 
   @override
   State<ZulloApp> createState() => _ZulloAppState();
@@ -237,10 +220,14 @@ class ZulloApp extends StatefulWidget {
 class _ZulloAppState extends State<ZulloApp> {
   String? _lastOpenedMessageId;
   StreamSubscription<int>? _sessionSubscription;
+  StreamSubscription<RemoteMessage>? _openedMessageSubscription;
+  StreamSubscription<RemoteMessage>? _foregroundMessageSubscription;
 
   @override
   void dispose() {
     _sessionSubscription?.cancel();
+    _openedMessageSubscription?.cancel();
+    _foregroundMessageSubscription?.cancel();
     super.dispose();
   }
 
@@ -250,29 +237,53 @@ class _ZulloAppState extends State<ZulloApp> {
     _sessionSubscription = AccountSession.changes.listen((_) {
       _hideInAppMessageOverlay();
       _lastOpenedMessageId = null;
-      unawaited(flutterLocalNotificationsPlugin.cancelAll().catchError((Object _) {}));
+      unawaited(flutterLocalNotificationsPlugin
+          .cancelAll()
+          .catchError((Object _) {}));
       unawaited(AppBadgePlus.updateBadge(0).catchError((Object _) {}));
     });
+    unawaited(LocaleController.instance.load());
     _setupNotificationTapHandling();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      unawaited(NotificationStartup(
+        register: _registerNotifications,
+        initialMessage: FirebaseMessaging.instance.getInitialMessage,
+      ).start());
+    });
   }
 
-  Future<bool> _handleSuperLike(RemoteMessage message, {required bool open}) async {
+  Future<bool> _handleSuperLike(RemoteMessage message,
+      {required bool open}) async {
     if (message.data['type'] != 'super_like') return false;
     final generation = AccountSession.generation;
-    if (!await NotificationAccess.isCurrentRecipient(message.data['recipientUserId'] ?? '') || !AccountSession.isCurrent(generation)) return true;
+    if (!await NotificationAccess.isCurrentRecipient(
+            message.data['recipientUserId'] ?? '') ||
+        !AccountSession.isCurrent(generation)) {
+      return true;
+    }
     CommerceEvents.refreshDiscovery();
     void showDiscovery() {
       if (!AccountSession.isCurrent(generation)) return;
       navigatorKey.currentState?.popUntil((route) => route.isFirst);
       CommerceEvents.openDiscovery();
     }
-    if (open) { showDiscovery(); }
-    else { scaffoldMessengerKey.currentState?.showSnackBar(SnackBar(content: const Text('Du har fått en Superlike ⭐'), action: SnackBarAction(label: 'Visa', onPressed: showDiscovery))); }
+
+    if (!mounted) return true;
+    if (open) {
+      showDiscovery();
+    } else {
+      scaffoldMessengerKey.currentState?.showSnackBar(SnackBar(
+          content: Text(context.l10n.youReceivedASuperlike),
+          action: SnackBarAction(
+              label: context.l10n.show, onPressed: showDiscovery)));
+    }
     return true;
   }
 
-   Future<void> _setupNotificationTapHandling() async {
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) async {
+  Future<void> _setupNotificationTapHandling() async {
+    _openedMessageSubscription = FirebaseMessaging.onMessageOpenedApp
+        .listen((RemoteMessage message) async {
       if (await _handleSuperLike(message, open: true)) return;
       if (_lastOpenedMessageId == message.messageId) return;
       _lastOpenedMessageId = message.messageId;
@@ -283,12 +294,14 @@ class _ZulloAppState extends State<ZulloApp> {
       _openChatFromLaunch(launch);
     });
 
-            FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
+    _foregroundMessageSubscription =
+        FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
       if (await _handleSuperLike(message, open: false)) return;
       final generation = AccountSession.generation;
       final launch = _parseNotificationLaunch(message);
       if (launch == null) return;
-      final allowed = await NotificationAccess.canOpen(launch.userId, launch.recipientUserId);
+      final allowed = await NotificationAccess.canOpen(
+          launch.userId, launch.recipientUserId);
       if (!allowed || !AccountSession.isCurrent(generation)) return;
 
       if (CurrentChat.openUserId == launch.userId) {
@@ -302,10 +315,11 @@ class _ZulloAppState extends State<ZulloApp> {
 
       // A slow unread-count request must not hide an arriving message banner.
       unawaited(BadgeService.refreshUnreadBadge()
-          .timeout(const Duration(seconds: 5)).catchError((Object _) {}));
+          .timeout(const Duration(seconds: 5))
+          .catchError((Object _) {}));
 
-            if (!AccountSession.isCurrent(generation)) return;
-            _showInAppMessageOverlay(
+      if (!AccountSession.isCurrent(generation)) return;
+      _showInAppMessageOverlay(
         launch: launch,
         messageText: messageText,
       );
@@ -314,16 +328,35 @@ class _ZulloAppState extends State<ZulloApp> {
 
   @override
   Widget build(BuildContext context) {
-     final initialHome = const SplashPage(skipNavigation: false);
+    final initialHome = const SplashPage(skipNavigation: false);
 
-
-
-        return MaterialApp(
-      navigatorKey: navigatorKey,
-      scaffoldMessengerKey: scaffoldMessengerKey,
-      debugShowCheckedModeBanner: false,
-      theme: zulloTheme(),
-      home: initialHome,
+    return AnimatedBuilder(
+      animation: LocaleController.instance,
+      builder: (context, _) => MaterialApp(
+        locale: LocaleController.instance.locale,
+        supportedLocales: LocaleCatalog.supported,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localeListResolutionCallback: LocaleCatalog.resolve,
+        navigatorKey: navigatorKey,
+        scaffoldMessengerKey: scaffoldMessengerKey,
+        debugShowCheckedModeBanner: false,
+        theme: zulloTheme(),
+        builder: (context, child) => LocalizedNotificationChannel(
+          onChange: (name, description) async {
+            await flutterLocalNotificationsPlugin
+                .resolvePlatformSpecificImplementation<
+                    AndroidFlutterLocalNotificationsPlugin>()
+                ?.createNotificationChannel(AndroidNotificationChannel(
+                  _messageChannelId,
+                  name,
+                  description: description,
+                  importance: _messageImportance,
+                ));
+          },
+          child: child ?? const SizedBox.shrink(),
+        ),
+        home: initialHome,
+      ),
     );
   }
 }
@@ -340,8 +373,8 @@ class WelcomeScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
-              'ZULLO',
+            Text(
+              context.l10n.zullo,
               style: TextStyle(
                 fontSize: 40,
                 fontWeight: FontWeight.bold,
@@ -349,8 +382,8 @@ class WelcomeScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'Find someone who shares your culture, values, and future.',
+            Text(
+              context.l10n.findSomeoneWhoSharesYourCultureValuesAndFuture,
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 16, color: Colors.black87),
             ),
@@ -366,7 +399,7 @@ class WelcomeScreen extends StatelessWidget {
                     ),
                   );
                 },
-                child: const Text('Create account'),
+                child: Text(context.l10n.createAccount),
               ),
             ),
             const SizedBox(height: 12),
@@ -381,7 +414,7 @@ class WelcomeScreen extends StatelessWidget {
                     ),
                   );
                 },
-                child: const Text('Log in'),
+                child: Text(context.l10n.logIn),
               ),
             ),
           ],
@@ -531,12 +564,13 @@ class _FloatingMessageBannerState extends State<_FloatingMessageBanner>
                                   borderRadius: BorderRadius.circular(22),
                                   color: const Color(0xCC101114),
                                   border: Border.all(
-                                    color: Colors.white.withOpacity(0.15),
+                                    color: Colors.white.withValues(alpha: 0.15),
                                     width: 0.9,
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withOpacity(0.24),
+                                      color:
+                                          Colors.black.withValues(alpha: 0.24),
                                       blurRadius: 24,
                                       offset: const Offset(0, 10),
                                     ),
@@ -562,7 +596,7 @@ class _FloatingMessageBannerState extends State<_FloatingMessageBanner>
                                           boxShadow: [
                                             BoxShadow(
                                               color: const Color(0xFFFF5A5F)
-                                                  .withOpacity(0.18),
+                                                  .withValues(alpha: 0.18),
                                               blurRadius: 8,
                                               offset: const Offset(0, 2),
                                             ),
@@ -572,10 +606,10 @@ class _FloatingMessageBannerState extends State<_FloatingMessageBanner>
                                           radius: 21,
                                           backgroundColor:
                                               const Color(0xFF17181A),
-                                          backgroundImage:
-                                              widget.photoUrl.isNotEmpty
-                                                  ? NetworkImage(widget.photoUrl)
-                                                  : null,
+                                          backgroundImage: widget
+                                                  .photoUrl.isNotEmpty
+                                              ? NetworkImage(widget.photoUrl)
+                                              : null,
                                           child: widget.photoUrl.isEmpty
                                               ? const Icon(
                                                   Icons.person,
@@ -619,18 +653,20 @@ class _FloatingMessageBannerState extends State<_FloatingMessageBanner>
                                                   ),
                                                   decoration: BoxDecoration(
                                                     color: Colors.white
-                                                        .withOpacity(0.08),
+                                                        .withValues(
+                                                            alpha: 0.08),
                                                     borderRadius:
                                                         BorderRadius.circular(
                                                             999),
                                                     border: Border.all(
                                                       color: Colors.white
-                                                          .withOpacity(0.09),
+                                                          .withValues(
+                                                              alpha: 0.09),
                                                       width: 0.8,
                                                     ),
                                                   ),
-                                                  child: const Text(
-                                                    'Nu',
+                                                  child: Text(
+                                                    context.l10n.now,
                                                     style: TextStyle(
                                                       color: Colors.white70,
                                                       fontSize: 10,

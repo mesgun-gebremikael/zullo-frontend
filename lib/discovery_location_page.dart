@@ -1,3 +1,4 @@
+import 'l10n/localization.dart';
 import 'package:flutter/material.dart';
 import 'services/account_session.dart';
 import 'services/auth_service.dart';
@@ -98,15 +99,15 @@ class _DiscoveryLocationPageState extends State<DiscoveryLocationPage> {
   @override
   Widget build(BuildContext context) => Scaffold(
       backgroundColor: const Color(0xFFF7F8FA),
-      appBar: AppBar(title: const Text('Plats & upptäckt')),
+      appBar: AppBar(title: Text(context.l10n.locationDiscovery)),
       body: settings == null
           ? Center(
               child: error == null
                   ? const CircularProgressIndicator()
                   : Column(mainAxisSize: MainAxisSize.min, children: [
-                      Text(error!),
+                      Text(context.tr(error!)),
                       TextButton(
-                          onPressed: _load, child: const Text('Försök igen'))
+                          onPressed: _load, child: Text(context.l10n.tryAgain))
                     ]))
           : ListView(padding: const EdgeInsets.all(20), children: [
               if (busy)
@@ -116,7 +117,7 @@ class _DiscoveryLocationPageState extends State<DiscoveryLocationPage> {
               if (error != null)
                 Padding(
                     padding: const EdgeInsets.only(bottom: 16),
-                    child: Text(error!,
+                    child: Text(context.tr(error!),
                         style: const TextStyle(color: Colors.red))),
               Container(
                   padding: const EdgeInsets.all(20),
@@ -131,8 +132,8 @@ class _DiscoveryLocationPageState extends State<DiscoveryLocationPage> {
                         const SizedBox(height: 14),
                         Text(
                             settings!['automaticLocation'] == true
-                                ? 'Din aktuella plats'
-                                : 'Din sparade plats',
+                                ? context.l10n.currentLocation
+                                : context.l10n.savedLocation,
                             style: TextStyle(
                                 fontSize: 22, fontWeight: FontWeight.w800)),
                         const SizedBox(height: 8),
@@ -141,22 +142,21 @@ class _DiscoveryLocationPageState extends State<DiscoveryLocationPage> {
                                         ?.isNotEmpty ==
                                     true
                                 ? settings!['locationName']
-                                : 'Plats är inte aktiverad',
+                                : context.l10n.locationIsTurnedOff,
                             style: const TextStyle(fontSize: 17)),
                         const SizedBox(height: 10),
-                        const Text(
-                            'Upptäck personer nära dig, även när du reser. Din exakta position visas inte för andra.'),
+                        Text(context.l10n
+                            .discoverPeopleNearbyEvenWhenYouTravelYourExactLocation),
                         const SizedBox(height: 18),
                         FilledButton.icon(
                             onPressed: busy ? null : _updatePlace,
                             icon: const Icon(Icons.my_location_rounded),
-                            label: const Text('Uppdatera min plats')),
+                            label: Text(context.l10n.updateMyLocation)),
                         SwitchListTile.adaptive(
                             contentPadding: EdgeInsets.zero,
-                            title:
-                                const Text('Uppdatera när jag använder appen'),
-                            subtitle: const Text(
-                                'Ingen platsuppdatering i bakgrunden.'),
+                            title: Text(context.l10n.updateWhileIUseTheApp),
+                            subtitle: Text(context
+                                .l10n.yourLocationIsNotUpdatedInTheBackground),
                             value: settings!['automaticLocation'] == true,
                             onChanged: busy
                                 ? null
@@ -176,18 +176,17 @@ class _DiscoveryLocationPageState extends State<DiscoveryLocationPage> {
                   'expandAge'),
               const SizedBox(height: 18),
               Text(
-                  'Ditt val: ${settings!['radiusKm']} km · ${settings!['minAge']}–${settings!['maxAge']} år',
+                  context.l10n.yourPreferencesValue0KmAgesValue1Value2((settings!['radiusKm']).toString(), (settings!['minAge']).toString(), (settings!['maxAge']).toString()),
                   style: const TextStyle(color: Color(0xFF697180))),
               const SizedBox(height: 8),
-              const Text(
-                  'Ändra avstånd, ålder och vem du vill träffa via filtret i Upptäck.'),
+              Text(context.l10n.changeYourDistanceAgeRangeAndWhoYouWantTo),
             ]));
   Widget _option(String title, String subtitle, String key) => DecoratedBox(
       decoration: BoxDecoration(
           color: Colors.white, borderRadius: BorderRadius.circular(22)),
       child: SwitchListTile.adaptive(
-          title:
-              Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
+          title: Text(context.tr(title),
+              style: const TextStyle(fontWeight: FontWeight.w700)),
           subtitle: Text(subtitle),
           value: settings![key] == true,
           onChanged: busy ? null : (value) => _save({key: value})));

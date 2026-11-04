@@ -1,3 +1,4 @@
+import 'l10n/localization.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'services/auth_service.dart';
@@ -74,7 +75,7 @@ class _RegisterPageState extends State<RegisterPage> {
         canPop: !_isSubmitting,
         child: Scaffold(
           appBar: AppBar(
-            title: const Text('Create account'),
+            title: Text(context.l10n.createAccount),
             automaticallyImplyLeading: !_isSubmitting,
           ),
           body: SingleChildScrollView(
@@ -82,8 +83,8 @@ class _RegisterPageState extends State<RegisterPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Text(
-                  'Create account',
+                Text(
+                  context.l10n.createAccount,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 28,
@@ -91,24 +92,24 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'Join ZULLO today',
+                Text(
+                  context.l10n.joinZulloToday,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 32),
                 TextField(
                   controller: emailController,
                   textInputAction: TextInputAction.next,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
+                  decoration: InputDecoration(
+                    labelText: context.l10n.email,
                   ),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: passwordController,
                   obscureText: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Password',
+                  decoration: InputDecoration(
+                    labelText: context.l10n.password,
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -117,7 +118,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   child: ElevatedButton(
                     onPressed: _isSubmitting ? null : _submit,
                     child: _isSubmitting
-                        ? const Row(
+                        ?  Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                                 SizedBox(
@@ -126,21 +127,21 @@ class _RegisterPageState extends State<RegisterPage> {
                                     child: CircularProgressIndicator(
                                         strokeWidth: 2)),
                                 SizedBox(width: 12),
-                                Text('Skapar ditt konto…')
+                                Text(context.l10n.creatingAccount)
                               ])
-                        : const Text('Create account'),
+                        : Text(context.l10n.createAccount),
                   ),
                 ),
                 if (_isSubmitting)
-                  const Padding(
+                   Padding(
                       padding: EdgeInsets.only(top: 12),
                       child: Text(
-                          'Väntar på servern. Första anslutningen kan ta en stund.',
+                          context.l10n.waitingForTheServerTheFirstConnectionMayTakeA,
                           textAlign: TextAlign.center)),
                 if (_error != null)
                   Padding(
                       padding: const EdgeInsets.only(top: 12),
-                      child: Text(_error!,
+                      child: Text(context.tr(_error!),
                           style: TextStyle(
                               color: Theme.of(context).colorScheme.error),
                           semanticsLabel: _error)),
@@ -151,7 +152,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       : () {
                           Navigator.pop(context);
                         },
-                  child: const Text('Already have an account? Log in'),
+                  child: Text(context.l10n.alreadyHaveAnAccountLogIn),
                 ),
               ],
             ),

@@ -102,7 +102,8 @@ class OnboardingData {
         'childrenCount': childrenCount,
         'wantChildren': wantChildren,
         'bio': bio,
-        'promptKey': promptKey, 'promptAnswer': promptAnswer,
+        'promptKey': promptKey,
+        'promptAnswer': promptAnswer,
         'birthDate': birthDate?.toIso8601String().split('T').first,
         'heightCm': heightCm,
         'distanceKm': distanceKm,
@@ -148,8 +149,10 @@ class OnboardingData {
     data.wantChildren =
         draft['wantChildren'] is String ? draft['wantChildren'] as String : '';
     data.bio = draft['bio'] is String ? draft['bio'] as String : '';
-    data.promptKey = draft['promptKey'] is String ? draft['promptKey'] as String : '';
-    data.promptAnswer = draft['promptAnswer'] is String ? draft['promptAnswer'] as String : '';
+    data.promptKey =
+        draft['promptKey'] is String ? draft['promptKey'] as String : '';
+    data.promptAnswer =
+        draft['promptAnswer'] is String ? draft['promptAnswer'] as String : '';
     data.birthDate = DateTime.tryParse(draft['birthDate']?.toString() ?? '');
     data.heightCm = draft['heightCm'] is int ? draft['heightCm'] as int : null;
     data.distanceKm = draft['distanceKm'] is int
@@ -184,7 +187,8 @@ class OnboardingData {
       'interestedIn': interestedIn,
       'matchRadiusKm': distanceKm,
       'bio': bio,
-      'promptKey': promptKey, 'promptAnswer': promptAnswer,
+      'promptKey': promptKey,
+      'promptAnswer': promptAnswer,
       'photoUrls': List<String>.from(photoUrls),
       'interests': <String>[],
       'intention': intention,

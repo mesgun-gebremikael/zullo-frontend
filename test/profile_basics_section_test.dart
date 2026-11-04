@@ -3,7 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:zullo_app/widgets/profile_basics_section.dart';
 
 void main() {
-  testWidgets('compact layout preserves existing identity and edits presentation', (tester) async {
+  testWidgets(
+      'compact layout preserves existing identity and edits presentation',
+      (tester) async {
     tester.view.physicalSize = const Size(320, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -12,9 +14,13 @@ void main() {
     final age = TextEditingController(text: '29');
     final gender = TextEditingController(text: 'Egen benämning');
     final bio = TextEditingController(text: 'Musik och promenader');
-    await tester.pumpWidget(MaterialApp(home: Scaffold(body: SingleChildScrollView(
-      child: Padding(padding: const EdgeInsets.all(16), child:
-        ProfileBasicsSection(name: name, age: age, gender: gender, bio: bio))))));
+    await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+            body: SingleChildScrollView(
+                child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: ProfileBasicsSection(
+                        name: name, age: age, gender: gender, bio: bio))))));
     expect(find.text('Namn (display)'), findsNothing);
     expect(find.text('Förnamn'), findsOneWidget);
     expect(find.text('Egen benämning'), findsOneWidget);
@@ -25,6 +31,8 @@ void main() {
     expect(gender.text, 'Egen benämning');
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox());
-    for (final controller in [name, age, gender, bio]) { controller.dispose(); }
+    for (final controller in [name, age, gender, bio]) {
+      controller.dispose();
+    }
   });
 }

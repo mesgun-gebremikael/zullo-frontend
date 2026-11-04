@@ -21,8 +21,10 @@ class ChatCoordinator {
     _openChatController.add(request);
   }
 
-  ChatOpenRequest? consumePendingRequest() {
+  ChatOpenRequest? consumePendingRequest({ChatOpenRequest? expected}) {
     final request = _pendingRequest;
+    // An older stream event must not acknowledge a newer queued request.
+    if (expected != null && !identical(request, expected)) return null;
     _pendingRequest = null;
     return request;
   }

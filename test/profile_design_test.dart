@@ -67,7 +67,9 @@ void main() {
       addTearDown(() => tester.binding.setSurfaceSize(null));
       final key = GlobalKey();
       var actions = 0;
-      await tester.pumpWidget(MaterialApp(theme: zulloTheme(), home: MediaQuery(
+      await tester.pumpWidget(MaterialApp(
+          theme: zulloTheme(),
+          home: MediaQuery(
               data: MediaQueryData(textScaler: TextScaler.linear(scale)),
               child: RepaintBoundary(
                   key: key,
@@ -100,11 +102,12 @@ void main() {
           emptyState: DiscoveryFeedEmpty(paused: false, onAction: () {}),
           onOpenRadiusSheet: () {},
           onOpenMatchesPage: () {},
-          onOpenEditProfile: () {},
           onSwipeLeft: () {},
           onSwipeUp: () {},
           onSwipeRight: () {});
-      await tester.pumpWidget(MaterialApp(theme: zulloTheme(), home: MediaQuery(
+      await tester.pumpWidget(MaterialApp(
+          theme: zulloTheme(),
+          home: MediaQuery(
               data: MediaQueryData(textScaler: TextScaler.linear(scale)),
               child: RepaintBoundary(
                   key: key,
@@ -149,7 +152,9 @@ void main() {
       'livePlace': 'Stockholm'
     });
     final key = GlobalKey();
-    await tester.pumpWidget(MaterialApp(theme: zulloTheme(), home: RepaintBoundary(
+    await tester.pumpWidget(MaterialApp(
+        theme: zulloTheme(),
+        home: RepaintBoundary(
             key: key,
             child: Scaffold(
                 body: SingleChildScrollView(
@@ -160,7 +165,7 @@ void main() {
         tester.widget<SelectableText>(find.byType(SelectableText)).data, story);
     await capture(tester, key, 'presentation');
     await tester.ensureVisible(find.text('Träning: Ofta'));
-    expect(find.text('Kristen'), findsOneWidget);
+    expect(find.text('Kristendom'), findsOneWidget);
     expect(find.text('Intressen'), findsNothing);
     expect(tester.takeException(), isNull);
   });
@@ -169,7 +174,9 @@ void main() {
       (tester) async {
     await tester.binding.setSurfaceSize(const Size(320, 640));
     addTearDown(() => tester.binding.setSurfaceSize(null));
-    await tester.pumpWidget(MaterialApp(theme: zulloTheme(), home: MediaQuery(
+    await tester.pumpWidget(MaterialApp(
+        theme: zulloTheme(),
+        home: MediaQuery(
             data: const MediaQueryData(textScaler: TextScaler.linear(1.6)),
             child: EditProfilePage(authService: PreviewAuth()))));
     await tester.pumpAndSettle();
@@ -181,7 +188,9 @@ void main() {
   });
   testWidgets('profile preview refreshes edited bio and opens the full profile',
       (tester) async {
-    await tester.pumpWidget(MaterialApp(theme: zulloTheme(), home: EditProfilePage(
+    await tester.pumpWidget(MaterialApp(
+        theme: zulloTheme(),
+        home: EditProfilePage(
             authService: PreviewAuth(), startInPreviewMode: true)));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Redigera'));

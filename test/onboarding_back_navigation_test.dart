@@ -92,7 +92,7 @@ void main() {
       expect(navigator.currentState!.canPop(), isFalse);
       expect(currentAuth.token, isNull);
       expect(tester.takeException(), isNull);
-      await tester.tap(find.text('Create account'));
+      await tester.tap(find.text('Skapa konto'));
       await tester.pumpAndSettle();
       expect(find.byType(RegisterPage), findsOneWidget);
     });

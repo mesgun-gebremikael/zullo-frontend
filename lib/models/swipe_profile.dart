@@ -15,7 +15,7 @@ class SwipeProfile {
   final String smoking;
   final String pets;
 
-    final int? heightCm;
+  final int? heightCm;
 
   final String relationshipHistory;
   final String zodiacSign;
@@ -34,7 +34,7 @@ class SwipeProfile {
 
   final String livePlace;
   final String originPlace;
-  
+
   final List<String> interests;
   final double distanceKm;
 
@@ -47,12 +47,15 @@ class SwipeProfile {
     required this.intention,
     required this.photoUrls,
     required this.bio,
-    this.promptKey = "", this.promptAnswer = "", this.outsideDistance = false, this.outsideAge = false,
+    this.promptKey = "",
+    this.promptAnswer = "",
+    this.outsideDistance = false,
+    this.outsideAge = false,
     required this.religion,
     required this.workout,
     required this.smoking,
     required this.pets,
-        required this.heightCm,
+    required this.heightCm,
     required this.relationshipHistory,
     required this.zodiacSign,
     required this.alcohol,
@@ -86,14 +89,15 @@ class SwipeProfile {
       intention: (json['intention'] ?? '').toString(),
       photoUrls: photos,
       bio: (json['bio'] ?? '').toString(),
-      promptKey: (json['promptKey'] ?? '').toString(), promptAnswer: (json['promptAnswer'] ?? '').toString(),
-      outsideDistance: json['outsideDistance'] == true, outsideAge: json['outsideAge'] == true,
+      promptKey: (json['promptKey'] ?? '').toString(),
+      promptAnswer: (json['promptAnswer'] ?? '').toString(),
+      outsideDistance: json['outsideDistance'] == true,
+      outsideAge: json['outsideAge'] == true,
       religion: (json['religion'] ?? '').toString(),
       workout: (json['workout'] ?? '').toString(),
       smoking: (json['smoking'] ?? '').toString(),
       pets: (json['pets'] ?? '').toString(),
-
-            heightCm: (json['heightCm'] as num?)?.toInt(),
+      heightCm: (json['heightCm'] as num?)?.toInt(),
       relationshipHistory: (json['relationshipHistory'] ?? '').toString(),
       zodiacSign: (json['zodiacSign'] ?? '').toString(),
       alcohol: (json['alcohol'] ?? '').toString(),
@@ -107,11 +111,8 @@ class SwipeProfile {
       jobTitle: (json['jobTitle'] ?? '').toString(),
       livePlace: (json['livePlace'] ?? '').toString(),
       originPlace: (json['originPlace'] ?? '').toString(),
-
       interests: interests,
       distanceKm: (json['distanceKm'] as num?)?.toDouble() ?? 0,
     );
   }
 }
-
-

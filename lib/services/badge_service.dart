@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 
 import 'package:app_badge_plus/app_badge_plus.dart';
 import 'auth_service.dart';
@@ -20,8 +21,8 @@ class BadgeService {
       }
 
       await AppBadgePlus.updateBadge(unreadTotal);
-    } catch (e) {
-      print('Badge refresh error: $e');
+    } catch (_) {
+      debugPrint('Unread badge refresh failed.');
     }
   }
 }

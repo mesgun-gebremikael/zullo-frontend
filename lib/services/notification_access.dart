@@ -7,8 +7,11 @@ class NotificationAccess {
     final generation = AccountSession.generation;
     try {
       final user = await AuthStorage().getUserId();
-      return AccountSession.isCurrent(generation) && AccountSession.notificationBelongsTo(recipient, user);
-    } catch (_) { return false; }
+      return AccountSession.isCurrent(generation) &&
+          AccountSession.notificationBelongsTo(recipient, user);
+    } catch (_) {
+      return false;
+    }
   }
 
   static Future<bool> canOpen(String peer, String recipient,

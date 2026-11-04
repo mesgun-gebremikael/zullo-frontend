@@ -1,3 +1,4 @@
+import 'l10n/localization.dart';
 import 'services/profile_images.dart';
 import 'package:flutter/material.dart';
 
@@ -67,7 +68,7 @@ class ProfilePhotoPreviewPage extends StatelessWidget {
                       width: 44,
                       height: 44,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.12),
+                        color: Colors.white.withValues(alpha: 0.12),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -76,10 +77,10 @@ class ProfilePhotoPreviewPage extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const Expanded(
+                   Expanded(
                     child: Center(
                       child: Text(
-                        "Min profil",
+                        context.l10n.myProfile,
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 22,
@@ -112,9 +113,9 @@ class ProfilePhotoPreviewPage extends StatelessWidget {
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          Colors.black.withOpacity(0.08),
-                          Colors.black.withOpacity(0.20),
-                          Colors.black.withOpacity(0.82),
+                          Colors.black.withValues(alpha: 0.08),
+                          Colors.black.withValues(alpha: 0.20),
+                          Colors.black.withValues(alpha: 0.82),
                         ],
                       ),
                     ),
@@ -170,10 +171,11 @@ class ProfilePhotoPreviewPage extends StatelessWidget {
                                     vertical: 10,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.14),
+                                    color: Colors.white.withValues(alpha: 0.14),
                                     borderRadius: BorderRadius.circular(24),
                                     border: Border.all(
-                                      color: Colors.white.withOpacity(0.10),
+                                      color:
+                                          Colors.white.withValues(alpha: 0.10),
                                     ),
                                   ),
                                   child: Text(
