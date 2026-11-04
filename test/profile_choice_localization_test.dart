@@ -90,7 +90,8 @@ void main() {
       await tester.pumpAndSettle();
       final context = tester.element(find.byType(SwipeProfileCard));
       final strings = AppLocalizations.of(context);
-      expect(find.text('Man 24'), findsOneWidget);
+      expect(find.text('Man'), findsOneWidget);
+      expect(find.text('24'), findsOneWidget);
       expect(find.text('${strings.currentCity} · Aldrig'), findsOneWidget);
       expect(find.text(strings.value0Km('12')), findsOneWidget);
       final box = tester.getRect(find.byType(SwipeProfileCard));

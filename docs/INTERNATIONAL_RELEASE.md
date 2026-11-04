@@ -19,3 +19,9 @@ Backend companion PR21 adds safe blocked-card snapshots and seven prompt identif
 ## Release limits
 
 Automated catalog checks establish structural completeness, not native-speaker certification. Translations are authored and reviewed with AI; native linguistic review of all offered languages remains a release QA task. Device checks remain required for layout/font shaping, permission-denied and allowed GPS flows, location changes, actual photos/uploads, push delivery and existing-v9 secure-storage migration. Store signing and Apple/APNs provisioning remain prerequisites; Android debug/simulator success does not establish store readiness. Do not call the release perfect or fully ready until these checks are completed.
+
+## Startup and notification routing
+
+Push registration starts after the first rendered frame. Permission, APNs, device-token saving and unread-count waits do not delay the first screen. Initial-message lookup runs independently with a five-second timeout. A cold notification queues a chat only after current-recipient, relation access and account-generation checks; normal startup still chooses login, onboarding or the authenticated app. Session changes discard stale requests. Live navigation acknowledges only the matching pending request, avoiding stale reopening without consuming a newer notification. Warm notification subscriptions are disposed with the app state.
+
+The localized channel wrapper owns Android channel labels and updates them after rendering and language changes. Its native failures cannot block the UI; channel identity and importance remain stable.

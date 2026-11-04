@@ -145,6 +145,7 @@ class _MainNavigationState extends State<MainNavigation>
 
     _openChatSubscription =
         ChatCoordinator.instance.openChatStream.listen((request) async {
+      ChatCoordinator.instance.consumePendingRequest(expected: request);
       await _handleOpenChatRequest(request);
     });
 

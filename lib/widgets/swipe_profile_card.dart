@@ -475,11 +475,6 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
 
     return Stack(
       children: [
-        PositionedDirectional(
-          end: 20,
-          bottom: 188,
-          child: _detailsButton(profile),
-        ),
         Positioned(
           left: 20,
           right: 20,
@@ -488,7 +483,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildBottomName(profile.displayName, profile.age),
+              _buildBottomName(profile),
               const SizedBox(height: 8),
               _infoRow(
                 icon: Icons.location_on_outlined,
@@ -516,11 +511,6 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
 
     return Stack(
       children: [
-        PositionedDirectional(
-          end: 20,
-          bottom: 188,
-          child: _detailsButton(profile),
-        ),
         Positioned(
           left: 20,
           right: 20,
@@ -529,7 +519,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildBottomName(profile.displayName, profile.age),
+              _buildBottomName(profile),
               const SizedBox(height: 8),
               if (hasOrigin)
                 Padding(
@@ -606,11 +596,6 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
 
     return Stack(
       children: [
-        PositionedDirectional(
-          end: 20,
-          bottom: 188,
-          child: _detailsButton(profile),
-        ),
         Positioned(
           left: 20,
           right: 20,
@@ -619,7 +604,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildBottomName(profile.displayName, profile.age),
+              _buildBottomName(profile),
               const SizedBox(height: 8),
               _sectionTitle(
                 icon: Icons.tune_rounded,
@@ -676,11 +661,6 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
 
     return Stack(
       children: [
-        PositionedDirectional(
-          end: 20,
-          bottom: 188,
-          child: _detailsButton(profile),
-        ),
         Positioned(
           left: 20,
           right: 20,
@@ -689,7 +669,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildBottomName(profile.displayName, profile.age),
+              _buildBottomName(profile),
               const SizedBox(height: 18),
               if (details.isNotEmpty)
                 ...details.map((item) {
@@ -724,11 +704,6 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
 
     return Stack(
       children: [
-        PositionedDirectional(
-          end: 20,
-          bottom: 188,
-          child: _detailsButton(profile),
-        ),
         Positioned(
           left: 20,
           right: 20,
@@ -737,7 +712,7 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildBottomName(profile.displayName, profile.age),
+              _buildBottomName(profile),
               const SizedBox(height: 8),
 
               // 🔍 Titel som Tinder
@@ -831,20 +806,29 @@ class _SwipeProfileCardState extends State<SwipeProfileCard> {
     );
   }
 
-  Widget _buildBottomName(String name, int age) {
-    return Text(
-      "$name $age",
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-      style: const TextStyle(
-        color: Colors.white,
-        fontSize: 28,
-        fontWeight: FontWeight.w800,
-        height: 1.0,
-        letterSpacing: -0.4,
-      ),
-    );
-  }
+  Widget _buildBottomName(SwipeProfile profile) => Row(
+        children: [
+          Expanded(
+              child: DefaultTextStyle(
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 28,
+              fontWeight: FontWeight.w800,
+              height: 1.0,
+              letterSpacing: -0.4,
+            ),
+            child: Row(children: [
+              Flexible(
+                  child: Text(profile.displayName,
+                      maxLines: 1, overflow: TextOverflow.ellipsis)),
+              const SizedBox(width: 8),
+              Text(profile.age.toString(), maxLines: 1),
+            ]),
+          )),
+          const SizedBox(width: 12),
+          _detailsButton(profile),
+        ],
+      );
 
   Widget _religionRow(String religion) {
     return Row(

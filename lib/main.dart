@@ -1,3 +1,4 @@
+import 'services/notification_startup.dart';
 import 'widgets/localized_notification_channel.dart';
 import 'l10n/localization.dart';
 import 'l10n/app_localizations.dart';
@@ -36,12 +37,8 @@ OverlayEntry? _activeMessageOverlay;
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
-const AndroidNotificationChannel channel = AndroidNotificationChannel(
-  'messages',
-  'Messages',
-  description: 'Chat messages',
-  importance: Importance.max,
-);
+const _messageChannelId = 'messages';
+const _messageImportance = Importance.max;
 
 Route<T> _instantRoute<T>(Widget page) {
   return PageRouteBuilder<T>(
@@ -159,12 +156,8 @@ void _showInAppMessageOverlay({
   });
 }
 
-Future<RemoteMessage?> _prepareNotifications() async {
+Future<void> _registerNotifications() async {
   try {
-    await flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(channel);
     await FirebaseMessaging.instance
         .setForegroundNotificationPresentationOptions(
       alert: true,
@@ -199,12 +192,8 @@ Future<RemoteMessage?> _prepareNotifications() async {
     } catch (_) {
       // Refresh again after startup when the backend is reachable.
     }
-    return await FirebaseMessaging.instance
-        .getInitialMessage()
-        .timeout(const Duration(seconds: 5));
   } catch (_) {
     debugPrint('Push kunde inte initieras. Appen kan fortfarande användas.');
-    return null;
   }
 }
 
@@ -216,23 +205,13 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  final initialMessage = await _prepareNotifications();
-  final launchFromNotification = _parseNotificationLaunch(initialMessage);
-
-  runApp(
-    ZulloApp(
-      launchFromNotification: launchFromNotification,
-    ),
-  );
+  // Rendering starts before permission prompts, APNs, token registration or
+  // unread-count requests. Push startup runs independently after the first frame.
+  runApp(const ZulloApp());
 }
 
 class ZulloApp extends StatefulWidget {
-  final NotificationLaunchData? launchFromNotification;
-
-  const ZulloApp({
-    super.key,
-    this.launchFromNotification,
-  });
+  const ZulloApp({super.key});
 
   @override
   State<ZulloApp> createState() => _ZulloAppState();
@@ -241,10 +220,14 @@ class ZulloApp extends StatefulWidget {
 class _ZulloAppState extends State<ZulloApp> {
   String? _lastOpenedMessageId;
   StreamSubscription<int>? _sessionSubscription;
+  StreamSubscription<RemoteMessage>? _openedMessageSubscription;
+  StreamSubscription<RemoteMessage>? _foregroundMessageSubscription;
 
   @override
   void dispose() {
     _sessionSubscription?.cancel();
+    _openedMessageSubscription?.cancel();
+    _foregroundMessageSubscription?.cancel();
     super.dispose();
   }
 
@@ -261,6 +244,13 @@ class _ZulloAppState extends State<ZulloApp> {
     });
     unawaited(LocaleController.instance.load());
     _setupNotificationTapHandling();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      unawaited(NotificationStartup(
+        register: _registerNotifications,
+        initialMessage: FirebaseMessaging.instance.getInitialMessage,
+      ).start());
+    });
   }
 
   Future<bool> _handleSuperLike(RemoteMessage message,
@@ -292,7 +282,8 @@ class _ZulloAppState extends State<ZulloApp> {
   }
 
   Future<void> _setupNotificationTapHandling() async {
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) async {
+    _openedMessageSubscription = FirebaseMessaging.onMessageOpenedApp
+        .listen((RemoteMessage message) async {
       if (await _handleSuperLike(message, open: true)) return;
       if (_lastOpenedMessageId == message.messageId) return;
       _lastOpenedMessageId = message.messageId;
@@ -303,7 +294,8 @@ class _ZulloAppState extends State<ZulloApp> {
       _openChatFromLaunch(launch);
     });
 
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
+    _foregroundMessageSubscription =
+        FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
       if (await _handleSuperLike(message, open: false)) return;
       final generation = AccountSession.generation;
       final launch = _parseNotificationLaunch(message);
@@ -355,10 +347,10 @@ class _ZulloAppState extends State<ZulloApp> {
                 .resolvePlatformSpecificImplementation<
                     AndroidFlutterLocalNotificationsPlugin>()
                 ?.createNotificationChannel(AndroidNotificationChannel(
-                  channel.id,
+                  _messageChannelId,
                   name,
                   description: description,
-                  importance: channel.importance,
+                  importance: _messageImportance,
                 ));
           },
           child: child ?? const SizedBox.shrink(),
