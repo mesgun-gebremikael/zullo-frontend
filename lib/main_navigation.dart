@@ -449,9 +449,39 @@ class _MainNavigationState extends State<MainNavigation>
                   ),
                 ],
               ),
-              child: Row(
+              child: Stack(
                 children: [
-                  _NavItem(
+                  // A single selection pill glides between tabs without
+                  // rebuilding or replacing the tab pages.
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: AnimatedAlign(
+                        alignment: Alignment(
+                          -1 + (2 * _selectedIndex / (_pages.length - 1)),
+                          0,
+                        ),
+                        duration: const Duration(milliseconds: 280),
+                        curve: Curves.easeInOutCubic,
+                        child: FractionallySizedBox(
+                          widthFactor: 1 / _pages.length,
+                          heightFactor: 1,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 3, vertical: 3),
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF0F1F3),
+                                borderRadius: BorderRadius.circular(25),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      _NavItem(
                     icon: Icons.explore_outlined,
                     symbol: ZulloSymbolKind.discover,
                     activeIcon: Icons.explore,
@@ -481,6 +511,8 @@ class _MainNavigationState extends State<MainNavigation>
                     label: 'Profil',
                     isActive: _selectedIndex == AppTabs.profile,
                     onTap: () => _onItemTapped(AppTabs.profile),
+                  ),
+                    ],
                   ),
                 ],
               ),
@@ -537,14 +569,9 @@ class _NavItem extends StatelessWidget {
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: isActive ? ZulloPalette.tint : Colors.transparent,
+                  color: Colors.transparent,
                   borderRadius: BorderRadius.circular(999),
-                  border: isActive
-                      ? Border.all(
-                          color: const Color(0xFFFFDFE9),
-                          width: 1,
-                        )
-                      : null,
+                  border: null,
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
