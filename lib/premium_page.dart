@@ -7,13 +7,19 @@ import 'package:url_launcher/url_launcher.dart';
 import 'services/account_session.dart';
 import 'services/auth_storage.dart';
 import 'services/commerce_service.dart';
+import 'services/pending_store_purchase.dart';
 
 class PremiumPage extends StatefulWidget {
   final bool activityOnly;
   final CommerceClient? commerce;
   final NativeBilling? billing;
+  final PendingPurchaseStorage? purchaseStorage;
   const PremiumPage(
-      {super.key, this.commerce, this.billing, this.activityOnly = false});
+      {super.key,
+      this.commerce,
+      this.billing,
+      this.purchaseStorage,
+      this.activityOnly = false});
   @override
   State<PremiumPage> createState() => _PremiumPageState();
 }
@@ -22,6 +28,14 @@ class _PremiumPageState extends State<PremiumPage> {
   late final _commerce = widget.commerce ?? CommerceClient();
   late final _billing = widget.billing ?? RevenueCatBilling();
   final _generation = AccountSession.generation;
+  late final _purchaseStorage =
+      widget.purchaseStorage ?? PendingPurchaseStorage();
+  PendingStorePurchase? _pendingPurchase;
+  bool _pendingReadFailed = false;
+  static const _monthly = 'zullo_premium_monthly',
+      _annual = 'zullo_premium_annual';
+  bool _subscription(String id) => id == _monthly || id == _annual;
+  bool get _checkoutBlocked => _pendingReadFailed || _pendingPurchase != null;
   CommerceState? _state;
   List<StoreOffer> _offers = [];
   String? _userId, _error;
@@ -49,7 +63,7 @@ class _PremiumPageState extends State<PremiumPage> {
 
   Future<void> _refreshBalance() async {
     try {
-      final state = await _commerce.state();
+      final state = await _reconcile(await _commerce.state());
       if (!_active) return;
       setState(() {
         if (state.superLikes > (_state?.superLikes ?? 0) ||
@@ -68,12 +82,29 @@ class _PremiumPageState extends State<PremiumPage> {
       if (!_active) return;
       final user = await AuthStorage().getUserId();
       if (!_active) return;
+      PendingStorePurchase? pending;
+      var readFailed = false;
+      if (user != null) {
+        try {
+          pending = await _purchaseStorage.read(user);
+        } catch (_) {
+          readFailed = true;
+        }
+      }
+      if (!_active) return;
       setState(() {
+        _pendingPurchase = pending;
+        _pendingReadFailed = readFailed;
         _state = state;
         _userId = user;
         _offers = [];
         _error = null;
       });
+      if (pending?.receipt != null) {
+        final reconciled = await _reconcile(state);
+        if (!_active) return;
+        setState(() => _state = reconciled);
+      }
       if (state.checkoutEnabled && _billing.available && user != null) {
         try {
           final offers = await _billing.offers(user);
@@ -103,6 +134,11 @@ class _PremiumPageState extends State<PremiumPage> {
       if (!_active) return;
       setState(() => _state = state);
       CommerceEvents.refreshDiscovery();
+    } on PendingCheckoutException {
+      if (_active) {
+        setState(() => _error =
+            'Ett köp väntar på verifiering. Köp inte igen. Uppdatera saldot eller återställ köp.');
+      }
     } on PlatformException catch (error) {
       if (_active &&
           PurchasesErrorHelper.getErrorCode(error) !=
@@ -122,26 +158,95 @@ class _PremiumPageState extends State<PremiumPage> {
   }
 
   Future<CommerceState> _buy(StoreOffer offer) async {
-    final before = _state!;
-    await _billing.buy(offer, _userId!);
-    CommerceState? updated;
-    for (var attempt = 0; attempt < 3; attempt++) {
-      if (!_active) throw SessionChangedException();
-      updated = await _commerce.sync();
-      final confirmed = switch (offer.id) {
-        'zullo_premium_monthly' => updated.premium,
-        'zullo_hide_activity_monthly' => updated.canHideActivity,
-        'zullo_superlikes_5' => updated.superLikes >= before.superLikes + 5,
-        'zullo_boost_1' => updated.boosts >= before.boosts + 1,
-        'zullo_boosts_5' => updated.boosts >= before.boosts + 5,
-        _ => false,
-      };
-      if (confirmed) return updated;
-      if (attempt < 2) await Future<void>.delayed(const Duration(seconds: 2));
+    if (_userId == null || !_active || _state?.checkoutEnabled != true) {
+      throw SessionChangedException();
     }
-    if (_active) setState(() => _state = updated);
-    throw const CommerceException(202,
-        'Köpet väntar på verifiering. Köp inte igen. Uppdatera saldot om en stund eller återställ köp.');
+    final user = _userId!;
+    final pending = await _purchaseStorage.reserve(user, offer.id);
+    _pendingPurchase = pending;
+    AccountSession.check(_generation);
+    try {
+      final receipt = await _billing.buy(offer, user);
+      // Keep the original account's guard even when logout races a store result.
+      if (receipt.productId != pending.productId ||
+          receipt.transactionId.isEmpty ||
+          !const {'app_store', 'play_store'}.contains(receipt.store)) {
+        throw StateError('The store receipt does not identify this checkout');
+      }
+      final attached =
+          await _purchaseStorage.attachReceipt(user, pending, receipt);
+      _pendingPurchase = attached
+          ? pending.withReceipt(receipt)
+          : await _purchaseStorage.read(user);
+      AccountSession.check(_generation);
+      for (var attempt = 0; attempt < 3; attempt++) {
+        final state = await _reconcile(await _commerce.sync());
+        if (!_active) throw SessionChangedException();
+        setState(() => _state = state);
+        if (_pendingPurchase == null) return state;
+        if (attempt < 2) await Future<void>.delayed(const Duration(seconds: 2));
+      }
+      throw const CommerceException(202,
+          'Ett köp väntar på verifiering. Köp inte igen. Uppdatera saldot eller återställ köp.');
+    } on PlatformException catch (error) {
+      if (PurchasesErrorHelper.getErrorCode(error) ==
+          PurchasesErrorCode.purchaseCancelledError) {
+        await _purchaseStorage.clear(user, expected: pending);
+        if (_active) _pendingPurchase = await _purchaseStorage.read(user);
+      }
+      rethrow;
+    }
+  }
+
+  Future<CommerceState> _reconcile(CommerceState state) async {
+    if (!_active || _userId == null) return state;
+    final pending = _pendingPurchase;
+    if (pending == null) return state;
+    final receipt = pending.receipt;
+    if (_subscription(pending.productId)) {
+      // Subscription access comes only from the provider-verified server state.
+      if (state.premium) {
+        await _purchaseStorage.clear(_userId!, expected: pending);
+        if (_active) _pendingPurchase = await _purchaseStorage.read(_userId!);
+      }
+      return state;
+    }
+    // Product/date/history is not proof of this checkout: another device or a
+    // previous purchase can have the same product and a nearby timestamp. An
+    // interrupted purchase without its exact receipt must remain blocked until
+    // a future authenticated server-attempt protocol can correlate it safely.
+    if (receipt != null) {
+      final status = await _commerce.purchaseStatus(receipt);
+      if (!_active) throw SessionChangedException();
+      if (status.verified || status.refunded) {
+        await _purchaseStorage.clear(_userId!, expected: pending);
+        _pendingPurchase = await _purchaseStorage.read(_userId!);
+        if (status.refunded) {
+          _error =
+              'Köpet har återbetalats. Ditt verifierade saldo har uppdaterats.';
+        }
+      }
+    }
+    return state;
+  }
+
+  Future<CommerceState> _restore() async {
+    await _billing.restore(_userId!);
+    return _reconcile(await _commerce.sync());
+  }
+
+  Future<void> _manageSubscription() async {
+    final uri = Uri.parse(Theme.of(context).platform == TargetPlatform.iOS
+        ? 'https://apps.apple.com/account/subscriptions'
+        : 'https://play.google.com/store/account/subscriptions');
+    try {
+      if (await launchUrl(uri, mode: LaunchMode.externalApplication)) return;
+    } catch (_) {/* Give an actionable explanation without platform details. */}
+    if (mounted && AccountSession.isCurrent(_generation)) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(context.tr(
+              'Öppna App Store eller Google Play för att hantera ditt abonnemang.'))));
+    }
   }
 
   String get _boostTime {
@@ -158,9 +263,10 @@ class _PremiumPageState extends State<PremiumPage> {
     final boostActive = _boostTime.isNotEmpty;
     final offers = _offers
         .where((offer) =>
-            !widget.activityOnly ||
-            offer.id == 'zullo_hide_activity_monthly' ||
-            offer.id == 'zullo_premium_monthly')
+            _subscription(offer.id) ||
+            (!widget.activityOnly &&
+                const {'zullo_superlikes_5', 'zullo_boost_1', 'zullo_boosts_5'}
+                    .contains(offer.id)))
         .toList();
     return Scaffold(
       backgroundColor: Colors.white,
@@ -211,6 +317,15 @@ class _PremiumPageState extends State<PremiumPage> {
                       ]),
                 ),
                 const SizedBox(height: 20),
+                Text(context.tr(
+                    'Ett Premium. Välj månadsvis eller årsvis – samma förmåner i båda.')),
+                if (_checkoutBlocked)
+                  Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: Text(context.tr(_pendingReadFailed ||
+                              _pendingPurchase?.receipt == null
+                          ? 'Köpet saknar fullständig bekräftelse. Nya köp är spärrade för att undvika dubbel debitering. Kontrollera köpet i App Store eller Google Play.'
+                          : 'Ett köp väntar på verifiering. Köp inte igen. Uppdatera saldot eller återställ köp.'))),
                 if (state != null && !widget.activityOnly)
                   Card(
                       child: Padding(
@@ -231,6 +346,23 @@ class _PremiumPageState extends State<PremiumPage> {
                                       'Boosts',
                                       Colors.deepPurple),
                                 ]),
+                            if (state.includedSuperLikes != null &&
+                                state.purchasedSuperLikes != null)
+                              const Text('Superlikes'),
+                            if (state.includedSuperLikes != null &&
+                                state.purchasedSuperLikes != null)
+                              Text(context.tr(
+                                  'Ingår: ${state.premium ? state.includedSuperLikes : 0} · Köpta: ${state.purchasedSuperLikes}')),
+                            if (state.includedBoosts != null &&
+                                state.purchasedBoosts != null)
+                              Text('Boosts'),
+                            if (state.includedBoosts != null &&
+                                state.purchasedBoosts != null)
+                              Text(context.tr(
+                                  'Ingår: ${state.premium ? state.includedBoosts : 0} · Köpta: ${state.purchasedBoosts}')),
+                            if (state.premium && state.nextBoostRefresh != null)
+                              Text(context.tr(
+                                  'Nästa påfyllning: ${MaterialLocalizations.of(context).formatMediumDate(state.nextBoostRefresh!.toLocal())}')),
                             const SizedBox(height: 16),
                             SizedBox(
                                 width: double.infinity,
@@ -271,7 +403,7 @@ class _PremiumPageState extends State<PremiumPage> {
                     ),
                     (
                       Icons.bolt,
-                      '1 Boost per betalningsmånad',
+                      context.tr('1 Boost varje månad'),
                       'Prioriterad synlighet i 30 minuter för personer vars inställningar passar.'
                     ),
                     (
@@ -298,14 +430,17 @@ class _PremiumPageState extends State<PremiumPage> {
                 for (final offer in offers)
                   Card(
                       child: ListTile(
-                    title: Text(offer.id == 'zullo_hide_activity_monthly'
-                        ? context.l10n.hideActivityOnly
-                        : offer.title),
+                    title: Text(offer.id == _monthly
+                        ? context.tr('Månadsvis')
+                        : offer.id == _annual
+                            ? context.tr('Årsvis')
+                            : offer.title),
                     subtitle: Text(
-                        '${offer.price}${offer.id == 'zullo_premium_monthly' || offer.id == 'zullo_hide_activity_monthly' ? context.l10n.perMonth : ''}'),
+                        '${offer.price}${offer.id == 'zullo_premium_monthly' || offer.id == 'zullo_hide_activity_monthly' ? context.l10n.perMonth : offer.id == _annual ? context.tr(' per år') : ''}'),
                     trailing: FilledButton(
                         onPressed: _busy ||
-                                (offer.id == 'zullo_premium_monthly' &&
+                                _checkoutBlocked ||
+                                (_subscription(offer.id) &&
                                     state?.premium == true) ||
                                 (offer.id == 'zullo_hide_activity_monthly' &&
                                     state?.canHideActivity == true)
@@ -318,15 +453,15 @@ class _PremiumPageState extends State<PremiumPage> {
                   Padding(
                       padding: EdgeInsets.symmetric(vertical: 12),
                       child: Text(
-                          context.l10n
-                              .yourSeparateHideActivitySubscriptionIsManagedInTheApp,
+                          context.tr(
+                              'Ditt separata abonnemang för Dölj aktivitet finns kvar. Premium avslutar det inte automatiskt. Hantera det i App Store eller Google Play för att undvika dubbla abonnemang.'),
                           style: TextStyle(color: Color(0xFF626A77)))),
                 if (offers.isNotEmpty)
                   Padding(
                       padding: EdgeInsets.symmetric(vertical: 12),
                       child: Text(
-                          context.l10n
-                              .yourSubscriptionRenewsAutomaticallyUntilYouCancelInTheApp,
+                          context.tr(
+                              '3 Superlikes per vecka och 1 Boost varje månad. Oanvända inkluderade krediter sparas inte. Köpta krediter finns kvar tills de används.'),
                           style: TextStyle(
                               color: Color(0xFF626A77), height: 1.4))),
                 TextButton(
@@ -335,14 +470,17 @@ class _PremiumPageState extends State<PremiumPage> {
                             !_billing.available ||
                             _userId == null
                         ? null
-                        : () => _action(() async {
-                              await _billing.restore(_userId!);
-                              return _commerce.sync();
-                            }),
+                        : () => _action(_restore),
                     child: Text(context.l10n.restorePurchases)),
                 TextButton(
-                    onPressed: _busy ? null : () => _action(_commerce.sync),
+                    onPressed: _busy
+                        ? null
+                        : () => _action(
+                            () async => _reconcile(await _commerce.sync())),
                     child: Text(context.l10n.refreshBalance)),
+                TextButton(
+                    onPressed: _manageSubscription,
+                    child: Text(context.tr('Hantera abonnemang i butiken'))),
                 if (RevenueCatBilling.termsUrl.isNotEmpty)
                   TextButton(
                       onPressed: () =>
@@ -358,7 +496,8 @@ class _PremiumPageState extends State<PremiumPage> {
                   Padding(
                       padding: const EdgeInsets.all(12),
                       child: Text(context.tr(_error!),
-                          style: const TextStyle(color: Color(0xFFFFA6AD)))),
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.error))),
               ]),
             ),
     );

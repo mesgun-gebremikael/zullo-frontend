@@ -20,7 +20,9 @@ Do not jump directly from v9 to v11: v11 removes legacy cipher migration. Before
 
 Use JDK **17**, matching CI and this Gradle toolchain. Check `flutter doctor -v` for the JDK Flutter actually uses. If necessary, run `flutter config --jdk-dir="<absolute path to JDK 17>"`. Restart the build after changing the JDK.
 
-The latest geolocator_android 5.2.1 still compiles its own module with Java 8 compatibility and calls a deprecated Android Bundle accessor. On newer JDKs this also produces obsolete source/target warnings. Updating the package does not eliminate every upstream warning. We do not hide compiler warnings, edit the pub cache, or maintain an entire fork just to remove an informational message. Track the upstream deprecation and adopt its reviewed fix when released; this message alone does not indicate GPS failure.
+The build now explicitly selects the supported Java17 compiler for plugin Java tasks while preserving each plugin's original Java/Kotlin bytecode targets. Gradle's Foojay resolver provisions that compiler if a developer only has JBR21 installed. This removes obsolete-Java8 compiler warnings without suppressing diagnostics.
+
+The latest compatible geolocator_android5.2.1 still calls deprecated untyped Bundle.get. A narrow, licensed and versioned Android implementation patch replaces that accessor with AndroidX BundleCompat's typed Number API. Upstream archive/file checksums, compatibility tests and an adoption/removal procedure make the change reviewable. The public Dart API, permissions and coordinate behavior are preserved; no package cache is edited. See [NATIVE_LOCATION_AND_NOTIFICATION_CHECKS.md](NATIVE_LOCATION_AND_NOTIFICATION_CHECKS.md). Other upstream API notes are not automatically eliminated or hidden.
 
 ## Checks
 

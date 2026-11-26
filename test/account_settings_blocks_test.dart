@@ -129,7 +129,10 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     final auth = SettingsAuth();
-    await tester.pumpWidget(MaterialApp(home: HomePage(authService: auth)));
+    await tester.pumpWidget(MaterialApp(
+        home: MediaQuery(
+            data: const MediaQueryData(disableAnimations: true),
+            child: HomePage(authService: auth))));
     await tester.pumpAndSettle();
     await tester.runAsync(() async {
       await tester.tap(find.text('Ändra filter'));

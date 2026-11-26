@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'l10n/localization.dart';
 import 'package:flutter/material.dart';
 import 'services/account_session.dart';
@@ -14,39 +15,90 @@ class DiscoveryLocationPage extends StatefulWidget {
   State<DiscoveryLocationPage> createState() => _DiscoveryLocationPageState();
 }
 
-class _DiscoveryLocationPageState extends State<DiscoveryLocationPage> {
+class _DiscoveryLocationPageState extends State<DiscoveryLocationPage>
+    with WidgetsBindingObserver {
   late final auth = widget.authService ?? AuthService();
-  late final location = widget.locationService ?? DeviceLocationService();
+  late final location = widget.locationService ??
+      DeviceLocationService(isActive: () => canUseLocation);
   final generation = AccountSession.generation;
   Map<String, dynamic>? settings;
   String? error;
   bool busy = false;
+  bool _loading = false;
+  int _settingsRevision = 0;
+  bool _inForeground = WidgetsBinding.instance.lifecycleState == null ||
+      WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
+  bool get canUseLocation => active && _inForeground;
   bool get active => mounted && AccountSession.isCurrent(generation);
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _load();
   }
 
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    _inForeground = state == AppLifecycleState.resumed;
+    if (_inForeground &&
+        active &&
+        !busy &&
+        settings?['automaticLocation'] == true) {
+      unawaited(_load());
+    }
+  }
+
   Future<void> _load() async {
+    if (_loading) return;
+    _loading = true;
+    final revision = _settingsRevision;
+    bool unchanged() => active && revision == _settingsRevision;
     try {
-      final value = await auth.discoverySettings();
-      if (active) {
+      var value = await auth.discoverySettings();
+      if (!unchanged()) return;
+      // Opening settings does not require another manual refresh when the user
+      // has already enabled foreground location and granted device permission.
+      if (value['automaticLocation'] == true && canUseLocation && unchanged()) {
+        try {
+          final place = await location.locate(requestPermission: false);
+          if (place != null &&
+              place.hasValidCoordinates &&
+              canUseLocation &&
+              unchanged()) {
+            value = await auth.discoverySettings(update: {
+              'lat': place.lat,
+              'lng': place.lng,
+              'locationName': place.name,
+            });
+            if (unchanged()) CommerceEvents.refreshDiscovery();
+          }
+        } catch (_) {/* Keep saved settings usable while GPS is unavailable. */}
+      }
+      if (unchanged()) {
         setState(() {
           settings = value;
           error = null;
         });
       }
     } catch (_) {
-      if (active) {
+      if (unchanged()) {
         setState(
             () => error = 'Inställningarna kunde inte hämtas. Försök igen.');
       }
+    } finally {
+      _loading = false;
     }
   }
 
   Future<void> _save(Map<String, dynamic> changes) async {
     if (busy) return;
+    _settingsRevision++;
     setState(() {
       busy = true;
       error = null;
@@ -67,14 +119,17 @@ class _DiscoveryLocationPageState extends State<DiscoveryLocationPage> {
   }
 
   Future<void> _updatePlace() async {
-    if (busy) return;
+    if (busy || !canUseLocation) return;
+    _settingsRevision++;
     setState(() {
       busy = true;
       error = null;
     });
     try {
       final place = await location.locate(requestPermission: true);
-      if (!active || place == null) return;
+      if (!canUseLocation || place == null || !place.hasValidCoordinates) {
+        return;
+      }
       final value = await auth.discoverySettings(update: {
         'automaticLocation': true,
         'lat': place.lat,
@@ -151,7 +206,17 @@ class _DiscoveryLocationPageState extends State<DiscoveryLocationPage> {
                         FilledButton.icon(
                             onPressed: busy ? null : _updatePlace,
                             icon: const Icon(Icons.my_location_rounded),
-                            label: Text(context.l10n.updateMyLocation)),
+                            label: Text(settings!['automaticLocation'] == true
+                                ? context.tr('Kontrollera plats igen')
+                                : context.tr('Använd min plats'))),
+                        if (settings!['automaticLocation'] == true) ...[
+                          const SizedBox(height: 8),
+                          Text(
+                              context.tr(
+                                  'Platsen följer dig automatiskt när du använder appen. Knappen behövs bara om du vill försöka igen.'),
+                              style: const TextStyle(
+                                  color: Color(0xFF697180), fontSize: 14)),
+                        ],
                         SwitchListTile.adaptive(
                             contentPadding: EdgeInsets.zero,
                             title: Text(context.l10n.updateWhileIUseTheApp),
@@ -176,7 +241,10 @@ class _DiscoveryLocationPageState extends State<DiscoveryLocationPage> {
                   'expandAge'),
               const SizedBox(height: 18),
               Text(
-                  context.l10n.yourPreferencesValue0KmAgesValue1Value2((settings!['radiusKm']).toString(), (settings!['minAge']).toString(), (settings!['maxAge']).toString()),
+                  context.l10n.yourPreferencesValue0KmAgesValue1Value2(
+                      (settings!['radiusKm']).toString(),
+                      (settings!['minAge']).toString(),
+                      (settings!['maxAge']).toString()),
                   style: const TextStyle(color: Color(0xFF697180))),
               const SizedBox(height: 8),
               Text(context.l10n.changeYourDistanceAgeRangeAndWhoYouWantTo),
@@ -187,7 +255,7 @@ class _DiscoveryLocationPageState extends State<DiscoveryLocationPage> {
       child: SwitchListTile.adaptive(
           title: Text(context.tr(title),
               style: const TextStyle(fontWeight: FontWeight.w700)),
-          subtitle: Text(subtitle),
+          subtitle: Text(context.tr(subtitle)),
           value: settings![key] == true,
           onChanged: busy ? null : (value) => _save({key: value})));
 }

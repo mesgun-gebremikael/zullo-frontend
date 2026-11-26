@@ -1,3 +1,5 @@
+import '../models/conversation_prompt.dart';
+
 class OnboardingData {
   String displayName = '';
   DateTime? birthDate;
@@ -32,6 +34,19 @@ class OnboardingData {
   int distanceKm = 50;
   String bio = '';
   String promptKey = '', promptAnswer = '';
+  List<ProfileConversationPrompt> conversationPrompts = [];
+  List<ProfileConversationPrompt> get effectivePrompts => conversationPrompts
+          .isNotEmpty
+      ? conversationPrompts
+      : promptKey.isEmpty
+          ? []
+          : [ProfileConversationPrompt(key: promptKey, answer: promptAnswer)];
+  void setConversationPrompts(List<ProfileConversationPrompt> prompts) {
+    conversationPrompts = List.of(prompts);
+    promptKey = prompts.isEmpty ? '' : prompts.first.key;
+    promptAnswer = prompts.isEmpty ? '' : prompts.first.answer;
+  }
+
   void update(String field, Object? value) {
     switch (field) {
       case 'displayName':
@@ -74,6 +89,12 @@ class OnboardingData {
         wantChildren = value as String;
       case 'promptAnswer':
         promptAnswer = value as String;
+        if (conversationPrompts.isNotEmpty) {
+          conversationPrompts = [
+            conversationPrompts.first.copyWith(answer: promptAnswer),
+            ...conversationPrompts.skip(1)
+          ];
+        }
       case 'bio':
         bio = value as String;
       default:
@@ -102,8 +123,10 @@ class OnboardingData {
         'childrenCount': childrenCount,
         'wantChildren': wantChildren,
         'bio': bio,
-        'promptKey': promptKey,
-        'promptAnswer': promptAnswer,
+        'conversationPrompts': effectivePrompts.map((p) => p.toJson()).toList(),
+        'promptKey': effectivePrompts.isEmpty ? '' : effectivePrompts.first.key,
+        'promptAnswer':
+            effectivePrompts.isEmpty ? '' : effectivePrompts.first.answer,
         'birthDate': birthDate?.toIso8601String().split('T').first,
         'heightCm': heightCm,
         'distanceKm': distanceKm,
@@ -153,6 +176,7 @@ class OnboardingData {
         draft['promptKey'] is String ? draft['promptKey'] as String : '';
     data.promptAnswer =
         draft['promptAnswer'] is String ? draft['promptAnswer'] as String : '';
+    data.setConversationPrompts(ProfileConversationPrompt.read(draft));
     data.birthDate = DateTime.tryParse(draft['birthDate']?.toString() ?? '');
     data.heightCm = draft['heightCm'] is int ? draft['heightCm'] as int : null;
     data.distanceKm = draft['distanceKm'] is int
@@ -187,8 +211,10 @@ class OnboardingData {
       'interestedIn': interestedIn,
       'matchRadiusKm': distanceKm,
       'bio': bio,
-      'promptKey': promptKey,
-      'promptAnswer': promptAnswer,
+      'conversationPrompts': effectivePrompts.map((p) => p.toJson()).toList(),
+      'promptKey': effectivePrompts.isEmpty ? '' : effectivePrompts.first.key,
+      'promptAnswer':
+          effectivePrompts.isEmpty ? '' : effectivePrompts.first.answer,
       'photoUrls': List<String>.from(photoUrls),
       'interests': <String>[],
       'intention': intention,

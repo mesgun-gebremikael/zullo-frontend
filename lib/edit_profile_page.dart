@@ -1,3 +1,4 @@
+import 'models/conversation_prompt.dart';
 import 'l10n/localization.dart';
 import 'models/profile_choices.dart';
 import 'widgets/conversation_prompt_editor.dart';
@@ -37,7 +38,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final _age = TextEditingController();
   final _gender = TextEditingController();
 
-  String _promptKey = '', _promptAnswer = '';
+  List<ProfileConversationPrompt> _conversationPrompts = [];
+  String get _promptKey =>
+      _conversationPrompts.isEmpty ? '' : _conversationPrompts.first.key;
+  String get _promptAnswer =>
+      _conversationPrompts.isEmpty ? '' : _conversationPrompts.first.answer;
   final _bio = TextEditingController();
 
   List<String> _photoUrls = [];
@@ -110,8 +115,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       _age.text = (profile["age"] ?? "").toString();
       _gender.text = (profile["gender"] ?? "").toString();
       _bio.text = (profile["bio"] ?? "").toString();
-      _promptKey = (profile["promptKey"] ?? "").toString();
-      _promptAnswer = (profile["promptAnswer"] ?? "").toString();
+      _conversationPrompts = ProfileConversationPrompt.read(profile);
 
       _photoUrls = ((profile["photoUrls"] as List?) ?? [])
           .map((e) => e.toString())
@@ -232,7 +236,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     final gender = _gender.text.trim();
     final bio = _bio.text.trim();
 
-    if (_promptKey.isNotEmpty && _promptAnswer.trim().isEmpty) {
+    if (_conversationPrompts.any((p) => p.answer.trim().isEmpty)) {
       setState(
           () => _error = 'Skriv ett svar på samtalsfrågan eller ta bort den.');
       return;
@@ -267,6 +271,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
         age: int.parse(_age.text),
         gender: _gender.text,
         bio: _bio.text, promptKey: _promptKey, promptAnswer: _promptAnswer,
+        conversationPrompts:
+            _conversationPrompts.map((p) => p.toJson()).toList(),
         photoUrls: _photoUrls,
         interests: _interests,
         intention: _intention,
@@ -350,6 +356,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       intention: _intention,
       photoUrls: _photoUrls,
       bio: _bio.text.trim(),
+      conversationPrompts: _conversationPrompts,
       promptKey: _promptKey,
       promptAnswer: _promptAnswer,
       religion: _religion,
@@ -1616,14 +1623,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
                               gender: _gender,
                               bio: _bio),
                           const SizedBox(height: 24),
-                          ConversationPromptEditor(
-                              promptKey: _promptKey,
-                              answer: _promptAnswer,
-                              onChanged: (key, answer) => setState(() {
-                                    _promptKey = key;
-                                    _promptAnswer = answer;
-                                    _cachedPreviewProfile = null;
-                                  })),
+                          ConversationPromptsEditor(
+                              prompts: _conversationPrompts,
+                              onChanged: (prompts) => setState(
+                                  () => _conversationPrompts = prompts)),
                           const SizedBox(height: 28),
                           _buildWorkStudySection(),
                           const SizedBox(height: 24),

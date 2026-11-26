@@ -1,3 +1,4 @@
+import 'widgets/location_consent_sheet.dart';
 import 'l10n/localization.dart';
 import 'services/device_location_service.dart';
 import 'theme/zullo_palette.dart';
@@ -57,10 +58,84 @@ class _MainNavigationState extends State<MainNavigation>
     with WidgetsBindingObserver {
   late final _locationSync = ForegroundLocationSync(_authService,
       isActive: () => mounted && _inForeground);
-  Future<void> _refreshLocation() async {
-    if (widget.pages != null || !_sessionActive) return;
-    if (await _locationSync.refresh()) {
+  bool _locationConsentInFlight = false;
+  Future<void> _refreshLocation({bool force = false}) async {
+    if (widget.pages != null || !_sessionActive || _locationConsentInFlight) {
+      return;
+    }
+    if (await _locationSync.refresh(force: force)) {
       if (mounted && _sessionActive) CommerceEvents.refreshDiscovery();
+    }
+  }
+
+  Future<void> _initialiseLocation() async {
+    if (widget.pages != null ||
+        _locationConsentInFlight ||
+        _selectedIndex != AppTabs.swipe ||
+        !_sessionActive ||
+        !_inForeground) {
+      return;
+    }
+    _locationConsentInFlight = true;
+    var attemptedEnable = false;
+    try {
+      final settings = await _authService.discoverySettings();
+      if (!mounted ||
+          !_sessionActive ||
+          !_inForeground ||
+          _selectedIndex != AppTabs.swipe) {
+        return;
+      }
+      final explain = await LocationConsentGate().claim(settings);
+      if (!mounted ||
+          !_sessionActive ||
+          !_inForeground ||
+          _selectedIndex != AppTabs.swipe) {
+        return;
+      }
+      if (!explain) {
+        if (await _locationSync.refresh()) {
+          if (mounted && _sessionActive) CommerceEvents.refreshDiscovery();
+        }
+        return;
+      }
+      final accepted = await showModalBottomSheet<bool>(
+          context: context,
+          isScrollControlled: true,
+          showDragHandle: true,
+          builder: (_) => const LocationConsentSheet());
+      if (accepted != true || !mounted || !_sessionActive || !_inForeground) {
+        return;
+      }
+      attemptedEnable = true;
+      final place = await DeviceLocationService(
+              isActive: () => mounted && _sessionActive && _inForeground)
+          .locate(requestPermission: true);
+      if (place == null ||
+          !place.hasValidCoordinates ||
+          !mounted ||
+          !_sessionActive ||
+          !_inForeground) {
+        return;
+      }
+      await _authService.discoverySettings(update: {
+        'automaticLocation': true,
+        'lat': place.lat,
+        'lng': place.lng,
+        'locationName': place.name,
+      });
+      if (mounted && _sessionActive) CommerceEvents.refreshDiscovery();
+    } catch (failure) {
+      if (mounted && _sessionActive && attemptedEnable) {
+        final message = failure is LocationFailure
+            ? context.tr(failure.message)
+            : context.l10n.yourLocationCouldNotBeUpdatedCheckYourConnectionAnd;
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(message)));
+      }
+      // Discovery/settings remain usable; no fake position or silent opt-in.
+    } finally {
+      _locationConsentInFlight = false;
     }
   }
 
@@ -104,11 +179,16 @@ class _MainNavigationState extends State<MainNavigation>
     _sessionExpired = AccountSession.expiredStream.listen(
         (_) => _endSession('Inloggningen behöver förnyas. Logga in igen.'));
     _openDiscovery = CommerceEvents.openDiscoveryStream.listen((_) {
-      if (mounted && _sessionActive) setState(() => _selectedIndex = 0);
+      if (mounted && _sessionActive) {
+        setState(() => _selectedIndex = 0);
+        unawaited(_initialiseLocation());
+      }
     });
     WidgetsBinding.instance.addObserver(this);
     if (widget.pages == null) {
-      unawaited(_refreshLocation());
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _sessionActive) unawaited(_initialiseLocation());
+      });
       unawaited(_pulsePresence());
       _presenceTimer = Timer.periodic(const Duration(minutes: 1), (_) {
         unawaited(_pulsePresence());
@@ -185,6 +265,7 @@ class _MainNavigationState extends State<MainNavigation>
     });
 
     _loadUnreadStatus();
+    if (index == AppTabs.swipe) unawaited(_initialiseLocation());
   }
 
   Future<void> _pulsePresence() async {
@@ -237,7 +318,10 @@ class _MainNavigationState extends State<MainNavigation>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     _inForeground = state == AppLifecycleState.resumed;
     if (state == AppLifecycleState.resumed && mounted && _sessionActive) {
-      if (widget.pages == null) unawaited(_pulsePresence());
+      if (widget.pages == null) {
+        unawaited(_pulsePresence());
+        unawaited(_refreshLocation(force: true));
+      }
       unawaited(_connectLive());
       unawaited(_authService.syncPushToken());
       unawaited(_loadUnreadStatus(force: true));

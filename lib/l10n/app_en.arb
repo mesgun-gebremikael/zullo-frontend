@@ -1805,9 +1805,9 @@
   "@welcomeBack": {
     "description": "ZULLO interface text. Source: Välkommen tillbaka"
   },
-  "friends": "Friends",
+  "friends": "Find new friends",
   "@friends": {
-    "description": "ZULLO interface text. Source: Vänner"
+    "description": "Relationship intention: find new friends. Stored canonical value remains Friendship."
   },
   "waitingForTheServerTheFirstConnectionMayTakeA": "Waiting for the server. The first connection may take a moment.",
   "@waitingForTheServerTheFirstConnectionMayTakeA": {
@@ -2187,5 +2187,179 @@
   "likeAction": "Like",
   "@likeAction": {
     "description": "Accessible label for the action that likes the shown profile."
+  },
+  "locationConsentTitle": "Find people near you",
+  "@locationConsentTitle": {
+    "description": "ZULLO interface. Source: Hitta personer nära dig"
+  },
+  "locationConsentExplanation": "Let ZULLO use your location while the app is open. Your location updates automatically as you move. Your exact position is never shown to others.",
+  "@locationConsentExplanation": {
+    "description": "ZULLO interface. Source: Låt ZULLO använda din plats när appen är öppen. Platsen uppdateras automatiskt när du förflyttar dig. Din exakta position visas inte för andra."
+  },
+  "useMyLocation": "Use my location",
+  "@useMyLocation": {
+    "description": "ZULLO interface. Source: Använd min plats"
+  },
+  "retryLocation": "Check location again",
+  "@retryLocation": {
+    "description": "ZULLO interface. Source: Kontrollera plats igen"
+  },
+  "automaticLocationExplanation": "Your location updates automatically while you use the app. The button is only needed if you want to try again.",
+  "@automaticLocationExplanation": {
+    "description": "ZULLO interface. Source: Platsen följer dig automatiskt när du använder appen. Knappen behövs bara om du vill försöka igen."
+  },
+  "thingsAboutMe": "Things about me",
+  "@thingsAboutMe": {
+    "description": "ZULLO interface. Source: Saker om mig"
+  },
+  "chooseUpToThreeConversationPrompts": "Choose up to three questions. Your answers make it easier to start a conversation.",
+  "@chooseUpToThreeConversationPrompts": {
+    "description": "ZULLO interface. Source: Välj upp till tre frågor. Dina svar gör det lättare att börja prata."
+  },
+  "answerOrRemoveConversationPrompt": "Answer the conversation question or remove it.",
+  "@answerOrRemoveConversationPrompt": {
+    "description": "ZULLO interface. Source: Skriv ett svar på samtalsfrågan eller ta bort den."
+  },
+  "premiumMonthlyPlan": "Monthly",
+  "@premiumMonthlyPlan": {
+    "description": "ZULLO interface. Source: Månadsvis"
+  },
+  "premiumAnnualPlan": "Yearly",
+  "@premiumAnnualPlan": {
+    "description": "ZULLO interface. Source: Årsvis"
+  },
+  "premiumPerYear": " per year",
+  "@premiumPerYear": {
+    "description": "ZULLO interface. Source:  per år"
+  },
+  "premiumOneTierExplanation": "One Premium plan. Choose monthly or yearly — both include the same benefits.",
+  "@premiumOneTierExplanation": {
+    "description": "ZULLO interface. Source: Ett Premium. Välj månadsvis eller årsvis – samma förmåner i båda."
+  },
+  "premiumMonthlyBoost": "1 Boost every month",
+  "@premiumMonthlyBoost": {
+    "description": "ZULLO interface. Source: 1 Boost varje månad"
+  },
+  "premiumCreditsBreakdown": "Included: {value0} · Purchased: {value1}",
+  "@premiumCreditsBreakdown": {
+    "description": "ZULLO interface. Source: Ingår: {value0} · Köpta: {value1}",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      },
+      "value1": {
+        "type": "String"
+      }
+    }
+  },
+  "premiumAllowanceRefresh": "Next refresh: {value0}",
+  "@premiumAllowanceRefresh": {
+    "description": "ZULLO interface. Source: Nästa påfyllning: {value0}",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "premiumNonRollover": "3 Superlikes each week and 1 Boost each month. Unused included credits do not roll over. Purchased credits remain until used.",
+  "@premiumNonRollover": {
+    "description": "ZULLO interface. Source: 3 Superlikes per vecka och 1 Boost varje månad. Oanvända inkluderade krediter sparas inte. Köpta krediter finns kvar tills de används."
+  },
+  "premiumManageSubscription": "Manage subscription in the store",
+  "@premiumManageSubscription": {
+    "description": "ZULLO interface. Source: Hantera abonnemang i butiken"
+  },
+  "premiumLegacyActivityNotice": "Your separate Hide Activity subscription remains active. Premium does not cancel it automatically. Manage it in the App Store or Google Play to avoid overlapping subscriptions.",
+  "@premiumLegacyActivityNotice": {
+    "description": "ZULLO interface. Source: Ditt separata abonnemang för Dölj aktivitet finns kvar. Premium avslutar det inte automatiskt. Hantera det i App Store eller Google Play för att undvika dubbla abonnemang."
+  },
+  "premiumPendingPurchase": "A purchase is awaiting verification. Do not buy again. Refresh your balance or restore purchases.",
+  "@premiumPendingPurchase": {
+    "description": "ZULLO interface. Source: Ett köp väntar på verifiering. Köp inte igen. Uppdatera saldot eller återställ köp."
+  },
+  "premiumRefundedPurchase": "This purchase has been refunded. Your verified balance has been updated.",
+  "@premiumRefundedPurchase": {
+    "description": "ZULLO interface. Source: Köpet har återbetalats. Ditt verifierade saldo har uppdaterats."
+  },
+  "premiumManagementUnavailable": "Open the App Store or Google Play to manage your subscription.",
+  "@premiumManagementUnavailable": {
+    "description": "ZULLO interface. Source: Öppna App Store eller Google Play för att hantera ditt abonnemang."
+  },
+  "premiumViewBenefits": "View Premium benefits",
+  "@premiumViewBenefits": {
+    "description": "ZULLO interface. Source: Se Premium-förmåner"
+  },
+  "premiumPurchaseVerificationUnavailable": "The purchase could not be checked yet. Do not buy again. Try refreshing your balance or restoring purchases.",
+  "@premiumPurchaseVerificationUnavailable": {
+    "description": "ZULLO interface. Source: Köpet kunde inte kontrolleras ännu. Köp inte igen. Försök uppdatera saldot eller återställa köp."
+  },
+  "verifyEmailTitle": "Verify your email address",
+  "@verifyEmailTitle": {
+    "description": "ZULLO interface. Source: Bekräfta din e-postadress"
+  },
+  "checkYourInbox": "Check your inbox",
+  "@checkYourInbox": {
+    "description": "ZULLO interface. Source: Kontrollera din inkorg"
+  },
+  "emailCodeInstructions": "Enter the code sent to your email address. Check your spam folder too.",
+  "@emailCodeInstructions": {
+    "description": "ZULLO interface. Source: Ange koden som skickades till din e-postadress. Kontrollera även skräpposten."
+  },
+  "emailVerificationCode": "Verification code",
+  "@emailVerificationCode": {
+    "description": "ZULLO interface. Source: Verifieringskod"
+  },
+  "verifyEmailAction": "Verify email address",
+  "@verifyEmailAction": {
+    "description": "ZULLO interface. Source: Bekräfta e-postadress"
+  },
+  "resendEmailCode": "Send a new code",
+  "@resendEmailCode": {
+    "description": "ZULLO interface. Source: Skicka en ny kod"
+  },
+  "resendEmailCodeCountdown": "New code in {value0}s",
+  "@resendEmailCodeCountdown": {
+    "description": "ZULLO interface. Source: Ny kod om {value0} s",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "enterSixDigitCode": "Enter the six-digit code.",
+  "@enterSixDigitCode": {
+    "description": "ZULLO interface. Source: Ange den sexsiffriga koden."
+  },
+  "verificationUnavailable": "Email verification is unavailable right now. Please try again later.",
+  "@verificationUnavailable": {
+    "description": "ZULLO interface. Source: E-postverifiering är inte tillgänglig just nu. Försök igen senare."
+  },
+  "verificationCodeInvalid": "The code is incorrect or has expired. Request a new code.",
+  "@verificationCodeInvalid": {
+    "description": "ZULLO interface. Source: Koden är felaktig eller har gått ut. Begär en ny kod."
+  },
+  "verificationCouldNotComplete": "Could not verify the email address. Please try again.",
+  "@verificationCouldNotComplete": {
+    "description": "ZULLO interface. Source: Kunde inte bekräfta e-postadressen. Försök igen."
+  },
+  "checkEmailDomain": "Check the domain in your email address.",
+  "@checkEmailDomain": {
+    "description": "ZULLO interface. Source: Kontrollera domänen i din e-postadress."
+  },
+  "enterValidEmailAddress": "Enter a valid email address.",
+  "@enterValidEmailAddress": {
+    "description": "ZULLO interface. Source: Ange en giltig e-postadress."
+  },
+  "invalidLoginCredentials": "Incorrect email address or password.",
+  "@invalidLoginCredentials": {
+    "description": "ZULLO interface. Source: Fel e-postadress eller lösenord."
+  },
+  "newMessageNotification": "You have a new message.",
+  "@newMessageNotification": {
+    "description": "Privacy-safe generic OS push body. Never includes sender identity or message content."
+  },
+  "premiumUncertainCheckout": "This purchase has no complete confirmation. New purchases are blocked to prevent a duplicate charge. Check the purchase in the App Store or Google Play.",
+  "@premiumUncertainCheckout": {
+    "description": "Receiptless or corrupt checkout state. Do not promise restore can clear an unknown attempt; never infer a receipt from date/product alone."
   }
 }

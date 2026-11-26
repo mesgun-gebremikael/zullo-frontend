@@ -1,0 +1,3 @@
+
+# Preserve the reviewed upstream and patch bytes on Windows checkouts.
+/packages/geolocator_android/** text eol=lf

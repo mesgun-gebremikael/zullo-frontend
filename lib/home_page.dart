@@ -843,6 +843,7 @@ class _HomePageState extends State<HomePage>
   }
 
   Widget _buildEmptyFeedState() => DiscoveryFeedEmpty(
+        animateSearch: widget.active,
         paused: _isPaused,
         onAction: _isPaused ? _openAccountManagement : _openRadiusSheet,
       );

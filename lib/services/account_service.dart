@@ -1,3 +1,4 @@
+import 'pending_store_purchase.dart';
 import 'onboarding_draft_service.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -64,6 +65,9 @@ class AccountService {
       try {
         await DraftCache().clear(user).timeout(const Duration(seconds: 5));
       } catch (_) {/* server erasure remains accepted */}
+      try {
+        await PendingPurchaseStorage().clear(user).timeout(const Duration(seconds: 5));
+      } catch (_) {/* accepted server erasure must still complete locally */}
     }
     return result;
   }

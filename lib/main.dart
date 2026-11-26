@@ -1,3 +1,6 @@
+import 'services/message_notification_handler.dart';
+import 'services/match_notification_handler.dart';
+import 'services/matches_refresh_service.dart';
 import 'services/notification_startup.dart';
 import 'widgets/localized_notification_channel.dart';
 import 'l10n/localization.dart';
@@ -69,24 +72,16 @@ class NotificationLaunchData {
   });
 }
 
-NotificationLaunchData? _parseNotificationLaunch(RemoteMessage? message) {
-  if (message == null) return null;
-
-  final data = message.data;
-  if (data['type'] != 'message') return null;
-
-  final recipientUserId = data['recipientUserId'];
-  if (recipientUserId == null || recipientUserId.isEmpty) return null;
-  final senderUserId = data['senderUserId'];
-  if (senderUserId == null || senderUserId.isEmpty) return null;
-
+Future<NotificationLaunchData?> _resolveMessageLaunch(
+    RemoteMessage message) async {
+  final request = await MessageNotificationHandler().resolve(message);
+  if (request == null) return null;
   return NotificationLaunchData(
-    userId: senderUserId,
-    recipientUserId: recipientUserId,
-    displayName: data['senderName'] ?? 'Chat',
-    photoUrl: data['senderPhotoUrl'] ?? '',
-    messageText:
-        (data['messageText'] ?? message.notification?.body ?? '').toString(),
+    userId: request.userId,
+    recipientUserId: message.data['recipientUserId'] as String,
+    displayName: request.displayName,
+    photoUrl: request.photoUrl,
+    messageText: '',
   );
 }
 
@@ -219,6 +214,8 @@ class ZulloApp extends StatefulWidget {
 
 class _ZulloAppState extends State<ZulloApp> {
   String? _lastOpenedMessageId;
+  final Set<String> _seenMatchEvents = {};
+  final Set<String> _openedMatchEvents = {};
   StreamSubscription<int>? _sessionSubscription;
   StreamSubscription<RemoteMessage>? _openedMessageSubscription;
   StreamSubscription<RemoteMessage>? _foregroundMessageSubscription;
@@ -237,6 +234,8 @@ class _ZulloAppState extends State<ZulloApp> {
     _sessionSubscription = AccountSession.changes.listen((_) {
       _hideInAppMessageOverlay();
       _lastOpenedMessageId = null;
+      _seenMatchEvents.clear();
+      _openedMatchEvents.clear();
       unawaited(flutterLocalNotificationsPlugin
           .cancelAll()
           .catchError((Object _) {}));
@@ -251,6 +250,44 @@ class _ZulloAppState extends State<ZulloApp> {
         initialMessage: FirebaseMessaging.instance.getInitialMessage,
       ).start());
     });
+  }
+
+  Future<bool> _handleMatch(RemoteMessage message, {required bool open}) async {
+    if (message.data['type'] != 'match') return false;
+    final event = MatchNotificationHandler.eventId(message);
+    if (event == null) return true;
+    final dedup = open ? _openedMatchEvents : _seenMatchEvents;
+    if (!dedup.add(event)) return true;
+    // Keep memory bounded while retaining recent delivery deduplication.
+    if (dedup.length > 200) dedup.remove(dedup.first);
+    final generation = AccountSession.generation;
+    final request = await MatchNotificationHandler().resolve(message);
+    if (!mounted || request == null || !AccountSession.isCurrent(generation)) {
+      return true;
+    }
+    MatchesRefreshService.instance.requestRefresh();
+    CommerceEvents.refreshDiscovery();
+    if (open) {
+      ChatCoordinator.instance.requestOpenChat(request);
+    } else {
+      final noticeContext = scaffoldMessengerKey.currentContext;
+      if (noticeContext == null || !noticeContext.mounted) return true;
+      scaffoldMessengerKey.currentState?.showSnackBar(SnackBar(
+        content: Text(noticeContext.l10n.youVeMatchedOpenChatsToSayHello),
+        action: SnackBarAction(
+            label: noticeContext.l10n.show,
+            onPressed: () async {
+              // A block/account change after the banner appeared revokes opening.
+              final fresh = await MatchNotificationHandler().resolve(message);
+              if (fresh != null &&
+                  mounted &&
+                  AccountSession.isCurrent(generation)) {
+                ChatCoordinator.instance.requestOpenChat(fresh);
+              }
+            }),
+      ));
+    }
+    return true;
   }
 
   Future<bool> _handleSuperLike(RemoteMessage message,
@@ -273,10 +310,12 @@ class _ZulloAppState extends State<ZulloApp> {
     if (open) {
       showDiscovery();
     } else {
+      final noticeContext = scaffoldMessengerKey.currentContext;
+      if (noticeContext == null || !noticeContext.mounted) return true;
       scaffoldMessengerKey.currentState?.showSnackBar(SnackBar(
-          content: Text(context.l10n.youReceivedASuperlike),
+          content: Text(noticeContext.l10n.youReceivedASuperlike),
           action: SnackBarAction(
-              label: context.l10n.show, onPressed: showDiscovery)));
+              label: noticeContext.l10n.show, onPressed: showDiscovery)));
     }
     return true;
   }
@@ -284,34 +323,32 @@ class _ZulloAppState extends State<ZulloApp> {
   Future<void> _setupNotificationTapHandling() async {
     _openedMessageSubscription = FirebaseMessaging.onMessageOpenedApp
         .listen((RemoteMessage message) async {
+      if (await _handleMatch(message, open: true)) return;
       if (await _handleSuperLike(message, open: true)) return;
       if (_lastOpenedMessageId == message.messageId) return;
       _lastOpenedMessageId = message.messageId;
 
-      final launch = _parseNotificationLaunch(message);
-      if (launch == null) return;
+      final launch = await _resolveMessageLaunch(message);
+      if (!mounted || launch == null) return;
 
       _openChatFromLaunch(launch);
     });
 
     _foregroundMessageSubscription =
         FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
+      if (await _handleMatch(message, open: false)) return;
       if (await _handleSuperLike(message, open: false)) return;
       final generation = AccountSession.generation;
-      final launch = _parseNotificationLaunch(message);
-      if (launch == null) return;
-      final allowed = await NotificationAccess.canOpen(
-          launch.userId, launch.recipientUserId);
-      if (!allowed || !AccountSession.isCurrent(generation)) return;
+      final launch = await _resolveMessageLaunch(message);
+      if (!mounted || launch == null) return;
+      // The resolver already checked recipient, relation and trusted profile.
+      if (!AccountSession.isCurrent(generation)) return;
 
       if (CurrentChat.openUserId == launch.userId) {
         return;
       }
 
-      final messageText =
-          (message.data['messageText'] ?? message.notification?.body ?? '')
-              .toString()
-              .trim();
+      const messageText = ''; // Never render private or spoofed push copy.
 
       // A slow unread-count request must not hide an arriving message banner.
       unawaited(BadgeService.refreshUnreadBadge()

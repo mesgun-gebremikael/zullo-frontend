@@ -1,3 +1,5 @@
+import 'push_installation_binding.dart';
+import '../models/email_address_validation.dart';
 import 'onboarding_draft_service.dart';
 import '../models/received_likes_summary.dart';
 import 'commerce_service.dart';
@@ -35,11 +37,40 @@ class AuthRequestException implements Exception {
   String toString() => message;
 }
 
+class EmailVerificationChallenge {
+  final String id, email;
+  final DateTime expiresAtUtc, nextSendAtUtc;
+  const EmailVerificationChallenge(
+      {required this.id,
+      required this.email,
+      required this.expiresAtUtc,
+      required this.nextSendAtUtc});
+  factory EmailVerificationChallenge.fromJson(Map<String, dynamic> value) =>
+      EmailVerificationChallenge(
+          id: value['challengeId'] as String,
+          email: value['email'] as String,
+          expiresAtUtc: DateTime.parse(value['expiresAtUtc'] as String).toUtc(),
+          nextSendAtUtc:
+              DateTime.parse(value['nextSendAtUtc'] as String).toUtc());
+}
+
+class EmailVerificationRequired implements Exception {
+  final EmailVerificationChallenge challenge;
+  const EmailVerificationRequired(this.challenge);
+}
+
+class EmailDomainTypoException extends AuthRequestException {
+  final String suggestion;
+  EmailDomainTypoException(this.suggestion)
+      : super('Kontrollera domänen i din e-postadress.');
+}
+
 class AuthService {
   static final String baseApiUrl = ApiConfig.baseUrl;
   static final String baseAuthUrl = '$baseApiUrl/api/auth';
 
   final AuthStorage _storage;
+  final PushInstallationBinding _pushInstallation;
   static final http.Client _sharedTransport = http.Client();
   final http.Client _transport;
   int _generation = AccountSession.generation;
@@ -49,8 +80,10 @@ class AuthService {
   AuthService(
       {http.Client? client,
       AuthStorage? storage,
+      PushInstallationBinding? pushInstallation,
       Future<String?> Function()? pushTokenLoader})
       : _storage = storage ?? AuthStorage(),
+        _pushInstallation = pushInstallation ?? PushInstallationBinding(),
         _transport = client ?? _sharedTransport,
         _pushTokenLoader = pushTokenLoader ?? PushTokenService.currentToken;
 
@@ -92,12 +125,57 @@ class AuthService {
     }
   }
 
+  void _validateEmail(String email, {bool suggest = false}) {
+    if (!EmailAddressValidation.isValid(email)) {
+      throw AuthRequestException('Ange en giltig e-postadress.');
+    }
+    final suggestion = EmailAddressValidation.suggestedAddress(email);
+    if (suggest && suggestion != null) {
+      throw EmailDomainTypoException(suggestion);
+    }
+  }
+
+  void _verificationPending(http.Response response) {
+    if (response.statusCode == 202) {
+      throw EmailVerificationRequired(EmailVerificationChallenge.fromJson(
+          jsonDecode(response.body) as Map<String, dynamic>));
+    }
+  }
+
+  Never _authFailure(http.Response response) {
+    String code = '';
+    try {
+      code = (jsonDecode(response.body)['code'] ?? '').toString();
+    } catch (_) {/* generic public message below */}
+    if (code == 'email_domain_typo') {
+      final suggestion = jsonDecode(response.body)['suggestion'];
+      if (suggestion is String) throw EmailDomainTypoException(suggestion);
+    }
+    if (code == 'email_in_use' ||
+        response.body.contains('User already exists')) {
+      throw AuthRequestException(
+          'E-postadressen används redan. Logga in i stället.');
+    }
+    if (code == 'verification_unavailable' ||
+        code == 'verification_delivery_failed') {
+      throw AuthRequestException(
+          'E-postverifiering är inte tillgänglig just nu. Försök igen senare.');
+    }
+    if (code == 'verification_invalid') {
+      throw AuthRequestException(
+          'Koden är felaktig eller har gått ut. Begär en ny kod.');
+    }
+    throw AuthRequestException(
+        'Kunde inte bekräfta e-postadressen. Försök igen.');
+  }
+
   // ---------- AUTH ----------
 
   Future<void> login({
     required String email,
     required String password,
   }) async {
+    _validateEmail(email);
     final generation = AccountSession.generation;
     final url = Uri.parse('$baseAuthUrl/login');
 
@@ -111,13 +189,14 @@ class AuthService {
 
     AccountSession.check(generation);
     _checkRateLimit(response);
+    _verificationPending(response);
     if (response.statusCode == 200) {
       await _acceptAuth(response);
 
       return;
     }
 
-    throw Exception('Login failed: ${response.statusCode} ${response.body}');
+    throw AuthRequestException('Fel e-postadress eller lösenord.');
   }
 
   Future<void> registerAndLogin(
@@ -126,6 +205,7 @@ class AuthService {
       required String password}) async {
     final response =
         await _register(name: name, email: email, password: password);
+    _verificationPending(response);
     await _acceptAuth(response);
   }
 
@@ -133,7 +213,9 @@ class AuthService {
       {required String name,
       required String email,
       required String password}) async {
-    await _register(name: name, email: email, password: password);
+    final response =
+        await _register(name: name, email: email, password: password);
+    _verificationPending(response);
   }
 
   Future<http.Response> _register({
@@ -141,6 +223,7 @@ class AuthService {
     required String email,
     required String password,
   }) async {
+    _validateEmail(email, suggest: true);
     final url = Uri.parse('$baseAuthUrl/register');
 
     final response = await _client
@@ -156,36 +239,73 @@ class AuthService {
         .timeout(const Duration(seconds: 90));
 
     _checkRateLimit(response);
-    if (response.statusCode == 200 || response.statusCode == 201) {
+    if (response.statusCode == 200 ||
+        response.statusCode == 201 ||
+        response.statusCode == 202) {
       return response;
     }
 
-    if (response.statusCode == 400 &&
-        response.body.contains('User already exists')) {
-      throw AuthRequestException(
-          'E-postadressen används redan. Logga in i stället.');
-    }
-    throw AuthRequestException('Kunde inte skapa kontot. Försök igen senare.');
+    _authFailure(response);
+  }
+
+  Future<void> verifyEmail(
+      EmailVerificationChallenge challenge, String code) async {
+    final generation = AccountSession.generation;
+    final response = await _transport
+        .post(Uri.parse('$baseAuthUrl/verify-email'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({'challengeId': challenge.id, 'code': code}))
+        .timeout(const Duration(seconds: 30));
+    AccountSession.check(generation);
+    _checkRateLimit(response);
+    if (response.statusCode != 200) _authFailure(response);
+    await _acceptAuth(response);
+  }
+
+  Future<EmailVerificationChallenge> resendVerification(
+      EmailVerificationChallenge challenge) async {
+    final generation = AccountSession.generation;
+    final response = await _transport
+        .post(Uri.parse('$baseAuthUrl/resend-verification'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({'challengeId': challenge.id}))
+        .timeout(const Duration(seconds: 30));
+    AccountSession.check(generation);
+    _checkRateLimit(response);
+    if (response.statusCode != 202) _authFailure(response);
+    return EmailVerificationChallenge.fromJson(
+        jsonDecode(response.body) as Map<String, dynamic>);
   }
 
   Future<void> logout() async {
     AccountSession.check(_generation);
     final generation = AccountSession.generation;
+    // Reserve intent order before any await; a later account's claim must always
+    // have a higher version even if this logout's storage/network work is slow.
+    final unlink = _pushInstallation.reserve();
     final authToken = await _storage.getToken();
     AccountSession.check(generation);
     // Invalidate local work before waiting for the network. Only the old JWT is used.
     await _storage.clearAuth();
     if (authToken != null && authToken.isNotEmpty) {
-      unawaited(_clearDeviceToken(authToken));
+      unawaited(_clearDeviceToken(authToken, unlink));
     }
   }
 
-  Future<void> _clearDeviceToken(String oldToken) async {
+  Future<void> _clearDeviceToken(
+      String oldToken, Future<PushInstallationReservation> reservation) async {
     try {
-      await _transport.post(
-        Uri.parse('$baseApiUrl/me/device-token/clear'),
-        headers: {'Authorization': 'Bearer $oldToken'},
-      ).timeout(const Duration(seconds: 5));
+      final metadata = await reservation;
+      await _transport
+          .post(
+            Uri.parse('$baseApiUrl/me/device-token/clear'),
+            headers: {
+              'Authorization': 'Bearer $oldToken',
+              'Content-Type': 'application/json'
+            },
+            body: jsonEncode(metadata.toJson()),
+          )
+          .timeout(const Duration(seconds: 5));
     } catch (_) {
       // Local logout remains complete even when offline.
     }
@@ -455,6 +575,7 @@ class AuthService {
     bool clearHeight = false,
     String? promptKey,
     String? promptAnswer,
+    List<Map<String, dynamic>>? conversationPrompts,
     double? lat,
     double? lng,
     String? countryCode,
@@ -481,6 +602,8 @@ class AuthService {
       'bio': bio,
       if (promptKey != null) 'promptKey': promptKey,
       if (promptAnswer != null) 'promptAnswer': promptAnswer,
+      if (conversationPrompts != null)
+        'conversationPrompts': conversationPrompts,
       'photoUrls': photoUrls,
       'interests': interests,
       'intention': intention,
@@ -648,34 +771,32 @@ class AuthService {
   }
 
   Future<void> saveDeviceToken(String token) async {
-    final authToken = await _storage.getToken();
-    if (authToken == null || authToken.isEmpty) {
-      throw Exception('No auth token found');
-    }
-
+    final generation = _generation;
+    AccountSession.check(generation);
     final trimmedToken = token.trim();
-    if (trimmedToken.isEmpty) {
-      throw Exception('Device token is empty');
+    if (trimmedToken.isEmpty) throw StateError('Device token is empty');
+    // Reserve first, so delayed credentials or HTTP cannot reverse account order.
+    final reservation = _pushInstallation.reserve();
+    final authToken = await _storage.getToken();
+    AccountSession.check(generation);
+    if (authToken == null || authToken.isEmpty) {
+      throw StateError('No account for push registration');
     }
-
-    final url = Uri.parse('$baseApiUrl/me/device-token');
-
-    final res = await _client
+    final metadata = await reservation;
+    AccountSession.check(generation);
+    final response = await _client
         .post(
-          url,
+          Uri.parse('$baseApiUrl/me/device-token'),
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer $authToken',
+            'Authorization': 'Bearer $authToken'
           },
-          body: jsonEncode({
-            'token': trimmedToken,
-          }),
+          body: jsonEncode({'token': trimmedToken, ...metadata.toJson()}),
         )
         .timeout(const Duration(seconds: 30));
-
-    if (res.statusCode != 200) {
-      throw Exception(
-          'Save device token failed: ${res.statusCode} ${res.body}');
+    if (response.statusCode != 200) {
+      // Never include credential-bearing payloads or provider response bodies.
+      throw StateError('Push registration could not be confirmed');
     }
   }
 }

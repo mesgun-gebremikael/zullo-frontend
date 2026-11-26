@@ -1,0 +1,7 @@
+{
+  "locationConsentTitle": ["Hitta personer nära dig", "Find people near you"],
+  "locationConsentExplanation": ["Låt ZULLO använda din plats när appen är öppen. Platsen uppdateras automatiskt när du förflyttar dig. Din exakta position visas inte för andra.", "Let ZULLO use your location while the app is open. Your location updates automatically as you move. Your exact position is never shown to others."],
+  "useMyLocation": ["Använd min plats", "Use my location"],
+  "retryLocation": ["Kontrollera plats igen", "Check location again"],
+  "automaticLocationExplanation": ["Platsen följer dig automatiskt när du använder appen. Knappen behövs bara om du vill försöka igen.", "Your location updates automatically while you use the app. The button is only needed if you want to try again."]
+}

@@ -76,6 +76,7 @@ void main() {
                   child: Scaffold(
                       backgroundColor: const Color(0xFFFFF8F5),
                       body: DiscoveryFeedEmpty(
+                          animateSearch: false,
                           paused: false, onAction: () => actions++))))));
       await tester.ensureVisible(find.text('Ändra filter'));
       await tester.tap(find.text('Ändra filter'));
@@ -99,7 +100,7 @@ void main() {
           dragListenable: drag,
           nextCard: null,
           activeCard: const SizedBox(),
-          emptyState: DiscoveryFeedEmpty(paused: false, onAction: () {}),
+          emptyState: DiscoveryFeedEmpty(animateSearch: false, paused: false, onAction: () {}),
           onOpenRadiusSheet: () {},
           onOpenMatchesPage: () {},
           onSwipeLeft: () {},

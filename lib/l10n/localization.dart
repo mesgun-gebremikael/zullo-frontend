@@ -699,7 +699,7 @@ extension ZulloLocalization on BuildContext {
       case "Skriv ett meddelande…":
         return l10n.writeAMessage;
       case "Skriv ett svar på samtalsfrågan eller ta bort den.":
-        return l10n.answerTheConversationPromptOrRemoveIt;
+        return l10n.answerOrRemoveConversationPrompt;
       case "Skriv något personligt…":
         return l10n.writeSomethingPersonal;
       case "Skytt":
@@ -978,6 +978,74 @@ extension ZulloLocalization on BuildContext {
         return l10n.premiumIncognito;
       case "Gilla":
         return l10n.likeAction;
+      case "Hitta personer nära dig":
+        return l10n.locationConsentTitle;
+      case "Låt ZULLO använda din plats när appen är öppen. Platsen uppdateras automatiskt när du förflyttar dig. Din exakta position visas inte för andra.":
+        return l10n.locationConsentExplanation;
+      case "Använd min plats":
+        return l10n.useMyLocation;
+      case "Kontrollera plats igen":
+        return l10n.retryLocation;
+      case "Platsen följer dig automatiskt när du använder appen. Knappen behövs bara om du vill försöka igen.":
+        return l10n.automaticLocationExplanation;
+      case "Saker om mig":
+        return l10n.thingsAboutMe;
+      case "Välj upp till tre frågor. Dina svar gör det lättare att börja prata.":
+        return l10n.chooseUpToThreeConversationPrompts;
+      case "Månadsvis":
+        return l10n.premiumMonthlyPlan;
+      case "Årsvis":
+        return l10n.premiumAnnualPlan;
+      case " per år":
+        return l10n.premiumPerYear;
+      case "Ett Premium. Välj månadsvis eller årsvis – samma förmåner i båda.":
+        return l10n.premiumOneTierExplanation;
+      case "1 Boost varje månad":
+        return l10n.premiumMonthlyBoost;
+      case "3 Superlikes per vecka och 1 Boost varje månad. Oanvända inkluderade krediter sparas inte. Köpta krediter finns kvar tills de används.":
+        return l10n.premiumNonRollover;
+      case "Hantera abonnemang i butiken":
+        return l10n.premiumManageSubscription;
+      case "Ditt separata abonnemang för Dölj aktivitet finns kvar. Premium avslutar det inte automatiskt. Hantera det i App Store eller Google Play för att undvika dubbla abonnemang.":
+        return l10n.premiumLegacyActivityNotice;
+      case "Ett köp väntar på verifiering. Köp inte igen. Uppdatera saldot eller återställ köp.":
+        return l10n.premiumPendingPurchase;
+      case "Köpet har återbetalats. Ditt verifierade saldo har uppdaterats.":
+        return l10n.premiumRefundedPurchase;
+      case "Öppna App Store eller Google Play för att hantera ditt abonnemang.":
+        return l10n.premiumManagementUnavailable;
+      case "Se Premium-förmåner":
+        return l10n.premiumViewBenefits;
+      case "Köpet kunde inte kontrolleras ännu. Köp inte igen. Försök uppdatera saldot eller återställa köp.":
+        return l10n.premiumPurchaseVerificationUnavailable;
+      case "Bekräfta din e-postadress":
+        return l10n.verifyEmailTitle;
+      case "Kontrollera din inkorg":
+        return l10n.checkYourInbox;
+      case "Ange koden som skickades till din e-postadress. Kontrollera även skräpposten.":
+        return l10n.emailCodeInstructions;
+      case "Verifieringskod":
+        return l10n.emailVerificationCode;
+      case "Bekräfta e-postadress":
+        return l10n.verifyEmailAction;
+      case "Skicka en ny kod":
+        return l10n.resendEmailCode;
+      case "Ange den sexsiffriga koden.":
+        return l10n.enterSixDigitCode;
+      case "E-postverifiering är inte tillgänglig just nu. Försök igen senare.":
+        return l10n.verificationUnavailable;
+      case "Koden är felaktig eller har gått ut. Begär en ny kod.":
+        return l10n.verificationCodeInvalid;
+      case "Kunde inte bekräfta e-postadressen. Försök igen.":
+        return l10n.verificationCouldNotComplete;
+      case "Kontrollera domänen i din e-postadress.":
+        return l10n.checkEmailDomain;
+      case "Ange en giltig e-postadress.":
+        return l10n.enterValidEmailAddress;
+      case "Fel e-postadress eller lösenord.":
+        return l10n.invalidLoginCredentials;
+      case "Köpet saknar fullständig bekräftelse. Nya köp är spärrade för att undvika dubbel debitering. Kontrollera köpet i App Store eller Google Play.":
+        return l10n.premiumUncertainCheckout;
     }
     {
       final match =
@@ -1173,6 +1241,28 @@ extension ZulloLocalization on BuildContext {
       final match = RegExp("^(.*?)\\ tum\$", dotAll: true).firstMatch(source);
       if (match != null) {
         return l10n.heightInches(match.group(1)!);
+      }
+    }
+    {
+      final match =
+          RegExp("^Ingår:\\ (.*?)\\ ·\\ Köpta:\\ (.*?)\$", dotAll: true)
+              .firstMatch(source);
+      if (match != null) {
+        return l10n.premiumCreditsBreakdown(match.group(1)!, match.group(2)!);
+      }
+    }
+    {
+      final match = RegExp("^Nästa\\ påfyllning:\\ (.*?)\$", dotAll: true)
+          .firstMatch(source);
+      if (match != null) {
+        return l10n.premiumAllowanceRefresh(match.group(1)!);
+      }
+    }
+    {
+      final match = RegExp("^Ny\\ kod\\ om\\ (.*?)\\ s\$", dotAll: true)
+          .firstMatch(source);
+      if (match != null) {
+        return l10n.resendEmailCodeCountdown(match.group(1)!);
       }
     }
     return source;

@@ -151,15 +151,17 @@ class ProfileStory extends StatelessWidget {
                       fontSize: 17, height: 1.65, color: Color(0xFF424B59))),
             ])),
       ],
-      if (conversationPrompts.containsKey(p.promptKey) &&
-          p.promptAnswer.trim().isNotEmpty) ...[
-        const SizedBox(height: 24),
-        Text(context.tr(conversationPrompts[p.promptKey]!),
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-        const SizedBox(height: 10),
-        SelectableText(p.promptAnswer.trim(),
-            style: const TextStyle(fontSize: 17, height: 1.6)),
-      ],
+      for (final prompt in p.effectivePrompts)
+        if (conversationPrompts.containsKey(prompt.key) &&
+            prompt.answer.trim().isNotEmpty) ...[
+          const SizedBox(height: 24),
+          Text(context.tr(conversationPrompts[prompt.key]!),
+              style:
+                  const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+          const SizedBox(height: 10),
+          SelectableText(prompt.answer.trim(),
+              style: const TextStyle(fontSize: 17, height: 1.6)),
+        ],
       if (p.outsideDistance || p.outsideAge)
         Padding(
             padding: EdgeInsets.only(top: 20),

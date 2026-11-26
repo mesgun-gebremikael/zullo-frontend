@@ -30,7 +30,12 @@ void main() {
             paths.add(request.url.path);
             if (request.url.path == '/me/device-token') {
               expect(request.headers['Authorization'], 'Bearer new-token');
-              expect(jsonDecode(request.body), {'token': 'device-token'});
+              final registration =
+                  jsonDecode(request.body) as Map<String, dynamic>;
+              expect(registration['token'], 'device-token');
+              expect(registration['installationId'],
+                  matches(RegExp(r'^[0-9a-f-]{36}$')));
+              expect(registration['version'], greaterThan(0));
               savedPush.complete();
               return http.Response('{}', 200);
             }

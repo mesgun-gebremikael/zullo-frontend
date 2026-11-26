@@ -1,3 +1,5 @@
+import 'conversation_prompt.dart';
+
 class SwipeProfile {
   final String userId;
   final bool superLikedYou;
@@ -9,6 +11,13 @@ class SwipeProfile {
 
   final String bio;
   final String promptKey, promptAnswer;
+  final List<ProfileConversationPrompt> conversationPrompts;
+  List<ProfileConversationPrompt> get effectivePrompts => conversationPrompts
+          .isNotEmpty
+      ? conversationPrompts
+      : promptKey.isEmpty
+          ? []
+          : [ProfileConversationPrompt(key: promptKey, answer: promptAnswer)];
   final bool outsideDistance, outsideAge;
   final String religion;
   final String workout;
@@ -47,6 +56,7 @@ class SwipeProfile {
     required this.intention,
     required this.photoUrls,
     required this.bio,
+    this.conversationPrompts = const [],
     this.promptKey = "",
     this.promptAnswer = "",
     this.outsideDistance = false,
@@ -89,8 +99,17 @@ class SwipeProfile {
       intention: (json['intention'] ?? '').toString(),
       photoUrls: photos,
       bio: (json['bio'] ?? '').toString(),
-      promptKey: (json['promptKey'] ?? '').toString(),
-      promptAnswer: (json['promptAnswer'] ?? '').toString(),
+      conversationPrompts: ProfileConversationPrompt.read(json),
+      promptKey: json['conversationPrompts'] is List
+          ? (ProfileConversationPrompt.read(json).isEmpty
+              ? ''
+              : ProfileConversationPrompt.read(json).first.key)
+          : (json['promptKey'] ?? '').toString(),
+      promptAnswer: json['conversationPrompts'] is List
+          ? (ProfileConversationPrompt.read(json).isEmpty
+              ? ''
+              : ProfileConversationPrompt.read(json).first.answer)
+          : (json['promptAnswer'] ?? '').toString(),
       outsideDistance: json['outsideDistance'] == true,
       outsideAge: json['outsideAge'] == true,
       religion: (json['religion'] ?? '').toString(),

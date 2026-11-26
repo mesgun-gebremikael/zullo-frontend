@@ -67,6 +67,12 @@ class HubChatTransport implements ChatTransport {
     connection.on('LikesChanged', (args) {
       if (epoch == _epoch) MatchesRefreshService.instance.requestRefresh();
     });
+    connection.on('MatchesChanged', (args) {
+      if (epoch == _epoch && AccountSession.isCurrent(generation)) {
+        MatchesRefreshService.instance.requestRefresh();
+        CommerceEvents.refreshDiscovery();
+      }
+    });
     connection.on('SuperLikeReceived', (args) {
       if (epoch == _epoch) {
         CommerceEvents.refreshDiscovery();

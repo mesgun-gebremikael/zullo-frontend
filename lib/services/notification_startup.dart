@@ -1,10 +1,12 @@
+import '../models/swipe_profile.dart';
+import 'message_notification_handler.dart';
+import 'match_notification_handler.dart';
 import 'dart:async';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import '../models/chat_open_request.dart';
 import 'account_session.dart';
 import 'chat_coordinator.dart';
-import 'notification_access.dart';
 
 /// Starts push registration independently of cold-start notification routing.
 ///
@@ -16,16 +18,24 @@ class NotificationStartup {
     required this.register,
     required this.initialMessage,
     Future<bool> Function(String peer, String recipient)? canOpen,
+    Future<SwipeProfile> Function(String peer)? profile,
     void Function(ChatOpenRequest request)? enqueue,
+    Future<ChatOpenRequest?> Function(RemoteMessage message)? resolveMatch,
     this.initialMessageTimeout = const Duration(seconds: 5),
-  })  : _canOpen = canOpen ?? NotificationAccess.canOpen,
-        _enqueue = enqueue ?? ChatCoordinator.instance.requestOpenChat;
+  })  : _resolveMessage =
+            MessageNotificationHandler(canOpen: canOpen, profile: profile)
+                .resolve,
+        _enqueue = enqueue ?? ChatCoordinator.instance.requestOpenChat,
+        _resolveMatch =
+            resolveMatch ?? MatchNotificationHandler(canOpen: canOpen).resolve;
 
   final Future<void> Function() register;
   final Future<RemoteMessage?> Function() initialMessage;
-  final Future<bool> Function(String peer, String recipient) _canOpen;
+  final Future<ChatOpenRequest?> Function(RemoteMessage message)
+      _resolveMessage;
   final void Function(ChatOpenRequest request) _enqueue;
   final Duration initialMessageTimeout;
+  final Future<ChatOpenRequest?> Function(RemoteMessage message) _resolveMatch;
   bool _started = false;
 
   Future<void> start() async {
@@ -37,30 +47,17 @@ class NotificationStartup {
       final message = await initialMessage().timeout(initialMessageTimeout);
       if (message == null || !AccountSession.isCurrent(generation)) return;
       final data = message.data;
-      if (data['type'] != 'message') return;
-      final peer = data['senderUserId'];
-      final recipient = data['recipientUserId'];
-      if (peer is! String ||
-          peer.trim().isEmpty ||
-          recipient is! String ||
-          recipient.trim().isEmpty) {
+      if (data['type'] == 'match') {
+        final request = await _resolveMatch(message);
+        if (request != null && AccountSession.isCurrent(generation)) {
+          _enqueue(request);
+        }
         return;
       }
-      final allowed = await _canOpen(peer, recipient);
-      if (!allowed || !AccountSession.isCurrent(generation)) return;
-      _enqueue(ChatOpenRequest(
-        userId: peer,
-        displayName: data['senderName'] is String ? data['senderName'] : 'Chat',
-        photoUrl:
-            data['senderPhotoUrl'] is String ? data['senderPhotoUrl'] : '',
-        openChatsListOnExit: true,
-        fromNotification: true,
-        forceRefreshThread: true,
-        previewMessageText:
-            (data['messageText'] ?? message.notification?.body ?? '')
-                .toString(),
-        previewMessageAtUtc: DateTime.now().toUtc().toIso8601String(),
-      ));
+      final request = await _resolveMessage(message);
+      if (request != null && AccountSession.isCurrent(generation)) {
+        _enqueue(request);
+      }
     } catch (_) {
       // Startup remains usable while storage, Firebase or chat access is offline.
       // Do not log notification payloads or exception details.

@@ -30,6 +30,11 @@ class FakeCommerce extends CommerceClient {
   }
 
   @override
+  Future<({bool verified, bool refunded})> purchaseStatus(
+          StorePurchase receipt) async =>
+      (verified: true, refunded: false);
+
+  @override
   Future<CommerceState> boost() async {
     boosts++;
     return current = CommerceState(
@@ -52,8 +57,10 @@ class FakeStore extends NativeBilling {
   }
 
   @override
-  Future<void> buy(StoreOffer offer, String userId) async {
+  Future<StorePurchase> buy(StoreOffer offer, String userId) async {
     buys++;
+    return StorePurchase('app_store', 'transaction-$buys', offer.id,
+        purchaseDate: DateTime.now().toUtc());
   }
 
   @override
@@ -66,8 +73,7 @@ class PrivacyCommerce extends FakeCommerce {
   @override
   Future<CommerceState> sync() async {
     syncs++;
-    return current =
-        const CommerceState(checkoutEnabled: true, activityPrivacy: true);
+    return current = const CommerceState(checkoutEnabled: true, premium: true);
   }
 }
 
@@ -97,7 +103,7 @@ void main() {
   }
 
   testWidgets(
-      'standalone activity page offers privacy and Premium without Boost upsell and verifies its own entitlement',
+      'activity page offers the single Premium plan without a new standalone privacy subscription',
       (tester) async {
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 1;
@@ -111,8 +117,9 @@ void main() {
         () => tester.pumpWidget(MaterialApp(
             home: PremiumPage(
                 commerce: commerce, billing: store, activityOnly: true))));
-    expect(find.text('Bara Dölj aktivitet'), findsOneWidget);
-    expect(find.text('19,00 kr per månad'), findsOneWidget);
+    expect(find.text('Bara Dölj aktivitet'), findsNothing);
+    expect(find.text('19,00 kr per månad'), findsNothing);
+    expect(find.text('59,00 kr per månad'), findsOneWidget);
     expect(find.text('1 Boost'), findsNothing);
     expect(find.text('Det här ingår i Premium'), findsNothing);
     await pump(tester, () async {
@@ -121,7 +128,7 @@ void main() {
     expect(store.buys, 1);
     expect(commerce.syncs, 1);
     expect(commerce.current.canHideActivity, isTrue);
-    expect(commerce.current.premium, isFalse);
+    expect(commerce.current.premium, isTrue);
     expect(find.textContaining('väntar på verifiering'), findsNothing);
     final privacyButton = tester
         .widget<FilledButton>(find.widgetWithText(FilledButton, 'Köp').first);
