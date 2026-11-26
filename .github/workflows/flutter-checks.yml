@@ -72,5 +72,14 @@ jobs:
       - run: flutter build apk --debug --dart-define=ZULLO_API_URL=https://api.example.invalid
       - run: JAVA_HOME="$JAVA_HOME_17_X64" ./gradlew :geolocator_android:testDebugUnitTest
         working-directory: android
+      - name: Preserve failed native test diagnostics
+        if: failure()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6 (Node24)
+        with:
+          name: android-native-test-diagnostics
+          path: |
+            build/geolocator_android/test-results/testDebugUnitTest
+            build/geolocator_android/reports/tests/testDebugUnitTest
+          if-no-files-found: ignore
       - name: Verify release signing with a disposable CI key
         run: JAVA_HOME="$JAVA_HOME_17_X64" python3 .ci/check_android_release_signing.py

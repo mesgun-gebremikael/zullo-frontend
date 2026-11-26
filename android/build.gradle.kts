@@ -1,4 +1,6 @@
 import org.gradle.api.tasks.compile.JavaCompile
+import org.gradle.api.tasks.testing.Test
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.jvm.toolchain.JavaLanguageVersion
 import org.gradle.jvm.toolchain.JavaToolchainService
 
@@ -33,6 +35,14 @@ subprojects {
 subprojects {
     tasks.withType<JavaCompile>().configureEach {
         javaCompiler.set(java17Compiler)
+    }
+    tasks.withType<Test>().configureEach {
+        if (project.name == "geolocator_android") {
+            // Robolectric fetches Android runtimes outside Gradle's repositories.
+            // Use Maven Central's canonical endpoint, as mavenCentral() does.
+            systemProperty("robolectric.dependency.repo.url", "https://repo.maven.apache.org/maven2")
+            testLogging.exceptionFormat = TestExceptionFormat.FULL
+        }
     }
     project.evaluationDependsOn(":app")
 }
