@@ -540,11 +540,13 @@ class _MainNavigationState extends State<MainNavigation>
                   Positioned.fill(
                     child: IgnorePointer(
                       child: AnimatedAlign(
-                        alignment: Alignment(
+                        alignment: AlignmentDirectional(
                           -1 + (2 * _selectedIndex / (_pages.length - 1)),
                           0,
                         ),
-                        duration: const Duration(milliseconds: 280),
+                        duration: MediaQuery.disableAnimationsOf(context)
+                            ? Duration.zero
+                            : const Duration(milliseconds: 280),
                         curve: Curves.easeInOutCubic,
                         child: FractionallySizedBox(
                           widthFactor: 1 / _pages.length,
@@ -566,36 +568,36 @@ class _MainNavigationState extends State<MainNavigation>
                   Row(
                     children: [
                       _NavItem(
-                    icon: Icons.explore_outlined,
-                    symbol: ZulloSymbolKind.discover,
-                    activeIcon: Icons.explore,
-                    label: 'Swipa',
-                    isActive: _selectedIndex == 0,
-                    onTap: () => _onItemTapped(0),
-                  ),
-                  _NavItem(
-                    icon: Icons.favorite_border,
-                    activeIcon: Icons.favorite,
-                    label: 'Likes',
-                    isActive: _selectedIndex == AppTabs.likes,
-                    onTap: () => _onItemTapped(AppTabs.likes),
-                  ),
-                  _NavItem(
-                    icon: Icons.chat_bubble_outline,
-                    symbol: ZulloSymbolKind.conversation,
-                    activeIcon: Icons.chat_bubble,
-                    label: 'Chattar',
-                    isActive: _selectedIndex == AppTabs.chats,
-                    showDot: _hasUnreadMessages,
-                    onTap: () => _onItemTapped(AppTabs.chats),
-                  ),
-                  _NavItem(
-                    icon: Icons.person_outline,
-                    activeIcon: Icons.person,
-                    label: 'Profil',
-                    isActive: _selectedIndex == AppTabs.profile,
-                    onTap: () => _onItemTapped(AppTabs.profile),
-                  ),
+                        icon: Icons.explore_outlined,
+                        symbol: ZulloSymbolKind.discover,
+                        activeIcon: Icons.explore,
+                        label: 'Swipa',
+                        isActive: _selectedIndex == 0,
+                        onTap: () => _onItemTapped(0),
+                      ),
+                      _NavItem(
+                        icon: Icons.favorite_border,
+                        activeIcon: Icons.favorite,
+                        label: 'Likes',
+                        isActive: _selectedIndex == AppTabs.likes,
+                        onTap: () => _onItemTapped(AppTabs.likes),
+                      ),
+                      _NavItem(
+                        icon: Icons.chat_bubble_outline,
+                        symbol: ZulloSymbolKind.conversation,
+                        activeIcon: Icons.chat_bubble,
+                        label: 'Chattar',
+                        isActive: _selectedIndex == AppTabs.chats,
+                        showDot: _hasUnreadMessages,
+                        onTap: () => _onItemTapped(AppTabs.chats),
+                      ),
+                      _NavItem(
+                        icon: Icons.person_outline,
+                        activeIcon: Icons.person,
+                        label: 'Profil',
+                        isActive: _selectedIndex == AppTabs.profile,
+                        onTap: () => _onItemTapped(AppTabs.profile),
+                      ),
                     ],
                   ),
                 ],
