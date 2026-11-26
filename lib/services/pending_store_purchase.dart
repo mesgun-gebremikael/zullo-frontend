@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -34,24 +35,53 @@ class PendingStorePurchase {
   final String productId;
   final DateTime startedAt;
   final StorePurchase? receipt;
-  const PendingStorePurchase(this.productId, this.startedAt, {this.receipt});
+  // Local callback identity only, never proof of a store transaction.
+  final String? attemptId;
+  const PendingStorePurchase(this.productId, this.startedAt,
+      {this.receipt, this.attemptId});
   PendingStorePurchase withReceipt(StorePurchase value) =>
-      PendingStorePurchase(productId, startedAt, receipt: value);
+      PendingStorePurchase(productId, startedAt,
+          receipt: value, attemptId: attemptId);
   Map<String, dynamic> toJson() => {
         'productId': productId,
         'startedAt': startedAt.toUtc().toIso8601String(),
+        'attemptId': attemptId,
         'receipt': receipt?.toJson()
       };
   factory PendingStorePurchase.fromJson(Map<String, dynamic> json) =>
       PendingStorePurchase(json['productId'] as String,
           DateTime.parse(json['startedAt'] as String),
+          attemptId: _readAttemptId(json['attemptId']),
           receipt: json['receipt'] is Map
               ? StorePurchase.fromJson(
                   Map<String, dynamic>.from(json['receipt']))
               : null);
+  static String? _readAttemptId(Object? value) {
+    // Older installed versions stored only product/time. Keep their guard.
+    if (value == null) return null;
+    if (value is! String || !RegExp(r'^[0-9a-f]{32}$').hasMatch(value)) {
+      throw const FormatException('Invalid local checkout identity');
+    }
+    return value;
+  }
 }
 
 class PendingPurchaseStorage {
+  PendingPurchaseStorage({DateTime Function()? now})
+      : _now = now ?? DateTime.now;
+  final DateTime Function() _now;
+  static String _newAttemptId() {
+    final random = Random.secure();
+    return List.generate(
+            16, (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0'))
+        .join();
+  }
+
+  static bool _sameAttempt(
+          PendingStorePurchase actual, PendingStorePurchase expected) =>
+      actual.productId == expected.productId &&
+      actual.startedAt == expected.startedAt &&
+      actual.attemptId == expected.attemptId;
   static Future<void> _tail = Future.value();
   static Future<T> _serialized<T>(Future<T> Function() operation) {
     final result = _tail.then((_) => operation());
@@ -65,7 +95,8 @@ class PendingPurchaseStorage {
         if (await read(user) != null) {
           throw const PendingCheckoutException();
         }
-        final value = PendingStorePurchase(product, DateTime.now().toUtc());
+        final value = PendingStorePurchase(product, _now().toUtc(),
+            attemptId: _newAttemptId());
         await save(user, value);
         return value;
       });
@@ -85,9 +116,7 @@ class PendingPurchaseStorage {
           String user, PendingStorePurchase expected, StorePurchase receipt) =>
       _serialized(() async {
         final actual = await read(user);
-        if (actual == null ||
-            actual.productId != expected.productId ||
-            actual.startedAt != expected.startedAt) {
+        if (actual == null || !_sameAttempt(actual, expected)) {
           return false;
         }
         await save(user, expected.withReceipt(receipt));
@@ -105,9 +134,7 @@ class PendingPurchaseStorage {
       _serialized(() async {
         if (expected != null) {
           final actual = await read(user);
-          if (actual == null ||
-              actual.productId != expected.productId ||
-              actual.startedAt != expected.startedAt) {
+          if (actual == null || !_sameAttempt(actual, expected)) {
             return;
           }
         }

@@ -6,6 +6,7 @@ import 'widgets/zullo_symbol.dart';
 import 'welcome_page.dart';
 import 'likes_page.dart';
 import 'services/commerce_service.dart';
+import 'services/known_purchase_recovery.dart';
 import 'services/relation_changes.dart';
 import 'services/signalr_service.dart';
 import 'services/refresh_coordinator.dart';
@@ -41,6 +42,7 @@ class MainNavigation extends StatefulWidget {
   final AuthService? authService;
   final SignalRService? liveService;
   final List<Widget>? pages;
+  final KnownPurchaseRecovery? purchaseRecovery;
 
   const MainNavigation({
     super.key,
@@ -48,6 +50,7 @@ class MainNavigation extends StatefulWidget {
     this.authService,
     this.liveService,
     this.pages,
+    this.purchaseRecovery,
   });
 
   @override
@@ -59,6 +62,13 @@ class _MainNavigationState extends State<MainNavigation>
   late final _locationSync = ForegroundLocationSync(_authService,
       isActive: () => mounted && _inForeground);
   bool _locationConsentInFlight = false;
+  KnownPurchaseRecovery? _purchaseRecovery;
+  Future<void> _recoverKnownPurchase() async {
+    if (mounted && _sessionActive && _inForeground) {
+      await _purchaseRecovery?.retry();
+    }
+  }
+
   Future<void> _refreshLocation({bool force = false}) async {
     if (widget.pages != null || !_sessionActive || _locationConsentInFlight) {
       return;
@@ -185,6 +195,14 @@ class _MainNavigationState extends State<MainNavigation>
       }
     });
     WidgetsBinding.instance.addObserver(this);
+    if (widget.pages == null || widget.purchaseRecovery != null) {
+      _purchaseRecovery = widget.purchaseRecovery ??
+          KnownPurchaseRecovery(
+              isActive: () => mounted && _sessionActive && _inForeground);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        unawaited(_recoverKnownPurchase());
+      });
+    }
     if (widget.pages == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted && _sessionActive) unawaited(_initialiseLocation());
@@ -250,6 +268,7 @@ class _MainNavigationState extends State<MainNavigation>
 
   @override
   void dispose() {
+    _purchaseRecovery?.dispose();
     _openDiscovery?.cancel();
     _accountClosed?.cancel();
     _sessionExpired?.cancel();
@@ -329,6 +348,7 @@ class _MainNavigationState extends State<MainNavigation>
       setState(() => _inForeground = inForeground);
     }
     if (state == AppLifecycleState.resumed && mounted && _sessionActive) {
+      unawaited(_recoverKnownPurchase());
       if (widget.pages == null) {
         unawaited(_pulsePresence());
         unawaited(_refreshLocation(force: true));

@@ -27,3 +27,6 @@ Navigation behåller flikarnas innehåll och pausar dolda animationer; chattkvit
 
 ## Release-signering förberedd
 Androids releasebygge får inte längre använda debugnyckeln. Ägarens nyckel kan anges via git-ignorerad android/key.properties eller ZULLO_ANDROID-signeringens miljövariabler. Saknade uppgifter stoppar releasebygget; vanlig emulatorstart fungerar utan dem. Se ANDROID_RELEASE_SIGNING.md. Ingen permanent nyckel har skapats åt ägaren, ingen appidentitet ändrad och ingen publicering/betalning aktiverad. Riktig ägarnyckel, butikskonfiguration och sandboxprov återstår.
+
+## Sparade kvitton och återhämtning
+Kända kvitton återhämtas via serververifiering efter autentiserad appstart/foreground samt i Premium. Ingen automatisk ny debitering eller native restore körs. Lokala slump-ID:n skyddar nya köpförsök mot gamla callbacks även vid identiska tidsstämplar; äldre poster bevaras. ID:t är inte betalningsbevis och löser inte kvittolösa avbrott. Se PURCHASE_RECOVERY.md. Backend har JWT-konfigurationsskydd och en isolerad riktig PostgreSQL-återställningskontroll, se respektive backendguide. Faktiska leverantörsbackuper, butikskoppling och telefon-/sandboxprov återstår.

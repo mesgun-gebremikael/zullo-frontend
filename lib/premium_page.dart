@@ -24,7 +24,7 @@ class PremiumPage extends StatefulWidget {
   State<PremiumPage> createState() => _PremiumPageState();
 }
 
-class _PremiumPageState extends State<PremiumPage> {
+class _PremiumPageState extends State<PremiumPage> with WidgetsBindingObserver {
   late final _commerce = widget.commerce ?? CommerceClient();
   late final _billing = widget.billing ?? RevenueCatBilling();
   final _generation = AccountSession.generation;
@@ -50,6 +50,7 @@ class _PremiumPageState extends State<PremiumPage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _load();
     _walletSubscription =
         CommerceEvents.walletStream.listen((_) => _refreshBalance());
@@ -60,9 +61,21 @@ class _PremiumPageState extends State<PremiumPage> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _walletSubscription?.cancel();
     _timer?.cancel();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed &&
+        _active &&
+        _pendingPurchase?.receipt != null) {
+      // Retry only an existing checkout. Never open a purchase sheet on resume.
+      // _load shares one in-flight operation across repeated foreground events.
+      unawaited(_load());
+    }
   }
 
   Future<void> _refreshBalance() {
@@ -116,7 +129,7 @@ class _PremiumPageState extends State<PremiumPage> {
 
   Future<void> _performLoad() async {
     try {
-      final state = await _commerce.state();
+      var state = await _commerce.state();
       if (!_active) return;
       final user = await AuthStorage().getUserId();
       if (!_active) return;
@@ -140,9 +153,41 @@ class _PremiumPageState extends State<PremiumPage> {
         _error = null;
       });
       if (pending?.receipt != null) {
-        final reconciled = await _reconcile(state);
-        if (!_active) return;
-        setState(() => _state = reconciled);
+        try {
+          // A process can end after storing the receipt but before the first
+          // provider sync. Refresh the authoritative ledger before checking the
+          // exact receipt; a stale GET balance must not leave it stuck forever.
+          state = await _commerce.sync();
+          if (!_active) return;
+          state = await _reconcile(state);
+          if (!_active) return;
+          setState(() => _state = state);
+        } catch (_) {
+          if (!_active) return;
+          // The provider can be offline after its receipt was already committed
+          // to our ledger. Exact server proof can still release that guard;
+          // never infer confirmation from the balance or product history.
+          try {
+            state = await _reconcile(state);
+            if (!_active) return;
+            if (_pendingPurchase == null) {
+              // Proof may follow a webhook newer than the initial GET snapshot.
+              // Refresh its wallet, but never invent a grant if that read fails.
+              try {
+                state = await _commerce.state();
+              } catch (_) {/* retain the last verified server balance */}
+              if (!_active) return;
+            }
+            setState(() => _state = state);
+          } catch (_) {
+            if (!_active) return;
+          }
+          if (_pendingPurchase != null) {
+            // Keep the receipt and last verified balance for the next retry.
+            setState(() => _error =
+                'Ett köp väntar på verifiering. Köp inte igen. Uppdatera saldot eller återställ köp.');
+          }
+        }
       }
       if (state.checkoutEnabled && _billing.available && user != null) {
         try {
