@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // START: FlutterFire Configuration
@@ -7,6 +9,41 @@ plugins {
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
+
+// Local key.properties is ignored by Git. CI may supply the matching environment
+// variables instead; never fall back to Android's public development key.
+val releaseProperties = Properties().apply {
+    val propertiesFile = rootProject.file("key.properties")
+    if (propertiesFile.isFile) propertiesFile.inputStream().use { load(it) }
+}
+val releaseKeys = mapOf(
+    "storeFile" to "ZULLO_ANDROID_KEYSTORE_PATH",
+    "storePassword" to "ZULLO_ANDROID_STORE_PASSWORD",
+    "keyAlias" to "ZULLO_ANDROID_KEY_ALIAS",
+    "keyPassword" to "ZULLO_ANDROID_KEY_PASSWORD",
+)
+val releaseValues = releaseKeys.mapValues { (propertyName, environmentName) ->
+    providers.environmentVariable(environmentName).orNull
+        ?: releaseProperties.getProperty(propertyName)
+}
+val hasReleaseSigning = releaseValues.values.all { !it.isNullOrBlank() }
+val releaseKeystore = releaseValues["storeFile"]?.let { rootProject.file(it) }
+val validateZulloReleaseSigning = tasks.register("validateZulloReleaseSigning") {
+    group = "verification"
+    description = "Require owner-supplied signing credentials for release artifacts."
+    doLast {
+        if (!hasReleaseSigning) throw GradleException(
+            "ZULLO_RELEASE_SIGNING_REQUIRED: Configure android/key.properties or the " +
+                "ZULLO_ANDROID signing environment variables; see docs/ANDROID_RELEASE_SIGNING.md."
+        )
+        if (releaseKeystore?.isFile != true) throw GradleException(
+            "ZULLO_RELEASE_KEYSTORE_MISSING: The configured keystore must be an existing file."
+        )
+    }
+}
+tasks.matching {
+    it.name in setOf("assembleRelease", "bundleRelease", "packageRelease", "validateSigningRelease")
+}.configureEach { dependsOn(validateZulloReleaseSigning) }
 
 android {
     namespace = "com.example.zullo_app"
@@ -35,11 +72,19 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        if (hasReleaseSigning) {
+            create("release") {
+                storeFile = releaseKeystore
+                storePassword = releaseValues["storePassword"]
+                keyAlias = releaseValues["keyAlias"]
+                keyPassword = releaseValues["keyPassword"]
+            }
+        }
+    }
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.findByName("release")
         }
     }
 }

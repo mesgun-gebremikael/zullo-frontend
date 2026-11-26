@@ -17,3 +17,8 @@ assert 'jvmTarget = JavaVersion.VERSION_17.toString()' in gradle
 assert 'isCoreLibraryDesugaringEnabled = true' in gradle
 assert 'desugar_jdk_libs:2.1.4' in gradle
 print('Android foreground permissions, backup policy and Java 17/desugaring configuration OK.')
+
+assert 'signingConfig = signingConfigs.getByName("debug")' not in gradle, 'Release must never use debug signing'
+assert 'validateZulloReleaseSigning' in gradle
+assert 'ZULLO_ANDROID_KEYSTORE_PATH' in gradle
+print('Release signing requires explicit owner credentials; debug signing fallback removed.')

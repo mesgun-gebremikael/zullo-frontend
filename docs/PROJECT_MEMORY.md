@@ -24,3 +24,6 @@ Tekniska beslut/fixar/tester och parallella agenter godkända. Ingen destruktiv 
 
 ## Dagens förbättringar av mobilflyt
 Navigation behåller flikarnas innehåll och pausar dolda animationer; chattkvitton bygger inte om hemskärmen. Profil-/plånbokshämtningar samordnas och gamla kontosvar ignoreras. Swipe börjar animeras före nätverkssvar, förhindrar dubbeltryck och återställer vid fel/avbruten gest. Rewind, feed och swipe skyddas mot överlapp. Serverns feedfrågor har minskats från8 till3 och kvittohistorik hämtas i en batch med oförändrade ägar-/återbetalningsskydd. Köpknappen visar arbete direkt och kontot kontrolleras före butikens köpstart. Inga riktiga betalningar eller mejltjänster aktiverade. Se MOBILE_SMOOTHNESS_REVIEW.md (frontend) respektive MOBILE_PERFORMANCE_REVIEW.md (backend).
+
+## Release-signering förberedd
+Androids releasebygge får inte längre använda debugnyckeln. Ägarens nyckel kan anges via git-ignorerad android/key.properties eller ZULLO_ANDROID-signeringens miljövariabler. Saknade uppgifter stoppar releasebygget; vanlig emulatorstart fungerar utan dem. Se ANDROID_RELEASE_SIGNING.md. Ingen permanent nyckel har skapats åt ägaren, ingen appidentitet ändrad och ingen publicering/betalning aktiverad. Riktig ägarnyckel, butikskonfiguration och sandboxprov återstår.
