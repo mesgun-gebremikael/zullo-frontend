@@ -70,14 +70,24 @@ class FakeStore extends NativeBilling {
 }
 
 class PrivacyCommerce extends FakeCommerce {
+  bool purchaseCompleted = false;
   @override
   Future<CommerceState> sync() async {
     syncs++;
+    if (!purchaseCompleted) return current;
     return current = const CommerceState(checkoutEnabled: true, premium: true);
   }
 }
 
 class PrivacyStore extends FakeStore {
+  PrivacyCommerce? commerce;
+  @override
+  Future<StorePurchase> buy(StoreOffer offer, String userId) async {
+    final receipt = await super.buy(offer, userId);
+    commerce?.purchaseCompleted = true;
+    return receipt;
+  }
+
   @override
   Future<List<StoreOffer>> offers(String userId) async => const [
         StoreOffer(
@@ -111,7 +121,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     final commerce = PrivacyCommerce()
       ..current = const CommerceState(checkoutEnabled: true);
-    final store = PrivacyStore();
+    final store = PrivacyStore()..commerce = commerce;
     await pump(
         tester,
         () => tester.pumpWidget(MaterialApp(
@@ -126,7 +136,7 @@ void main() {
       await tester.tap(find.widgetWithText(FilledButton, 'Köp').first);
     });
     expect(store.buys, 1);
-    expect(commerce.syncs, 1);
+    expect(commerce.syncs, 2);
     expect(commerce.current.canHideActivity, isTrue);
     expect(commerce.current.premium, isTrue);
     expect(find.textContaining('väntar på verifiering'), findsNothing);

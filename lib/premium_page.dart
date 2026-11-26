@@ -162,6 +162,15 @@ class _PremiumPageState extends State<PremiumPage> {
       throw SessionChangedException();
     }
     final user = _userId!;
+    if (_subscription(offer.id)) {
+      // A paywall can be stale after a purchase on another device or store.
+      // Refresh the provider-verified server state before a native store can
+      // charge. A failed refresh must never fall back to the cached state.
+      final current = await _commerce.sync();
+      if (!_active) throw SessionChangedException();
+      setState(() => _state = current);
+      if (!current.checkoutEnabled || current.premium) return current;
+    }
     final pending = await _purchaseStorage.reserve(user, offer.id);
     _pendingPurchase = pending;
     AccountSession.check(_generation);
@@ -261,13 +270,17 @@ class _PremiumPageState extends State<PremiumPage> {
     if (!AccountSession.isCurrent(_generation)) return const Scaffold();
     final state = _state;
     final boostActive = _boostTime.isNotEmpty;
-    final offers = _offers
-        .where((offer) =>
-            _subscription(offer.id) ||
-            (!widget.activityOnly &&
-                const {'zullo_superlikes_5', 'zullo_boost_1', 'zullo_boosts_5'}
-                    .contains(offer.id)))
-        .toList();
+    final offers =
+        (state?.checkoutEnabled == true ? _offers : const <StoreOffer>[])
+            .where((offer) =>
+                _subscription(offer.id) ||
+                (!widget.activityOnly &&
+                    const {
+                      'zullo_superlikes_5',
+                      'zullo_boost_1',
+                      'zullo_boosts_5'
+                    }.contains(offer.id)))
+            .toList();
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(

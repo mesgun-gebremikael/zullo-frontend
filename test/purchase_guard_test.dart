@@ -12,12 +12,21 @@ import 'package:zullo_app/services/pending_store_purchase.dart';
 class _Commerce extends CommerceClient {
   CommerceState current = const CommerceState(checkoutEnabled: true);
   bool verified = true, refunded = false;
+  CommerceState? refreshed;
+  Object? syncFailure;
+  int syncs = 0;
   int checks = 0;
   StorePurchase? lastReceipt;
   @override
   Future<CommerceState> state() async => current;
   @override
-  Future<CommerceState> sync() async => current;
+  Future<CommerceState> sync() async {
+    syncs++;
+    if (syncFailure != null) throw syncFailure!;
+    current = refreshed ?? current;
+    return current;
+  }
+
   @override
   Future<({bool verified, bool refunded})> purchaseStatus(
       StorePurchase receipt) async {
@@ -277,6 +286,45 @@ void main() {
     expect(find.text('Legacy privacy'), findsNothing);
     await tester.pumpWidget(const SizedBox());
   });
+  for (final refreshed in [
+    const CommerceState(checkoutEnabled: true, premium: true),
+    const CommerceState(checkoutEnabled: false),
+  ]) {
+    testWidgets(
+        'a fresh subscription preflight prevents a stale paywall from charging: ${refreshed.premium}',
+        (tester) async {
+      final commerce = _Commerce()..refreshed = refreshed;
+      final store = _Store(plans: true);
+      await open(tester, commerce, store);
+      await real(tester,
+          () => tester.tap(find.widgetWithText(FilledButton, 'Köp').first));
+      expect(commerce.syncs, 1);
+      expect(store.buys, 0);
+      expect(
+          await tester.runAsync(() => PendingPurchaseStorage().read('owner')),
+          isNull);
+      if (!refreshed.checkoutEnabled) {
+        expect(find.widgetWithText(FilledButton, 'Köp'), findsNothing);
+      }
+      await tester.pumpWidget(const SizedBox());
+    });
+  }
+  testWidgets('a failed subscription preflight never reaches the charging SDK',
+      (tester) async {
+    final commerce = _Commerce()
+      ..syncFailure = StateError('Provider unavailable');
+    final store = _Store(plans: true);
+    await open(tester, commerce, store);
+    await real(tester,
+        () => tester.tap(find.widgetWithText(FilledButton, 'Köp').first));
+    expect(commerce.syncs, 1);
+    expect(store.buys, 0);
+    expect(await tester.runAsync(() => PendingPurchaseStorage().read('owner')),
+        isNull);
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox());
+  });
+
   test(
       'native catalog accepts explicit monthly or annual cadence and never guesses a period',
       () {

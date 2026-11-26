@@ -16,7 +16,7 @@ A missing initial record creates a new random identity. Corrupt or partially mis
 
 `MessageNotificationHandler` uses push routing IDs only. It checks recipient/relation access, fetches the authorized matched profile, checks account generation again, and rejects a mismatched returned profile. Names, avatars and private message previews in a push payload are ignored. Both cold and warm message opening use this resolver. Foreground banners use the trusted profile and localized generic message copy; the conversation refreshes its contents from the authenticated API.
 
-The corresponding backend must send generic OS notification copy. Client recipient guards alone cannot prevent an operating system from rendering a notification that was already queued before logout or a block.
+The corresponding backend sends generic localized OS notification copy, without sender names, message text or avatars. Installation/token locks, monotonic versions and account-owned unlink checks prevent stale requests from stealing or clearing a newer binding. Account erasure retains an unbound version tombstone. Ambiguous legacy ownership is skipped. Current account delivery uses one mirrored device token rather than multi-device fanout. Message sending is best effort after persistence; only match notifications use a durable outbox. Client recipient guards alone cannot prevent an operating system from rendering a notification that was already queued before logout or a block.
 
 ## Validation and device checks
 
