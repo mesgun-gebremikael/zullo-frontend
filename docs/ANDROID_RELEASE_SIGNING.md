@@ -28,7 +28,7 @@ ZULLO_ANDROID_KEY_ALIAS=<owner key alias>
 ZULLO_ANDROID_KEY_PASSWORD=<secret>
 ```
 
-Environment variables override matching properties. A relative `storeFile` is resolved against the `android/` directory. Prefer an absolute path. Do not copy real credentials into this document. `android/key.properties`, `*.jks` and `*.keystore` are already ignored by Android's `.gitignore`.
+Environment variables override matching properties. A relative `storeFile` is resolved against the `android/` directory. Prefer an absolute path. On Windows use forward slashes, for example `storeFile=C:/Users/your-name/keys/upload-key.jks`; backslashes in a Java properties file are escape characters. Do not copy real credentials into this document. `android/key.properties`, `*.jks` and `*.keystore` are already ignored by Android's `.gitignore`.
 
 ## Build and verify
 
@@ -44,7 +44,7 @@ The Android CI job first builds the ordinary debug APK and runs native GPS tests
 
 - No credentials: the dedicated check fails with a named configuration message.
 - APK and AAB dry-run task graphs contain the signing guard before artifact assembly.
-- A disposable one-day CI key passes Android's signing validation.
+- A disposable one-day CI key passes Android's signing validation using both environment variables and a local properties file with a relative path.
 - A configured missing file fails with a named missing-keystore message.
 
 The temporary key is generated only on a disposable CI runner, deleted afterward, never uploaded and never used as an owner production key. These checks do not publish or create a production release artifact.

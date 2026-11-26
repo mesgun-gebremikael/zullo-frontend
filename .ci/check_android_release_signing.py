@@ -51,8 +51,20 @@ with tempfile.TemporaryDirectory(prefix='zullo-signing-ci-') as temporary:
                     '-dname', 'CN=Disposable ZULLO CI'],
                    env=env, check=True, capture_output=True, text=True)
     gradle([':app:validateSigningRelease'], env)
+    properties = android / 'key.properties'
+    try:
+        # Exercise the owner's local-file path as well as CI environment inputs.
+        relative_store = os.path.relpath(store, android)
+        properties.write_text(
+            f'storeFile={relative_store}\n'
+            f'storePassword={env["ZULLO_ANDROID_STORE_PASSWORD"]}\n'
+            f'keyAlias={env["ZULLO_ANDROID_KEY_ALIAS"]}\n'
+            f'keyPassword={env["ZULLO_ANDROID_KEY_PASSWORD"]}\n')
+        gradle([':app:validateSigningRelease'], base)
+    finally:
+        properties.unlink(missing_ok=True)
     env['ZULLO_ANDROID_KEYSTORE_PATH'] = str(Path(temporary) / 'missing.p12')
     gradle([':app:validateZulloReleaseSigning'], env, False,
            'ZULLO_RELEASE_KEYSTORE_MISSING')
 print('Real Gradle signing checks passed: missing configuration, artifact guards, '
-      'disposable valid key and missing keystore. No owner key or release artifact created.')
+      'environment/local-file credentials and missing keystore. No owner key or release artifact created.')
