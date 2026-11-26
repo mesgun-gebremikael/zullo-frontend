@@ -66,6 +66,7 @@ jobs:
           channel: stable
       - run: flutter config --jdk-dir="$JAVA_HOME_17_X64"
       - run: flutter pub get --enforce-lockfile
+      # Flutter generates the ignored Gradle wrapper and local.properties first.
+      - run: flutter build apk --debug --dart-define=ZULLO_API_URL=https://api.example.invalid
       - run: JAVA_HOME="$JAVA_HOME_17_X64" ./gradlew :geolocator_android:testDebugUnitTest
         working-directory: android
-      - run: flutter build apk --debug --dart-define=ZULLO_API_URL=https://api.example.invalid
