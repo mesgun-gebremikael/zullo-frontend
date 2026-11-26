@@ -39,7 +39,11 @@ class _PremiumPageState extends State<PremiumPage> {
   CommerceState? _state;
   List<StoreOffer> _offers = [];
   String? _userId, _error;
-  bool _busy = false;
+  bool _busy = false, _loading = false, _loadingOffers = false;
+  String? _busyProductId;
+  Future<void>? _loadFuture, _walletRefresh;
+  bool _walletRefreshRequested = false;
+  int _stateRevision = 0;
   Timer? _timer;
   StreamSubscription<void>? _walletSubscription;
   bool get _active => mounted && AccountSession.isCurrent(_generation);
@@ -61,10 +65,33 @@ class _PremiumPageState extends State<PremiumPage> {
     super.dispose();
   }
 
-  Future<void> _refreshBalance() async {
+  Future<void> _refreshBalance() {
+    if (_busy || _loading || !_active) return Future.value();
+    if (_walletRefresh != null) {
+      _walletRefreshRequested = true;
+      return _walletRefresh!;
+    }
+    final revision = _stateRevision;
+    Future<void> drain() async {
+      do {
+        _walletRefreshRequested = false;
+        await _performWalletRefresh(revision);
+      } while (_walletRefreshRequested &&
+          _active &&
+          !_busy &&
+          !_loading &&
+          revision == _stateRevision);
+    }
+
+    return _walletRefresh = drain().whenComplete(() => _walletRefresh = null);
+  }
+
+  Future<void> _performWalletRefresh(int revision) async {
     try {
-      final state = await _reconcile(await _commerce.state());
-      if (!_active) return;
+      final fresh = await _commerce.state();
+      if (!_active || revision != _stateRevision || _busy || _loading) return;
+      final state = await _reconcile(fresh);
+      if (!_active || revision != _stateRevision) return;
       setState(() {
         if (state.superLikes > (_state?.superLikes ?? 0) ||
             state.boosts > (_state?.boosts ?? 0) ||
@@ -76,7 +103,18 @@ class _PremiumPageState extends State<PremiumPage> {
     } catch (_) {/* retain the last verified balance until retry */}
   }
 
-  Future<void> _load() async {
+  Future<void> _load() {
+    if (_busy || !_active) return Future.value();
+    if (_loadFuture != null) return _loadFuture!;
+    _stateRevision++;
+    setState(() => _loading = true);
+    return _loadFuture = _performLoad().whenComplete(() {
+      _loadFuture = null;
+      if (_active) setState(() => _loading = false);
+    });
+  }
+
+  Future<void> _performLoad() async {
     try {
       final state = await _commerce.state();
       if (!_active) return;
@@ -97,7 +135,8 @@ class _PremiumPageState extends State<PremiumPage> {
         _pendingReadFailed = readFailed;
         _state = state;
         _userId = user;
-        _offers = [];
+        _loadingOffers =
+            state.checkoutEnabled && _billing.available && user != null;
         _error = null;
       });
       if (pending?.receipt != null) {
@@ -120,13 +159,18 @@ class _PremiumPageState extends State<PremiumPage> {
       if (_active) {
         setState(() => _error = 'Kunde inte hämta Premium. Försök igen.');
       }
+    } finally {
+      if (_active) setState(() => _loadingOffers = false);
     }
   }
 
-  Future<void> _action(Future<CommerceState> Function() operation) async {
-    if (_busy || !_active) return;
+  Future<void> _action(Future<CommerceState> Function() operation,
+      {String? productId}) async {
+    if (_busy || _loading || !_active) return;
+    _stateRevision++;
     setState(() {
       _busy = true;
+      _busyProductId = productId;
       _error = null;
     });
     try {
@@ -153,7 +197,12 @@ class _PremiumPageState extends State<PremiumPage> {
             : 'Kunde inte bekräfta köpet. Försök igen eller återställ köp.');
       }
     } finally {
-      if (_active) setState(() => _busy = false);
+      if (_active) {
+        setState(() {
+          _busy = false;
+          _busyProductId = null;
+        });
+      }
     }
   }
 
@@ -162,19 +211,21 @@ class _PremiumPageState extends State<PremiumPage> {
       throw SessionChangedException();
     }
     final user = _userId!;
-    if (_subscription(offer.id)) {
-      // A paywall can be stale after a purchase on another device or store.
-      // Refresh the provider-verified server state before a native store can
-      // charge. A failed refresh must never fall back to the cached state.
-      final current = await _commerce.sync();
-      if (!_active) throw SessionChangedException();
-      setState(() => _state = current);
-      if (!current.checkoutEnabled || current.premium) return current;
+    // Verify the checkout kill switch/provider health for consumables too.
+    // A failed refresh must never fall back to a stale, chargeable paywall.
+    final current = await _commerce.sync();
+    if (!_active) throw SessionChangedException();
+    setState(() => _state = current);
+    if (!current.checkoutEnabled ||
+        (_subscription(offer.id) && current.premium)) {
+      return current;
     }
     final pending = await _purchaseStorage.reserve(user, offer.id);
     _pendingPurchase = pending;
-    AccountSession.check(_generation);
+    var billingInvoked = false;
     try {
+      AccountSession.check(_generation);
+      billingInvoked = true;
       final receipt = await _billing.buy(offer, user);
       // Keep the original account's guard even when logout races a store result.
       if (receipt.productId != pending.productId ||
@@ -197,6 +248,17 @@ class _PremiumPageState extends State<PremiumPage> {
       }
       throw const CommerceException(202,
           'Ett köp väntar på verifiering. Köp inte igen. Uppdatera saldot eller återställ köp.');
+    } on CheckoutNotStartedException {
+      // The native adapter proves no purchase operation was invoked. In
+      // contrast, an unknown result after launch must retain the guard.
+      await _purchaseStorage.clear(user, expected: pending);
+      if (_active) _pendingPurchase = await _purchaseStorage.read(user);
+      rethrow;
+    } on SessionChangedException {
+      if (!billingInvoked) {
+        await _purchaseStorage.clear(user, expected: pending);
+      }
+      rethrow;
     } on PlatformException catch (error) {
       if (PurchasesErrorHelper.getErrorCode(error) ==
           PurchasesErrorCode.purchaseCancelledError) {
@@ -380,10 +442,12 @@ class _PremiumPageState extends State<PremiumPage> {
                             SizedBox(
                                 width: double.infinity,
                                 child: FilledButton.icon(
-                                  onPressed:
-                                      _busy || boostActive || state.boosts <= 0
-                                          ? null
-                                          : () => _action(_commerce.boost),
+                                  onPressed: _busy ||
+                                          _loading ||
+                                          boostActive ||
+                                          state.boosts <= 0
+                                      ? null
+                                      : () => _action(_commerce.boost),
                                   icon: const Icon(Icons.bolt),
                                   label: Text(boostActive
                                       ? context.l10n.boostActiveRemaining(
@@ -435,7 +499,14 @@ class _PremiumPageState extends State<PremiumPage> {
                             style: const TextStyle(color: Color(0xFF626A77)))),
                 ],
                 const SizedBox(height: 16),
-                if (offers.isEmpty)
+                if (_loadingOffers && offers.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 24),
+                    child: Center(
+                        child: CircularProgressIndicator(
+                            semanticsLabel: context.l10n.loading)),
+                  ),
+                if (!_loadingOffers && offers.isEmpty)
                   Text(
                       context.l10n
                           .purchasesAreUnavailableRightNowYouCanKeepUsingZullo,
@@ -452,14 +523,24 @@ class _PremiumPageState extends State<PremiumPage> {
                         '${offer.price}${offer.id == 'zullo_premium_monthly' || offer.id == 'zullo_hide_activity_monthly' ? context.l10n.perMonth : offer.id == _annual ? context.tr(' per år') : ''}'),
                     trailing: FilledButton(
                         onPressed: _busy ||
+                                _loading ||
                                 _checkoutBlocked ||
                                 (_subscription(offer.id) &&
                                     state?.premium == true) ||
                                 (offer.id == 'zullo_hide_activity_monthly' &&
                                     state?.canHideActivity == true)
                             ? null
-                            : () => _action(() => _buy(offer)),
-                        child: Text(context.l10n.buy)),
+                            : () =>
+                                _action(() => _buy(offer), productId: offer.id),
+                        child: _busy && _busyProductId == offer.id
+                            ? SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  semanticsLabel: context.l10n.loading,
+                                ))
+                            : Text(context.l10n.buy)),
                   )),
                 if (state?.activityPrivacyUntil?.isAfter(DateTime.now()) ==
                     true)
@@ -479,6 +560,7 @@ class _PremiumPageState extends State<PremiumPage> {
                               color: Color(0xFF626A77), height: 1.4))),
                 TextButton(
                     onPressed: _busy ||
+                            _loading ||
                             state?.checkoutEnabled != true ||
                             !_billing.available ||
                             _userId == null
@@ -486,7 +568,7 @@ class _PremiumPageState extends State<PremiumPage> {
                         : () => _action(_restore),
                     child: Text(context.l10n.restorePurchases)),
                 TextButton(
-                    onPressed: _busy
+                    onPressed: _busy || _loading
                         ? null
                         : () => _action(
                             () async => _reconcile(await _commerce.sync())),

@@ -434,7 +434,9 @@ class AuthService {
   // ---------- LIKE / SKIP ----------
 
   Future<bool> like(String targetUserId, {bool superLike = false}) async {
+    final generation = AccountSession.generation;
     final token = await _storage.getToken();
+    AccountSession.check(generation);
 
     final res = await _client
         .post(
@@ -465,7 +467,9 @@ class AuthService {
   }
 
   Future<void> skip(String targetUserId) async {
+    final generation = AccountSession.generation;
     final token = await _storage.getToken();
+    AccountSession.check(generation);
 
     final res = await _client
         .post(

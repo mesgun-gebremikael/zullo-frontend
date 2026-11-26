@@ -205,7 +205,7 @@ void main() {
     await tester.ensureVisible(find.text('Köp'));
     await pump(tester, () => tester.tap(find.text('Köp')));
     expect(store.buys, 1);
-    expect(commerce.syncs, 1);
+    expect(commerce.syncs, 2);
     expect(find.text('5'), findsOneWidget);
     await pump(tester, () => tester.pumpWidget(const SizedBox()));
   });

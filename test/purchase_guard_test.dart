@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:zullo_app/premium_page.dart';
 import 'package:zullo_app/services/auth_storage.dart';
+import 'package:zullo_app/services/account_session.dart';
 import 'package:zullo_app/services/commerce_service.dart';
 import 'package:zullo_app/services/pending_store_purchase.dart';
 
@@ -39,6 +40,7 @@ class _Commerce extends CommerceClient {
 class _Store extends NativeBilling {
   int buys = 0;
   Object? failure;
+  Future<void> Function()? duringPurchase;
   List<StorePurchase> history = [];
   final bool plans;
   _Store({this.plans = false});
@@ -57,6 +59,7 @@ class _Store extends NativeBilling {
   Future<StorePurchase> buy(StoreOffer offer, String userId) async {
     buys++;
     if (failure != null) throw failure!;
+    await duringPurchase?.call();
     return StorePurchase('app_store', 'exact-transaction', offer.id,
         purchaseDate: DateTime.now().toUtc());
   }
@@ -65,6 +68,15 @@ class _Store extends NativeBilling {
   Future<List<StorePurchase>> recentPurchases(String userId) async => history;
   @override
   Future<void> restore(String userId) async {}
+}
+
+class _LogoutDuringReservation extends PendingPurchaseStorage {
+  @override
+  Future<PendingStorePurchase> reserve(String user, String product) async {
+    final pending = await super.reserve(user, product);
+    AccountSession.reset();
+    return pending;
+  }
 }
 
 void main() {
@@ -82,8 +94,8 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  Future<void> open(
-      WidgetTester tester, _Commerce commerce, _Store store) async {
+  Future<void> open(WidgetTester tester, _Commerce commerce, _Store store,
+      {PendingPurchaseStorage? storage}) async {
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -91,7 +103,10 @@ void main() {
     await real(
         tester,
         () => tester.pumpWidget(MaterialApp(
-            home: PremiumPage(commerce: commerce, billing: store))));
+            home: PremiumPage(
+                commerce: commerce,
+                billing: store,
+                purchaseStorage: storage))));
   }
 
   test(
@@ -143,6 +158,83 @@ void main() {
       await tester.pumpWidget(const SizedBox());
     });
   }
+  for (final checkoutEnabled in [false, true]) {
+    testWidgets(
+        'consumable preflight prevents charge when checkout health is $checkoutEnabled',
+        (tester) async {
+      final commerce = _Commerce();
+      if (checkoutEnabled) {
+        commerce.syncFailure = StateError('provider unavailable');
+      } else {
+        commerce.refreshed = const CommerceState(checkoutEnabled: false);
+      }
+      final store = _Store();
+      await open(tester, commerce, store);
+      await tester.ensureVisible(find.text('Köp'));
+      await real(tester, () => tester.tap(find.text('Köp')));
+      expect(store.buys, 0);
+      expect(
+          await tester.runAsync(() => PendingPurchaseStorage().read('owner')),
+          isNull);
+      await tester.pumpWidget(const SizedBox());
+    });
+  }
+
+  testWidgets('proven pre-store failure releases reservation for safe retry',
+      (tester) async {
+    final commerce = _Commerce();
+    final store = _Store()
+      ..failure =
+          CheckoutNotStartedException(StateError('identity unavailable'));
+    await open(tester, commerce, store);
+    await tester.ensureVisible(find.text('Köp'));
+    await real(tester, () => tester.tap(find.text('Köp')));
+    expect(await tester.runAsync(() => PendingPurchaseStorage().read('owner')),
+        isNull);
+    expect(
+        tester
+            .widget<FilledButton>(find.widgetWithText(FilledButton, 'Köp'))
+            .onPressed,
+        isNotNull);
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets(
+      'logout while reserving cannot charge or leave a false pending purchase',
+      (tester) async {
+    final commerce = _Commerce(), store = _Store();
+    await open(tester, commerce, store, storage: _LogoutDuringReservation());
+    await tester.ensureVisible(find.text('Köp'));
+    await real(tester, () => tester.tap(find.text('Köp')));
+    expect(store.buys, 0);
+    expect(await tester.runAsync(() => PendingPurchaseStorage().read('owner')),
+        isNull);
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets(
+      'receipt after account switch stays with original account without syncing or granting new account',
+      (tester) async {
+    final commerce = _Commerce();
+    final store = _Store()
+      ..duringPurchase =
+          () => AuthStorage().saveAuth(token: 'new-token', userId: 'new-owner');
+    await open(tester, commerce, store);
+    await tester.ensureVisible(find.text('Köp'));
+    await real(tester, () => tester.tap(find.text('Köp')));
+    expect(store.buys, 1);
+    expect(commerce.syncs, 1); // Preflight only, never reconcile as new owner.
+    expect(commerce.checks, 0);
+    final original =
+        await tester.runAsync(() => PendingPurchaseStorage().read('owner'));
+    expect(original?.receipt?.transactionId, 'exact-transaction');
+    expect(
+        await tester.runAsync(() => PendingPurchaseStorage().read('new-owner')),
+        isNull);
+    expect(commerce.current.superLikes, 0);
+    await tester.pumpWidget(const SizedBox());
+  });
+
   testWidgets(
       'known provider receipt persists and confirms after page restart without another purchase',
       (tester) async {

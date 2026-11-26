@@ -214,7 +214,11 @@ class _MainNavigationState extends State<MainNavigation>
           const LikesPage(),
           MatchesPage(
             onUnreadChanged: (hasUnread) {
-              if (!mounted || !_sessionActive) return;
+              if (!mounted ||
+                  !_sessionActive ||
+                  hasUnread == _hasUnreadMessages) {
+                return;
+              }
               setState(() {
                 _hasUnreadMessages = hasUnread;
               });
@@ -229,7 +233,10 @@ class _MainNavigationState extends State<MainNavigation>
       await _handleOpenChatRequest(request);
     });
 
-    _repositorySubscription = ChatRepository.instance.stream.listen((state) {
+    _repositorySubscription = ChatRepository.instance.stream
+        .distinct(
+            (previous, next) => identical(previous.chatList, next.chatList))
+        .listen((state) {
       _syncUnreadFromRepository();
     });
 
@@ -260,6 +267,7 @@ class _MainNavigationState extends State<MainNavigation>
   }
 
   void _onItemTapped(int index) {
+    if (_selectedIndex == index) return;
     setState(() {
       _selectedIndex = index;
     });
@@ -316,7 +324,10 @@ class _MainNavigationState extends State<MainNavigation>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    _inForeground = state == AppLifecycleState.resumed;
+    final inForeground = state == AppLifecycleState.resumed;
+    if (_inForeground != inForeground && mounted) {
+      setState(() => _inForeground = inForeground);
+    }
     if (state == AppLifecycleState.resumed && mounted && _sessionActive) {
       if (widget.pages == null) {
         unawaited(_pulsePresence());
@@ -353,7 +364,7 @@ class _MainNavigationState extends State<MainNavigation>
   void _syncUnreadFromRepository() {
     final hasUnread = ChatRepository.instance.chatList.any((m) => m.hasUnread);
 
-    if (!mounted || !_sessionActive) return;
+    if (!mounted || !_sessionActive || hasUnread == _hasUnreadMessages) return;
 
     setState(() {
       _hasUnreadMessages = hasUnread;
@@ -460,8 +471,8 @@ class _MainNavigationState extends State<MainNavigation>
 
       final shouldRefresh = await Navigator.push<bool>(
         context,
-        PageRouteBuilder(
-          pageBuilder: (_, __, ___) => ChatPage(
+        MaterialPageRoute<bool>(
+          builder: (_) => ChatPage(
             userId: request.userId,
             displayName: request.displayName,
             photoUrl: request.photoUrl,
@@ -469,8 +480,6 @@ class _MainNavigationState extends State<MainNavigation>
             initialThreadData: initialThreadData,
             initialMeUserId: meUserId,
           ),
-          transitionDuration: Duration.zero,
-          reverseTransitionDuration: Duration.zero,
         ),
       );
 
@@ -504,8 +513,17 @@ class _MainNavigationState extends State<MainNavigation>
       backgroundColor: const Color(0xFFF0F1F3),
       body: IndexedStack(
         index: _selectedIndex,
-        children: List<Widget>.generate(_pages.length,
-            (i) => _visited.contains(i) ? _pages[i] : const SizedBox.shrink()),
+        children: List<Widget>.generate(
+            _pages.length,
+            (i) => _visited.contains(i)
+                ? TickerMode(
+                    enabled: _inForeground && i == _selectedIndex,
+                    child: ExcludeFocus(
+                      excluding: i != _selectedIndex,
+                      child: RepaintBoundary(child: _pages[i]),
+                    ),
+                  )
+                : const SizedBox.shrink()),
       ),
       bottomNavigationBar: SafeArea(
         top: false,

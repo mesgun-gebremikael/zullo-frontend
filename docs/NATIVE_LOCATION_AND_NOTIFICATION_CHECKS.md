@@ -29,3 +29,9 @@ python3 tool/generate_notification_resources.py --check
 On macOS, additionally validate `ios/Runner/*.lproj/Localizable.strings` and `ios/Runner.xcodeproj/project.pbxproj` with `plutil -lint`, then compile the simulator application. OS notifications select the phone/per-app native language. Flutter's own manual language preference alone does not override an OS notification's localization; that difference is intentional and must not be represented as server-side per-device language support. Names and chat messages remain user-authored content and are never put into the static translation resources.
 
 Generation changes only its deterministic PBX entries and preserves unrelated project resources. Keep the generator check in CI so translations and native notification copy cannot drift. Physical-device APNs/FCM delivery and user permission flows remain a separate release test.
+
+# iOS runner architecture and infrastructure failures
+
+The simulator job uses the standard `macos-15-intel` image explicitly. GitHub's `macos-15` label now selects arm64; run45831841893 was cancelled before any step ran because GitHub could not allocate a hosted arm64 runner. This was a capacity failure, not evidence of an Xcode compilation error. Pinning the architecture keeps the CI environment explicit without selecting paid `-large`/`-xlarge` runners or changing the application's architectures.
+
+Official label reference: https://github.com/actions/runner-images#available-images . The Intel simulator build verifies x86_64 simulator packaging. Device arm64, signing, APNs delivery and actual iPhone performance remain separate release checks; neither a portable check nor this runner selection proves them.

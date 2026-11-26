@@ -5,6 +5,7 @@ import 'widgets/commerce_cards.dart';
 import 'dart:async';
 import 'services/commerce_service.dart';
 import 'services/account_session.dart';
+import 'services/refresh_coordinator.dart';
 import 'package:flutter/material.dart';
 import 'services/auth_service.dart';
 import 'edit_profile_page.dart';
@@ -12,14 +13,23 @@ import 'profile_settings_page.dart';
 import 'premium_page.dart';
 
 class ProfileTab extends StatefulWidget {
-  const ProfileTab({super.key});
+  final AuthService? authService;
+  final CommerceClient? commerceClient;
+
+  const ProfileTab({super.key, this.authService, this.commerceClient});
 
   @override
   State<ProfileTab> createState() => _ProfileTabState();
 }
 
 class _ProfileTabState extends State<ProfileTab> {
-  final AuthService _authService = AuthService();
+  late final AuthService _authService = widget.authService ?? AuthService();
+  late final CommerceClient _commerce =
+      widget.commerceClient ?? CommerceClient();
+  final _walletRefresh = RefreshCoordinator();
+  final _profileRefresh = RefreshCoordinator();
+  StreamSubscription<int>? _sessionChanges;
+  bool get _sessionActive => AccountSession.isCurrent(_generation);
 
   CommerceState? _wallet;
   StreamSubscription<void>? _commerceEvents;
@@ -31,6 +41,9 @@ class _ProfileTabState extends State<ProfileTab> {
   @override
   void initState() {
     super.initState();
+    _sessionChanges = AccountSession.changes.listen((_) {
+      if (mounted) setState(() {});
+    });
     _loadProfile();
     _loadWallet();
     _commerceEvents = CommerceEvents.walletStream.listen((_) => _loadWallet());
@@ -39,42 +52,45 @@ class _ProfileTabState extends State<ProfileTab> {
   @override
   void dispose() {
     _commerceEvents?.cancel();
+    _sessionChanges?.cancel();
     super.dispose();
   }
 
-  Future<void> _loadWallet() async {
-    try {
-      final wallet = await CommerceClient().state();
-      if (mounted && AccountSession.isCurrent(_generation)) {
-        setState(() => _wallet = wallet);
-      }
-    } catch (_) {/* profile remains usable if commerce is unavailable */}
-  }
+  Future<void> _loadWallet() => _walletRefresh.run(() async {
+        if (!mounted || !_sessionActive) return;
+        try {
+          final wallet = await _commerce.state();
+          if (mounted && AccountSession.isCurrent(_generation)) {
+            setState(() => _wallet = wallet);
+          }
+        } catch (_) {/* profile remains usable if commerce is unavailable */}
+      }, invalidate: true);
 
-  Future<void> _loadProfile() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
+  Future<void> _loadProfile() => _profileRefresh.run(() async {
+        if (!mounted || !_sessionActive) return;
+        setState(() {
+          _isLoading = _profile == null;
+          _error = null;
+        });
 
-    try {
-      final data = await _authService.getMyProfile();
+        try {
+          final data = await _authService.getMyProfile();
 
-      if (!mounted) return;
+          if (!mounted || !_sessionActive) return;
 
-      setState(() {
-        _profile = data;
-        _isLoading = false;
-      });
-    } catch (e) {
-      if (!mounted) return;
+          setState(() {
+            _profile = data;
+            _isLoading = false;
+          });
+        } catch (e) {
+          if (!mounted || !_sessionActive) return;
 
-      setState(() {
-        _error = "Kunde inte ladda profil";
-        _isLoading = false;
-      });
-    }
-  }
+          setState(() {
+            _error = "Kunde inte ladda profil";
+            _isLoading = false;
+          });
+        }
+      }, invalidate: true);
 
   Future<void> _openEditProfile() async {
     final result = await Navigator.push(
@@ -265,19 +281,28 @@ class _ProfileTabState extends State<ProfileTab> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_sessionActive) return const SizedBox.shrink();
     return Scaffold(
       backgroundColor: ZulloPalette.canvas,
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : _error != null
+          : _error != null && _profile == null
               ? Center(
-                  child: Text(
-                    _error!,
-                    style: const TextStyle(color: Colors.white),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(context.tr(_error!),
+                          style: const TextStyle(color: Color(0xFF22262E))),
+                      const SizedBox(height: 16),
+                      FilledButton(
+                        onPressed: _loadProfile,
+                        child: Text(context.l10n.tryAgain),
+                      ),
+                    ],
                   ),
                 )
               : _profile == null
-                  ?  Center(
+                  ? Center(
                       child: Text(
                         context.l10n.noProfile,
                         style: TextStyle(color: Color(0xFF22262E)),

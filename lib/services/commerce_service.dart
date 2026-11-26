@@ -177,6 +177,13 @@ class StoreOffer {
   const StoreOffer(this.id, this.title, this.price, this.handle);
 }
 
+/// The adapter proves that the native purchase API was never invoked.
+/// This must never describe an uncertain result after a store sheet opened.
+class CheckoutNotStartedException implements Exception {
+  final Object cause;
+  const CheckoutNotStartedException(this.cause);
+}
+
 abstract class NativeBilling {
   bool get available;
   Future<List<StoreOffer>> offers(String userId);
@@ -243,7 +250,6 @@ class RevenueCatBilling implements NativeBilling {
 
   @override
   Future<List<StoreOffer>> offers(String userId) => _operations.run(() async {
-        await _prepare(userId);
         final offering = (await Purchases.getOfferings()).current;
         return (offering?.availablePackages ?? [])
             .where((p) =>
@@ -257,14 +263,16 @@ class RevenueCatBilling implements NativeBilling {
                 p.storeProduct.priceString,
                 p))
             .toList();
-      });
+      }, prepare: () => _prepare(userId));
 
   @override
-  Future<StorePurchase> buy(StoreOffer offer, String userId) =>
-      _operations.run(() async {
-        await _prepare(userId);
-        final result = await Purchases.purchase(
-            PurchaseParams.package(offer.handle as Package));
+  Future<StorePurchase> buy(StoreOffer offer, String userId) async {
+    var nativeInvoked = false;
+    try {
+      return await _operations.run(() async {
+        final params = PurchaseParams.package(offer.handle as Package);
+        nativeInvoked = true;
+        final result = await Purchases.purchase(params);
         return StorePurchase(
             defaultTargetPlatform == TargetPlatform.iOS
                 ? 'app_store'
@@ -273,12 +281,22 @@ class RevenueCatBilling implements NativeBilling {
             offer.id,
             purchaseDate:
                 DateTime.tryParse(result.storeTransaction.purchaseDate));
-      });
+      },
+          prepare: () => _prepare(userId),
+          // The paywall persists this receipt to the original account's guard
+          // before rejecting the obsolete session. Never discard known proof.
+          preserveResultOnSessionChange: true);
+    } catch (error, stack) {
+      if (!nativeInvoked) {
+        Error.throwWithStackTrace(CheckoutNotStartedException(error), stack);
+      }
+      rethrow;
+    }
+  }
 
   @override
   Future<List<StorePurchase>> recentPurchases(String userId) =>
       _operations.run(() async {
-        await _prepare(userId);
         final customer = await Purchases.getCustomerInfo();
         return customer.nonSubscriptionTransactions
             .map((transaction) => historyReceipt(transaction,
@@ -286,7 +304,7 @@ class RevenueCatBilling implements NativeBilling {
                     ? 'app_store'
                     : 'play_store'))
             .toList();
-      });
+      }, prepare: () => _prepare(userId));
 
   /// CustomerInfo history reuses StoreTransaction's Dart shape, but its identity
   /// is RevenueCat's ID. It must never enter the store-receipt namespace.
@@ -299,9 +317,8 @@ class RevenueCatBilling implements NativeBilling {
 
   @override
   Future<void> restore(String userId) => _operations.run(() async {
-        await _prepare(userId);
         await Purchases.restorePurchases();
-      });
+      }, prepare: () => _prepare(userId));
 }
 
 class CommerceEvents {

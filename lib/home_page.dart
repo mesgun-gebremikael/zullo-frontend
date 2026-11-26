@@ -39,6 +39,7 @@ class _HomePageState extends State<HomePage>
   int _feedRevision = 0;
   bool _feedRequestRunning = false;
   bool _rewindInFlight = false;
+  bool _swipeInFlight = false;
   bool _feedReloadPending = false;
   bool _foreground = true;
   bool _isPaused = false;
@@ -79,7 +80,7 @@ class _HomePageState extends State<HomePage>
   void _refreshDiscoveryWhenIdle() {
     _deferredDiscoveryRefresh?.cancel();
     if (!mounted || !AccountSession.isCurrent(_sessionGeneration)) return;
-    if (_isDragging || _isAnimating) {
+    if (_isDragging || _isAnimating || _swipeInFlight) {
       _deferredDiscoveryRefresh =
           Timer(const Duration(milliseconds: 400), _refreshDiscoveryWhenIdle);
       return;
@@ -152,14 +153,18 @@ class _HomePageState extends State<HomePage>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     _foreground = state == AppLifecycleState.resumed;
-    if (_foreground) {
-      unawaited(loadFeed());
+    if (_foreground && widget.active) {
+      _refreshDiscoveryWhenIdle();
       loadUnreadStatus();
     }
   }
 
   Future<void> loadFeed({bool background = false}) async {
     if (!mounted || !AccountSession.isCurrent(_sessionGeneration)) return;
+    if (_swipeInFlight) {
+      _feedReloadPending = true;
+      return;
+    }
     if (_feedRequestRunning) {
       if (!background) _feedReloadPending = true;
       return;
@@ -212,7 +217,7 @@ class _HomePageState extends State<HomePage>
       });
     } finally {
       _feedRequestRunning = false;
-      if (_feedReloadPending) {
+      if (_feedReloadPending && !_swipeInFlight) {
         _feedReloadPending = false;
         unawaited(loadFeed());
       }
@@ -401,7 +406,8 @@ class _HomePageState extends State<HomePage>
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      context.l10n.youAndValue0LikeEachOtherSayHelloOrKeep((other.displayName).toString()),
+                      context.l10n.youAndValue0LikeEachOtherSayHelloOrKeep(
+                          (other.displayName).toString()),
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         color: Colors.white70,
@@ -579,11 +585,15 @@ class _HomePageState extends State<HomePage>
     Offset end, {
     required double rotateEnd,
     required double fadeEnd,
+    bool holdAtEnd = false,
   }) async {
     _anim.stop();
+    _anim.duration = MediaQuery.disableAnimationsOf(context)
+        ? Duration.zero
+        : const Duration(milliseconds: 200);
     _anim.reset();
 
-    final curve = CurvedAnimation(parent: _anim, curve: Curves.fastOutSlowIn);
+    final curve = _anim.drive(CurveTween(curve: Curves.fastOutSlowIn));
 
     _animOffset = Tween<Offset>(begin: _drag, end: end).animate(curve);
     _animRotate =
@@ -592,8 +602,17 @@ class _HomePageState extends State<HomePage>
 
     setState(() => _isAnimating = true);
 
-    await _anim.forward();
+    try {
+      await _anim.forward().orCancel;
+    } on TickerCanceled {
+      return;
+    }
+    if (!mounted || holdAtEnd) return;
+    _resetCardMotion();
+  }
 
+  void _resetCardMotion() {
+    if (!mounted) return;
     setState(() {
       _isAnimating = false;
       _drag = Offset.zero;
@@ -613,79 +632,96 @@ class _HomePageState extends State<HomePage>
   }
 
   Future<void> _performSwipe(SwipeDir dir) async {
-    if (profiles.isEmpty || currentIndex >= profiles.length) return;
-    if (_isAnimating) return;
-
+    if (profiles.isEmpty ||
+        currentIndex >= profiles.length ||
+        _isAnimating ||
+        _swipeInFlight ||
+        _rewindInFlight ||
+        !widget.active ||
+        !AccountSession.isCurrent(_sessionGeneration)) {
+      return;
+    }
+    // Reserve synchronously: rapid taps must never send two paid Superlikes.
+    _swipeInFlight = true;
     final p = profiles[currentIndex];
-
-    if (dir == SwipeDir.left) {
+    // Invalidate any pre-swipe feed still in flight; it may include this person.
+    final revision = ++_feedRevision;
+    final size = MediaQuery.sizeOf(context);
+    final offX = size.width * 1.35;
+    final offY = size.height * .34;
+    final end = switch (dir) {
+      SwipeDir.left => Offset(-offX, -offY * .35),
+      SwipeDir.right => Offset(offX, -offY * .35),
+      SwipeDir.up => Offset(0, -offY * 1.08),
+    };
+    Future<(bool, Object?)> send() async {
       try {
-        await _authService.skip(p.userId);
-      } catch (_) {}
-    } else {
-      try {
-        final matched =
-            await _authService.like(p.userId, superLike: dir == SwipeDir.up);
-        if (dir == SwipeDir.up) CommerceEvents.walletChanged();
-        if (matched) {
-          await showMatchPopup(other: p);
-        } else if (dir == SwipeDir.up) {
-          showToast("Super Like skickad ⭐");
+        if (dir == SwipeDir.left) {
+          await _authService.skip(p.userId);
+          return (false, null);
         }
-      } catch (e) {
-        if ((e is CommerceException && (e.status == 429 || e.status == 402)) ||
-            e.toString().contains("429")) {
-          showToast(dir == SwipeDir.up
-              ? "Du har inga Superlikes kvar ⭐"
-              : "Du har nått like-gränsen ❤️");
-
-          if (!mounted) return;
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => const PremiumPage(),
-            ),
-          );
-
-          return;
-        }
-
-        final msg = dir == SwipeDir.up
-            ? "Super Like misslyckades"
-            : "Like misslyckades";
-
-        showToast(msg);
+        return (
+          await _authService.like(p.userId, superLike: dir == SwipeDir.up),
+          null
+        );
+      } catch (error) {
+        return (false, error);
       }
     }
 
-    if (!mounted) return;
-    final size = MediaQuery.of(context).size;
-    final offX = size.width * 1.35;
-    final offY = size.height * 0.34;
-
-    final end = switch (dir) {
-      SwipeDir.left => Offset(-offX, -offY * 0.35),
-      SwipeDir.right => Offset(offX, -offY * 0.35),
-      SwipeDir.up => Offset(0, -offY * 1.08),
-    };
-
-    final rotEnd = switch (dir) {
-      SwipeDir.left => -0.17,
-      SwipeDir.right => 0.17,
-      SwipeDir.up => 0.0,
-    };
-
-    await _animateTo(end, rotateEnd: rotEnd, fadeEnd: 0.0);
-
-    if (profiles.length - currentIndex < 3) {
-      loadFeed();
+    final request = send();
+    try {
+      // Animate immediately while the request runs, without granting success
+      // or advancing the feed before the server accepts the action.
+      await _animateTo(end,
+          rotateEnd: dir == SwipeDir.left
+              ? -.17
+              : dir == SwipeDir.right
+                  ? .17
+                  : 0,
+          fadeEnd: 0,
+          holdAtEnd: true);
+      final (matched, failure) = await request;
+      if (!mounted ||
+          !AccountSession.isCurrent(_sessionGeneration) ||
+          revision != _feedRevision) {
+        return;
+      }
+      _resetCardMotion();
+      if (failure != null) {
+        if (failure is CommerceException &&
+            (failure.status == 429 || failure.status == 402)) {
+          showToast(dir == SwipeDir.up
+              ? "Du har inga Superlikes kvar ⭐"
+              : "Du har nått like-gränsen ❤️");
+          await Navigator.push(
+              context, MaterialPageRoute(builder: (_) => const PremiumPage()));
+        } else {
+          showToast(context.l10n.yourRequestCouldNotBeConfirmedTryAgain);
+        }
+        return;
+      }
+      nextProfile();
+      if (dir == SwipeDir.up) CommerceEvents.walletChanged();
+      if (matched && widget.active) {
+        await showMatchPopup(other: p);
+      } else if (dir == SwipeDir.up) {
+        showToast("Super Like skickad ⭐");
+      }
+    } finally {
+      _swipeInFlight = false;
+      if (mounted && _isAnimating) _resetCardMotion();
+      if (mounted &&
+          _feedReloadPending &&
+          AccountSession.isCurrent(_sessionGeneration)) {
+        _feedReloadPending = false;
+        unawaited(loadFeed(background: true));
+      }
     }
-
-    nextProfile();
   }
 
   Future<void> _rewind() async {
-    if (_rewindInFlight || _isAnimating || isLoading) return;
+    if (_rewindInFlight || _swipeInFlight || _isAnimating || isLoading) return;
     _rewindInFlight = true;
     try {
       await CommerceClient().rewind();
@@ -956,93 +992,120 @@ class _HomePageState extends State<HomePage>
       builder: (context, constraints) {
         final cardWidth = constraints.maxWidth;
         final cardHeight = constraints.maxHeight;
-        return ValueListenableBuilder<Offset>(
-          valueListenable: _dragNotifier,
-          builder: (context, dragValue, _) {
-            return ValueListenableBuilder<bool>(
-              valueListenable: _isDraggingNotifier,
-              builder: (context, draggingValue, __) {
-                final activeOffset = _animOffset?.value ?? dragValue;
-                final activeRot = _animRotate?.value ??
-                    (dragValue.dx / 520.0).clamp(-0.11, 0.11);
-                final activeFade = _animFade?.value ?? 1.0;
+        final card = RepaintBoundary(
+            child: SwipeProfileCard(
+                key: ValueKey(p.userId),
+                profile: p,
+                width: cardWidth,
+                height: cardHeight,
+                photoBarsTop: 16,
+                distanceFallbackKm: _radiusKm));
+        return AnimatedBuilder(
+            animation: _anim,
+            builder: (context, _) => ValueListenableBuilder<Offset>(
+                  valueListenable: _dragNotifier,
+                  builder: (context, dragValue, _) {
+                    return ValueListenableBuilder<bool>(
+                      valueListenable: _isDraggingNotifier,
+                      builder: (context, draggingValue, __) {
+                        final activeOffset = _animOffset?.value ?? dragValue;
+                        final activeRot = _animRotate?.value ??
+                            (dragValue.dx / 520.0).clamp(-0.11, 0.11);
+                        final activeFade = _animFade?.value ?? 1.0;
 
-                return Center(
-                  child: Transform.translate(
-                    offset: const Offset(0, _activeCardLift),
-                    child: GestureDetector(
-                      onPanStart: (_) {
-                        if (_isAnimating) return;
-
-                        _isDragging = true;
-                        _isDraggingNotifier.value = true;
-                      },
-                      onPanUpdate: (d) {
-                        if (_isAnimating) return;
-
-                        _drag += Offset(d.delta.dx * 0.92, d.delta.dy * 0.88);
-                        _dragNotifier.value = _drag;
-                      },
-                      onPanEnd: (_) async {
-                        if (_isAnimating) return;
-
-                        _isDragging = false;
-                        _isDraggingNotifier.value = false;
-
-                        final dir = _decideDir(MediaQuery.of(context).size);
-                        if (dir == null) {
-                          await _snapBack();
-                        } else {
-                          await _performSwipe(dir);
-                        }
-                      },
-                      child: Opacity(
-                        opacity: activeFade,
-                        child: Transform.translate(
-                          offset: activeOffset,
-                          child: Transform.rotate(
-                            alignment: Alignment.topCenter,
-                            angle: activeRot.toDouble(),
+                        return Center(
+                          child: Transform.translate(
+                            offset: const Offset(0, _activeCardLift),
                             child: GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => ProfilePage(profile: p),
-                                  ),
-                                );
+                              onPanStart: (_) {
+                                if (_isAnimating ||
+                                    _swipeInFlight ||
+                                    _rewindInFlight) {
+                                  return;
+                                }
+
+                                _isDragging = true;
+                                _isDraggingNotifier.value = true;
                               },
-                              child: RepaintBoundary(
-                                child: SizedBox(
-                                  width: cardWidth,
-                                  height: cardHeight,
-                                  child: Stack(
-                                    clipBehavior: Clip.none,
-                                    children: [
-                                      SwipeProfileCard(
-                                        profile: p,
-                                        width: cardWidth,
-                                        height: cardHeight,
-                                        photoBarsTop: 16,
-                                        distanceFallbackKm: _radiusKm,
+                              onPanUpdate: (d) {
+                                if (_isAnimating ||
+                                    _swipeInFlight ||
+                                    _rewindInFlight) {
+                                  return;
+                                }
+
+                                _drag += Offset(
+                                    d.delta.dx * 0.92, d.delta.dy * 0.88);
+                                _dragNotifier.value = _drag;
+                              },
+                              onPanCancel: () {
+                                if (_isAnimating || _swipeInFlight) return;
+                                _isDragging = false;
+                                _isDraggingNotifier.value = false;
+                                unawaited(_snapBack());
+                              },
+                              onPanEnd: (_) async {
+                                if (_isAnimating ||
+                                    _swipeInFlight ||
+                                    _rewindInFlight) {
+                                  return;
+                                }
+
+                                _isDragging = false;
+                                _isDraggingNotifier.value = false;
+
+                                final dir =
+                                    _decideDir(MediaQuery.of(context).size);
+                                if (dir == null) {
+                                  await _snapBack();
+                                } else {
+                                  await _performSwipe(dir);
+                                }
+                              },
+                              child: Opacity(
+                                opacity: activeFade,
+                                child: Transform.translate(
+                                  offset: activeOffset,
+                                  child: Transform.rotate(
+                                    alignment: Alignment.topCenter,
+                                    angle: activeRot.toDouble(),
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) =>
+                                                ProfilePage(profile: p),
+                                          ),
+                                        );
+                                      },
+                                      child: RepaintBoundary(
+                                        child: SizedBox(
+                                          width: cardWidth,
+                                          height: cardHeight,
+                                          child: Stack(
+                                            clipBehavior: Clip.none,
+                                            children: [
+                                              card,
+                                              if (draggingValue &&
+                                                  !_isAnimating)
+                                                _CardSwipeStamp(
+                                                    drag: dragValue),
+                                            ],
+                                          ),
+                                        ),
                                       ),
-                                      if (draggingValue && !_isAnimating)
-                                        _CardSwipeStamp(drag: dragValue),
-                                    ],
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              },
-            );
-          },
-        );
+                        );
+                      },
+                    );
+                  },
+                ));
       },
     );
   }

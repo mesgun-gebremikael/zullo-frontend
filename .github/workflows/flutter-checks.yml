@@ -28,7 +28,9 @@ jobs:
       - run: python3 tool/generate_notification_resources.py --check
       - run: flutter build web --release --dart-define=ZULLO_API_URL=https://api.example.invalid
   ios-build:
-    runs-on: macos-15
+    # Pin the standard Intel image; macos-15 now aliases arm64 and exhausted
+    # hosted capacity before assigning a runner in run45831841893.
+    runs-on: macos-15-intel
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5 (Node24)
