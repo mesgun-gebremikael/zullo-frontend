@@ -23,3 +23,9 @@ Scope: every visible account-settings entry and its linked controls, client life
 The backend contract/persistence matrix is in `zullo-backend/docs/SETTINGS_BACKEND_AUDIT.md`. The focused language/notification review and registration password-byte-limit review are alongside this document. Full-suite results are recorded in project memory after verification.
 
 No production deployment, database migration, paid-service activation, SMTP setup or real purchase was performed. Remaining device/provider gates must stay visible; passing unit/widget tests does not remove them.
+
+## Slider interaction review
+
+Distance and age drag updates perform no storage, HTTP requests or discovery reloads; the parent HomePage saves and refreshes discovery only through the explicit Save callback. Previously each drag value rebuilt the entire settings sheet. Each slider card now listens to its own disposable ValueNotifier, so dragging distance does not rebuild age, headings or other settings, and vice versa. Save still snapshots both latest values and disables both sliders while pending; existing adult bounds and account-generation guards are preserved.
+
+Four real gesture widget regressions cover Android/iOS platform configurations with English LTR and Arabic RTL: repeated back-and-forth dragging, unchanged neighboring widget identity, no save before confirmation, exact final saved values, disabled controls while saving and disposal with a pending save. These are deterministic interaction/build-isolation checks, not hardware frame-rate measurements. Physical iPhone/Android profile-mode testing remains required.

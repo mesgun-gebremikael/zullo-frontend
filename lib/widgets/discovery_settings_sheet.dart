@@ -24,8 +24,9 @@ class DiscoverySettingsSheet extends StatefulWidget {
 
 class _DiscoverySettingsSheetState extends State<DiscoverySettingsSheet> {
   late String _interest = widget.initial.interestedIn;
-  late double _radius = widget.initial.radiusKm.clamp(1, 300).toDouble();
-  late RangeValues _ages = _initialAges();
+  late final _radius =
+      ValueNotifier<double>(widget.initial.radiusKm.clamp(1, 300).toDouble());
+  late final _ages = ValueNotifier<RangeValues>(_initialAges());
   final int _generation = AccountSession.generation;
   bool get _active => mounted && AccountSession.isCurrent(_generation);
 
@@ -33,6 +34,13 @@ class _DiscoverySettingsSheetState extends State<DiscoverySettingsSheet> {
     final start = widget.initial.minAge.clamp(18, 100).toDouble();
     final end = widget.initial.maxAge.clamp(18, 100).toDouble();
     return RangeValues(start <= end ? start : end, start <= end ? end : start);
+  }
+
+  @override
+  void dispose() {
+    _radius.dispose();
+    _ages.dispose();
+    super.dispose();
   }
 
   bool _busy = false;
@@ -93,9 +101,9 @@ class _DiscoverySettingsSheetState extends State<DiscoverySettingsSheet> {
     try {
       await widget.onSave(DiscoveryPreferences(
           interestedIn: _interest,
-          radiusKm: _radius.round(),
-          minAge: _ages.start.round(),
-          maxAge: _ages.end.round()));
+          radiusKm: _radius.value.round(),
+          minAge: _ages.value.start.round(),
+          maxAge: _ages.value.end.round()));
       if (mounted && _active) Navigator.pop(context);
     } catch (_) {
       if (_active) {
@@ -152,52 +160,56 @@ class _DiscoverySettingsSheetState extends State<DiscoverySettingsSheet> {
                       : Icons.chevron_right),
                   onTap: _busy ? null : _chooseInterest)),
               const SizedBox(height: 18),
-              _card(Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                            context.l10n.maximumDistanceValue0Km(
-                                (_radius.round()).toString()),
-                            style: const TextStyle(
-                                fontSize: 19, fontWeight: FontWeight.w700)),
-                        const SizedBox(height: 12),
-                        Slider(
-                            value: _radius,
-                            min: 1,
-                            max: 300,
-                            divisions: 299,
-                            label: context.l10n
-                                .value0Km(_radius.round().toString()),
-                            onChanged: _busy
-                                ? null
-                                : (value) => setState(() => _radius = value)),
-                        Text(context.l10n.weSearchWithinYourChosenDistance,
-                            style: TextStyle(color: Color(0xFF626A77))),
-                      ]))),
+              ValueListenableBuilder<double>(
+                  valueListenable: _radius,
+                  builder: (context, radius, _) => _card(Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                                context.l10n.maximumDistanceValue0Km(
+                                    (radius.round()).toString()),
+                                style: const TextStyle(
+                                    fontSize: 19, fontWeight: FontWeight.w700)),
+                            const SizedBox(height: 12),
+                            Slider(
+                                value: radius,
+                                min: 1,
+                                max: 300,
+                                divisions: 299,
+                                label: context.l10n
+                                    .value0Km(radius.round().toString()),
+                                onChanged: _busy
+                                    ? null
+                                    : (value) => _radius.value = value),
+                            Text(context.l10n.weSearchWithinYourChosenDistance,
+                                style: TextStyle(color: Color(0xFF626A77))),
+                          ])))),
               const SizedBox(height: 18),
-              _card(Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                            context.l10n.ageRangeValue0Value1(
-                                (_ages.start.round()).toString(),
-                                (_ages.end.round()).toString()),
-                            style: const TextStyle(
-                                fontSize: 19, fontWeight: FontWeight.w700)),
-                        const SizedBox(height: 12),
-                        RangeSlider(
-                            values: _ages,
-                            min: 18,
-                            max: 100,
-                            divisions: 82,
-                            onChanged: _busy
-                                ? null
-                                : (value) => setState(() => _ages = value)),
-                      ]))),
+              ValueListenableBuilder<RangeValues>(
+                  valueListenable: _ages,
+                  builder: (context, ages, _) => _card(Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                                context.l10n.ageRangeValue0Value1(
+                                    (ages.start.round()).toString(),
+                                    (ages.end.round()).toString()),
+                                style: const TextStyle(
+                                    fontSize: 19, fontWeight: FontWeight.w700)),
+                            const SizedBox(height: 12),
+                            RangeSlider(
+                                values: ages,
+                                min: 18,
+                                max: 100,
+                                divisions: 82,
+                                onChanged: _busy
+                                    ? null
+                                    : (value) => _ages.value = value),
+                          ])))),
               const SizedBox(height: 28),
               if (_error != null)
                 Padding(
