@@ -1,3 +1,5 @@
+import 'models/email_address_validation.dart';
+import 'email_verification_page.dart';
 import 'l10n/localization.dart';
 import 'package:flutter/material.dart';
 import 'services/auth_service.dart';
@@ -40,6 +42,13 @@ class _LoginPageState extends State<LoginPage> {
               builder: (_) =>
                   SplashPage(authService: _auth, startupDelay: Duration.zero)),
           (_) => false);
+    } on EmailVerificationRequired catch (pending) {
+      if (!mounted) return;
+      await Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (_) => EmailVerificationPage(
+                  challenge: pending.challenge, authService: _auth)));
     } catch (failure) {
       if (mounted) {
         setState(() => _error = failure is AuthRequestException ||
@@ -91,7 +100,8 @@ class _LoginPageState extends State<LoginPage> {
                                     decoration: InputDecoration(
                                         labelText: context.l10n.emailAddress),
                                     validator: (value) => value == null ||
-                                            !value.trim().contains('@')
+                                            !EmailAddressValidation.isValid(
+                                                value)
                                         ? 'Ange din e-postadress.'
                                         : null),
                                 const SizedBox(height: 18),

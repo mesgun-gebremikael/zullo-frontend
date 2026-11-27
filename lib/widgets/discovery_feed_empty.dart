@@ -1,13 +1,17 @@
 import '../l10n/localization.dart';
 import '../theme/zullo_palette.dart';
 import 'package:flutter/material.dart';
-import 'zullo_symbol.dart';
+import 'discovery_search_mark.dart';
 
 class DiscoveryFeedEmpty extends StatelessWidget {
   final bool paused;
+  final bool animateSearch;
   final VoidCallback onAction;
   const DiscoveryFeedEmpty(
-      {super.key, required this.paused, required this.onAction});
+      {super.key,
+      required this.paused,
+      required this.onAction,
+      this.animateSearch = true});
   @override
   Widget build(BuildContext context) =>
       LayoutBuilder(builder: (context, constraints) {
@@ -19,38 +23,10 @@ class DiscoveryFeedEmpty extends StatelessWidget {
                 child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 380),
                     child: Column(mainAxisSize: MainAxisSize.min, children: [
-                      Container(
-                          width: compact ? 88 : 156,
-                          height: compact ? 88 : 156,
-                          decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              gradient: const RadialGradient(colors: [
-                                Color(0xFFFFE5EF),
-                                ZulloPalette.canvas
-                              ]),
-                              border:
-                                  Border.all(color: const Color(0xFFF0F2F6))),
-                          child: Center(
-                              child: Container(
-                                  width: compact ? 64 : 96,
-                                  height: compact ? 64 : 96,
-                                  decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(32),
-                                      boxShadow: const [
-                                        BoxShadow(
-                                            color: Color(0x0C20242C),
-                                            blurRadius: 28,
-                                            offset: Offset(0, 12))
-                                      ]),
-                                  child: paused
-                                      ? const Icon(Icons.pause_rounded,
-                                          size: 44, color: ZulloPalette.rose)
-                                      : const Center(
-                                          child: ZulloSymbol(
-                                              kind: ZulloSymbolKind.discover,
-                                              color: ZulloPalette.rose,
-                                              size: 40))))),
+                      DiscoverySearchMark(
+                          size: compact ? 88 : 156,
+                          paused: paused,
+                          animate: animateSearch),
                       SizedBox(height: compact ? 18 : 30),
                       Text(context.l10n.zulloDiscover,
                           textAlign: TextAlign.center,

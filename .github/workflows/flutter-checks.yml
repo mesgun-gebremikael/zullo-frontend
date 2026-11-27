@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5 (Node24)
       - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
           flutter-version: '3.38.4'
@@ -24,12 +24,16 @@ jobs:
       - run: python3 .ci/check_analysis.py
       - run: python3 .ci/check_ios_setup.py
       - run: python3 .ci/check_android_setup.py
+      - run: python3 .ci/check_geolocator_patch.py
+      - run: python3 tool/generate_notification_resources.py --check
       - run: flutter build web --release --dart-define=ZULLO_API_URL=https://api.example.invalid
   ios-build:
-    runs-on: macos-15
+    # Pin the standard Intel image; macos-15 now aliases arm64 and exhausted
+    # hosted capacity before assigning a runner in run45831841893.
+    runs-on: macos-15-intel
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5 (Node24)
       - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
           flutter-version: '3.38.4'
@@ -44,23 +48,38 @@ jobs:
       # Resolve dependencies first; upload a changed native lockfile for review
       # before spending time on a full Xcode build.
       - run: flutter build ios --simulator --debug --no-codesign --config-only --dart-define-from-file=config/ios.firebase.json --dart-define=ZULLO_API_URL=https://api.example.invalid
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6 (Node24)
         if: always()
         with:
           name: ios-dependency-lock
           path: ios/Podfile.lock
           if-no-files-found: ignore
+      - run: plutil -lint ios/Runner/*.lproj/Localizable.strings ios/Runner.xcodeproj/project.pbxproj
       - run: git ls-files --error-unmatch ios/Podfile.lock && git diff --exit-code -- ios/Podfile.lock
       - run: flutter build ios --simulator --debug --no-codesign --dart-define-from-file=config/ios.firebase.json --dart-define=ZULLO_API_URL=https://api.example.invalid
   android-build:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5 (Node24)
       - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
           flutter-version: '3.38.4'
           channel: stable
       - run: flutter config --jdk-dir="$JAVA_HOME_17_X64"
       - run: flutter pub get --enforce-lockfile
+      # Flutter generates the ignored Gradle wrapper and local.properties first.
       - run: flutter build apk --debug --dart-define=ZULLO_API_URL=https://api.example.invalid
+      - run: JAVA_HOME="$JAVA_HOME_17_X64" ./gradlew :geolocator_android:testDebugUnitTest
+        working-directory: android
+      - name: Preserve failed native test diagnostics
+        if: failure()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6 (Node24)
+        with:
+          name: android-native-test-diagnostics
+          path: |
+            build/geolocator_android/test-results/testDebugUnitTest
+            build/geolocator_android/reports/tests/testDebugUnitTest
+          if-no-files-found: ignore
+      - name: Verify release signing with a disposable CI key
+        run: JAVA_HOME="$JAVA_HOME_17_X64" python3 .ci/check_android_release_signing.py

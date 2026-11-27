@@ -16,6 +16,7 @@ class _BlockedProfilesPageState extends State<BlockedProfilesPage> {
   final _generation = AccountSession.generation;
   List<Map<String, dynamic>>? _rows;
   String? _error;
+  bool _loading = false;
   final _busy = <String>{};
 
   @override
@@ -25,6 +26,11 @@ class _BlockedProfilesPageState extends State<BlockedProfilesPage> {
   }
 
   Future<void> _load() async {
+    if (_loading || !AccountSession.isCurrent(_generation)) return;
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
       final rows = await _service.getBlockedUsers();
       if (!mounted || !AccountSession.isCurrent(_generation)) return;
@@ -36,37 +42,45 @@ class _BlockedProfilesPageState extends State<BlockedProfilesPage> {
       if (mounted && AccountSession.isCurrent(_generation)) {
         setState(() => _error = 'Kunde inte hämta blockerade profiler.');
       }
+    } finally {
+      if (mounted && AccountSession.isCurrent(_generation)) {
+        setState(() => _loading = false);
+      }
     }
   }
 
   Future<void> _unblock(Map<String, dynamic> row) async {
     final id = row['userId'].toString();
-    if (_busy.contains(id)) return;
-    final confirm = await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-              title: Text(context.l10n.unblockPersonQuestion((row['displayName']).toString())),
-              content: Text(context.l10n.youMaySeeEachOtherInSwipeAgainIfYour),
-              actions: [
-                TextButton(
-                    onPressed: () => Navigator.pop(context, false),
-                    child: Text(context.l10n.cancel)),
-                TextButton(
-                    onPressed: () => Navigator.pop(context, true),
-                    child: Text(context.l10n.unblock)),
-              ],
-            ));
-    if (confirm != true || !mounted || !AccountSession.isCurrent(_generation)) {
-      return;
-    }
+    if (_busy.contains(id) || !AccountSession.isCurrent(_generation)) return;
     setState(() => _busy.add(id));
     try {
+      final confirm = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+                title: Text(context.l10n
+                    .unblockPersonQuestion((row['displayName']).toString())),
+                content:
+                    Text(context.l10n.youMaySeeEachOtherInSwipeAgainIfYour),
+                actions: [
+                  TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: Text(context.l10n.cancel)),
+                  TextButton(
+                      onPressed: () => Navigator.pop(context, true),
+                      child: Text(context.l10n.unblock)),
+                ],
+              ));
+      if (confirm != true ||
+          !mounted ||
+          !AccountSession.isCurrent(_generation)) {
+        return;
+      }
       await _service.unblockUser(id);
       if (!mounted || !AccountSession.isCurrent(_generation)) return;
       setState(() => _rows?.removeWhere((item) => item['userId'] == id));
     } catch (_) {
       if (mounted && AccountSession.isCurrent(_generation)) {
-        ScaffoldMessenger.of(context).showSnackBar( SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text(context.l10n.couldNotUnblockThisPersonTryAgain)));
       }
     } finally {
@@ -89,8 +103,7 @@ class _BlockedProfilesPageState extends State<BlockedProfilesPage> {
                 : _rows == null
                     ? const Center(child: CircularProgressIndicator())
                     : _rows!.isEmpty
-                        ?  Center(
-                            child: Text(context.l10n.noBlockedProfiles))
+                        ? Center(child: Text(context.l10n.noBlockedProfiles))
                         : ListView(
                             children: _rows!
                                 .map((row) => Padding(
@@ -146,7 +159,8 @@ class _BlockedProfilesPageState extends State<BlockedProfilesPage> {
                                                         fontWeight:
                                                             FontWeight.w800)),
                                                 if (row['age'] != null)
-                                                  Text(context.l10n.value0Years((row['age']).toString())),
+                                                  Text(context.l10n.value0Years(
+                                                      (row['age']).toString())),
                                                 const SizedBox(height: 6),
                                                 Text(context.l10n.blocked,
                                                     style: TextStyle(

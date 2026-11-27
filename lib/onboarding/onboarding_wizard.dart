@@ -88,7 +88,8 @@ class _OnboardingWizardState extends State<OnboardingWizard>
       case OnboardingStep.interestedIn:
         return ['Män', 'Kvinnor', 'Alla'].contains(data.interestedIn);
       case OnboardingStep.bio:
-        return data.promptKey.isEmpty || data.promptAnswer.trim().isNotEmpty;
+        return data.effectivePrompts
+            .every((prompt) => prompt.answer.trim().isNotEmpty);
       case OnboardingStep.photos:
         return data.photoUrls.length >= 2;
       default:
@@ -440,13 +441,12 @@ class _OnboardingWizardState extends State<OnboardingWizard>
         return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           _text('bio', 'Om mig', lines: 4),
           const SizedBox(height: 24),
-          ConversationPromptEditor(
-              promptKey: data.promptKey,
-              answer: data.promptAnswer,
-              onChanged: (key, answer) {
-                data.promptKey = key;
-                data.promptAnswer = answer;
+          ConversationPromptsEditor(
+              prompts: data.effectivePrompts,
+              onChanged: (prompts) {
+                data.setConversationPrompts(prompts);
                 setup.changed();
+                setState(() {});
               }),
         ]);
       case OnboardingStep.photos:
@@ -576,11 +576,13 @@ class _OnboardingWizardState extends State<OnboardingWizard>
                                     onPressed: _busy
                                         ? null
                                         : () {
-                                            if (step == OnboardingStep.bio &&
-                                                data.promptAnswer
-                                                    .trim()
-                                                    .isEmpty) {
-                                              data.promptKey = '';
+                                            if (step == OnboardingStep.bio) {
+                                              data.setConversationPrompts(data
+                                                  .effectivePrompts
+                                                  .where((p) => p.answer
+                                                      .trim()
+                                                      .isNotEmpty)
+                                                  .toList());
                                               setup.changed();
                                             }
                                             _go(step.index + 1);

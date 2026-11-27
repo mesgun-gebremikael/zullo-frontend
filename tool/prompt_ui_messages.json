@@ -1,0 +1,5 @@
+{
+  "thingsAboutMe": {"sv":"Saker om mig","en":"Things about me"},
+  "chooseUpToThreeConversationPrompts": {"sv":"Välj upp till tre frågor. Dina svar gör det lättare att börja prata.","en":"Choose up to three questions. Your answers make it easier to start a conversation."},
+  "answerOrRemoveConversationPrompt": {"sv":"Skriv ett svar på samtalsfrågan eller ta bort den.","en":"Answer the conversation question or remove it."}
+}

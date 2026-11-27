@@ -10,11 +10,16 @@ import 'services/commerce_service.dart';
 import 'blocked_profiles_page.dart';
 import 'services/account_session.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:geolocator/geolocator.dart';
 import 'services/auth_service.dart';
 
 class ProfileSettingsPage extends StatefulWidget {
   final AuthService? authService;
-  const ProfileSettingsPage({super.key, this.authService});
+  final CommerceClient? commerce;
+  final Future<bool> Function()? openSystemSettings;
+  const ProfileSettingsPage(
+      {super.key, this.authService, this.commerce, this.openSystemSettings});
 
   @override
   State<ProfileSettingsPage> createState() => _ProfileSettingsPageState();
@@ -23,6 +28,13 @@ class ProfileSettingsPage extends StatefulWidget {
 class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
   late final AuthService _authService = widget.authService ?? AuthService();
   final int _generation = AccountSession.generation;
+  late final CommerceClient _commerce = widget.commerce ?? CommerceClient();
+  bool get _active => mounted && AccountSession.isCurrent(_generation);
+  bool _privacyLoading = true,
+      _privacyReady = false,
+      _privacyLoadFailed = false;
+  bool _accountRequestRunning = false;
+  Future<void>? _privacyRequest;
 
   String? _emailText;
   bool _emailLoading = true, _emailLoadFailed = false;
@@ -35,27 +47,49 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
   void initState() {
     super.initState();
     _loadAccountInfo();
-    if (widget.authService == null) _loadPrivacy();
+    _loadPrivacy();
   }
 
-  Future<void> _loadPrivacy() async {
+  Future<void> _loadPrivacy() {
+    if (!_active) return Future.value();
+    if (_privacyRequest != null) return _privacyRequest!;
+    setState(() {
+      _privacyLoading = true;
+      _privacyReady = false;
+      _privacyLoadFailed = false;
+    });
+    return _privacyRequest = _performPrivacyLoad().whenComplete(() {
+      _privacyRequest = null;
+      if (_active) setState(() => _privacyLoading = false);
+    });
+  }
+
+  Future<void> _performPrivacyLoad() async {
     try {
-      final state = await CommerceClient().state();
-      if (!mounted || !AccountSession.isCurrent(_generation)) return;
+      final state = await _commerce.state();
+      if (!_active) return;
       setState(() {
         _showActivityStatus = !state.hideActivity;
         _incognitoMode = state.incognito;
+        _privacyReady = true;
       });
-    } catch (_) {/* keep settings usable while temporarily offline */}
+    } catch (_) {
+      if (_active) setState(() => _privacyLoadFailed = true);
+    }
+  }
+
+  Future<void> _refreshSettings() async {
+    if (!_active || _privacyBusy) return;
+    await Future.wait([_loadPrivacy(), _loadAccountInfo()]);
   }
 
   Future<void> _savePrivacy({bool? showActivity, bool? incognito}) async {
-    if (_privacyBusy) return;
-    _privacyBusy = true;
+    if (!_active || _privacyBusy || !_privacyReady || _privacyLoading) return;
+    setState(() => _privacyBusy = true);
     try {
-      final state = await CommerceClient().privacy(
-          hideActivity: !(showActivity ?? _showActivityStatus),
-          incognito: incognito ?? _incognitoMode);
+      final state = await _commerce.privacy(
+          hideActivity: showActivity == null ? null : !showActivity,
+          incognito: incognito);
       if (!mounted || !AccountSession.isCurrent(_generation)) return;
       setState(() {
         _showActivityStatus = !state.hideActivity;
@@ -63,25 +97,48 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
       });
       CommerceEvents.refreshDiscovery();
     } on CommerceException catch (error) {
-      if (!mounted) return;
+      if (!mounted || !_active) return;
       if (error.status == 402) {
         await Navigator.push(
             context,
             MaterialPageRoute(
                 builder: (_) => PremiumPage(
                     activityOnly: showActivity == false && incognito != true)));
-        await _loadPrivacy();
+        if (_active) await _loadPrivacy();
       } else {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(context.tr(error.message))));
       }
     } catch (_) {
-      if (mounted) {
+      if (mounted && _active) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text(context.l10n.thisSettingCouldNotBeSavedTryAgain)));
       }
     } finally {
-      _privacyBusy = false;
+      if (_active) setState(() => _privacyBusy = false);
+    }
+  }
+
+  bool _openingSystemSettings = false;
+  Future<void> _openSystemSettings() async {
+    if (!_active || _openingSystemSettings) return;
+    _openingSystemSettings = true;
+    try {
+      final opened =
+          await (widget.openSystemSettings ?? Geolocator.openAppSettings)();
+      if (!opened && mounted && _active) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content:
+                Text(context.l10n.yourRequestCouldNotBeConfirmedTryAgain)));
+      }
+    } catch (_) {
+      if (mounted && _active) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content:
+                Text(context.l10n.yourRequestCouldNotBeConfirmedTryAgain)));
+      }
+    } finally {
+      _openingSystemSettings = false;
     }
   }
 
@@ -135,6 +192,12 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
   }
 
   Future<void> _loadAccountInfo() async {
+    if (!_active || _accountRequestRunning) return;
+    _accountRequestRunning = true;
+    setState(() {
+      _emailLoading = true;
+      _emailLoadFailed = false;
+    });
     try {
       final profile = await _authService.getMyAccount();
 
@@ -143,6 +206,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
       setState(() {
         _emailText = profile["email"]?.toString();
         _emailLoading = false;
+        _emailLoadFailed = false;
       });
     } catch (e) {
       if (!mounted || !AccountSession.isCurrent(_generation)) return;
@@ -151,11 +215,14 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
         _emailLoading = false;
         _emailLoadFailed = true;
       });
+    } finally {
+      _accountRequestRunning = false;
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!_active) return const Scaffold();
     return Scaffold(
       backgroundColor: const Color(0xFFF3F3F3),
       appBar: AppBar(
@@ -178,100 +245,129 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        child: Column(
-          children: [
-            AnimatedBuilder(
-              animation: LocaleController.instance,
-              builder: (context, _) => _SettingsArrowRow(
-                icon: Icons.language,
-                title: context.l10n.languageSettingsTitle,
-                subtitle: LocaleController.instance.locale == null
-                    ? context.l10n.languageAutomatic
-                    : LocaleCatalog.name(LocaleController.instance.locale!),
-                onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => const LanguageSettingsPage())),
-              ),
+      body: RefreshIndicator(
+          onRefresh: _refreshSettings,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            child: Column(
+              children: [
+                if (_privacyLoading || _privacyBusy)
+                  const LinearProgressIndicator(),
+                if (_privacyLoadFailed)
+                  ListTile(
+                    title:
+                        Text(context.l10n.yourSettingsCouldNotBeLoadedTryAgain),
+                    trailing: TextButton(
+                        onPressed: _loadPrivacy,
+                        child: Text(context.l10n.tryAgain)),
+                  ),
+                AnimatedBuilder(
+                  animation: LocaleController.instance,
+                  builder: (context, _) => _SettingsArrowRow(
+                    icon: Icons.language,
+                    title: context.l10n.languageSettingsTitle,
+                    subtitle: LocaleController.instance.locale == null
+                        ? context.l10n.languageAutomatic
+                        : LocaleCatalog.name(LocaleController.instance.locale!),
+                    onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const LanguageSettingsPage())),
+                  ),
+                ),
+                if (!kIsWeb &&
+                    (defaultTargetPlatform == TargetPlatform.android ||
+                        defaultTargetPlatform == TargetPlatform.iOS)) ...[
+                  const SizedBox(height: 8),
+                  _SettingsArrowRow(
+                      icon: Icons.notifications_outlined,
+                      title: context.l10n.notificationSettingsTitle,
+                      subtitle: context.l10n.notificationSettingsDescription,
+                      onTap: _openSystemSettings),
+                ],
+                const SizedBox(height: 8),
+                _SettingsArrowRow(
+                    icon: Icons.near_me_outlined,
+                    title: 'Plats & upptäckt',
+                    subtitle:
+                        context.tr('Din plats och val för en bredare sökning'),
+                    onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const DiscoveryLocationPage()))),
+                const SizedBox(height: 8),
+                _SettingsArrowRow(
+                  icon: Icons.verified,
+                  title: 'Verifiera profil',
+                  subtitle: context.tr('Verifiering är inte tillgänglig ännu'),
+                  onTap: null,
+                ),
+                const SizedBox(height: 8),
+                _SettingsSwitchRow(
+                  icon: Icons.power_settings_new,
+                  title: 'Aktivitetsstatus',
+                  subtitle: context.tr(
+                      'På: matchningar ser din aktivitet. Stäng av med Dölj aktivitet eller ZULLO Premium för att dölja online och senast aktiv.'),
+                  value: _showActivityStatus,
+                  valueKnown: _privacyReady,
+                  onChanged: _privacyReady && !_privacyBusy && !_privacyLoading
+                      ? (value) => _savePrivacy(showActivity: value)
+                      : null,
+                ),
+                const SizedBox(height: 8),
+                _SettingsSwitchRow(
+                  icon: Icons.visibility_off,
+                  title: 'Inkognito Premium',
+                  subtitle: context
+                      .tr('Bara personer som du gillar kan se din profil'),
+                  value: _incognitoMode,
+                  valueKnown: _privacyReady,
+                  onChanged: _privacyReady && !_privacyBusy && !_privacyLoading
+                      ? (value) => _savePrivacy(incognito: value)
+                      : null,
+                ),
+                const SizedBox(height: 8),
+                _SettingsArrowRow(
+                  icon: Icons.alternate_email,
+                  title: 'E-post',
+                  subtitle: _emailLoading
+                      ? context.l10n.loading
+                      : _emailLoadFailed
+                          ? '${context.l10n.yourAccountCouldNotBeLoaded} ${context.l10n.tryAgain}'
+                          : _emailText ?? context.l10n.notSpecified,
+                  onTap: _emailLoadFailed ? _loadAccountInfo : null,
+                ),
+                const SizedBox(height: 8),
+                _SettingsArrowRow(
+                  icon: Icons.block,
+                  title: 'Blockerade profiler',
+                  subtitle: context.tr('Personer du har blockerat'),
+                  onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const BlockedProfilesPage())),
+                ),
+                const SizedBox(height: 8),
+                _SettingsArrowRow(
+                  icon: Icons.delete_outline,
+                  title: 'Radera eller pausa konto',
+                  subtitle: context.tr('Ta en paus eller stäng ditt konto'),
+                  onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const AccountManagementPage())),
+                ),
+                const SizedBox(height: 24),
+                _SettingsArrowRow(
+                    icon: Icons.logout_rounded,
+                    title: 'Logga ut',
+                    subtitle: context.tr('Din profil finns kvar'),
+                    onTap: _logout),
+                const SizedBox(height: 24),
+              ],
             ),
-            const SizedBox(height: 8),
-            _SettingsArrowRow(
-                icon: Icons.near_me_outlined,
-                title: 'Plats & upptäckt',
-                subtitle:
-                    context.tr('Din plats och val för en bredare sökning'),
-                onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => const DiscoveryLocationPage()))),
-            const SizedBox(height: 8),
-            _SettingsArrowRow(
-              icon: Icons.verified,
-              title: 'Verifiera profil',
-              subtitle: context.tr('Verifiering är inte tillgänglig ännu'),
-              onTap: null,
-            ),
-            const SizedBox(height: 8),
-            _SettingsSwitchRow(
-              icon: Icons.power_settings_new,
-              title: 'Aktivitetsstatus',
-              subtitle: context.tr(
-                  'På: matchningar ser din aktivitet. Stäng av med Dölj aktivitet eller ZULLO Premium för att dölja online och senast aktiv.'),
-              value: _showActivityStatus,
-              onChanged: (value) => _savePrivacy(showActivity: value),
-            ),
-            const SizedBox(height: 8),
-            _SettingsSwitchRow(
-              icon: Icons.visibility_off,
-              title: 'Inkognito Premium',
-              subtitle:
-                  context.tr('Bara personer som du gillar kan se din profil'),
-              value: _incognitoMode,
-              onChanged: (value) => _savePrivacy(incognito: value),
-            ),
-            const SizedBox(height: 8),
-            _SettingsArrowRow(
-              icon: Icons.alternate_email,
-              title: 'E-post',
-              subtitle: _emailLoading
-                  ? context.l10n.loading
-                  : _emailLoadFailed
-                      ? context.l10n.yourAccountCouldNotBeLoaded
-                      : _emailText ?? context.l10n.notSpecified,
-              onTap: null,
-            ),
-            const SizedBox(height: 8),
-            _SettingsArrowRow(
-              icon: Icons.block,
-              title: 'Blockerade profiler',
-              subtitle: context.tr('Personer du har blockerat'),
-              onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (_) => const BlockedProfilesPage())),
-            ),
-            const SizedBox(height: 8),
-            _SettingsArrowRow(
-              icon: Icons.delete_outline,
-              title: 'Radera eller pausa konto',
-              subtitle: context.tr('Ta en paus eller stäng ditt konto'),
-              onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (_) => const AccountManagementPage())),
-            ),
-            const SizedBox(height: 24),
-            _SettingsArrowRow(
-                icon: Icons.logout_rounded,
-                title: 'Logga ut',
-                subtitle: context.tr('Din profil finns kvar'),
-                onTap: _logout),
-            const SizedBox(height: 24),
-          ],
-        ),
-      ),
+          )),
     );
   }
 }
@@ -360,13 +456,15 @@ class _SettingsSwitchRow extends StatelessWidget {
   final String title;
   final String subtitle;
   final bool value;
-  final ValueChanged<bool> onChanged;
+  final bool valueKnown;
+  final ValueChanged<bool>? onChanged;
 
   const _SettingsSwitchRow({
     required this.icon,
     required this.title,
     required this.subtitle,
     required this.value,
+    this.valueKnown = true,
     required this.onChanged,
   });
 
@@ -415,10 +513,15 @@ class _SettingsSwitchRow extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 10),
-          Switch(
-            value: value,
-            onChanged: onChanged,
-          ),
+          if (valueKnown)
+            Semantics(
+                label: context.tr(title),
+                child: Switch(value: value, onChanged: onChanged))
+          else
+            const SizedBox(
+                width: 60,
+                height: 48,
+                child: Icon(Icons.more_horiz, color: Colors.black38)),
         ],
       ),
     );

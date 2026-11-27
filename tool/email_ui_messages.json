@@ -1,0 +1,16 @@
+{
+  "verifyEmailTitle": ["Bekräfta din e-postadress", "Verify your email address"],
+  "checkYourInbox": ["Kontrollera din inkorg", "Check your inbox"],
+  "emailCodeInstructions": ["Ange koden som skickades till din e-postadress. Kontrollera även skräpposten.", "Enter the code sent to your email address. Check your spam folder too."],
+  "emailVerificationCode": ["Verifieringskod", "Verification code"],
+  "verifyEmailAction": ["Bekräfta e-postadress", "Verify email address"],
+  "resendEmailCode": ["Skicka en ny kod", "Send a new code"],
+  "resendEmailCodeCountdown": ["Ny kod om {value0} s", "New code in {value0}s"],
+  "enterSixDigitCode": ["Ange den sexsiffriga koden.", "Enter the six-digit code."],
+  "verificationUnavailable": ["E-postverifiering är inte tillgänglig just nu. Försök igen senare.", "Email verification is unavailable right now. Please try again later."],
+  "verificationCodeInvalid": ["Koden är felaktig eller har gått ut. Begär en ny kod.", "The code is incorrect or has expired. Request a new code."],
+  "verificationCouldNotComplete": ["Kunde inte bekräfta e-postadressen. Försök igen.", "Could not verify the email address. Please try again."],
+  "checkEmailDomain": ["Kontrollera domänen i din e-postadress.", "Check the domain in your email address."],
+  "enterValidEmailAddress": ["Ange en giltig e-postadress.", "Enter a valid email address."],
+  "invalidLoginCredentials": ["Fel e-postadress eller lösenord.", "Incorrect email address or password."]
+}

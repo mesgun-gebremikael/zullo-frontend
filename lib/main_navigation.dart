@@ -1,3 +1,4 @@
+import 'widgets/location_consent_sheet.dart';
 import 'l10n/localization.dart';
 import 'services/device_location_service.dart';
 import 'theme/zullo_palette.dart';
@@ -5,6 +6,7 @@ import 'widgets/zullo_symbol.dart';
 import 'welcome_page.dart';
 import 'likes_page.dart';
 import 'services/commerce_service.dart';
+import 'services/known_purchase_recovery.dart';
 import 'services/relation_changes.dart';
 import 'services/signalr_service.dart';
 import 'services/refresh_coordinator.dart';
@@ -40,6 +42,7 @@ class MainNavigation extends StatefulWidget {
   final AuthService? authService;
   final SignalRService? liveService;
   final List<Widget>? pages;
+  final KnownPurchaseRecovery? purchaseRecovery;
 
   const MainNavigation({
     super.key,
@@ -47,6 +50,7 @@ class MainNavigation extends StatefulWidget {
     this.authService,
     this.liveService,
     this.pages,
+    this.purchaseRecovery,
   });
 
   @override
@@ -57,10 +61,91 @@ class _MainNavigationState extends State<MainNavigation>
     with WidgetsBindingObserver {
   late final _locationSync = ForegroundLocationSync(_authService,
       isActive: () => mounted && _inForeground);
-  Future<void> _refreshLocation() async {
-    if (widget.pages != null || !_sessionActive) return;
-    if (await _locationSync.refresh()) {
+  bool _locationConsentInFlight = false;
+  KnownPurchaseRecovery? _purchaseRecovery;
+  Future<void> _recoverKnownPurchase() async {
+    if (mounted && _sessionActive && _inForeground) {
+      await _purchaseRecovery?.retry();
+    }
+  }
+
+  Future<void> _refreshLocation({bool force = false}) async {
+    if (widget.pages != null || !_sessionActive || _locationConsentInFlight) {
+      return;
+    }
+    if (await _locationSync.refresh(force: force)) {
       if (mounted && _sessionActive) CommerceEvents.refreshDiscovery();
+    }
+  }
+
+  Future<void> _initialiseLocation() async {
+    if (widget.pages != null ||
+        _locationConsentInFlight ||
+        _selectedIndex != AppTabs.swipe ||
+        !_sessionActive ||
+        !_inForeground) {
+      return;
+    }
+    _locationConsentInFlight = true;
+    var attemptedEnable = false;
+    try {
+      final settings = await _authService.discoverySettings();
+      if (!mounted ||
+          !_sessionActive ||
+          !_inForeground ||
+          _selectedIndex != AppTabs.swipe) {
+        return;
+      }
+      final explain = await LocationConsentGate().claim(settings);
+      if (!mounted ||
+          !_sessionActive ||
+          !_inForeground ||
+          _selectedIndex != AppTabs.swipe) {
+        return;
+      }
+      if (!explain) {
+        if (await _locationSync.refresh()) {
+          if (mounted && _sessionActive) CommerceEvents.refreshDiscovery();
+        }
+        return;
+      }
+      final accepted = await showModalBottomSheet<bool>(
+          context: context,
+          isScrollControlled: true,
+          showDragHandle: true,
+          builder: (_) => const LocationConsentSheet());
+      if (accepted != true || !mounted || !_sessionActive || !_inForeground) {
+        return;
+      }
+      attemptedEnable = true;
+      final place = await DeviceLocationService(
+              isActive: () => mounted && _sessionActive && _inForeground)
+          .locate(requestPermission: true);
+      if (place == null ||
+          !place.hasValidCoordinates ||
+          !mounted ||
+          !_sessionActive ||
+          !_inForeground) {
+        return;
+      }
+      await _authService.discoverySettings(update: {
+        'automaticLocation': true,
+        'lat': place.lat,
+        'lng': place.lng,
+        'locationName': place.name,
+      });
+      if (mounted && _sessionActive) CommerceEvents.refreshDiscovery();
+    } catch (failure) {
+      if (mounted && _sessionActive && attemptedEnable) {
+        final message = failure is LocationFailure
+            ? context.tr(failure.message)
+            : context.l10n.yourLocationCouldNotBeUpdatedCheckYourConnectionAnd;
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(message)));
+      }
+      // Discovery/settings remain usable; no fake position or silent opt-in.
+    } finally {
+      _locationConsentInFlight = false;
     }
   }
 
@@ -104,11 +189,24 @@ class _MainNavigationState extends State<MainNavigation>
     _sessionExpired = AccountSession.expiredStream.listen(
         (_) => _endSession('Inloggningen behöver förnyas. Logga in igen.'));
     _openDiscovery = CommerceEvents.openDiscoveryStream.listen((_) {
-      if (mounted && _sessionActive) setState(() => _selectedIndex = 0);
+      if (mounted && _sessionActive) {
+        setState(() => _selectedIndex = 0);
+        unawaited(_initialiseLocation());
+      }
     });
     WidgetsBinding.instance.addObserver(this);
+    if (widget.pages == null || widget.purchaseRecovery != null) {
+      _purchaseRecovery = widget.purchaseRecovery ??
+          KnownPurchaseRecovery(
+              isActive: () => mounted && _sessionActive && _inForeground);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        unawaited(_recoverKnownPurchase());
+      });
+    }
     if (widget.pages == null) {
-      unawaited(_refreshLocation());
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _sessionActive) unawaited(_initialiseLocation());
+      });
       unawaited(_pulsePresence());
       _presenceTimer = Timer.periodic(const Duration(minutes: 1), (_) {
         unawaited(_pulsePresence());
@@ -134,7 +232,11 @@ class _MainNavigationState extends State<MainNavigation>
           const LikesPage(),
           MatchesPage(
             onUnreadChanged: (hasUnread) {
-              if (!mounted || !_sessionActive) return;
+              if (!mounted ||
+                  !_sessionActive ||
+                  hasUnread == _hasUnreadMessages) {
+                return;
+              }
               setState(() {
                 _hasUnreadMessages = hasUnread;
               });
@@ -149,7 +251,10 @@ class _MainNavigationState extends State<MainNavigation>
       await _handleOpenChatRequest(request);
     });
 
-    _repositorySubscription = ChatRepository.instance.stream.listen((state) {
+    _repositorySubscription = ChatRepository.instance.stream
+        .distinct(
+            (previous, next) => identical(previous.chatList, next.chatList))
+        .listen((state) {
       _syncUnreadFromRepository();
     });
 
@@ -163,6 +268,7 @@ class _MainNavigationState extends State<MainNavigation>
 
   @override
   void dispose() {
+    _purchaseRecovery?.dispose();
     _openDiscovery?.cancel();
     _accountClosed?.cancel();
     _sessionExpired?.cancel();
@@ -180,11 +286,13 @@ class _MainNavigationState extends State<MainNavigation>
   }
 
   void _onItemTapped(int index) {
+    if (_selectedIndex == index) return;
     setState(() {
       _selectedIndex = index;
     });
 
     _loadUnreadStatus();
+    if (index == AppTabs.swipe) unawaited(_initialiseLocation());
   }
 
   Future<void> _pulsePresence() async {
@@ -235,9 +343,16 @@ class _MainNavigationState extends State<MainNavigation>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    _inForeground = state == AppLifecycleState.resumed;
+    final inForeground = state == AppLifecycleState.resumed;
+    if (_inForeground != inForeground && mounted) {
+      setState(() => _inForeground = inForeground);
+    }
     if (state == AppLifecycleState.resumed && mounted && _sessionActive) {
-      if (widget.pages == null) unawaited(_pulsePresence());
+      unawaited(_recoverKnownPurchase());
+      if (widget.pages == null) {
+        unawaited(_pulsePresence());
+        unawaited(_refreshLocation(force: true));
+      }
       unawaited(_connectLive());
       unawaited(_authService.syncPushToken());
       unawaited(_loadUnreadStatus(force: true));
@@ -269,7 +384,7 @@ class _MainNavigationState extends State<MainNavigation>
   void _syncUnreadFromRepository() {
     final hasUnread = ChatRepository.instance.chatList.any((m) => m.hasUnread);
 
-    if (!mounted || !_sessionActive) return;
+    if (!mounted || !_sessionActive || hasUnread == _hasUnreadMessages) return;
 
     setState(() {
       _hasUnreadMessages = hasUnread;
@@ -376,8 +491,8 @@ class _MainNavigationState extends State<MainNavigation>
 
       final shouldRefresh = await Navigator.push<bool>(
         context,
-        PageRouteBuilder(
-          pageBuilder: (_, __, ___) => ChatPage(
+        MaterialPageRoute<bool>(
+          builder: (_) => ChatPage(
             userId: request.userId,
             displayName: request.displayName,
             photoUrl: request.photoUrl,
@@ -385,8 +500,6 @@ class _MainNavigationState extends State<MainNavigation>
             initialThreadData: initialThreadData,
             initialMeUserId: meUserId,
           ),
-          transitionDuration: Duration.zero,
-          reverseTransitionDuration: Duration.zero,
         ),
       );
 
@@ -420,8 +533,17 @@ class _MainNavigationState extends State<MainNavigation>
       backgroundColor: const Color(0xFFF0F1F3),
       body: IndexedStack(
         index: _selectedIndex,
-        children: List<Widget>.generate(_pages.length,
-            (i) => _visited.contains(i) ? _pages[i] : const SizedBox.shrink()),
+        children: List<Widget>.generate(
+            _pages.length,
+            (i) => _visited.contains(i)
+                ? TickerMode(
+                    enabled: _inForeground && i == _selectedIndex,
+                    child: ExcludeFocus(
+                      excluding: i != _selectedIndex,
+                      child: RepaintBoundary(child: _pages[i]),
+                    ),
+                  )
+                : const SizedBox.shrink()),
       ),
       bottomNavigationBar: SafeArea(
         top: false,
@@ -456,11 +578,13 @@ class _MainNavigationState extends State<MainNavigation>
                   Positioned.fill(
                     child: IgnorePointer(
                       child: AnimatedAlign(
-                        alignment: Alignment(
+                        alignment: AlignmentDirectional(
                           -1 + (2 * _selectedIndex / (_pages.length - 1)),
                           0,
                         ),
-                        duration: const Duration(milliseconds: 280),
+                        duration: MediaQuery.disableAnimationsOf(context)
+                            ? Duration.zero
+                            : const Duration(milliseconds: 280),
                         curve: Curves.easeInOutCubic,
                         child: FractionallySizedBox(
                           widthFactor: 1 / _pages.length,
@@ -482,36 +606,36 @@ class _MainNavigationState extends State<MainNavigation>
                   Row(
                     children: [
                       _NavItem(
-                    icon: Icons.explore_outlined,
-                    symbol: ZulloSymbolKind.discover,
-                    activeIcon: Icons.explore,
-                    label: 'Swipa',
-                    isActive: _selectedIndex == 0,
-                    onTap: () => _onItemTapped(0),
-                  ),
-                  _NavItem(
-                    icon: Icons.favorite_border,
-                    activeIcon: Icons.favorite,
-                    label: 'Likes',
-                    isActive: _selectedIndex == AppTabs.likes,
-                    onTap: () => _onItemTapped(AppTabs.likes),
-                  ),
-                  _NavItem(
-                    icon: Icons.chat_bubble_outline,
-                    symbol: ZulloSymbolKind.conversation,
-                    activeIcon: Icons.chat_bubble,
-                    label: 'Chattar',
-                    isActive: _selectedIndex == AppTabs.chats,
-                    showDot: _hasUnreadMessages,
-                    onTap: () => _onItemTapped(AppTabs.chats),
-                  ),
-                  _NavItem(
-                    icon: Icons.person_outline,
-                    activeIcon: Icons.person,
-                    label: 'Profil',
-                    isActive: _selectedIndex == AppTabs.profile,
-                    onTap: () => _onItemTapped(AppTabs.profile),
-                  ),
+                        icon: Icons.explore_outlined,
+                        symbol: ZulloSymbolKind.discover,
+                        activeIcon: Icons.explore,
+                        label: 'Swipa',
+                        isActive: _selectedIndex == 0,
+                        onTap: () => _onItemTapped(0),
+                      ),
+                      _NavItem(
+                        icon: Icons.favorite_border,
+                        activeIcon: Icons.favorite,
+                        label: 'Likes',
+                        isActive: _selectedIndex == AppTabs.likes,
+                        onTap: () => _onItemTapped(AppTabs.likes),
+                      ),
+                      _NavItem(
+                        icon: Icons.chat_bubble_outline,
+                        symbol: ZulloSymbolKind.conversation,
+                        activeIcon: Icons.chat_bubble,
+                        label: 'Chattar',
+                        isActive: _selectedIndex == AppTabs.chats,
+                        showDot: _hasUnreadMessages,
+                        onTap: () => _onItemTapped(AppTabs.chats),
+                      ),
+                      _NavItem(
+                        icon: Icons.person_outline,
+                        activeIcon: Icons.person,
+                        label: 'Profil',
+                        isActive: _selectedIndex == AppTabs.profile,
+                        onTap: () => _onItemTapped(AppTabs.profile),
+                      ),
                     ],
                   ),
                 ],

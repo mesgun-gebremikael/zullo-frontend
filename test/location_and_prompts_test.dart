@@ -102,13 +102,13 @@ void main() {
         home:
             DiscoveryLocationPage(authService: auth, locationService: place)));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Uppdatera min plats'));
+    await tester.tap(find.text('Använd min plats'));
     await tester.pumpAndSettle();
     expect(
         find.text('Tillåt plats i telefonens inställningar.'), findsOneWidget);
     expect(auth.writes, isEmpty);
     place.denied = false;
-    await tester.tap(find.text('Uppdatera min plats'));
+    await tester.tap(find.text('Använd min plats'));
     await tester.pumpAndSettle();
     expect(find.text('Madrid, Spanien'), findsOneWidget);
     expect(auth.writes.single['automaticLocation'], isTrue);

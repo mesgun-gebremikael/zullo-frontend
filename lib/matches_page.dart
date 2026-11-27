@@ -86,7 +86,12 @@ class _MatchesPageState extends State<MatchesPage> {
       });
     }
 
-    _repositorySubscription = ChatRepository.instance.stream.listen((state) {
+    // Thread acknowledgements and pagination retain the same immutable list.
+    // Do not rebuild/redecode avatars in a hidden list for thread-only events.
+    _repositorySubscription = ChatRepository.instance.stream
+        .distinct(
+            (previous, next) => identical(previous.chatList, next.chatList))
+        .listen((state) {
       if (!mounted || !_sessionActive) return;
 
       final mapped = _mapChatItemsToUi(state.chatList);

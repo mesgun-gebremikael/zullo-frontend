@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'email_verification_page.dart';
 import 'l10n/localization.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
@@ -19,6 +21,7 @@ class _RegisterPageState extends State<RegisterPage> {
   late final AuthService _authService = widget.authService ?? AuthService();
   bool _isSubmitting = false;
   String? _error;
+  String? _suggestedEmail;
 
   Future<void> _submit() async {
     if (_isSubmitting) return;
@@ -32,10 +35,15 @@ class _RegisterPageState extends State<RegisterPage> {
       setState(() => _error = 'Lösenordet behöver minst 8 tecken.');
       return;
     }
+    if (utf8.encode(password).length > 72) {
+      setState(() => _error = 'Välj ett kortare lösenord.');
+      return;
+    }
     FocusScope.of(context).unfocus();
     setState(() {
       _isSubmitting = true;
       _error = null;
+      _suggestedEmail = null;
     });
     try {
       await _authService.registerAndLogin(email: email, password: password);
@@ -45,6 +53,20 @@ class _RegisterPageState extends State<RegisterPage> {
           MaterialPageRoute(
               builder: (_) => OnboardingStartPage(authService: _authService)),
           (_) => false);
+    } on EmailVerificationRequired catch (pending) {
+      if (!mounted) return;
+      await Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (_) => EmailVerificationPage(
+                  challenge: pending.challenge, authService: _authService)));
+    } on EmailDomainTypoException catch (failure) {
+      if (mounted) {
+        setState(() {
+          _error = failure.message;
+          _suggestedEmail = failure.suggestion;
+        });
+      }
     } on TimeoutException {
       if (mounted) {
         setState(() => _error =
@@ -99,6 +121,8 @@ class _RegisterPageState extends State<RegisterPage> {
                 const SizedBox(height: 32),
                 TextField(
                   controller: emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  autofillHints: const [AutofillHints.email],
                   textInputAction: TextInputAction.next,
                   decoration: InputDecoration(
                     labelText: context.l10n.email,
@@ -118,7 +142,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   child: ElevatedButton(
                     onPressed: _isSubmitting ? null : _submit,
                     child: _isSubmitting
-                        ?  Row(
+                        ? Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                                 SizedBox(
@@ -133,10 +157,11 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                 ),
                 if (_isSubmitting)
-                   Padding(
+                  Padding(
                       padding: EdgeInsets.only(top: 12),
                       child: Text(
-                          context.l10n.waitingForTheServerTheFirstConnectionMayTakeA,
+                          context.l10n
+                              .waitingForTheServerTheFirstConnectionMayTakeA,
                           textAlign: TextAlign.center)),
                 if (_error != null)
                   Padding(
@@ -145,6 +170,17 @@ class _RegisterPageState extends State<RegisterPage> {
                           style: TextStyle(
                               color: Theme.of(context).colorScheme.error),
                           semanticsLabel: _error)),
+                if (_suggestedEmail != null)
+                  TextButton(
+                      onPressed: _isSubmitting
+                          ? null
+                          : () => setState(() {
+                                emailController.text = _suggestedEmail!;
+                                _suggestedEmail = null;
+                                _error = null;
+                              }),
+                      child: Text(_suggestedEmail!,
+                          textDirection: TextDirection.ltr)),
                 const SizedBox(height: 16),
                 TextButton(
                   onPressed: _isSubmitting

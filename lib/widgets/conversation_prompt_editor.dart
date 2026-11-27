@@ -1,3 +1,4 @@
+import '../models/conversation_prompt.dart';
 import '../l10n/localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -19,9 +20,13 @@ const conversationPrompts = <String, String>{
 
 class ConversationPromptEditor extends StatelessWidget {
   final String promptKey, answer;
+  final bool showHeading;
+  final Set<String> excludedKeys;
   final void Function(String key, String answer) onChanged;
   const ConversationPromptEditor(
       {super.key,
+      this.showHeading = true,
+      this.excludedKeys = const {},
       required this.promptKey,
       required this.answer,
       required this.onChanged});
@@ -47,28 +52,28 @@ class ConversationPromptEditor extends StatelessWidget {
                       Text(context.l10n
                           .chooseSomethingThatSoundsLikeYouYourAnswerCouldStart),
                       const SizedBox(height: 20),
-                      ...conversationPrompts.entries.map((entry) => Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: Material(
-                              color: entry.key == promptKey
-                                  ? const Color(0xFFFFEDF3)
-                                  : const Color(0xFFF5F6F8),
-                              borderRadius: BorderRadius.circular(20),
-                              child: ListTile(
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 18, vertical: 8),
-                                  title: Text(context.tr(entry.value),
-                                      style: const TextStyle(
-                                          fontWeight: FontWeight.w600)),
-                                  leading: const Icon(
-                                      Icons.format_quote_rounded,
-                                      color: Color(0xFFEC2863)),
-                                  trailing: entry.key == promptKey
-                                      ? const Icon(Icons.check_circle_rounded,
-                                          color: Color(0xFFEC2863))
-                                      : const Icon(Icons.add_rounded),
-                                  onTap: () =>
-                                      Navigator.pop(context, entry.key)))))
+                      ...conversationPrompts.entries.where((entry) => entry.key == promptKey || !excludedKeys.contains(entry.key)).map(
+                          (entry) => Padding(
+                              padding: const EdgeInsets.only(bottom: 10),
+                              child: Material(
+                                  color: entry.key == promptKey
+                                      ? const Color(0xFFFFEDF3)
+                                      : const Color(0xFFF5F6F8),
+                                  borderRadius: BorderRadius.circular(20),
+                                  child: ListTile(
+                                      contentPadding: const EdgeInsets.symmetric(
+                                          horizontal: 18, vertical: 8),
+                                      title: Text(context.tr(entry.value),
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.w600)),
+                                      leading: const Icon(
+                                          Icons.format_quote_rounded,
+                                          color: Color(0xFFEC2863)),
+                                      trailing: entry.key == promptKey
+                                          ? const Icon(Icons.check_circle_rounded,
+                                              color: Color(0xFFEC2863))
+                                          : const Icon(Icons.add_rounded),
+                                      onTap: () => Navigator.pop(context, entry.key)))))
                     ]))));
     if (context.mounted && key != null && key != promptKey) {
       onChanged(key, answer);
@@ -78,11 +83,13 @@ class ConversationPromptEditor extends StatelessWidget {
   @override
   Widget build(BuildContext context) =>
       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(context.l10n.aLittleAboutMe,
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
-        const SizedBox(height: 8),
-        Text(context.l10n.giveSomeoneAReasonToAskYouMore),
-        const SizedBox(height: 16),
+        if (showHeading) ...[
+          Text(context.l10n.aLittleAboutMe,
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
+          const SizedBox(height: 8),
+          Text(context.l10n.giveSomeoneAReasonToAskYouMore),
+          const SizedBox(height: 16),
+        ],
         OutlinedButton(
             onPressed: () => _choose(context),
             style: OutlinedButton.styleFrom(
@@ -132,4 +139,64 @@ class ConversationPromptEditor extends StatelessWidget {
               child: Text(context.l10n.removeConversationPrompt)),
         ],
       ]);
+}
+
+/// Up to three distinct prompts; existing answers stay attached to each item.
+class ConversationPromptsEditor extends StatelessWidget {
+  final List<ProfileConversationPrompt> prompts;
+  final ValueChanged<List<ProfileConversationPrompt>> onChanged;
+  const ConversationPromptsEditor(
+      {super.key, required this.prompts, required this.onChanged});
+  @override
+  Widget build(BuildContext context) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(context.tr('Saker om mig'),
+              style:
+                  const TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
+          const SizedBox(height: 8),
+          Text(context.tr(
+              'Välj upp till tre frågor. Dina svar gör det lättare att börja prata.')),
+          const SizedBox(height: 16),
+          for (var index = 0; index < prompts.length; index++) ...[
+            ConversationPromptEditor(
+              key: ValueKey('prompt-slot-$index'),
+              showHeading: false,
+              promptKey: prompts[index].key,
+              answer: prompts[index].answer,
+              excludedKeys: prompts.map((p) => p.key).toSet(),
+              onChanged: (key, answer) {
+                final updated = List<ProfileConversationPrompt>.of(prompts);
+                if (key.isEmpty) {
+                  updated.removeAt(index);
+                } else {
+                  updated[index] =
+                      ProfileConversationPrompt(key: key, answer: answer);
+                }
+                onChanged(updated);
+              },
+            ),
+            const SizedBox(height: 20),
+          ],
+          if (prompts.length < 3)
+            ConversationPromptEditor(
+              key: ValueKey('add-prompt-${prompts.length}'),
+              showHeading: false,
+              promptKey: '',
+              answer: '',
+              excludedKeys: prompts.map((p) => p.key).toSet(),
+              onChanged: (key, answer) {
+                if (key.isNotEmpty) {
+                  onChanged([
+                    ...prompts,
+                    ProfileConversationPrompt(key: key, answer: answer)
+                  ]);
+                }
+              },
+            ),
+          const SizedBox(height: 8),
+          Text('${prompts.length} / 3',
+              style: const TextStyle(color: Color(0xFF667085))),
+        ],
+      );
 }

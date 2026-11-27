@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'auth_storage.dart';
 import 'account_session.dart';
 import 'relation_changes.dart';
+import 'session_http_client.dart';
 
 class BlockService {
   final http.Client _client;
@@ -22,7 +23,7 @@ class BlockService {
     request.headers.addAll(
         {'Authorization': 'Bearer $token', 'Content-Type': 'application/json'});
     if (body != null) request.body = jsonEncode(body);
-    final res = await _client
+    final res = await SessionHttpClient(_client, generation: () => generation)
         .send(request)
         .then(http.Response.fromStream)
         .timeout(const Duration(seconds: 15));

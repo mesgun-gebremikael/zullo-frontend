@@ -1,0 +1,17 @@
+{
+  "premiumMonthlyPlan": ["Månadsvis", "Monthly"],
+  "premiumAnnualPlan": ["Årsvis", "Yearly"],
+  "premiumPerYear": [" per år", " per year"],
+  "premiumOneTierExplanation": ["Ett Premium. Välj månadsvis eller årsvis – samma förmåner i båda.", "One Premium plan. Choose monthly or yearly — both include the same benefits."],
+  "premiumMonthlyBoost": ["1 Boost varje månad", "1 Boost every month"],
+  "premiumCreditsBreakdown": ["Ingår: {value0} · Köpta: {value1}", "Included: {value0} · Purchased: {value1}"],
+  "premiumAllowanceRefresh": ["Nästa påfyllning: {value0}", "Next refresh: {value0}"],
+  "premiumNonRollover": ["3 Superlikes per vecka och 1 Boost varje månad. Oanvända inkluderade krediter sparas inte. Köpta krediter finns kvar tills de används.", "3 Superlikes each week and 1 Boost each month. Unused included credits do not roll over. Purchased credits remain until used."],
+  "premiumManageSubscription": ["Hantera abonnemang i butiken", "Manage subscription in the store"],
+  "premiumLegacyActivityNotice": ["Ditt separata abonnemang för Dölj aktivitet finns kvar. Premium avslutar det inte automatiskt. Hantera det i App Store eller Google Play för att undvika dubbla abonnemang.", "Your separate Hide Activity subscription remains active. Premium does not cancel it automatically. Manage it in the App Store or Google Play to avoid overlapping subscriptions."],
+  "premiumPendingPurchase": ["Ett köp väntar på verifiering. Köp inte igen. Uppdatera saldot eller återställ köp.", "A purchase is awaiting verification. Do not buy again. Refresh your balance or restore purchases."],
+  "premiumRefundedPurchase": ["Köpet har återbetalats. Ditt verifierade saldo har uppdaterats.", "This purchase has been refunded. Your verified balance has been updated."],
+  "premiumManagementUnavailable": ["Öppna App Store eller Google Play för att hantera ditt abonnemang.", "Open the App Store or Google Play to manage your subscription."],
+  "premiumViewBenefits": ["Se Premium-förmåner", "View Premium benefits"],
+  "premiumPurchaseVerificationUnavailable": ["Köpet kunde inte kontrolleras ännu. Köp inte igen. Försök uppdatera saldot eller återställa köp.", "The purchase could not be checked yet. Do not buy again. Try refreshing your balance or restoring purchases."]
+}

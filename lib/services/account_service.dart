@@ -1,3 +1,4 @@
+import 'pending_store_purchase.dart';
 import 'onboarding_draft_service.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -48,10 +49,19 @@ class AccountService {
     return jsonDecode(response.body) as Map<String, dynamic>;
   }
 
+  bool _confirmedPaused(Map<String, dynamic> response) {
+    final paused = response['paused'];
+    if (paused is! bool) {
+      throw const AccountException(
+          502, 'Kunde inte bekräfta ändringen. Försök igen.');
+    }
+    return paused;
+  }
+
   Future<bool> paused() async =>
-      (await _request('GET', '/status'))['paused'] == true;
+      _confirmedPaused(await _request('GET', '/status'));
   Future<bool> pause(bool value) async =>
-      (await _request('PATCH', '/pause', {'paused': value}))['paused'] == true;
+      _confirmedPaused(await _request('PATCH', '/pause', {'paused': value}));
   Future<Map<String, dynamic>> remove(String password) async {
     String? user;
     try {
@@ -64,6 +74,11 @@ class AccountService {
       try {
         await DraftCache().clear(user).timeout(const Duration(seconds: 5));
       } catch (_) {/* server erasure remains accepted */}
+      try {
+        await PendingPurchaseStorage()
+            .clear(user)
+            .timeout(const Duration(seconds: 5));
+      } catch (_) {/* accepted server erasure must still complete locally */}
     }
     return result;
   }

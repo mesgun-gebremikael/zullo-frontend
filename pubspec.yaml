@@ -43,3 +43,7 @@ flutter:
   generate: true
   uses-material-design: true
 
+# Reviewed Android implementation until upstream publishes the typed-Bundle fix.
+dependency_overrides:
+  geolocator_android:
+    path: packages/geolocator_android

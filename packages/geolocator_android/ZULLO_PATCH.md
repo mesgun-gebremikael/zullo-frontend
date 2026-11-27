@@ -1,0 +1,13 @@
+# Reviewed Android location patch
+
+This directory contains the functional Android/Dart implementation from the MIT-licensed `geolocator_android` **5.2.1** publication, with its license and native tests. The release's two example-only files are deliberately omitted; they are not application dependencies. No application/package cache is edited. `UPSTREAM_SHA256.json` records the original release files so the patch can be reviewed against the exact publication. The original pub.dev release archive SHA256 is `e67583809a1fab5f4a2255902978e2bc095ace9451fde0d9624e54facd0a5c22` (`https://pub.dev/api/archives/geolocator_android-5.2.1.tar.gz`). The upstream repository is https://github.com/Baseflow/flutter-geolocator/tree/main/geolocator_android.
+
+Changes:
+
+1. `LocationMapper.getDoubleExtra` reads numeric extras through AndroidX `BundleCompat.getSerializable(..., Number.class)`, replacing deprecated untyped `Bundle.get`. AndroidX selects the typed API on supported Android versions and retains the supported compatibility path on older devices. All Java numeric types implement Serializable; nonnumeric/wrong-type extras remain ignored. Finite-value and fallback-key rules remain unchanged.
+2. Native unit tests mock the typed AndroidX boundary without calling deprecated APIs. Robolectric compatibility tests execute real `BundleCompat`/`Bundle` behavior on Android API24 and API34, covering Double/Float/Integer/Long values, wrong types, NaN/infinity, absent extras and fallback keys. These tests run through `:geolocator_android:testDebugUnitTest`; test-only Robolectric is pinned to stable4.17.
+3. The Android build uses the host's verified AGP 8.11.1 family instead of declaring a second AGP9 buildscript dependency. Plugin public Dart API, source/bytecode compatibility, Android permissions and coordinate behavior are unchanged.
+
+The path override is intentional and versioned. Adopt an upstream release that fixes the accessor, remove the override and this directory, run native mapper tests and app Android/iOS tests, and review the resolved lockfile. Do not remove the override merely to silence a dependency notice: verify functional equivalence first. Do not add `-Xlint:none` or suppress application warnings. The narrow compatibility patch is maintained here until upstream contains it; it does not claim every third-party Android library has no deprecations.
+
+The CI provenance checker pins the exact SHA256 of each approved modified Java/Gradle file and the added compatibility test, in addition to checking unchanged upstream files. Reviewed changes require an intentional pin update. A scoped `.gitattributes` rule keeps these text files LF-normalized on Windows so byte-level verification remains reproducible.

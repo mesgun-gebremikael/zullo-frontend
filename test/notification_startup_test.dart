@@ -1,3 +1,4 @@
+import 'package:zullo_app/models/swipe_profile.dart';
 import 'dart:async';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -72,6 +73,11 @@ void main() {
     final requests = <ChatOpenRequest>[];
     var lookedUp = false;
     final startup = NotificationStartup(
+        profile: (peer) async => SwipeProfile.fromJson({
+              'userId': peer,
+              'displayName': 'Trusted profile',
+              'photoUrls': ['https://photos.example.test/trusted.jpg']
+            }),
         register: () => registration.future,
         initialMessage: () {
           lookedUp = true;
@@ -103,6 +109,11 @@ void main() {
       () async {
     final auth = _NotificationAuth();
     final startup = NotificationStartup(
+      profile: (peer) async => SwipeProfile.fromJson({
+        'userId': peer,
+        'displayName': 'Trusted profile',
+        'photoUrls': ['https://photos.example.test/trusted.jpg']
+      }),
       register: () async {},
       initialMessage: () async => _message(),
       canOpen: (peer, recipient) =>
@@ -113,9 +124,9 @@ void main() {
     expect(auth.peers, ['peer']);
     final queued = ChatCoordinator.instance.consumePendingRequest()!;
     expect(queued.userId, 'peer');
-    expect(queued.displayName, 'Untranslated sender');
-    expect(queued.previewMessageText, 'Untranslated message');
-    expect(queued.photoUrl, 'https://photos.example.test/peer.jpg');
+    expect(queued.displayName, 'Trusted profile');
+    expect(queued.previewMessageText, isNull);
+    expect(queued.photoUrl, 'https://photos.example.test/trusted.jpg');
     expect(queued.fromNotification, isTrue);
     expect(queued.forceRefreshThread, isTrue);
     expect(queued.openChatsListOnExit, isTrue);
@@ -125,6 +136,11 @@ void main() {
   test('recipient mismatch is rejected before asking about the peer', () async {
     final auth = _NotificationAuth();
     await NotificationStartup(
+      profile: (peer) async => SwipeProfile.fromJson({
+        'userId': peer,
+        'displayName': 'Trusted profile',
+        'photoUrls': ['https://photos.example.test/trusted.jpg']
+      }),
       register: () async {},
       initialMessage: () async => _message(recipient: 'B'),
       canOpen: (peer, recipient) =>
@@ -137,6 +153,11 @@ void main() {
   test('blocked or no-longer-matched peer cannot be queued', () async {
     final auth = _NotificationAuth()..allowed = false;
     await NotificationStartup(
+      profile: (peer) async => SwipeProfile.fromJson({
+        'userId': peer,
+        'displayName': 'Trusted profile',
+        'photoUrls': ['https://photos.example.test/trusted.jpg']
+      }),
       register: () async {},
       initialMessage: () async => _message(),
       canOpen: (peer, recipient) =>
@@ -151,6 +172,11 @@ void main() {
     final checking = Completer<bool>();
     final startedChecking = Completer<void>();
     final startup = NotificationStartup(
+      profile: (peer) async => SwipeProfile.fromJson({
+        'userId': peer,
+        'displayName': 'Trusted profile',
+        'photoUrls': ['https://photos.example.test/trusted.jpg']
+      }),
       register: () async {},
       initialMessage: () async => _message(),
       canOpen: (_, __) {
@@ -171,6 +197,11 @@ void main() {
     final initial = Completer<RemoteMessage?>();
     var checks = 0;
     final starting = NotificationStartup(
+      profile: (peer) async => SwipeProfile.fromJson({
+        'userId': peer,
+        'displayName': 'Trusted profile',
+        'photoUrls': ['https://photos.example.test/trusted.jpg']
+      }),
       register: () async {},
       initialMessage: () => initial.future,
       canOpen: (_, __) async {
@@ -188,6 +219,11 @@ void main() {
   test('registration failure does not discard an accessible cold notification',
       () async {
     await NotificationStartup(
+      profile: (peer) async => SwipeProfile.fromJson({
+        'userId': peer,
+        'displayName': 'Trusted profile',
+        'photoUrls': ['https://photos.example.test/trusted.jpg']
+      }),
       register: () async => throw StateError('registration unavailable'),
       initialMessage: () async => _message(),
       canOpen: (_, __) async => true,
@@ -200,6 +236,11 @@ void main() {
     final pending = Completer<RemoteMessage?>();
     var complete = false;
     final startup = NotificationStartup(
+      profile: (peer) async => SwipeProfile.fromJson({
+        'userId': peer,
+        'displayName': 'Trusted profile',
+        'photoUrls': ['https://photos.example.test/trusted.jpg']
+      }),
       register: () async {},
       initialMessage: () => pending.future,
       canOpen: (_, __) async => true,
@@ -233,6 +274,11 @@ void main() {
         () async {
       var checks = 0;
       await NotificationStartup(
+        profile: (peer) async => SwipeProfile.fromJson({
+          'userId': peer,
+          'displayName': 'Trusted profile',
+          'photoUrls': ['https://photos.example.test/trusted.jpg']
+        }),
         register: () async {},
         initialMessage: () async => message,
         canOpen: (_, __) async {
