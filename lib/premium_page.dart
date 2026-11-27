@@ -14,11 +14,13 @@ class PremiumPage extends StatefulWidget {
   final CommerceClient? commerce;
   final NativeBilling? billing;
   final PendingPurchaseStorage? purchaseStorage;
+  final DateTime Function()? now;
   const PremiumPage(
       {super.key,
       this.commerce,
       this.billing,
       this.purchaseStorage,
+      this.now,
       this.activityOnly = false});
   @override
   State<PremiumPage> createState() => _PremiumPageState();
@@ -45,6 +47,29 @@ class _PremiumPageState extends State<PremiumPage> with WidgetsBindingObserver {
   bool _walletRefreshRequested = false;
   int _stateRevision = 0;
   Timer? _timer;
+  bool _foreground = true;
+  int? _renderedBoostSeconds;
+  DateTime _now() => widget.now?.call() ?? DateTime.now();
+  int get _boostSeconds {
+    final remaining = _state?.boostUntil?.difference(_now()).inSeconds ?? 0;
+    return remaining > 0 ? remaining : 0;
+  }
+
+  void _tickBoost() {
+    if (!_active || !_foreground) return;
+    final remaining = _boostSeconds;
+    if (_renderedBoostSeconds == remaining) return;
+    _renderedBoostSeconds = remaining;
+    if (_state?.boostUntil != null) setState(() {});
+  }
+
+  void _startBoostTimer() {
+    _timer?.cancel();
+    if (!_foreground || !_active) return;
+    _tickBoost();
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) => _tickBoost());
+  }
+
   StreamSubscription<void>? _walletSubscription;
   bool get _active => mounted && AccountSession.isCurrent(_generation);
   @override
@@ -54,9 +79,7 @@ class _PremiumPageState extends State<PremiumPage> with WidgetsBindingObserver {
     _load();
     _walletSubscription =
         CommerceEvents.walletStream.listen((_) => _refreshBalance());
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (_active && _state?.boostUntil != null) setState(() {});
-    });
+    _startBoostTimer();
   }
 
   @override
@@ -69,6 +92,12 @@ class _PremiumPageState extends State<PremiumPage> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    _foreground = state == AppLifecycleState.resumed;
+    if (_foreground) {
+      _startBoostTimer();
+    } else {
+      _timer?.cancel();
+    }
     if (state == AppLifecycleState.resumed &&
         _active &&
         _pendingPurchase?.receipt != null) {
@@ -366,8 +395,7 @@ class _PremiumPageState extends State<PremiumPage> with WidgetsBindingObserver {
   }
 
   String get _boostTime {
-    final remaining =
-        _state?.boostUntil?.difference(DateTime.now()).inSeconds ?? 0;
+    final remaining = _boostSeconds;
     if (remaining <= 0) return '';
     return '${remaining ~/ 60}:${(remaining % 60).toString().padLeft(2, '0')}';
   }

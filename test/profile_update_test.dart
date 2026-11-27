@@ -85,6 +85,46 @@ void main() {
     await saveBasic(auth);
   });
 
+  test('profile save snapshots mutable answers before token storage resolves',
+      () async {
+    final token = Completer<String?>();
+    final photos = ['https://images.example/a', 'https://images.example/b'];
+    final interests = ['Musik'];
+    final prompts = [
+      {'key': 'ask_me_about', 'answer': 'Music'}
+    ];
+    final auth = AuthService(
+        storage: _DelayedTokenStorage(token.future),
+        client: MockClient((request) async {
+          final data = jsonDecode(request.body) as Map;
+          expect(data['photoUrls'],
+              ['https://images.example/a', 'https://images.example/b']);
+          expect(data['interests'], ['Musik']);
+          expect(data['conversationPrompts'], [
+            {'key': 'ask_me_about', 'answer': 'Music'}
+          ]);
+          return http.Response('{}', 200);
+        }));
+    final saving = auth.saveProfile(
+        displayName: 'Anna',
+        age: 29,
+        gender: 'Kvinna',
+        bio: 'Bio',
+        photoUrls: photos,
+        interests: interests,
+        conversationPrompts: prompts,
+        intention: 'Relationship',
+        religion: '',
+        workout: '',
+        smoking: '',
+        pets: '');
+    photos.clear();
+    interests.add('Resor');
+    prompts.first['answer'] = 'A later edit';
+    token.complete('A-token');
+    await saving;
+  });
+
   test('explicit clear of nullable height is sent as null', () async {
     final auth = AuthService(client: MockClient((request) async {
       final data = jsonDecode(request.body) as Map;
@@ -277,4 +317,11 @@ void main() {
     expect(find.byType(WelcomePage), findsOneWidget);
     expect(await tester.runAsync(() => AuthStorage().getToken()), isNull);
   });
+}
+
+class _DelayedTokenStorage extends AuthStorage {
+  final Future<String?> token;
+  _DelayedTokenStorage(this.token);
+  @override
+  Future<String?> getToken() => token;
 }

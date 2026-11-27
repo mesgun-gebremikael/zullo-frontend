@@ -42,6 +42,35 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+  testWidgets(
+      'replacing photos after the last page keeps gallery navigation valid',
+      (tester) async {
+    Widget page(List<String> photos) => MaterialApp(
+        home: Scaffold(
+            body: ProfileGallery(
+                key: const ValueKey('gallery'),
+                photos: photos,
+                imageProvider: (_) => image)));
+    await tester.pumpWidget(page(['a', 'b', 'c']));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Nästa bild'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Nästa bild'));
+    await tester.pumpAndSettle();
+    expect(find.text('3 / 3'), findsOneWidget);
+    await tester.pumpWidget(page(['new']));
+    await tester.pumpAndSettle();
+    expect(find.text('1 / 1'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(page([]));
+    await tester.pumpAndSettle();
+    await tester.pumpWidget(page(['x', 'y']));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Nästa bild'));
+    await tester.pumpAndSettle();
+    expect(find.text('2 / 2'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
   testWidgets('an empty gallery stays usable without navigation controls',
       (tester) async {
     await tester.pumpWidget(

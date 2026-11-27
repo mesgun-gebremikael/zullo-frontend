@@ -644,6 +644,9 @@ class AuthService {
       _saveProfileBody(data.toProfileUpdate(today: today));
 
   Future<void> _saveProfileBody(Map<String, dynamic> body) async {
+    // Capture the submitted form before secure storage yields. Callers may keep
+    // editing their lists while authentication or the network is pending.
+    final encodedBody = jsonEncode(body);
     final token = await _storage.getToken();
     if (token == null || token.isEmpty) throw StateError('Logga in igen.');
     final url = Uri.parse('$baseApiUrl/me/profile');
@@ -654,7 +657,7 @@ class AuthService {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer $token',
           },
-          body: jsonEncode(body),
+          body: encodedBody,
         )
         .timeout(const Duration(seconds: 30));
 
