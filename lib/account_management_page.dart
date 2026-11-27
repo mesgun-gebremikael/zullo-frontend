@@ -18,6 +18,7 @@ class _AccountManagementPageState extends State<AccountManagementPage> {
   final _generation = AccountSession.generation;
   bool? _paused;
   bool _busy = false;
+  bool _loading = false;
   String? _error;
   @override
   void initState() {
@@ -26,20 +27,31 @@ class _AccountManagementPageState extends State<AccountManagementPage> {
   }
 
   Future<void> _load() async {
+    if (_loading || !AccountSession.isCurrent(_generation)) return;
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
       final paused = await _service.paused();
       if (mounted && AccountSession.isCurrent(_generation)) {
         setState(() => _paused = paused);
       }
     } catch (_) {
-      if (mounted) {
+      if (mounted && AccountSession.isCurrent(_generation)) {
         setState(() => _error = 'Kunde inte läsa kontostatus. Försök igen.');
+      }
+    } finally {
+      if (mounted && AccountSession.isCurrent(_generation)) {
+        setState(() => _loading = false);
       }
     }
   }
 
   Future<void> _toggle() async {
-    if (_busy || _paused == null) return;
+    if (_busy || _paused == null || !AccountSession.isCurrent(_generation)) {
+      return;
+    }
     setState(() {
       _busy = true;
       _error = null;
@@ -50,7 +62,7 @@ class _AccountManagementPageState extends State<AccountManagementPage> {
       setState(() => _paused = paused);
       CommerceEvents.refreshDiscovery();
     } catch (_) {
-      if (mounted) {
+      if (mounted && AccountSession.isCurrent(_generation)) {
         setState(() => _error = 'Kunde inte bekräfta ändringen. Försök igen.');
       }
     } finally {
@@ -89,7 +101,8 @@ class _AccountManagementPageState extends State<AccountManagementPage> {
                             : context.l10n.pauseAccount))),
             if (_error != null) ...[
               const SizedBox(height: 16),
-              Text(context.tr(_error!), style: const TextStyle(color: Colors.red)),
+              Text(context.tr(_error!),
+                  style: const TextStyle(color: Colors.red)),
               if (_paused == null)
                 TextButton(onPressed: _load, child: Text(context.l10n.tryAgain))
             ],
@@ -110,7 +123,7 @@ class _AccountManagementPageState extends State<AccountManagementPage> {
                         MaterialPageRoute(
                             builder: (_) =>
                                 AccountRemovalPage(service: _service))),
-                child:  Padding(
+                child: Padding(
                     padding: EdgeInsets.all(14),
                     child: Text(context.l10n.closeAccountAndRequestDeletion,
                         textAlign: TextAlign.center,

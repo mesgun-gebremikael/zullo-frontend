@@ -97,4 +97,26 @@ void main() {
     expect(controller.locale, const Locale('sv'));
     controller.dispose();
   });
+
+  test('pending startup read can finish after controller disposal', () async {
+    final pending = Completer<SharedPreferences>();
+    final controller = LocaleController(preferences: () => pending.future);
+    final loading = controller.load();
+    controller.dispose();
+    pending.complete(await SharedPreferences.getInstance());
+    await loading;
+  });
+
+  test('pending language save can finish after controller disposal', () async {
+    final pending = Completer<SharedPreferences>();
+    final controller = LocaleController(preferences: () => pending.future);
+    final saving = controller.select(const Locale('de'));
+    controller.dispose();
+    pending.complete(await SharedPreferences.getInstance());
+    await saving;
+    final restarted = LocaleController();
+    await restarted.load();
+    expect(restarted.locale, const Locale('de'));
+    restarted.dispose();
+  });
 }

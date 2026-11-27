@@ -4,6 +4,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:zullo_app/profile_settings_page.dart';
+import 'package:zullo_app/services/commerce_service.dart';
 import 'package:zullo_app/main_navigation.dart';
 import 'package:zullo_app/models/swipe_profile.dart';
 import 'package:zullo_app/register_page.dart';
@@ -34,6 +35,11 @@ class SlowLogoutAuth extends AuthService {
   Future<List<dynamic>> getMatches() async => [];
 }
 
+class LogoutSettingsCommerce extends CommerceClient {
+  @override
+  Future<CommerceState> state() async => const CommerceState();
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   testWidgets(
@@ -56,8 +62,9 @@ void main() {
                   child: TextButton(
                       onPressed: () => Navigator.of(context).push(
                           MaterialPageRoute(
-                              builder: (_) =>
-                                  ProfileSettingsPage(authService: auth))),
+                              builder: (_) => ProfileSettingsPage(
+                                  authService: auth,
+                                  commerce: LogoutSettingsCommerce()))),
                       child: const Text('Kontoinställningar')))),
           const SizedBox(),
           const SizedBox(),

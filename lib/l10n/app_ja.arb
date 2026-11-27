@@ -543,5 +543,8 @@
   "enterValidEmailAddress": "有効なメールアドレスを入力してください。",
   "invalidLoginCredentials": "メールアドレスまたはパスワードが正しくありません。",
   "newMessageNotification": "新しいメッセージが届いています。",
-  "premiumUncertainCheckout": "この購入はまだ完全に確認できていません。二重請求を防ぐため、新たな購入を停止しています。App Store または Google Play でこの購入を確認してください。"
+  "premiumUncertainCheckout": "この購入はまだ完全に確認できていません。二重請求を防ぐため、新たな購入を停止しています。App Store または Google Play でこの購入を確認してください。",
+  "chooseShorterPassword": "もっと短いパスワードを選んでください。",
+  "notificationSettingsTitle": "通知",
+  "notificationSettingsDescription": "スマートフォンの設定で通知を管理できます。"
 }

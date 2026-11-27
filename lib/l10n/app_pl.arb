@@ -543,5 +543,8 @@
   "enterValidEmailAddress": "Wpisz prawidłowy adres e-mail.",
   "invalidLoginCredentials": "Nieprawidłowy adres e-mail lub hasło.",
   "newMessageNotification": "Masz nową wiadomość.",
-  "premiumUncertainCheckout": "Ten zakup nie został jeszcze w pełni potwierdzony. Nowe zakupy są zablokowane, aby uniknąć podwójnego obciążenia. Sprawdź zakup w App Store lub Google Play."
+  "premiumUncertainCheckout": "Ten zakup nie został jeszcze w pełni potwierdzony. Nowe zakupy są zablokowane, aby uniknąć podwójnego obciążenia. Sprawdź zakup w App Store lub Google Play.",
+  "chooseShorterPassword": "Wybierz krótsze hasło.",
+  "notificationSettingsTitle": "Powiadomienia",
+  "notificationSettingsDescription": "Zarządzaj powiadomieniami w ustawieniach telefonu."
 }

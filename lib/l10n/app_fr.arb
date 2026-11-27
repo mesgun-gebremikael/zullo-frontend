@@ -543,5 +543,8 @@
   "enterValidEmailAddress": "Saisis une adresse e-mail valide.",
   "invalidLoginCredentials": "Adresse e-mail ou mot de passe incorrect.",
   "newMessageNotification": "Tu as reçu un nouveau message.",
-  "premiumUncertainCheckout": "Cet achat n’est pas encore entièrement confirmé. Les nouveaux achats sont bloqués pour éviter une double facturation. Vérifie l’achat dans l’App Store ou Google Play."
+  "premiumUncertainCheckout": "Cet achat n’est pas encore entièrement confirmé. Les nouveaux achats sont bloqués pour éviter une double facturation. Vérifie l’achat dans l’App Store ou Google Play.",
+  "chooseShorterPassword": "Choisis un mot de passe plus court.",
+  "notificationSettingsTitle": "Notifications",
+  "notificationSettingsDescription": "Gère les notifications dans les réglages de ton téléphone."
 }

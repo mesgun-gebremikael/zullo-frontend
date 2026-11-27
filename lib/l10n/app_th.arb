@@ -543,5 +543,8 @@
   "enterValidEmailAddress": "กรอกที่อยู่อีเมลที่ถูกต้อง",
   "invalidLoginCredentials": "ที่อยู่อีเมลหรือรหัสผ่านไม่ถูกต้อง",
   "newMessageNotification": "คุณมีข้อความใหม่",
-  "premiumUncertainCheckout": "การซื้อนี้ยังไม่ได้รับการยืนยันอย่างครบถ้วน ระบบระงับการซื้อใหม่เพื่อป้องกันการเรียกเก็บเงินซ้ำ โปรดตรวจสอบการซื้อนี้ใน App Store หรือ Google Play"
+  "premiumUncertainCheckout": "การซื้อนี้ยังไม่ได้รับการยืนยันอย่างครบถ้วน ระบบระงับการซื้อใหม่เพื่อป้องกันการเรียกเก็บเงินซ้ำ โปรดตรวจสอบการซื้อนี้ใน App Store หรือ Google Play",
+  "chooseShorterPassword": "เลือกรหัสผ่านที่สั้นกว่านี้",
+  "notificationSettingsTitle": "การแจ้งเตือน",
+  "notificationSettingsDescription": "จัดการการแจ้งเตือนในการตั้งค่าโทรศัพท์ของคุณ"
 }

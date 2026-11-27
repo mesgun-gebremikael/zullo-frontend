@@ -543,5 +543,8 @@
   "enterValidEmailAddress": "یک نشانی ایمیل معتبر وارد کنید.",
   "invalidLoginCredentials": "نشانی ایمیل یا گذرواژه نادرست است.",
   "newMessageNotification": "پیام جدیدی دارید.",
-  "premiumUncertainCheckout": "این خرید هنوز به‌طور کامل تأیید نشده است. برای جلوگیری از دوبار کسر شدن مبلغ، خریدهای جدید مسدود شده‌اند. خرید را در App Store یا Google Play بررسی کنید."
+  "premiumUncertainCheckout": "این خرید هنوز به‌طور کامل تأیید نشده است. برای جلوگیری از دوبار کسر شدن مبلغ، خریدهای جدید مسدود شده‌اند. خرید را در App Store یا Google Play بررسی کنید.",
+  "chooseShorterPassword": "یک رمز عبور کوتاه‌تر انتخاب کنید.",
+  "notificationSettingsTitle": "اعلان‌ها",
+  "notificationSettingsDescription": "اعلان‌ها را در تنظیمات گوشی خود مدیریت کنید."
 }

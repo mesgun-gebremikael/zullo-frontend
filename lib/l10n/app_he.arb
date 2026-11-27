@@ -543,5 +543,8 @@
   "enterValidEmailAddress": "יש להזין כתובת אימייל תקינה.",
   "invalidLoginCredentials": "כתובת האימייל או הסיסמה שגויה.",
   "newMessageNotification": "יש לך הודעה חדשה.",
-  "premiumUncertainCheckout": "טרם התקבל אישור מלא לרכישה הזו. רכישות חדשות חסומות כדי למנוע חיוב כפול. יש לבדוק את הרכישה ב-App Store או ב-Google Play."
+  "premiumUncertainCheckout": "טרם התקבל אישור מלא לרכישה הזו. רכישות חדשות חסומות כדי למנוע חיוב כפול. יש לבדוק את הרכישה ב-App Store או ב-Google Play.",
+  "chooseShorterPassword": "יש לבחור סיסמה קצרה יותר.",
+  "notificationSettingsTitle": "התראות",
+  "notificationSettingsDescription": "אפשר לנהל התראות בהגדרות הטלפון."
 }

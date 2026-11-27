@@ -87,6 +87,16 @@ class AuthService {
         _transport = client ?? _sharedTransport,
         _pushTokenLoader = pushTokenLoader ?? PushTokenService.currentToken;
 
+  Future<String?> _readSessionToken() async {
+    // A sign-in may reuse this service while secure storage is awaiting. Bind
+    // token retrieval to the original account, not the service's later epoch.
+    final generation = _generation;
+    AccountSession.check(generation);
+    final token = await _storage.getToken().timeout(const Duration(seconds: 5));
+    AccountSession.check(generation);
+    return token;
+  }
+
   OnboardingDraftService get onboardingDrafts =>
       OnboardingDraftService(client: _transport, storage: _storage);
 
@@ -283,7 +293,7 @@ class AuthService {
     // Reserve intent order before any await; a later account's claim must always
     // have a higher version even if this logout's storage/network work is slow.
     final unlink = _pushInstallation.reserve();
-    final authToken = await _storage.getToken();
+    final authToken = await _readSessionToken();
     AccountSession.check(generation);
     // Invalidate local work before waiting for the network. Only the old JWT is used.
     await _storage.clearAuth();
@@ -314,7 +324,7 @@ class AuthService {
   // ---------- PROFILE CHECK ----------
 
   Future<bool> hasProfile() async {
-    final token = await _storage.getToken();
+    final token = await _readSessionToken();
 
     final res = await _client.get(
       Uri.parse('$baseApiUrl/me/profile'),
@@ -331,7 +341,7 @@ class AuthService {
   }
 
   Future<Map<String, dynamic>> getMyProfile() async {
-    final token = await _storage.getToken();
+    final token = await _readSessionToken();
 
     final res = await _client.get(
       Uri.parse('$baseApiUrl/me/profile'),
@@ -353,7 +363,8 @@ class AuthService {
 
   Future<Map<String, dynamic>> discoverySettings(
       {Map<String, dynamic>? update}) async {
-    final token = await _storage.getToken().timeout(const Duration(seconds: 5));
+    final encodedUpdate = update == null ? null : jsonEncode(update);
+    final token = await _readSessionToken().timeout(const Duration(seconds: 5));
     final headers = {
       'Authorization': 'Bearer $token',
       'Content-Type': 'application/json'
@@ -361,7 +372,7 @@ class AuthService {
     final url = Uri.parse('$baseApiUrl/me/discovery-settings');
     final response = await (update == null
             ? _client.get(url, headers: headers)
-            : _client.patch(url, headers: headers, body: jsonEncode(update)))
+            : _client.patch(url, headers: headers, body: encodedUpdate))
         .timeout(const Duration(seconds: 20));
     if (response.statusCode != 200) {
       throw Exception('Kunde inte läsa eller spara upptäcktsvalen.');
@@ -371,7 +382,7 @@ class AuthService {
 
   Future<SwipeProfile> getMatchedProfile(String userId) async {
     final revision = RelationChanges.revision;
-    final token = await _storage.getToken().timeout(const Duration(seconds: 5));
+    final token = await _readSessionToken().timeout(const Duration(seconds: 5));
     final response = await _client.get(
         Uri.parse('$baseApiUrl/profiles/${Uri.encodeComponent(userId)}'),
         headers: {
@@ -391,7 +402,7 @@ class AuthService {
     int minAge = 18,
     int maxAge = 99,
   }) async {
-    final token = await _storage.getToken();
+    final token = await _readSessionToken();
 
     final response = await _client.get(
       Uri.parse(
@@ -435,7 +446,7 @@ class AuthService {
 
   Future<bool> like(String targetUserId, {bool superLike = false}) async {
     final generation = AccountSession.generation;
-    final token = await _storage.getToken();
+    final token = await _readSessionToken();
     AccountSession.check(generation);
 
     final res = await _client
@@ -468,7 +479,7 @@ class AuthService {
 
   Future<void> skip(String targetUserId) async {
     final generation = AccountSession.generation;
-    final token = await _storage.getToken();
+    final token = await _readSessionToken();
     AccountSession.check(generation);
 
     final res = await _client
@@ -494,7 +505,7 @@ class AuthService {
     return MatchesCacheService.loadMatches(_generation, () async {
       final revision = RelationChanges.revision;
       final url = Uri.parse('$baseApiUrl/matches');
-      final token = await _storage.getToken();
+      final token = await _readSessionToken();
 
       final res = await _client.get(
         url,
@@ -519,7 +530,7 @@ class AuthService {
   Future<ReceivedLikesSummary> getReceivedLikesSummary() async {
     AccountSession.check(_generation);
     final revision = RelationChanges.revision;
-    final token = await _storage.getToken();
+    final token = await _readSessionToken();
     final response = await _client
         .get(Uri.parse('$baseApiUrl/likes/received/summary'), headers: {
       if (token != null) 'Authorization': 'Bearer $token',
@@ -540,7 +551,7 @@ class AuthService {
     return MatchesCacheService.loadLikes(_generation, () async {
       final revision = RelationChanges.revision;
       final url = Uri.parse('$baseApiUrl/likes/received');
-      final token = await _storage.getToken();
+      final token = await _readSessionToken();
 
       final res = await _client.get(
         url,
@@ -647,7 +658,7 @@ class AuthService {
     // Capture the submitted form before secure storage yields. Callers may keep
     // editing their lists while authentication or the network is pending.
     final encodedBody = jsonEncode(body);
-    final token = await _storage.getToken();
+    final token = await _readSessionToken();
     if (token == null || token.isEmpty) throw StateError('Logga in igen.');
     final url = Uri.parse('$baseApiUrl/me/profile');
     final res = await _client
@@ -670,7 +681,7 @@ class AuthService {
     required String reportedUserId,
     required String reason,
   }) async {
-    final token = await _storage.getToken();
+    final token = await _readSessionToken();
 
     final res = await _client
         .post(
@@ -692,7 +703,7 @@ class AuthService {
   }
 
   Future<int> updateRadius(int km) async {
-    final token = await _storage.getToken();
+    final token = await _readSessionToken();
 
     final res = await _client
         .post(
@@ -716,7 +727,7 @@ class AuthService {
   }
 
   Future<Map<String, dynamic>> getMyAccount() async {
-    final token = await _storage.getToken();
+    final token = await _readSessionToken();
     final res = await _client.get(Uri.parse('$baseApiUrl/me/account'),
         headers: {
           'Authorization': 'Bearer $token'
@@ -731,7 +742,7 @@ class AuthService {
     int? matchRadiusKm,
     String? interestedIn,
   }) async {
-    final token = await _storage.getToken();
+    final token = await _readSessionToken();
     final res = await _client
         .patch(
           Uri.parse('$baseApiUrl/me/profile'),
@@ -754,7 +765,7 @@ class AuthService {
   }
 
   Future<bool> canOpenChat(String otherUserId) async {
-    final token = await _storage.getToken();
+    final token = await _readSessionToken();
     if (token == null || token.isEmpty) {
       return false;
     }
@@ -784,7 +795,7 @@ class AuthService {
     if (trimmedToken.isEmpty) throw StateError('Device token is empty');
     // Reserve first, so delayed credentials or HTTP cannot reverse account order.
     final reservation = _pushInstallation.reserve();
-    final authToken = await _storage.getToken();
+    final authToken = await _readSessionToken();
     AccountSession.check(generation);
     if (authToken == null || authToken.isEmpty) {
       throw StateError('No account for push registration');

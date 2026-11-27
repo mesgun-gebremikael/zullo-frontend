@@ -543,5 +543,8 @@
   "enterValidEmailAddress": "Inserisci un indirizzo e-mail valido.",
   "invalidLoginCredentials": "Indirizzo e-mail o password errati.",
   "newMessageNotification": "Hai un nuovo messaggio.",
-  "premiumUncertainCheckout": "Questo acquisto non è ancora stato confermato completamente. I nuovi acquisti sono bloccati per evitare un doppio addebito. Controlla l’acquisto nell’App Store o su Google Play."
+  "premiumUncertainCheckout": "Questo acquisto non è ancora stato confermato completamente. I nuovi acquisti sono bloccati per evitare un doppio addebito. Controlla l’acquisto nell’App Store o su Google Play.",
+  "chooseShorterPassword": "Scegli una password più corta.",
+  "notificationSettingsTitle": "Notifiche",
+  "notificationSettingsDescription": "Gestisci le notifiche nelle impostazioni del telefono."
 }

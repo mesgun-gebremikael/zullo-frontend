@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'email_verification_page.dart';
 import 'l10n/localization.dart';
 import 'dart:async';
@@ -32,6 +33,10 @@ class _RegisterPageState extends State<RegisterPage> {
     }
     if (password.length < 8) {
       setState(() => _error = 'Lösenordet behöver minst 8 tecken.');
+      return;
+    }
+    if (utf8.encode(password).length > 72) {
+      setState(() => _error = 'Välj ett kortare lösenord.');
       return;
     }
     FocusScope.of(context).unfocus();

@@ -543,5 +543,8 @@
   "enterValidEmailAddress": "Skriv inn en gyldig e-postadresse.",
   "invalidLoginCredentials": "Feil e-postadresse eller passord.",
   "newMessageNotification": "Du har fått en ny melding.",
-  "premiumUncertainCheckout": "Kjøpet er ennå ikke fullstendig bekreftet. Nye kjøp er sperret for å unngå dobbel belastning. Kontroller kjøpet i App Store eller Google Play."
+  "premiumUncertainCheckout": "Kjøpet er ennå ikke fullstendig bekreftet. Nye kjøp er sperret for å unngå dobbel belastning. Kontroller kjøpet i App Store eller Google Play.",
+  "chooseShorterPassword": "Velg et kortere passord.",
+  "notificationSettingsTitle": "Varsler",
+  "notificationSettingsDescription": "Administrer varsler i telefonens innstillinger."
 }

@@ -543,5 +543,8 @@
   "enterValidEmailAddress": "Faka ikheli le-imeyili elivumelekile.",
   "invalidLoginCredentials": "Ikheli le-imeyili noma iphasiwedi ayilungile.",
   "newMessageNotification": "Unomyalezo omusha.",
-  "premiumUncertainCheckout": "Lokhu kuthenga akukakaqinisekiswa ngokuphelele. Ukuthenga okusha kuvinjiwe ukuze ugweme ukukhokhiswa kabili. Hlola lokhu kuthenga ku-App Store noma ku-Google Play."
+  "premiumUncertainCheckout": "Lokhu kuthenga akukakaqinisekiswa ngokuphelele. Ukuthenga okusha kuvinjiwe ukuze ugweme ukukhokhiswa kabili. Hlola lokhu kuthenga ku-App Store noma ku-Google Play.",
+  "chooseShorterPassword": "Khetha iphasiwedi emfushane.",
+  "notificationSettingsTitle": "Izaziso",
+  "notificationSettingsDescription": "Phatha izaziso kuzilungiselelo zefoni yakho."
 }

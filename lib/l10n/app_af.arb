@@ -543,5 +543,8 @@
   "enterValidEmailAddress": "Voer ’n geldige e-posadres in.",
   "invalidLoginCredentials": "Verkeerde e-posadres of wagwoord.",
   "newMessageNotification": "Jy het ’n nuwe boodskap.",
-  "premiumUncertainCheckout": "Hierdie aankoop is nog nie volledig bevestig nie. Nuwe aankope is geblokkeer om ’n dubbele heffing te voorkom. Gaan die aankoop in die App Store of Google Play na."
+  "premiumUncertainCheckout": "Hierdie aankoop is nog nie volledig bevestig nie. Nuwe aankope is geblokkeer om ’n dubbele heffing te voorkom. Gaan die aankoop in die App Store of Google Play na.",
+  "chooseShorterPassword": "Kies 'n korter wagwoord.",
+  "notificationSettingsTitle": "Kennisgewings",
+  "notificationSettingsDescription": "Bestuur kennisgewings in jou foon se instellings."
 }

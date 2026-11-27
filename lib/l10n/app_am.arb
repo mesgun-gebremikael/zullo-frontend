@@ -543,5 +543,8 @@
   "enterValidEmailAddress": "ትክክለኛ የኢሜይል አድራሻ ያስገቡ።",
   "invalidLoginCredentials": "የኢሜይል አድራሻው ወይም የይለፍ ቃሉ ትክክል አይደለም።",
   "newMessageNotification": "አዲስ መልዕክት ደርሶዎታል።",
-  "premiumUncertainCheckout": "ይህ ግዢ ገና ሙሉ በሙሉ አልተረጋገጠም። ሁለት ጊዜ እንዳይከፈል አዲስ ግዢ ታግዷል። ግዢውን በ App Store ወይም Google Play ውስጥ ያረጋግጡ።"
+  "premiumUncertainCheckout": "ይህ ግዢ ገና ሙሉ በሙሉ አልተረጋገጠም። ሁለት ጊዜ እንዳይከፈል አዲስ ግዢ ታግዷል። ግዢውን በ App Store ወይም Google Play ውስጥ ያረጋግጡ።",
+  "chooseShorterPassword": "አጠር ያለ የይለፍ ቃል ይምረጡ።",
+  "notificationSettingsTitle": "ማሳወቂያዎች",
+  "notificationSettingsDescription": "ማሳወቂያዎችን በስልክዎ ቅንብሮች ውስጥ ያስተዳድሩ።"
 }

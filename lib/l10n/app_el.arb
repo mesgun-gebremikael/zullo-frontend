@@ -543,5 +543,8 @@
   "enterValidEmailAddress": "Πληκτρολόγησε μια έγκυρη διεύθυνση email.",
   "invalidLoginCredentials": "Λανθασμένη διεύθυνση email ή κωδικός πρόσβασης.",
   "newMessageNotification": "Έχεις νέο μήνυμα.",
-  "premiumUncertainCheckout": "Αυτή η αγορά δεν έχει ακόμη επιβεβαιωθεί πλήρως. Οι νέες αγορές έχουν αποκλειστεί για να αποφευχθεί διπλή χρέωση. Έλεγξε την αγορά στο App Store ή στο Google Play."
+  "premiumUncertainCheckout": "Αυτή η αγορά δεν έχει ακόμη επιβεβαιωθεί πλήρως. Οι νέες αγορές έχουν αποκλειστεί για να αποφευχθεί διπλή χρέωση. Έλεγξε την αγορά στο App Store ή στο Google Play.",
+  "chooseShorterPassword": "Επίλεξε έναν πιο σύντομο κωδικό πρόσβασης.",
+  "notificationSettingsTitle": "Ειδοποιήσεις",
+  "notificationSettingsDescription": "Διαχειρίσου τις ειδοποιήσεις στις ρυθμίσεις του κινητού σου."
 }

@@ -543,5 +543,8 @@
   "enterValidEmailAddress": "Nhập địa chỉ email hợp lệ.",
   "invalidLoginCredentials": "Địa chỉ email hoặc mật khẩu không đúng.",
   "newMessageNotification": "Bạn có tin nhắn mới.",
-  "premiumUncertainCheckout": "Giao dịch mua này chưa được xác nhận đầy đủ. Các giao dịch mua mới đang bị chặn để tránh tính phí hai lần. Hãy kiểm tra giao dịch mua này trong App Store hoặc Google Play."
+  "premiumUncertainCheckout": "Giao dịch mua này chưa được xác nhận đầy đủ. Các giao dịch mua mới đang bị chặn để tránh tính phí hai lần. Hãy kiểm tra giao dịch mua này trong App Store hoặc Google Play.",
+  "chooseShorterPassword": "Chọn mật khẩu ngắn hơn.",
+  "notificationSettingsTitle": "Thông báo",
+  "notificationSettingsDescription": "Quản lý thông báo trong phần cài đặt điện thoại."
 }

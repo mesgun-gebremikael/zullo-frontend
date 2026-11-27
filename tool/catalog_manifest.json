@@ -545,5 +545,8 @@
   "Kontrollera domänen i din e-postadress.": "checkEmailDomain",
   "Ange en giltig e-postadress.": "enterValidEmailAddress",
   "Fel e-postadress eller lösenord.": "invalidLoginCredentials",
-  "Köpet saknar fullständig bekräftelse. Nya köp är spärrade för att undvika dubbel debitering. Kontrollera köpet i App Store eller Google Play.": "premiumUncertainCheckout"
+  "Köpet saknar fullständig bekräftelse. Nya köp är spärrade för att undvika dubbel debitering. Kontrollera köpet i App Store eller Google Play.": "premiumUncertainCheckout",
+  "Välj ett kortare lösenord.": "chooseShorterPassword",
+  "Notiser": "notificationSettingsTitle",
+  "Hantera notiser i mobilens inställningar.": "notificationSettingsDescription"
 }

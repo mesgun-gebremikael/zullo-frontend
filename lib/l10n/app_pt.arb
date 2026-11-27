@@ -543,5 +543,8 @@
   "enterValidEmailAddress": "Digite um endereço de e-mail válido.",
   "invalidLoginCredentials": "E-mail ou senha incorretos.",
   "newMessageNotification": "Você tem uma nova mensagem.",
-  "premiumUncertainCheckout": "Esta compra ainda não foi totalmente confirmada. Novas compras estão bloqueadas para evitar uma cobrança duplicada. Confira a compra na App Store ou no Google Play."
+  "premiumUncertainCheckout": "Esta compra ainda não foi totalmente confirmada. Novas compras estão bloqueadas para evitar uma cobrança duplicada. Confira a compra na App Store ou no Google Play.",
+  "chooseShorterPassword": "Escolha uma senha mais curta.",
+  "notificationSettingsTitle": "Notificações",
+  "notificationSettingsDescription": "Gerencie as notificações nas configurações do seu celular."
 }

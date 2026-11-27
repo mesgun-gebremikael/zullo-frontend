@@ -543,5 +543,8 @@
   "enterValidEmailAddress": "Masukkan alamat email yang valid.",
   "invalidLoginCredentials": "Alamat email atau kata sandi salah.",
   "newMessageNotification": "Kamu mendapat pesan baru.",
-  "premiumUncertainCheckout": "Pembelian ini belum terkonfirmasi sepenuhnya. Pembelian baru diblokir untuk mencegah penagihan ganda. Periksa pembelian ini di App Store atau Google Play."
+  "premiumUncertainCheckout": "Pembelian ini belum terkonfirmasi sepenuhnya. Pembelian baru diblokir untuk mencegah penagihan ganda. Periksa pembelian ini di App Store atau Google Play.",
+  "chooseShorterPassword": "Pilih kata sandi yang lebih pendek.",
+  "notificationSettingsTitle": "Notifikasi",
+  "notificationSettingsDescription": "Kelola notifikasi di pengaturan ponselmu."
 }

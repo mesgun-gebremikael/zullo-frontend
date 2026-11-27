@@ -1,4 +1,5 @@
 import '../l10n/localization.dart';
+import '../services/account_session.dart';
 import '../discovery_location_page.dart';
 import 'package:flutter/material.dart';
 
@@ -24,8 +25,16 @@ class DiscoverySettingsSheet extends StatefulWidget {
 class _DiscoverySettingsSheetState extends State<DiscoverySettingsSheet> {
   late String _interest = widget.initial.interestedIn;
   late double _radius = widget.initial.radiusKm.clamp(1, 300).toDouble();
-  late RangeValues _ages = RangeValues(
-      widget.initial.minAge.toDouble(), widget.initial.maxAge.toDouble());
+  late RangeValues _ages = _initialAges();
+  final int _generation = AccountSession.generation;
+  bool get _active => mounted && AccountSession.isCurrent(_generation);
+
+  RangeValues _initialAges() {
+    final start = widget.initial.minAge.clamp(18, 100).toDouble();
+    final end = widget.initial.maxAge.clamp(18, 100).toDouble();
+    return RangeValues(start <= end ? start : end, start <= end ? end : start);
+  }
+
   bool _busy = false;
   String? _error;
   Future<void> _chooseInterest() async {
@@ -72,11 +81,11 @@ class _DiscoverySettingsSheetState extends State<DiscoverySettingsSheet> {
                                     onTap: () =>
                                         Navigator.pop(context, value)))),
                     ])))));
-    if (mounted && choice != null) setState(() => _interest = choice);
+    if (_active && choice != null) setState(() => _interest = choice);
   }
 
   Future<void> _save() async {
-    if (_busy) return;
+    if (_busy || !_active) return;
     setState(() {
       _busy = true;
       _error = null;
@@ -87,14 +96,14 @@ class _DiscoverySettingsSheetState extends State<DiscoverySettingsSheet> {
           radiusKm: _radius.round(),
           minAge: _ages.start.round(),
           maxAge: _ages.end.round()));
-      if (mounted) Navigator.pop(context);
+      if (mounted && _active) Navigator.pop(context);
     } catch (_) {
-      if (mounted) {
+      if (_active) {
         setState(() => _error =
             'Kunde inte spara. Dina tidigare inställningar gäller fortfarande. Försök igen.');
       }
     } finally {
-      if (mounted) setState(() => _busy = false);
+      if (_active) setState(() => _busy = false);
     }
   }
 

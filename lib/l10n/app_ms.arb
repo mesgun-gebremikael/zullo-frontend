@@ -543,5 +543,8 @@
   "enterValidEmailAddress": "Masukkan alamat e-mel yang sah.",
   "invalidLoginCredentials": "Alamat e-mel atau kata laluan tidak betul.",
   "newMessageNotification": "Anda menerima mesej baharu.",
-  "premiumUncertainCheckout": "Pembelian ini belum disahkan sepenuhnya. Pembelian baharu disekat untuk mengelakkan caj berganda. Semak pembelian ini di App Store atau Google Play."
+  "premiumUncertainCheckout": "Pembelian ini belum disahkan sepenuhnya. Pembelian baharu disekat untuk mengelakkan caj berganda. Semak pembelian ini di App Store atau Google Play.",
+  "chooseShorterPassword": "Pilih kata laluan yang lebih pendek.",
+  "notificationSettingsTitle": "Pemberitahuan",
+  "notificationSettingsDescription": "Urus pemberitahuan dalam tetapan telefon anda."
 }

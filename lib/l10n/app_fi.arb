@@ -543,5 +543,8 @@
   "enterValidEmailAddress": "Anna kelvollinen sähköpostiosoite.",
   "invalidLoginCredentials": "Virheellinen sähköpostiosoite tai salasana.",
   "newMessageNotification": "Sinulle on tullut uusi viesti.",
-  "premiumUncertainCheckout": "Ostosta ei ole vielä vahvistettu kokonaan. Uudet ostot on estetty kaksinkertaisen veloituksen välttämiseksi. Tarkista ostos App Storessa tai Google Playssa."
+  "premiumUncertainCheckout": "Ostosta ei ole vielä vahvistettu kokonaan. Uudet ostot on estetty kaksinkertaisen veloituksen välttämiseksi. Tarkista ostos App Storessa tai Google Playssa.",
+  "chooseShorterPassword": "Valitse lyhyempi salasana.",
+  "notificationSettingsTitle": "Ilmoitukset",
+  "notificationSettingsDescription": "Hallitse ilmoituksia puhelimesi asetuksissa."
 }

@@ -55,7 +55,7 @@ class _DiscoveryLocationPageState extends State<DiscoveryLocationPage>
   }
 
   Future<void> _load() async {
-    if (_loading) return;
+    if (_loading || !active) return;
     _loading = true;
     final revision = _settingsRevision;
     bool unchanged() => active && revision == _settingsRevision;
@@ -97,7 +97,7 @@ class _DiscoveryLocationPageState extends State<DiscoveryLocationPage>
   }
 
   Future<void> _save(Map<String, dynamic> changes) async {
-    if (busy) return;
+    if (busy || !active) return;
     _settingsRevision++;
     setState(() {
       busy = true;

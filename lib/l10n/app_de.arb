@@ -543,5 +543,8 @@
   "enterValidEmailAddress": "Gib eine gültige E-Mail-Adresse ein.",
   "invalidLoginCredentials": "Falsche E-Mail-Adresse oder falsches Passwort.",
   "newMessageNotification": "Du hast eine neue Nachricht.",
-  "premiumUncertainCheckout": "Dieser Kauf ist noch nicht vollständig bestätigt. Neue Käufe sind gesperrt, um eine doppelte Abbuchung zu verhindern. Prüfe den Kauf im App Store oder bei Google Play."
+  "premiumUncertainCheckout": "Dieser Kauf ist noch nicht vollständig bestätigt. Neue Käufe sind gesperrt, um eine doppelte Abbuchung zu verhindern. Prüfe den Kauf im App Store oder bei Google Play.",
+  "chooseShorterPassword": "Wähle ein kürzeres Passwort.",
+  "notificationSettingsTitle": "Benachrichtigungen",
+  "notificationSettingsDescription": "Verwalte Benachrichtigungen in den Einstellungen deines Telefons."
 }

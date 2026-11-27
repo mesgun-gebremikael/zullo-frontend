@@ -543,5 +543,8 @@
   "enterValidEmailAddress": "Maglagay ng wastong email address.",
   "invalidLoginCredentials": "Mali ang email address o password.",
   "newMessageNotification": "May bago kang mensahe.",
-  "premiumUncertainCheckout": "Hindi pa ganap na nakukumpirma ang pagbiling ito. Hindi pinapayagan ang mga bagong pagbili para maiwasan ang dobleng pagsingil. Suriin ang pagbiling ito sa App Store o Google Play."
+  "premiumUncertainCheckout": "Hindi pa ganap na nakukumpirma ang pagbiling ito. Hindi pinapayagan ang mga bagong pagbili para maiwasan ang dobleng pagsingil. Suriin ang pagbiling ito sa App Store o Google Play.",
+  "chooseShorterPassword": "Pumili ng mas maikling password.",
+  "notificationSettingsTitle": "Mga notification",
+  "notificationSettingsDescription": "Pamahalaan ang mga notification sa mga setting ng iyong telepono."
 }

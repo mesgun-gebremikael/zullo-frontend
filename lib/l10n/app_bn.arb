@@ -543,5 +543,8 @@
   "enterValidEmailAddress": "একটি বৈধ ইমেল ঠিকানা লিখুন।",
   "invalidLoginCredentials": "ইমেল ঠিকানা বা পাসওয়ার্ড ভুল।",
   "newMessageNotification": "আপনি একটি নতুন বার্তা পেয়েছেন।",
-  "premiumUncertainCheckout": "এই কেনাকাটার সম্পূর্ণ নিশ্চিতকরণ এখনও পাওয়া যায়নি। দুবার টাকা কাটা এড়াতে নতুন কেনাকাটা বন্ধ রাখা হয়েছে। App Store বা Google Play-তে কেনাকাটার তথ্য দেখুন।"
+  "premiumUncertainCheckout": "এই কেনাকাটার সম্পূর্ণ নিশ্চিতকরণ এখনও পাওয়া যায়নি। দুবার টাকা কাটা এড়াতে নতুন কেনাকাটা বন্ধ রাখা হয়েছে। App Store বা Google Play-তে কেনাকাটার তথ্য দেখুন।",
+  "chooseShorterPassword": "আরও ছোট পাসওয়ার্ড বেছে নিন।",
+  "notificationSettingsTitle": "বিজ্ঞপ্তি",
+  "notificationSettingsDescription": "আপনার ফোনের সেটিংসে বিজ্ঞপ্তি পরিচালনা করুন।"
 }

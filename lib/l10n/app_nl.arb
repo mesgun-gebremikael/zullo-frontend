@@ -543,5 +543,8 @@
   "enterValidEmailAddress": "Voer een geldig e-mailadres in.",
   "invalidLoginCredentials": "Onjuist e-mailadres of wachtwoord.",
   "newMessageNotification": "Je hebt een nieuw bericht.",
-  "premiumUncertainCheckout": "Deze aankoop is nog niet volledig bevestigd. Nieuwe aankopen zijn geblokkeerd om een dubbele afschrijving te voorkomen. Controleer de aankoop in de App Store of Google Play."
+  "premiumUncertainCheckout": "Deze aankoop is nog niet volledig bevestigd. Nieuwe aankopen zijn geblokkeerd om een dubbele afschrijving te voorkomen. Controleer de aankoop in de App Store of Google Play.",
+  "chooseShorterPassword": "Kies een korter wachtwoord.",
+  "notificationSettingsTitle": "Meldingen",
+  "notificationSettingsDescription": "Beheer meldingen in de instellingen van je telefoon."
 }

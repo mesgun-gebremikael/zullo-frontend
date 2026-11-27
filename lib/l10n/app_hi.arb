@@ -543,5 +543,8 @@
   "enterValidEmailAddress": "मान्य ईमेल पता दर्ज करें।",
   "invalidLoginCredentials": "ईमेल पता या पासवर्ड गलत है।",
   "newMessageNotification": "आपको एक नया संदेश मिला है।",
-  "premiumUncertainCheckout": "इस खरीदारी की पूरी पुष्टि अभी नहीं हुई है। दो बार शुल्क लगने से बचाने के लिए नई खरीदारी रोक दी गई है। App Store या Google Play में खरीदारी की स्थिति देखें।"
+  "premiumUncertainCheckout": "इस खरीदारी की पूरी पुष्टि अभी नहीं हुई है। दो बार शुल्क लगने से बचाने के लिए नई खरीदारी रोक दी गई है। App Store या Google Play में खरीदारी की स्थिति देखें।",
+  "chooseShorterPassword": "छोटा पासवर्ड चुनें।",
+  "notificationSettingsTitle": "सूचनाएँ",
+  "notificationSettingsDescription": "अपने फ़ोन की सेटिंग में सूचनाएँ प्रबंधित करें।"
 }

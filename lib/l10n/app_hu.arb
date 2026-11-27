@@ -543,5 +543,8 @@
   "enterValidEmailAddress": "Adj meg egy érvényes e-mail-címet.",
   "invalidLoginCredentials": "Helytelen e-mail-cím vagy jelszó.",
   "newMessageNotification": "Új üzeneted érkezett.",
-  "premiumUncertainCheckout": "Ez a vásárlás még nincs teljesen visszaigazolva. Az új vásárlások le vannak tiltva a dupla terhelés elkerülése érdekében. Ellenőrizd a vásárlást az App Store-ban vagy a Google Playen."
+  "premiumUncertainCheckout": "Ez a vásárlás még nincs teljesen visszaigazolva. Az új vásárlások le vannak tiltva a dupla terhelés elkerülése érdekében. Ellenőrizd a vásárlást az App Store-ban vagy a Google Playen.",
+  "chooseShorterPassword": "Válassz rövidebb jelszót.",
+  "notificationSettingsTitle": "Értesítések",
+  "notificationSettingsDescription": "Az értesítéseket a telefonod beállításaiban kezelheted."
 }

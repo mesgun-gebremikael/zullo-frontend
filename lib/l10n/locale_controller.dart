@@ -15,6 +15,13 @@ class LocaleController extends ChangeNotifier {
   bool _loaded = false;
   int _revision = 0;
   Future<void>? _loading;
+  bool _disposed = false;
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
 
   Future<void> load() => _loading ??= _load();
   Future<void> _load() async {
@@ -32,7 +39,7 @@ class LocaleController extends ChangeNotifier {
       // Platform storage must never prevent startup or system-language fallback.
     }
     _loaded = true;
-    notifyListeners();
+    if (!_disposed) notifyListeners();
   }
 
   bool get loaded => _loaded;
@@ -52,6 +59,6 @@ class LocaleController extends ChangeNotifier {
     if (!saved) throw StateError('Language preference could not be saved');
     if (revision != _revision) return;
     _locale = value;
-    notifyListeners();
+    if (!_disposed) notifyListeners();
   }
 }

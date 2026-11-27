@@ -543,5 +543,8 @@
   "enterValidEmailAddress": "Weka anwani halali ya barua pepe.",
   "invalidLoginCredentials": "Anwani ya barua pepe au nenosiri si sahihi.",
   "newMessageNotification": "Una ujumbe mpya.",
-  "premiumUncertainCheckout": "Ununuzi huu bado haujathibitishwa kikamilifu. Ununuzi mpya umezuiwa ili kuepuka kutozwa mara mbili. Angalia ununuzi huu katika App Store au Google Play."
+  "premiumUncertainCheckout": "Ununuzi huu bado haujathibitishwa kikamilifu. Ununuzi mpya umezuiwa ili kuepuka kutozwa mara mbili. Angalia ununuzi huu katika App Store au Google Play.",
+  "chooseShorterPassword": "Chagua nenosiri fupi zaidi.",
+  "notificationSettingsTitle": "Arifa",
+  "notificationSettingsDescription": "Dhibiti arifa katika mipangilio ya simu yako."
 }

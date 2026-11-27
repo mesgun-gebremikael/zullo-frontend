@@ -543,5 +543,8 @@
   "enterValidEmailAddress": "Geçerli bir e-posta adresi gir.",
   "invalidLoginCredentials": "E-posta adresi veya parola yanlış.",
   "newMessageNotification": "Yeni bir mesajın var.",
-  "premiumUncertainCheckout": "Bu satın alma henüz tam olarak doğrulanmadı. İki kez ücret alınmasını önlemek için yeni satın almalar engellendi. Satın almayı App Store veya Google Play'den kontrol et."
+  "premiumUncertainCheckout": "Bu satın alma henüz tam olarak doğrulanmadı. İki kez ücret alınmasını önlemek için yeni satın almalar engellendi. Satın almayı App Store veya Google Play'den kontrol et.",
+  "chooseShorterPassword": "Daha kısa bir şifre seç.",
+  "notificationSettingsTitle": "Bildirimler",
+  "notificationSettingsDescription": "Bildirimleri telefonunun ayarlarından yönet."
 }

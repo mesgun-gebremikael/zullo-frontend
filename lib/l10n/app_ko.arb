@@ -543,5 +543,8 @@
   "enterValidEmailAddress": "올바른 이메일 주소를 입력하세요.",
   "invalidLoginCredentials": "이메일 주소 또는 비밀번호가 올바르지 않습니다.",
   "newMessageNotification": "새 메시지가 도착했어요.",
-  "premiumUncertainCheckout": "이 구매는 아직 완전히 확인되지 않았습니다. 중복 결제를 방지하기 위해 새 구매가 차단되어 있습니다. App Store 또는 Google Play에서 해당 구매를 확인해 주세요."
+  "premiumUncertainCheckout": "이 구매는 아직 완전히 확인되지 않았습니다. 중복 결제를 방지하기 위해 새 구매가 차단되어 있습니다. App Store 또는 Google Play에서 해당 구매를 확인해 주세요.",
+  "chooseShorterPassword": "더 짧은 비밀번호를 선택해 주세요.",
+  "notificationSettingsTitle": "알림",
+  "notificationSettingsDescription": "휴대전화 설정에서 알림을 관리하세요."
 }

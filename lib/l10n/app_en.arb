@@ -2361,5 +2361,17 @@
   "premiumUncertainCheckout": "This purchase has no complete confirmation. New purchases are blocked to prevent a duplicate charge. Check the purchase in the App Store or Google Play.",
   "@premiumUncertainCheckout": {
     "description": "Receiptless or corrupt checkout state. Do not promise restore can clear an unknown attempt; never infer a receipt from date/product alone."
+  },
+  "chooseShorterPassword": "Choose a shorter password.",
+  "@chooseShorterPassword": {
+    "description": "New account registration only: password exceeds the server bcrypt byte limit. Do not apply to existing account login."
+  },
+  "notificationSettingsTitle": "Notifications",
+  "@notificationSettingsTitle": {
+    "description": "Settings entry opening the operating system app notification/settings page. No in-app notification category preferences."
+  },
+  "notificationSettingsDescription": "Manage notifications in your phone settings.",
+  "@notificationSettingsDescription": {
+    "description": "Settings entry opening the operating system app notification/settings page. No in-app notification category preferences."
   }
 }

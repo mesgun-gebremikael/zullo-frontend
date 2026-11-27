@@ -543,5 +543,8 @@
   "enterValidEmailAddress": "Zadej platnou e-mailovou adresu.",
   "invalidLoginCredentials": "Nesprávná e-mailová adresa nebo heslo.",
   "newMessageNotification": "Máš novou zprávu.",
-  "premiumUncertainCheckout": "Tento nákup ještě není zcela potvrzený. Nové nákupy jsou zablokované, aby nedošlo k dvojímu naúčtování. Zkontroluj nákup v App Storu nebo na Google Play."
+  "premiumUncertainCheckout": "Tento nákup ještě není zcela potvrzený. Nové nákupy jsou zablokované, aby nedošlo k dvojímu naúčtování. Zkontroluj nákup v App Storu nebo na Google Play.",
+  "chooseShorterPassword": "Zvol kratší heslo.",
+  "notificationSettingsTitle": "Oznámení",
+  "notificationSettingsDescription": "Spravuj oznámení v nastavení telefonu."
 }

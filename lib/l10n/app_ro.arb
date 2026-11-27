@@ -543,5 +543,8 @@
   "enterValidEmailAddress": "Introdu o adresă de e-mail validă.",
   "invalidLoginCredentials": "Adresă de e-mail sau parolă incorectă.",
   "newMessageNotification": "Ai un mesaj nou.",
-  "premiumUncertainCheckout": "Această achiziție nu este încă pe deplin confirmată. Achizițiile noi sunt blocate pentru a evita o taxare dublă. Verifică achiziția în App Store sau Google Play."
+  "premiumUncertainCheckout": "Această achiziție nu este încă pe deplin confirmată. Achizițiile noi sunt blocate pentru a evita o taxare dublă. Verifică achiziția în App Store sau Google Play.",
+  "chooseShorterPassword": "Alege o parolă mai scurtă.",
+  "notificationSettingsTitle": "Notificări",
+  "notificationSettingsDescription": "Gestionează notificările din setările telefonului."
 }

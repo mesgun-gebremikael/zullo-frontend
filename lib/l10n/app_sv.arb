@@ -543,5 +543,8 @@
   "enterValidEmailAddress": "Ange en giltig e-postadress.",
   "invalidLoginCredentials": "Fel e-postadress eller lösenord.",
   "newMessageNotification": "Du har fått ett nytt meddelande.",
-  "premiumUncertainCheckout": "Köpet saknar fullständig bekräftelse. Nya köp är spärrade för att undvika dubbel debitering. Kontrollera köpet i App Store eller Google Play."
+  "premiumUncertainCheckout": "Köpet saknar fullständig bekräftelse. Nya köp är spärrade för att undvika dubbel debitering. Kontrollera köpet i App Store eller Google Play.",
+  "chooseShorterPassword": "Välj ett kortare lösenord.",
+  "notificationSettingsTitle": "Notiser",
+  "notificationSettingsDescription": "Hantera notiser i mobilens inställningar."
 }

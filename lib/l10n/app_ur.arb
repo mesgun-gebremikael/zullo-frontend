@@ -543,5 +543,8 @@
   "enterValidEmailAddress": "درست ای میل پتہ درج کریں۔",
   "invalidLoginCredentials": "ای میل پتہ یا پاس ورڈ غلط ہے۔",
   "newMessageNotification": "آپ کو نیا پیغام موصول ہوا ہے۔",
-  "premiumUncertainCheckout": "اس خریداری کی مکمل تصدیق ابھی نہیں ہوئی۔ دو بار رقم کٹنے سے بچانے کے لیے نئی خریداریاں روک دی گئی ہیں۔ App Store یا Google Play میں خریداری چیک کریں۔"
+  "premiumUncertainCheckout": "اس خریداری کی مکمل تصدیق ابھی نہیں ہوئی۔ دو بار رقم کٹنے سے بچانے کے لیے نئی خریداریاں روک دی گئی ہیں۔ App Store یا Google Play میں خریداری چیک کریں۔",
+  "chooseShorterPassword": "ایک مختصر پاس ورڈ منتخب کریں۔",
+  "notificationSettingsTitle": "اطلاعات",
+  "notificationSettingsDescription": "اپنے فون کی ترتیبات میں اطلاعات کا نظم کریں۔"
 }

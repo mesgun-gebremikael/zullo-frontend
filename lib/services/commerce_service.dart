@@ -115,7 +115,7 @@ class CommerceClient {
   Future<Map<String, dynamic>> request(String method, String path,
       [Object? body]) async {
     AccountSession.check(_generation);
-    final token = await _storage.getToken();
+    final token = await _storage.getToken().timeout(const Duration(seconds: 5));
     AccountSession.check(_generation);
     final req = http.Request(method, Uri.parse('${ApiConfig.baseUrl}$path'));
     req.headers.addAll(
@@ -158,10 +158,11 @@ class CommerceClient {
 
   Future<CommerceState> boost() async =>
       CommerceState.fromJson(await request('POST', '/commerce/boost'));
-  Future<CommerceState> privacy(
-          {required bool hideActivity, required bool incognito}) async =>
-      CommerceState.fromJson(await request('PATCH', '/commerce/privacy',
-          {'hideActivity': hideActivity, 'incognito': incognito}));
+  Future<CommerceState> privacy({bool? hideActivity, bool? incognito}) async =>
+      CommerceState.fromJson(await request('PATCH', '/commerce/privacy', {
+        if (hideActivity != null) 'hideActivity': hideActivity,
+        if (incognito != null) 'incognito': incognito
+      }));
   Future<void> heartbeat() async {
     await request('POST', '/presence');
   }

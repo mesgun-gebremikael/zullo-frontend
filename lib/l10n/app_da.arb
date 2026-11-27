@@ -543,5 +543,8 @@
   "enterValidEmailAddress": "Indtast en gyldig e-mailadresse.",
   "invalidLoginCredentials": "Forkert e-mailadresse eller adgangskode.",
   "newMessageNotification": "Du har fået en ny besked.",
-  "premiumUncertainCheckout": "Købet er endnu ikke fuldt bekræftet. Nye køb er blokeret for at undgå dobbelt opkrævning. Kontrollér købet i App Store eller Google Play."
+  "premiumUncertainCheckout": "Købet er endnu ikke fuldt bekræftet. Nye køb er blokeret for at undgå dobbelt opkrævning. Kontrollér købet i App Store eller Google Play.",
+  "chooseShorterPassword": "Vælg en kortere adgangskode.",
+  "notificationSettingsTitle": "Notifikationer",
+  "notificationSettingsDescription": "Administrer notifikationer i telefonens indstillinger."
 }

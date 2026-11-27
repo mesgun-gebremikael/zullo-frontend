@@ -543,5 +543,8 @@
   "enterValidEmailAddress": "Введіть дійсну адресу електронної пошти.",
   "invalidLoginCredentials": "Неправильна адреса електронної пошти або пароль.",
   "newMessageNotification": "У вас нове повідомлення.",
-  "premiumUncertainCheckout": "Повного підтвердження цієї покупки ще немає. Нові покупки заблоковано, щоб уникнути повторного списання коштів. Перевірте покупку в App Store або Google Play."
+  "premiumUncertainCheckout": "Повного підтвердження цієї покупки ще немає. Нові покупки заблоковано, щоб уникнути повторного списання коштів. Перевірте покупку в App Store або Google Play.",
+  "chooseShorterPassword": "Вибери коротший пароль.",
+  "notificationSettingsTitle": "Сповіщення",
+  "notificationSettingsDescription": "Керуй сповіщеннями в налаштуваннях телефону."
 }

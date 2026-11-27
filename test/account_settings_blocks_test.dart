@@ -14,6 +14,7 @@ import 'package:zullo_app/home_page.dart';
 import 'package:zullo_app/services/auth_service.dart';
 import 'package:zullo_app/services/auth_storage.dart';
 import 'package:zullo_app/services/block_service.dart';
+import 'package:zullo_app/services/commerce_service.dart';
 import 'package:zullo_app/services/chat_repository.dart';
 import 'package:zullo_app/services/relation_changes.dart';
 import 'package:zullo_app/models/chat_list_item.dart';
@@ -22,6 +23,11 @@ import 'package:zullo_app/models/swipe_profile.dart';
 class TestStorage extends AuthStorage {
   @override
   Future<String?> getToken() async => 'token';
+}
+
+class SettingsCommerce extends CommerceClient {
+  @override
+  Future<CommerceState> state() async => const CommerceState();
 }
 
 class SettingsAuth extends AuthService {
@@ -76,8 +82,9 @@ void main() {
 
   testWidgets('account shows its email and opens blocked profiles',
       (tester) async {
-    await tester.pumpWidget(
-        MaterialApp(home: ProfileSettingsPage(authService: SettingsAuth())));
+    await tester.pumpWidget(MaterialApp(
+        home: ProfileSettingsPage(
+            authService: SettingsAuth(), commerce: SettingsCommerce())));
     await tester.runAsync(() async {
       await Future<void>.delayed(const Duration(milliseconds: 20));
     });
